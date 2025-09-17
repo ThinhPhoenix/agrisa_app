@@ -11,8 +11,12 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo/metro-runtime": "^6.1.2",
     "@expo/vector-icons": "^15.0.2",
+    "@gluestack-ui/config": "^1.1.20",
+    "@gluestack-ui/icon": "^0.1.27",
+    "@gluestack-ui/themed": "^1.1.73",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
@@ -22,6 +26,7 @@
     "expo-blur": "~15.0.7",
     "expo-constants": "~18.0.9",
     "expo-font": "~14.0.8",
+    "expo-google-fonts": "^0.0.0",
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.8",
     "expo-linking": "~8.0.8",

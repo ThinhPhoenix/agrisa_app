@@ -1,43 +1,60 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import React from "react";
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { History, Home, MessageCircle, Wheat } from "lucide-react-native";
+import { Image } from '@gluestack-ui/themed';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { colors } = useAgrisaColors();
+
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        headerShown: false, // ✅ Ẩn header title
+        tabBarStyle: {
+          backgroundColor: colors.card, // 🎨 Áp dụng màu custom cho tab bar
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
+        tabBarActiveTintColor: colors.success, // Màu icon khi active
+        tabBarInactiveTintColor: colors.textMuted, // Màu icon khi inactive
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "500",
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Trang chủ",
+          tabBarIcon: ({ color }) => <Home size={28} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="farm"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Trang trại",
+          tabBarIcon: ({ color }) => <Wheat size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: "Lịch sử",
+          tabBarIcon: ({ color }) => <History size={28} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="ThemeSettingScreen"
+        options={{
+          title: "Tin nhắn",
+
+          tabBarIcon: ({ color, size }) => (
+            <MessageCircle size={size || 24} color={color} />
+          ),
         }}
       />
     </Tabs>

@@ -4,7 +4,7 @@
     "slug": "arisa_app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "@/assets/images/Logo/Agrisa_Logo.png",
+    "icon": "./assets/images/Logo/Agrisa_Logo.png",
     "scheme": "arisaapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "@/assets/images/Logo/Agrisa_Logo.png",
+        "foregroundImage": "./assets/images/Logo/Agrisa_Logo.png",
         "backgroundColor": "#fbe9a8"
       },
       "edgeToEdgeEnabled": true
@@ -21,14 +21,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "@/assets/images/Logo/Agrisa_Logo.png"
+      "favicon": "./assets/images/Logo/Agrisa_Logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "@/assets/images/Logo/Agrisa_Logo.png",
+          "image": "./assets/images/Logo/Agrisa_Logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#fbe9a8"

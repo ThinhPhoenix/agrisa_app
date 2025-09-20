@@ -48,7 +48,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="ThemeSettingScreen"
+        name="message"
         options={{
           title: "Tin nhắn",
 

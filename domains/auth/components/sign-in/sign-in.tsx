@@ -13,12 +13,12 @@ import {
     Text,
     View,
 } from "@gluestack-ui/themed";
+import { router } from "expo-router";
 import { Eye, EyeOff, Lock } from "lucide-react-native";
 import React, { useState } from "react";
 import { Dimensions, KeyboardAvoidingView, Platform } from "react-native";
 import { create } from "zustand";
 
-// Lấy dimensions màn hình để responsive
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Định nghĩa type cho store
@@ -235,7 +235,7 @@ const SignInComponentUI = () => {
                   <InputField
                     value={username}
                     onChangeText={setUsername}
-                    placeholder="farmer@agrisa.vn"
+                    placeholder="CCCD"
                     placeholderTextColor={colors.textMuted} // 🎨 Theme muted text
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -398,6 +398,9 @@ const SignInComponentUI = () => {
               >
                 Chưa có tài khoản?{" "}
                 <Text
+                  onPress={() => {
+                    router.push("/auth/signup");
+                  }}
                   style={{
                     color: colors.success, // 🎨 Theme success color
                     fontWeight: "600",
@@ -407,6 +410,9 @@ const SignInComponentUI = () => {
                 </Text>
               </Text>
               <Text
+                onPress={() => {
+                  router.push("/auth/forgot-password");
+                }}
                 style={{
                   color: colors.success, // 🎨 Theme success color
                   fontSize: 14,

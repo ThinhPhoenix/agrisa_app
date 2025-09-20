@@ -105,7 +105,7 @@ export default function InsuranceCards() {
   };
 
   const formatMoney = (value: string) => {
-    if (!showMoney) return "***.***.***";
+    if (!showMoney) return "*********";
     return new Intl.NumberFormat("vi-VN").format(parseInt(value));
   };
 

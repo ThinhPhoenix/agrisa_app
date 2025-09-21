@@ -15,7 +15,7 @@ export const AgrisaColors = {
   light: {
     // Background colors
     primary: "#fbe9a8", // Vàng nhạt - dễ nhìn ngoài trời
-    background: "#FAF1E6", // Nền trắng tinh khiết
+    background: "#ffffff", // Nền trắng tinh khiết
     surface: "#f8f9fa", // Bề mặt cards nhạt
     card: "#F8FAFC", // Cards trắng
 

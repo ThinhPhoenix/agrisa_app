@@ -108,5 +108,4 @@ export const createAgrisaConfig = (isDark: boolean) => {
   };
 };
 
-// ✅ QUAN TRỌNG: Export default config cho LIGHT MODE
 export const config = createAgrisaConfig(false); // false = light mode

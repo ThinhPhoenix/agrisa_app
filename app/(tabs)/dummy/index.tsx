@@ -48,7 +48,7 @@ const quickActionItems = [
     key: "support",
     name: "Yêu cầu hỗ trợ",
     icon: Headset,
-    color: "#C1856D",
+    color: "#E45A92",
   },
 ];
 

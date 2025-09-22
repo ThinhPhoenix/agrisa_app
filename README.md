@@ -1,4 +1,4 @@
-## tech docs
+2## tech docs
 - icons: [lucide](https://lucide.dev/icons)
 - quản lý state: [zustand](https://zustand.docs.pmnd.rs/getting-started/introduction)
 - kho lưu trữ: [async storate](https://react-native-async-storage.github.io/async-storage/docs/install/)

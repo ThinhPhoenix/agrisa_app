@@ -12,3 +12,5 @@ bun(npm, yarn) start
 ```
 >chạy app lỗi thì xóa folder .expo rồi chạy start lại.
 ```
+
+©️Agrisa 2025

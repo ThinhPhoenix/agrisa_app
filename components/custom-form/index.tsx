@@ -17,7 +17,6 @@ import {
   FormControlHelperText,
   FormControlLabel,
   FormControlLabelText,
-  Text,
   HStack,
   Input,
   InputField,
@@ -38,6 +37,7 @@ import {
   SelectPortal,
   SelectTrigger,
   Switch,
+  Text,
   Textarea,
   TextareaInput,
   VStack,
@@ -117,7 +117,9 @@ export const CustomForm = forwardRef(function CustomForm(
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState<Record<string, boolean>>({});
-  const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>({});
+  const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>(
+    {}
+  );
   // pressedFields removed: ripple now provides the visual feedback
   const [ripples, setRipples] = useState<Record<string, any>>({});
 
@@ -217,16 +219,25 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-gray-700 font-medium mb-2 text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-gray-700 font-medium mb-2 text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
                 {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
+                  <Text
+                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                  >
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>
             <Input
               className={`bg-white border-2 ${
-                focusedFields[field.name] ? "border-blue-400 ring-1 ring-blue-200" : "border-gray-200"
+                focusedFields[field.name]
+                  ? "border-blue-400 ring-1 ring-blue-200"
+                  : "border-gray-200"
               } shadow-sm`}
               style={{ borderRadius: 8, overflow: "hidden" }}
             >
@@ -235,10 +246,18 @@ export const CustomForm = forwardRef(function CustomForm(
                 value={formData[field.name] || ""}
                 onChangeText={(value) => handleFieldChange(field.name, value)}
                 editable={!field.disabled}
-                onFocus={() => setFocusedFields((p) => ({ ...p, [field.name]: true }))}
-                onBlur={() => setFocusedFields((p) => ({ ...p, [field.name]: false }))}
+                onFocus={() =>
+                  setFocusedFields((p) => ({ ...p, [field.name]: true }))
+                }
+                onBlur={() =>
+                  setFocusedFields((p) => ({ ...p, [field.name]: false }))
+                }
                 className="px-4 py-3 text-gray-800 bg-transparent"
-                style={{ borderRadius: 8, textAlignVertical: 'center', height: '100%' }}
+                style={{
+                  borderRadius: 8,
+                  textAlignVertical: "center",
+                  height: "100%",
+                }}
                 placeholderTextColor="#9CA3AF"
               />
             </Input>
@@ -265,16 +284,25 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-gray-700 font-medium mb-2 text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-gray-700 font-medium mb-2 text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
                 {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
+                  <Text
+                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                  >
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>
             <Input
               className={`bg-white border-2 ${
-                focusedFields[field.name] ? "border-blue-400 ring-1 ring-blue-200" : "border-gray-200"
+                focusedFields[field.name]
+                  ? "border-blue-400 ring-1 ring-blue-200"
+                  : "border-gray-200"
               } shadow-sm relative`}
               style={{ borderRadius: 8, overflow: "hidden" }}
             >
@@ -284,10 +312,18 @@ export const CustomForm = forwardRef(function CustomForm(
                 onChangeText={(value) => handleFieldChange(field.name, value)}
                 secureTextEntry={!showPassword[field.name]}
                 editable={!field.disabled}
-                onFocus={() => setFocusedFields((p) => ({ ...p, [field.name]: true }))}
-                onBlur={() => setFocusedFields((p) => ({ ...p, [field.name]: false }))}
+                onFocus={() =>
+                  setFocusedFields((p) => ({ ...p, [field.name]: true }))
+                }
+                onBlur={() =>
+                  setFocusedFields((p) => ({ ...p, [field.name]: false }))
+                }
                 className="px-4 py-3 text-gray-800 pr-12 bg-transparent"
-                style={{ borderRadius: 8, textAlignVertical: 'center', height: '100%' }}
+                style={{
+                  borderRadius: 8,
+                  textAlignVertical: "center",
+                  height: "100%",
+                }}
                 placeholderTextColor="#9CA3AF"
               />
               <Pressable
@@ -330,16 +366,25 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-gray-700 font-medium mb-2 text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-gray-700 font-medium mb-2 text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
                 {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
+                  <Text
+                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                  >
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>
             <Input
               className={`bg-white border-2 ${
-                focusedFields[field.name] ? "border-blue-400 ring-1 ring-blue-200" : "border-gray-200"
+                focusedFields[field.name]
+                  ? "border-blue-400 ring-1 ring-blue-200"
+                  : "border-gray-200"
               } shadow-sm`}
               style={{ borderRadius: 8, overflow: "hidden" }}
             >
@@ -354,10 +399,18 @@ export const CustomForm = forwardRef(function CustomForm(
                 }
                 keyboardType="numeric"
                 editable={!field.disabled}
-                onFocus={() => setFocusedFields((p) => ({ ...p, [field.name]: true }))}
-                onBlur={() => setFocusedFields((p) => ({ ...p, [field.name]: false }))}
+                onFocus={() =>
+                  setFocusedFields((p) => ({ ...p, [field.name]: true }))
+                }
+                onBlur={() =>
+                  setFocusedFields((p) => ({ ...p, [field.name]: false }))
+                }
                 className="px-4 py-3 text-gray-800 bg-transparent"
-                style={{ borderRadius: 8, textAlignVertical: 'center', height: '100%' }}
+                style={{
+                  borderRadius: 8,
+                  textAlignVertical: "center",
+                  height: "100%",
+                }}
                 placeholderTextColor="#9CA3AF"
               />
             </Input>
@@ -384,10 +437,17 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-gray-700 font-medium mb-2 text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-gray-700 font-medium mb-2 text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
                 {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
+                  <Text
+                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                  >
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>
@@ -395,18 +455,27 @@ export const CustomForm = forwardRef(function CustomForm(
               selectedValue={formData[field.name]}
               onValueChange={(value) => handleFieldChange(field.name, value)}
             >
-              <SelectTrigger className="bg-white border-2 border-gray-200 shadow-sm min-h-[50px]" style={{ borderRadius: 8, overflow: 'hidden' }}>
+              <SelectTrigger
+                className="bg-white border-2 border-gray-200 shadow-sm min-h-[50px]"
+                style={{ borderRadius: 8, overflow: "hidden" }}
+              >
                 <SelectInput
                   placeholder={field.placeholder}
                   className="px-4 py-3 text-gray-800"
                   placeholderTextColor="#9CA3AF"
-                  style={{ textAlignVertical: 'center', height: '100%' }}
+                  style={{ textAlignVertical: "center", height: "100%" }}
                 />
-                <SelectIcon as={ChevronDownIcon} className="text-gray-500 mr-3" />
+                <SelectIcon
+                  as={ChevronDownIcon}
+                  className="text-gray-500 mr-3"
+                />
               </SelectTrigger>
               <SelectPortal>
                 <SelectBackdrop />
-                <SelectContent className="bg-white border-2 border-gray-200 shadow-lg" style={{ borderRadius: 8, overflow: 'hidden' }}>
+                <SelectContent
+                  className="bg-white border-2 border-gray-200 shadow-lg"
+                  style={{ borderRadius: 8, overflow: "hidden" }}
+                >
                   <SelectDragIndicatorWrapper>
                     <SelectDragIndicator />
                   </SelectDragIndicatorWrapper>
@@ -444,10 +513,17 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-gray-700 font-medium mb-2 text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-gray-700 font-medium mb-2 text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
                 {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
+                  <Text
+                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                  >
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>
@@ -460,9 +536,12 @@ export const CustomForm = forwardRef(function CustomForm(
                   placeholder={field.placeholder}
                   className="px-4 py-3 text-gray-800"
                   placeholderTextColor="#9CA3AF"
-                  style={{ textAlignVertical: 'center', height: '100%' }}
+                  style={{ textAlignVertical: "center", height: "100%" }}
                 />
-                <SelectIcon as={ChevronDownIcon} className="text-gray-500 mr-3" />
+                <SelectIcon
+                  as={ChevronDownIcon}
+                  className="text-gray-500 mr-3"
+                />
               </SelectTrigger>
               <SelectPortal>
                 <SelectBackdrop />
@@ -517,7 +596,10 @@ export const CustomForm = forwardRef(function CustomForm(
               }
               onPressIn={(e: any) => {
                 // create ripple using nativeEvent if available
-                const nativeEvent = e?.nativeEvent || { locationX: 0, locationY: 0 };
+                const nativeEvent = e?.nativeEvent || {
+                  locationX: 0,
+                  locationY: 0,
+                };
                 createRipple(field.name, nativeEvent);
               }}
               variant={field.variant || "solid"}
@@ -576,21 +658,31 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-gray-700 font-medium mb-2 text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-gray-700 font-medium mb-2 text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
-                  {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
+                {field.required && (
+                  <Text
+                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                  >
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>
-              <Textarea className="bg-white border-2 border-gray-200 shadow-sm" style={{ borderRadius: 8, overflow: 'hidden' }}>
+            <Textarea
+              className="bg-white border-2 border-gray-200 shadow-sm"
+              style={{ borderRadius: 8, overflow: "hidden" }}
+            >
               <TextareaInput
                 placeholder={field.placeholder}
                 value={formData[field.name] || ""}
                 onChangeText={(value) => handleFieldChange(field.name, value)}
                 editable={!field.disabled}
                 className="px-4 py-3 text-gray-800 min-h-[100px]"
-                style={{ textAlignVertical: 'top' }}
+                style={{ textAlignVertical: "top" }}
                 placeholderTextColor="#9CA3AF"
               />
             </Textarea>
@@ -614,11 +706,18 @@ export const CustomForm = forwardRef(function CustomForm(
           <FormControl key={field.name} style={field.style}>
             <HStack space="md" alignItems="center">
               <FormControlLabel>
-                <FormControlLabelText className="text-xs" style={{ fontSize: 12 }}>
+                <FormControlLabelText
+                  className="text-xs"
+                  style={{ fontSize: 12 }}
+                >
                   {field.label}
                   {field.required && (
-                  <Text style={{ color: '#ef4444', marginLeft: 6, fontSize: 12 }}>*</Text>
-                )}
+                    <Text
+                      style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
+                    >
+                      *
+                    </Text>
+                  )}
                 </FormControlLabelText>
               </FormControlLabel>
               <Switch
@@ -656,10 +755,15 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             <FormControlLabel>
-              <FormControlLabelText className="text-xs" style={{ fontSize: 12 }}>
+              <FormControlLabelText
+                className="text-xs"
+                style={{ fontSize: 12 }}
+              >
                 {field.label}
                 {field.required && (
-                  <Text className="text-red-500 ml-1" style={{ fontSize: 12 }}>*</Text>
+                  <Text className="text-red-500 ml-1" style={{ fontSize: 12 }}>
+                    *
+                  </Text>
                 )}
               </FormControlLabelText>
             </FormControlLabel>

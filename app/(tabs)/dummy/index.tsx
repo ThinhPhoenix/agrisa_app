@@ -60,7 +60,7 @@ export default function Dummy() {
   return (
     <VStack className="flex-1 bg-white">
       <View className="h-48 px-4 pt-4 relative">
-        <View className="flex-1 pr-3">
+        <View className="flex-1">
           <Text className="text-black text-lg mt-1 mb-2">
             <Text
               style={{ fontFamily: "DancingScript_400Regular" }}

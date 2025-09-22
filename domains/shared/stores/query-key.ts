@@ -1,7 +1,10 @@
 export const QueryKey = {
-  LOGIN: "login",
-  REGISTER: "register",
+  
 
+  AUTH: {
+    SIGN_IN: "sign-in",
+    SIGN_UP: "sign-up",
+  },
 
   TEST: "test",
   

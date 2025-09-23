@@ -30,7 +30,6 @@ export default function ThemeToggle() {
 
   const handleToggle = () => {
     toggleTheme();
-    console.log(`🎨 [Agrisa] Chuyển sang theme: ${isDark ? "light" : "dark"}`);
   };
 
   return (

@@ -1,6 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
-  // Thêm components mới cho combo box
   Actionsheet,
   ActionsheetBackdrop,
   ActionsheetContent,
@@ -63,7 +62,7 @@ const SignUpComponentUI = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date(1990, 0, 15)); // Default date
 
   // Sử dụng hook auth form cho Agrisa
-  const { form, onSubmit, isLoading, error, reset, clearErrors } = useAuthForm({
+  const { form, onSubmit, isLoading} = useAuthForm({
     type: "sign-up",
   });
 
@@ -255,30 +254,11 @@ const SignUpComponentUI = () => {
                 </Text>
               </Box>
 
-              {/* Error display (giữ nguyên) */}
-              {error && (
-                <Box
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#fee2e2",
-                    borderRadius: 8,
-                    padding: 12,
-                    marginBottom: 16,
-                    borderLeftWidth: 4,
-                    borderLeftColor: colors.error,
-                  }}
-                >
-                  <Text style={{ color: colors.error, fontSize: 14 }}>
-                    {error.message || "Có lỗi xảy ra. Vui lòng thử lại."}
-                  </Text>
-                </Box>
-              )}
+              
 
               {/* Form fields */}
               <Box style={{ width: "100%" }}>
-                {/* Các field khác giữ nguyên - Họ tên, SĐT, Email, CCCD */}
-                {/* ... (code các field trước đó không thay đổi) ... */}
-
+                
                 {/* Họ và tên */}
                 <Controller
                   control={signUpFormControl}
@@ -297,7 +277,7 @@ const SignUpComponentUI = () => {
                             marginBottom: 6,
                           }}
                         >
-                          <User size={16} color={colors.text} /> Họ và tên
+                          Họ và tên
                         </FormControlLabelText>
                       </FormControlLabel>
                       <Input
@@ -360,7 +340,7 @@ const SignUpComponentUI = () => {
                             marginBottom: 6,
                           }}
                         >
-                          <Phone size={16} color={colors.text} /> Số điện thoại
+                          Số điện thoại
                         </FormControlLabelText>
                       </FormControlLabel>
                       <Input
@@ -391,16 +371,7 @@ const SignUpComponentUI = () => {
                           }}
                         />
                       </Input>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.textMuted,
-                          marginTop: 4,
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Có thể nhập: 0987654321 hoặc +84987654321
-                      </Text>
+                      
                       {fieldState.error && (
                         <FormControlError>
                           <FormControlErrorText
@@ -436,8 +407,7 @@ const SignUpComponentUI = () => {
                             marginBottom: 6,
                           }}
                         >
-                          <Mail size={16} color={colors.text} /> Email (không
-                          bắt buộc)
+                          Email (không bắt buộc)
                         </FormControlLabelText>
                       </FormControlLabel>
                       <Input
@@ -501,7 +471,7 @@ const SignUpComponentUI = () => {
                             marginBottom: 6,
                           }}
                         >
-                          <IdCard size={16} color={colors.text} /> Số CCCD
+                          Số CCCD
                         </FormControlLabelText>
                       </FormControlLabel>
                       <Input
@@ -568,7 +538,7 @@ const SignUpComponentUI = () => {
                             marginBottom: 6,
                           }}
                         >
-                          <Calendar size={16} color={colors.text} /> Ngày sinh
+                          Ngày sinh
                         </FormControlLabelText>
                       </FormControlLabel>
 
@@ -598,7 +568,7 @@ const SignUpComponentUI = () => {
                           borderRadius: 12,
                           borderWidth: 2,
                           backgroundColor: colors.surface,
-                          minHeight: 56,
+                          minHeight: 40,
                           justifyContent: "center",
                           paddingHorizontal: 16,
                           position: "relative",
@@ -628,16 +598,7 @@ const SignUpComponentUI = () => {
                         </Box>
                       </TouchableOpacity>
 
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.textMuted,
-                          marginTop: 4,
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Chạm để chọn từ lịch. Tuổi từ 18-80 để tham gia Agrisa
-                      </Text>
+                     
 
                       {fieldState.error && (
                         <FormControlError>
@@ -706,7 +667,7 @@ const SignUpComponentUI = () => {
                           borderRadius: 12,
                           borderWidth: 2,
                           backgroundColor: colors.surface,
-                          minHeight: 56,
+                          minHeight: 40,
                           justifyContent: "center",
                           paddingHorizontal: 16,
                           position: "relative",
@@ -817,7 +778,7 @@ const SignUpComponentUI = () => {
                   render={({ field, fieldState }) => (
                     <FormControl
                       isInvalid={!!fieldState.error}
-                      style={{ marginBottom: 16 }}
+                      style={{ marginBottom: 60 }}
                     >
                       <FormControlLabel>
                         <FormControlLabelText
@@ -828,7 +789,7 @@ const SignUpComponentUI = () => {
                             marginBottom: 6,
                           }}
                         >
-                          <MapPin size={16} color={colors.text} /> Địa chỉ
+                          Địa chỉ
                         </FormControlLabelText>
                       </FormControlLabel>
                       <Input
@@ -847,7 +808,7 @@ const SignUpComponentUI = () => {
                         <InputField
                           value={field.value}
                           onChangeText={field.onChange}
-                          placeholder="Thôn 1, Xã ABC, Huyện XYZ, Tỉnh DEF"
+                          placeholder="Địa chỉ hiện tại của bạn"
                           placeholderTextColor={colors.textMuted}
                           multiline
                           numberOfLines={3}
@@ -998,32 +959,7 @@ const SignUpComponentUI = () => {
                   </ButtonText>
                 </Button>
 
-                {form.formState.isDirty && (
-                  <Button
-                    onPress={() => {
-                      reset();
-                      clearErrors();
-                    }}
-                    variant="outline"
-                    size="sm"
-                    style={{
-                      borderColor: colors.border,
-                      borderRadius: 8,
-                      width: "100%",
-                      marginTop: 12,
-                    }}
-                  >
-                    <ButtonText
-                      style={{
-                        color: colors.textSecondary,
-                        fontWeight: "600",
-                        fontSize: 14,
-                      }}
-                    >
-                      Làm mới form
-                    </ButtonText>
-                  </Button>
-                )}
+                
               </Box>
 
               {/* Footer */}

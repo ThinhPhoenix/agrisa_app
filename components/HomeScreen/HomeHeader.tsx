@@ -1,22 +1,26 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
   Box,
+  ButtonText,
   HStack,
   Image,
   Input,
   InputField,
   Pressable,
   VStack,
+  Button,
 } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import { Bell, Menu } from "lucide-react-native";
 import { useState } from "react";
 import UserDrawer from "./UserDrawer/UserDrawer";
+import { useToast } from "@/domains/shared/hooks/useToast";
 
 export default function HomeHeader() {
   const { colors } = useAgrisaColors();
   const [searchValue, setSearchValue] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleSearch = (text: string) => {
     setSearchValue(text);
@@ -68,10 +72,8 @@ export default function HomeHeader() {
             {/* Lời chào người dùng */}
             <VStack alignItems="flex-end" space="xs">
               <Text
-                color={colors.textSecondary}
-                fontSize="$sm"
-                fontWeight="500"
-                textAlign="right"
+                style={{ fontFamily: "DancingScript_400Regular" }}
+                className="text-emerald-700 text-xl"
               >
                 Xin chào,
               </Text>

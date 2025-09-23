@@ -164,28 +164,8 @@ const SignInComponentUI = () => {
                 </Text>
               </Box>
 
-              {/* Hiển thị lỗi từ server (API errors) */}
-              {error && (
-                <Box
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#fee2e2",
-                    borderRadius: 8,
-                    padding: 12,
-                    marginBottom: 16,
-                    borderLeftWidth: 4,
-                    borderLeftColor: colors.error,
-                  }}
-                >
-                  <Text style={{ color: colors.error, fontSize: 14 }}>
-                    {error.message || "Thông tin đăng nhập không chính xác"}
-                  </Text>
-                </Box>
-              )}
-
-              {/* Form inputs với React Hook Form - tối ưu cho nông dân */}
               <Box style={{ width: "100%" }}>
-                {/* Trường identifier (số điện thoại hoặc email) */}
+                {/* Trường password */}
                 <Controller
                   control={signInFormControl}
                   name="identifier"
@@ -246,13 +226,12 @@ const SignInComponentUI = () => {
                           />
                         </Input>
 
-                        {/* Icon động theo loại input */}
                         <Box
                           style={{
                             position: "absolute",
                             right: 16,
                             top: "50%",
-                            transform: [{ translateY: -10 }],
+                            transform: [{ translateY: -14 }],
                             padding: 4,
                           }}
                         >

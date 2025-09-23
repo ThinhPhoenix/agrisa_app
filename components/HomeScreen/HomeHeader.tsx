@@ -14,18 +14,17 @@ import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-compone
 import { Bell, Menu } from "lucide-react-native";
 import { useState } from "react";
 import UserDrawer from "./UserDrawer/UserDrawer";
-import { useToast } from "@/domains/shared/hooks/useToast";
 
 export default function HomeHeader() {
   const { colors } = useAgrisaColors();
   const [searchValue, setSearchValue] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { toast } = useToast();
 
   const handleSearch = (text: string) => {
     setSearchValue(text);
     console.log("Tìm kiếm trong Agrisa:", text);
   };
+
 
   const openDrawer = () => {
     console.log("Mở drawer menu"); // Debug log
@@ -49,14 +48,6 @@ export default function HomeHeader() {
           >
             {/* Logo Agrisa */}
             <HStack alignItems="center" space="xs">
-              <Image
-                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
-                alt="Logo Agrisa - Bảo hiểm nông nghiệp"
-                width={80}
-                height={48}
-                resizeMode="contain"
-                borderRadius={8}
-              />
               <VStack space="xs">
                 <Text
                   color={colors.text}

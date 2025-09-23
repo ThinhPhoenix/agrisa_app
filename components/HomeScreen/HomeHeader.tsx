@@ -1,14 +1,11 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
   Box,
-  ButtonText,
   HStack,
-  Image,
   Input,
   InputField,
   Pressable,
   VStack,
-  Button,
 } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import { Bell, Menu } from "lucide-react-native";

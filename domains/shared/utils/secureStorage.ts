@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'agrisa_access_token',
   USER_DATA: 'agrisa_user_data',
+  ENABLE_FACE_ID: 'agrisa_enable_face_id',
 } as const;
 
 export const secureStorage = {
@@ -56,6 +57,27 @@ export const secureStorage = {
       ]);
     } catch (error) {
       console.error('❌ [SecureStorage] Error clearing auth:', error);
+    }
+  },
+
+  // Set enable FaceID
+  setEnableFaceID: async (enabled: boolean): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(STORAGE_KEYS.ENABLE_FACE_ID, JSON.stringify(enabled));
+    } catch (error) {
+      console.error('❌ [SecureStorage] Error storing enable FaceID:', error);
+      throw error;
+    }
+  },
+
+  // Get enable FaceID
+  getEnableFaceID: async (): Promise<boolean> => {
+    try {
+      const enabled = await SecureStore.getItemAsync(STORAGE_KEYS.ENABLE_FACE_ID);
+      return enabled ? JSON.parse(enabled) : false;
+    } catch (error) {
+      console.error('❌ [SecureStorage] Error getting enable FaceID:', error);
+      return false;
     }
   },
 };

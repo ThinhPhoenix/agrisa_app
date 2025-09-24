@@ -52,7 +52,7 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
       icon: Settings,
       hasNew: true, // Badge "NEW" như trong reference
       onPress: () => {
-        console.log("⚙️ Mở cài đặt Agrisa");
+        router.push("/settings");
         onClose();
       },
     },
@@ -77,7 +77,7 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
   ];
 
   const onUserPress = () => {
-    console.log("📝 Mở hồ sơ nông dân");
+    router.push("/settings/profile")
     onClose();
   };
 

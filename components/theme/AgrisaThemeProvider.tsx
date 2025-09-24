@@ -13,12 +13,10 @@ export const AgrisaThemeProvider: React.FC<AgrisaThemeProviderProps> = ({
 }) => {
   const { mode, isInitialized, initializeTheme } = useThemeStore();
 
-  // Load saved theme khi app khởi động
   useEffect(() => {
     initializeTheme();
   }, []);
 
-  // Hiển thị loading cho đến khi theme được khởi tạo
   if (!isInitialized) {
     return (
       <View
@@ -34,10 +32,7 @@ export const AgrisaThemeProvider: React.FC<AgrisaThemeProviderProps> = ({
     );
   }
 
-  // Tạo config động dựa trên theme hiện tại
   const dynamicConfig = createAgrisaConfig(mode === "dark");
-
-  console.log(`🎨 [Agrisa] AgrisaThemeProvider rendering với mode: ${mode}`);
 
   return (
     <GluestackUIProvider config={dynamicConfig}>{children}</GluestackUIProvider>

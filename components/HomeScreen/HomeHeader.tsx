@@ -2,7 +2,6 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
   Box,
   HStack,
-  Image,
   Input,
   InputField,
   Pressable,
@@ -22,6 +21,7 @@ export default function HomeHeader() {
     setSearchValue(text);
     console.log("Tìm kiếm trong Agrisa:", text);
   };
+
 
   const openDrawer = () => {
     console.log("Mở drawer menu"); // Debug log
@@ -45,14 +45,6 @@ export default function HomeHeader() {
           >
             {/* Logo Agrisa */}
             <HStack alignItems="center" space="xs">
-              <Image
-                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
-                alt="Logo Agrisa - Bảo hiểm nông nghiệp"
-                width={80}
-                height={48}
-                resizeMode="contain"
-                borderRadius={8}
-              />
               <VStack space="xs">
                 <Text
                   color={colors.text}
@@ -68,10 +60,8 @@ export default function HomeHeader() {
             {/* Lời chào người dùng */}
             <VStack alignItems="flex-end" space="xs">
               <Text
-                color={colors.textSecondary}
-                fontSize="$sm"
-                fontWeight="500"
-                textAlign="right"
+                style={{ fontFamily: "DancingScript_400Regular" }}
+                className="text-emerald-700 text-xl"
               >
                 Xin chào,
               </Text>

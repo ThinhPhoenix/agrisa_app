@@ -12,7 +12,9 @@ trong Store đã để sẵn phần Refresh để nếu BE muốn sử dụng v�
 - Tạo Storage sử dụng secureStore của Expo để store các thông tin cần thiết
 - Cập nhật trang Profile Screen dựa trên các Data từ Auth Store bao gồm
     + Mail, Phone, Verified (eKYC, Phone, Status)
-
+2) 
+Resolve Conflict khi merge vào Master
+File: Readme.md
 
 23/9
 [Done] 

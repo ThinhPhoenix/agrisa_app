@@ -250,7 +250,7 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
             {/* Logout */}
             <Pressable
               onPress={() => {
-                router.push("/auth/signin")
+                router.push("/auth/sign-in")
                 onClose();
               }}
             >

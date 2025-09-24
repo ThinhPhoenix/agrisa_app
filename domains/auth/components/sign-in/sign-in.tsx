@@ -435,7 +435,7 @@ const SignInComponentUI = () => {
                   Chưa có tài khoản Agrisa?{" "}
                   <Text
                     onPress={() => {
-                      router.push("/auth/signup");
+                      router.push("/auth/sign-up");
                     }}
                     style={{
                       color: colors.success,

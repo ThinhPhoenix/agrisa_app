@@ -13,17 +13,20 @@ import {
   Text,
   View,
 } from "@gluestack-ui/themed";
+import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
-import { Eye, EyeOff, Lock, User, Phone, Mail } from "lucide-react-native";
+import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react-native";
 import React, { useState } from "react";
+import { Control, Controller } from "react-hook-form";
 import {
+  Alert,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
-import { Controller, Control } from "react-hook-form";
+import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
 import { SignInPayloadSchema } from "../../schemas/auth.schema";
 
@@ -40,6 +43,52 @@ const SignInComponentUI = () => {
 
   // Type assertion an toàn cho sign-in form (fix lỗi TypeScript)
   const signInFormControl = form.control as Control<SignInPayloadSchema>;
+
+  const authenticateWithBiometrics = async () => {
+    try {
+      console.log("Starting FaceID authentication...");
+      const enabled = await secureStorage.getEnableFaceID();
+      console.log("FaceID enabled:", enabled);
+      if (!enabled) {
+        Alert.alert(
+          "Tính năng chưa bật",
+          "Vui lòng bật FaceID trong cài đặt trước."
+        );
+        return;
+      }
+
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      console.log("Has hardware:", hasHardware, "Is enrolled:", isEnrolled);
+
+      if (!hasHardware || !isEnrolled) {
+        Alert.alert(
+          "Không hỗ trợ",
+          "Thiết bị không hỗ trợ FaceID hoặc chưa thiết lập."
+        );
+        return;
+      }
+
+      console.log("Calling authenticateAsync...");
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Đăng nhập bằng FaceID",
+        fallbackLabel: "Sử dụng mật khẩu",
+      });
+      console.log("Authentication result:", result);
+
+      if (result.success) {
+        // Giả lập đăng nhập thành công với FaceID
+        Alert.alert("Thành công", "Đăng nhập bằng FaceID thành công!");
+        // Có thể navigate đến trang chính
+        router.replace("/(tabs)");
+      } else {
+        Alert.alert("Thất bại", "Xác thực thất bại.");
+      }
+    } catch (error) {
+      console.error("FaceID error:", error);
+      Alert.alert("Lỗi", "Có lỗi xảy ra khi xác thực.");
+    }
+  };
 
   // Helper để detect loại identifier và hiển thị icon phù hợp cho nông dân
   const getIdentifierIcon = (value: string) => {
@@ -383,6 +432,34 @@ const SignInComponentUI = () => {
                     }}
                   >
                     {isLoading ? "Đang xử lý..." : "Đăng Nhập Agrisa"}
+                  </ButtonText>
+                </Button>
+
+                {/* Nút đăng nhập bằng FaceID */}
+                <Button
+                  onPress={authenticateWithBiometrics}
+                  variant="outline"
+                  size="md"
+                  style={{
+                    borderColor: colors.success,
+                    borderRadius: 12,
+                    width: "100%",
+                    marginTop: 12,
+                    shadowColor: colors.success,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                    elevation: 3,
+                  }}
+                >
+                  <ButtonText
+                    style={{
+                      color: colors.success,
+                      fontWeight: "600",
+                      fontSize: 16,
+                    }}
+                  >
+                    Đăng Nhập Bằng FaceID
                   </ButtonText>
                 </Button>
 

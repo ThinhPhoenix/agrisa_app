@@ -4,10 +4,6 @@ export type SignInPayload = {
     password: string;
 };
 
-export type SignInResponse = {
-  accessToken: string;
-  refreshToken: string;
-};
 
 export interface SignUpPayload {
   phone: string;
@@ -20,4 +16,49 @@ export interface SignUpPayload {
     gender: string;
     address: string;
   };
+}
+
+//Nguyên cụm này cho Login Auth Success
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  phone_number: string;
+  status: "pending_verification" | "verified" | "suspended";
+  kyc_verified: boolean;
+  phone_verified: boolean;
+}
+
+export interface AuthSession {
+  device_info: string;
+  expires_at: string;
+  ip_address: string;
+  is_active: boolean;
+  session_id: string;
+}
+
+export interface SignInResponse {
+    access_token: string;
+    session: AuthSession;
+    user: AuthUser;
+}
+
+export interface SignInApiResponse extends ApiSuccessResponse<SignInResponse> {
+  data: SignInResponse;
+}
+
+//Nguyên cụm này cho Login Auth Success
+
+export interface AuthState {
+  // Core data
+  accessToken: string | null;
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+
+  // Actions
+  setAuth: (token: string, user: AuthUser) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
+  clearAuth: () => void;
 }

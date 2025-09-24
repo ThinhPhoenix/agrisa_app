@@ -77,7 +77,7 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
   ];
 
   const onUserPress = () => {
-    console.log("📝 Mở hồ sơ nông dân");
+    router.push("/settings/profile")
     onClose();
   };
 

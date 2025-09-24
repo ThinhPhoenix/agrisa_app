@@ -20,6 +20,7 @@ import ResponsiveWrapper from "@/components/common/ResponsiveWrapper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ToastProvider } from "@/domains/shared/hooks/useToast";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { AuthProvider } from "@/domains/auth/providers/AuthProvider";
 
 export default function RootLayout() {
   const { initializeTheme } = useThemeStore();
@@ -48,31 +49,36 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar backgroundColor={colors.background} style={isDark ? "light" : "dark"}/>
-      <NetworkWrapper>
-        <QueryProvider>
-          <AgrisaThemeProvider>
-            <ResponsiveWrapper>
-              <ToastProvider>
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: {
-                      backgroundColor: "transparent",
-                    },
-                  }}
-                >
-                  <Stack.Screen
-                    name="(tabs)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen name="+not-found" />
-                </Stack>
-              </ToastProvider>
-            </ResponsiveWrapper>
-          </AgrisaThemeProvider>
-        </QueryProvider>
-      </NetworkWrapper>
+      <StatusBar
+        backgroundColor={colors.background}
+        style={isDark ? "light" : "dark"}
+      />
+      <AuthProvider>
+        <NetworkWrapper>
+          <QueryProvider>
+            <AgrisaThemeProvider>
+              <ResponsiveWrapper>
+                <ToastProvider>
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      contentStyle: {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  >
+                    <Stack.Screen
+                      name="(tabs)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                </ToastProvider>
+              </ResponsiveWrapper>
+            </AgrisaThemeProvider>
+          </QueryProvider>
+        </NetworkWrapper>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

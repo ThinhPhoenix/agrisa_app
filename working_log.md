@@ -2,6 +2,15 @@
 *Nền tảng Bảo hiểm Nông nghiệp Thông minh*
 
 ---
+## 🗓️ Ngày 25/09/2025
+
+#### **Update API Connection for ekyc include Service, Custom Hooks**
+> **👤 Người thực hiện:** Nhân  
+> **🌿 Branch:** `nhan/ekyc`
+
+**🔧 Công việc đã thực hiện:**
+- ✅ Cập nhật các API liên quan đến EKYC và tải các thư viện liên quan dể tiến hành EKYC
+
 
 ## 🗓️ Ngày 24/09/2025
 
@@ -100,14 +109,3 @@
 > - Đảm bảo offline capability cho vùng nông thôn
 > - Security first - bảo vệ thông tin cá nhân nông dân
 > - Performance optimization cho các thiết bị phổ thông
-
-**🔗 Related Documentation:**
-- [Auth Store Documentation](./docs/auth-store.md)
-- [API Integration Guide](./docs/api-integration.md)
-- [UI/UX Guidelines for Farmers](./docs/farmer-ux-guidelines.md)
-
----
-
-*📅 Cập nhất lần cuối: 24/09/2025*  
-*👥 Contributors: Nhân*  
-*🌾 Agrisa - Bảo hiểm Nông nghiệp Thông minh*

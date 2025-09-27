@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "arisa_app",
-    "slug": "arisa_app",
+    "slug": "agrisa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo/Agrisa_Logo.png",
@@ -16,7 +16,13 @@
         "foregroundImage": "./assets/images/Logo/Agrisa_Logo.png",
         "backgroundColor": "#fbe9a8"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -34,6 +40,12 @@
           "backgroundColor": "#fbe9a8"
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera."
+        }
+      ],
       "expo-font",
       "expo-web-browser",
       [
@@ -45,6 +57,13 @@
     ],
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "947c952c-e2b2-4317-9d0c-cf656fbc0287"
+      }
+    },
+    "owner": "agrisa-platform"
   }
 }

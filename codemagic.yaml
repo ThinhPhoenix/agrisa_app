@@ -6,7 +6,7 @@ workflows:
     max_build_duration: 120
     environment:
       groups:
-        - expo_url
+        - expo_url  # ✅ Chứa EXPO_PUBLIC_API_URL
       vars:
         EXPO_PROJECT_SLUG: "agrisa"
       node: 18
@@ -16,36 +16,62 @@ workflows:
     scripts:
       - name: Install Bun và dependencies
         script: |
-          # Install Bun
           curl -fsSL https://bun.sh/install | bash
           source ~/.bashrc || true
           export PATH="$HOME/.bun/bin:$PATH"
-          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL  # Export nếu cần
-          # Verify Bun installation
+          
           which bun && bun --version
-          
-          # Install dependencies với Bun
           bun install
-          
-          # Install Expo CLI globally với Bun
           bun add -g @expo/cli
+      
+      # ✅ MỚI: Setup environment variables TRƯỚC khi prebuild
+      - name: Setup Environment Variables
+        script: |
+          # Verify biến môi trường đã được load từ Codemagic
+          if [ -z "$EXPO_PUBLIC_API_URL" ]; then
+            echo "❌ ERROR: EXPO_PUBLIC_API_URL is not set!"
+            echo "Please check Codemagic environment group 'expo_url'"
+            exit 1
+          fi
+          
+          echo "✅ Environment variables loaded:"
+          echo "EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL"
+          
+          # Export để Expo có thể đọc được
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
       
       - name: Expo Prebuild for Android
         script: |
           export PATH="$HOME/.bun/bin:$PATH"
-          # Xóa thư mục android cũ nếu có (thay thế cho --clear)
+          
+          # ✅ Export lại environment variables
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
+          # Xóa thư mục android cũ
           rm -rf android
-          # Prebuild Android platform (không dùng --clear)
+          
+          # Prebuild - app.config.js sẽ đọc process.env.EXPO_PUBLIC_API_URL
           bunx expo prebuild --platform android
+          
+          # Verify API URL đã được bake vào build
+          if grep -r "EXPO_PUBLIC_API_URL" android/; then
+            echo "✅ API URL has been embedded in Android build"
+          else
+            echo "⚠️ Warning: API URL might not be embedded"
+          fi
       
       - name: Set up debug.keystore for Android
         script: |
           rm -f ~/.android/debug.keystore
-          keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.android/debug.keystore -storepass android -dname 'CN=Android Debug,O=Android,C=US' -keyalg 'RSA' -keysize 2048 -validity 10000
+          keytool -genkeypair -alias androiddebugkey -keypass android \
+            -keystore ~/.android/debug.keystore -storepass android \
+            -dname 'CN=Android Debug,O=Android,C=US' -keyalg 'RSA' \
+            -keysize 2048 -validity 10000
       
       - name: Build Android APK
         script: |
           cd android
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
           ./gradlew assembleRelease
     
     artifacts:
@@ -81,26 +107,30 @@ workflows:
     scripts:
       - name: Install Bun và dependencies
         script: |
-          # Install Bun
           curl -fsSL https://bun.sh/install | bash
           source ~/.bashrc || true
           export PATH="$HOME/.bun/bin:$PATH"
-          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL  # Export nếu cần
-          # Verify Bun installation
+          
           which bun && bun --version
-          
-          # Install dependencies
           bun install
-          
-          # Install Expo CLI globally
           bun add -g @expo/cli
+      
+      - name: Setup Environment Variables
+        script: |
+          if [ -z "$EXPO_PUBLIC_API_URL" ]; then
+            echo "❌ ERROR: EXPO_PUBLIC_API_URL is not set!"
+            exit 1
+          fi
+          
+          echo "✅ EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL"
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
       
       - name: Expo Prebuild for iOS
         script: |
           export PATH="$HOME/.bun/bin:$PATH"
-          # Xóa thư mục ios cũ nếu có (thay thế cho --clear)
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
           rm -rf ios
-          # Prebuild iOS platform (không dùng --clear)
           bunx expo prebuild --platform ios
       
       - name: Install CocoaPods dependencies
@@ -109,7 +139,8 @@ workflows:
       
       - name: Build iOS for Simulator
         script: |
-          # Build cho iOS Simulator (không cần certificate)
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
           xcodebuild -workspace ios/arisaapp.xcworkspace \
             -scheme arisaapp \
             -configuration Release \
@@ -121,7 +152,6 @@ workflows:
       
       - name: Copy Simulator Build
         script: |
-          # Copy file .app từ build folder để làm artifact
           mkdir -p $CM_BUILD_DIR/simulator_build
           if [ -d "$CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/arisaapp.app" ]; then
             cp -R $CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/arisaapp.app \

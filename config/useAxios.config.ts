@@ -2,7 +2,7 @@ import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import NetInfo from "@react-native-community/netinfo";
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import { router } from "expo-router";
-
+import Constants from "expo-constants";
 /**
  * Network utility functions
  */
@@ -31,12 +31,14 @@ class NetworkUtils {
   }
 }
 
+const API_URL = Constants.expoConfig?.extra?.apiUrl;
+
 /**
  * ✅ Enhanced Axios instance với network detection
  * KHÔNG SỬ DỤNG top-level await
  */
 const useAxios: AxiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: API_URL,
   timeout: 300000,
   headers: {
     "Content-Type": "application/json",

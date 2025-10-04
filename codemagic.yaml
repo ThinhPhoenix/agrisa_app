@@ -20,7 +20,7 @@ workflows:
           curl -fsSL https://bun.sh/install | bash
           source ~/.bashrc || true
           export PATH="$HOME/.bun/bin:$PATH"
-          
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL  # Export nếu cần
           # Verify Bun installation
           which bun && bun --version
           
@@ -68,7 +68,7 @@ workflows:
     max_build_duration: 90
     environment:
       groups:
-        - expo-url
+        - expo_url
       vars:
         BUNDLE_ID: "com.tnhaan.agrisa"
         EXPO_PROJECT_SLUG: "agrisa"
@@ -85,7 +85,7 @@ workflows:
           curl -fsSL https://bun.sh/install | bash
           source ~/.bashrc || true
           export PATH="$HOME/.bun/bin:$PATH"
-          
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL  # Export nếu cần
           # Verify Bun installation
           which bun && bun --version
           

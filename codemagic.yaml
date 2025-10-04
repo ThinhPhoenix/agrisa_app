@@ -56,6 +56,7 @@ workflows:
       email:
         recipients:
           - nhancd909@gmail.com
+          - hgiap46@gmail.com
         notify:
           success: true
           failure: false
@@ -139,6 +140,7 @@ workflows:
       email:
         recipients:
           - nhancd909@gmail.com
+          - hgiap46@gmail.com
         notify:
           success: true
           failure: true

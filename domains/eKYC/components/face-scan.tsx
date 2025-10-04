@@ -163,7 +163,6 @@ export const FaceScanScreen = () => {
     trackingEnabled: true,
     windowWidth: SCREEN_WIDTH,
     windowHeight: SCREEN_HEIGHT,
-    autoScale: true,
   }).current;
 
   // Vẽ khung khuôn mặt

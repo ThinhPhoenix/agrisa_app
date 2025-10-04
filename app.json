@@ -92,7 +92,7 @@
       "typedRoutes": false
     },
     "extra": {
-
+      "apiUrl": "process.env.EXPO_PUBLIC_API_URL",
       "router": {},
       "eas": {
         "projectId": "947c952c-e2b2-4317-9d0c-cf656fbc0287"

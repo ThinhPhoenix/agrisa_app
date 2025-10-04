@@ -8,12 +8,14 @@
     "scheme": "arisaapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
         "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ"
-      }
+      },
+      "bundleIdentifier": "com.tnhaan.agrisa"
     },
     "android": {
       "adaptiveIcon": {
@@ -31,8 +33,8 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
-      "package": "com.tnhaan.agrisa",
-      "versionCode": 1
+      "package": "com.tnhaan.agrisa"
+
     },
     "web": {
       "bundler": "metro",
@@ -50,7 +52,6 @@
           "backgroundColor": "#fbe9a8"
         }
       ],
-      "expo-dev-client",
       [
         "expo-build-properties",
         {
@@ -69,7 +70,6 @@
         "react-native-vision-camera",
         {
           "cameraPermissionText": "Agrisa cần quyền truy cập camera",
-          "disableFrameProcessors": false
         }
       ],
       "expo-font",

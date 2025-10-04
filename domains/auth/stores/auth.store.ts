@@ -22,7 +22,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
-
       console.log("✅ [Auth] Authentication set successfully");
     } catch (error) {
       console.error("❌ [Auth] Error setting auth:", error);

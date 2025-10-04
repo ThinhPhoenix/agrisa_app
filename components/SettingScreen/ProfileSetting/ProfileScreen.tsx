@@ -302,7 +302,19 @@ export default function ProfileScreen() {
               </Text>
               {renderStatusBadge(user.status)}
             </VStack>
-
+            <Button
+              variant="outline"
+              size="sm"
+              borderColor={colors.border}
+              onPress={() => router.push("/settings/verify/id-scan")}
+            >
+              <HStack alignItems="center" space="xs">
+                <Edit3 size={14} color={colors.text} />
+                <ButtonText color={colors.text} fontSize="$sm">
+                  Xác thực KYC
+                </ButtonText>
+              </HStack>
+            </Button>
             <Button
               variant="outline"
               size="sm"

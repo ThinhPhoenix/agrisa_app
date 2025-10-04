@@ -1,9 +1,7 @@
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  InternalAxiosRequestConfig,
-} from "axios";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import NetInfo from "@react-native-community/netinfo";
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import { router } from "expo-router";
 
 /**
  * Network utility functions
@@ -34,11 +32,12 @@ class NetworkUtils {
 }
 
 /**
- * Enhanced Axios instance với network detection
+ * ✅ Enhanced Axios instance với network detection
+ * KHÔNG SỬ DỤNG top-level await
  */
 const useAxios: AxiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || "https://your-api-url.com/api",
-  timeout: 15000, // Tăng timeout cho mobile network
+  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  timeout: 300000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -47,7 +46,7 @@ const useAxios: AxiosInstance = axios.create({
 });
 
 /**
- * Request interceptor - Check network trước khi gửi
+ * ✅ Request interceptor - Lấy token ĐỘNG cho mỗi request
  */
 useAxios.interceptors.request.use(
   async (
@@ -66,11 +65,39 @@ useAxios.interceptors.request.use(
       });
     }
 
+    // ✅ Lấy token ĐỘNG từ storage cho mỗi request
+    try {
+      const token = await secureStorage.getToken();
+
+      if (__DEV__) {
+        console.log(
+          "🔑 Token retrieved:",
+          token ? `${String(token).substring(0, 20)}...` : "NULL"
+        );
+      }
+
+      // ✅ Chỉ set Authorization nếu có token
+      if (token && typeof token === "string") {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        // ⚠️ Không có token - có thể là public endpoint hoặc chưa login
+        if (__DEV__) {
+          console.warn("⚠️ No token found for request:", config.url);
+        }
+        // Xóa Authorization header nếu có
+        delete config.headers.Authorization;
+      }
+    } catch (error) {
+      console.error("❌ Error getting token:", error);
+      delete config.headers.Authorization;
+    }
+
     // Log request (development only)
     if (__DEV__) {
       console.debug("🌐 API Request:", {
         method: config.method,
         url: config.url,
+        hasAuth: !!config.headers.Authorization,
         hasData: !!config.data,
       });
     }
@@ -164,6 +191,21 @@ useAxios.interceptors.response.use(
         status,
         statusText: error.response.statusText,
         data,
+      });
+    }
+
+    // ✅ Handle 401 Unauthorized - Token expired hoặc invalid
+    if (status === 401) {
+      if (__DEV__) {
+        console.warn("🔐 Unauthorized - Token may be expired or invalid");
+      }
+      router.push("/auth/sign-in");
+      return Promise.reject({
+        response: error.response,
+        message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+        code: "UNAUTHORIZED",
+        status: 401,
+        isAuthError: true,
       });
     }
 

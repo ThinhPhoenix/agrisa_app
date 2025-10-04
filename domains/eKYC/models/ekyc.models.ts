@@ -1,15 +1,20 @@
 
+export type RNFile = {
+  uri: string; // Đường dẫn local từ expo-camera/image-picker
+  type: string; // Ví dụ: 'image/jpeg' hoặc 'video/mp4'
+  name: string; // Tên file, ví dụ: 'cccd_front.jpg'
+};
 
 export type OCRIDPPayload = {
-  cccd_front: File,
-  cccd_back: File,
+  cccd_front: RNFile,
+  cccd_back: RNFile,
   user_id: string
 }
 
 export type FaceScanPayload = {
   user_id: string,
-  video: File,
-  cmnd: File
+  video: RNFile,
+  cmnd: RNFile
 }
 
 

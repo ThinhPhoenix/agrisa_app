@@ -37,6 +37,7 @@ export const useEkycForm = ({ type }: eKYCFormHooks) => {
   // Transform cho đăng nhập - gửi đúng format cho backend
   const handleOCRScan = ocrIDForm.handleSubmit(async (data) => {
     try {
+      
       await ocrIdMutation.mutateAsync(data as OCRIDPPayload);
     } catch (error) {
       console.error("Lỗi OCR ID:", error);

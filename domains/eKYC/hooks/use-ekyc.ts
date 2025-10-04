@@ -22,12 +22,12 @@ export const useEkyc = () => {
       return await eKYCServices.post.ocr_id(payload);
     },
     onSuccess: async (data: any) => {
-
-      router.replace("/(tabs)");
+      router.push("/settings/verify/face-scan");
       toast.success("Xác thực CCCD thành công");
     },
     onError: (error) => {
       toast.error("Xác thực CCCD thất bại");
+      router.push("/settings/profile");
       console.error(error);
     },
   });

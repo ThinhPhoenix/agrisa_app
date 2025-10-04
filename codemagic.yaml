@@ -1,0 +1,144 @@
+workflows:
+  # Android Workflow - Chỉ dùng Bun (Đã sửa lỗi --clear)
+  react-native-android:
+    name: React Native Android (Bun)
+    instance_type: mac_mini_m1
+    max_build_duration: 120
+    environment:
+      groups:
+        - expo-url
+      vars:
+        EXPO_PROJECT_SLUG: "agrisa"
+      node: 18
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/node_modules
+    scripts:
+      - name: Install Bun và dependencies
+        script: |
+          # Install Bun
+          curl -fsSL https://bun.sh/install | bash
+          source ~/.bashrc || true
+          export PATH="$HOME/.bun/bin:$PATH"
+          
+          # Verify Bun installation
+          which bun && bun --version
+          
+          # Install dependencies với Bun
+          bun install
+          
+          # Install Expo CLI globally với Bun
+          bun add -g @expo/cli
+      
+      - name: Expo Prebuild for Android
+        script: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          # Xóa thư mục android cũ nếu có (thay thế cho --clear)
+          rm -rf android
+          # Prebuild Android platform (không dùng --clear)
+          bunx expo prebuild --platform android
+      
+      - name: Set up debug.keystore for Android
+        script: |
+          rm -f ~/.android/debug.keystore
+          keytool -genkeypair -alias androiddebugkey -keypass android -keystore ~/.android/debug.keystore -storepass android -dname 'CN=Android Debug,O=Android,C=US' -keyalg 'RSA' -keysize 2048 -validity 10000
+      
+      - name: Build Android APK
+        script: |
+          cd android
+          ./gradlew assembleRelease
+    
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/**/*.aab
+    
+    publishing:
+      email:
+        recipients:
+          - nhancd909@gmail.com
+        notify:
+          success: true
+          failure: false
+
+  # iOS Simulator Workflow - Không cần Apple Developer Account  
+  react-native-ios-simulator:
+    name: React Native iOS Simulator (Bun)
+    instance_type: mac_mini_m1
+    max_build_duration: 90
+    environment:
+      groups:
+        - expo-url
+      vars:
+        BUNDLE_ID: "com.tnhaan.agrisa"
+        EXPO_PROJECT_SLUG: "agrisa"
+      node: 18
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/node_modules
+    scripts:
+      - name: Install Bun và dependencies
+        script: |
+          # Install Bun
+          curl -fsSL https://bun.sh/install | bash
+          source ~/.bashrc || true
+          export PATH="$HOME/.bun/bin:$PATH"
+          
+          # Verify Bun installation
+          which bun && bun --version
+          
+          # Install dependencies
+          bun install
+          
+          # Install Expo CLI globally
+          bun add -g @expo/cli
+      
+      - name: Expo Prebuild for iOS
+        script: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          # Xóa thư mục ios cũ nếu có (thay thế cho --clear)
+          rm -rf ios
+          # Prebuild iOS platform (không dùng --clear)
+          bunx expo prebuild --platform ios
+      
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install
+      
+      - name: Build iOS for Simulator
+        script: |
+          # Build cho iOS Simulator (không cần certificate)
+          xcodebuild -workspace ios/arisaapp.xcworkspace \
+            -scheme arisaapp \
+            -configuration Release \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath $CM_BUILD_DIR/build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+      
+      - name: Copy Simulator Build
+        script: |
+          # Copy file .app từ build folder để làm artifact
+          mkdir -p $CM_BUILD_DIR/simulator_build
+          if [ -d "$CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/arisaapp.app" ]; then
+            cp -R $CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/arisaapp.app \
+              $CM_BUILD_DIR/simulator_build/
+            echo "✅ iOS Simulator build successful"
+          else
+            echo "❌ iOS Simulator build not found"
+            find $CM_BUILD_DIR/build -name "*.app" -type d
+          fi
+    
+    artifacts:
+      - simulator_build/arisaapp.app
+      - build/Build/Products/Release-iphonesimulator/**/*
+    
+    publishing:
+      email:
+        recipients:
+          - nhancd909@gmail.com
+        notify:
+          success: true
+          failure: true

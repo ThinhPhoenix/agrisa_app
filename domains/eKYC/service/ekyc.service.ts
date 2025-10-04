@@ -3,13 +3,12 @@ import { EKYCStatusResponse, FaceScanPayload, OCRIDPPayload } from "../models/ek
 
 
 export const eKYCServices = {
-
     post: {
         ocr_id: async (payload: OCRIDPPayload): Promise<ApiResponse<EKYCStatusResponse>> => { 
             return useAxios.post("/auth/protected/api/v2/ocridcard", payload, {
-                headers: {
-                    "content-type": "multipart/form-data"
-                }
+              headers: {
+                "content-type": "multipart/form-data",
+              },
             });
         },
         scan_face: async (payload: FaceScanPayload): Promise<ApiResponse<EKYCStatusResponse>> => {

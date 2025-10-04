@@ -38,3 +38,10 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.mobileprovision

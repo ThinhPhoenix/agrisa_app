@@ -18,7 +18,6 @@ export interface SignUpPayload {
   };
 }
 
-//Nguyên cụm này cho Login Auth Success
 
 export interface AuthUser {
   id: string;
@@ -47,7 +46,6 @@ export interface SignInApiResponse extends ApiSuccessResponse<SignInResponse> {
   data: SignInResponse;
 }
 
-//Nguyên cụm này cho Login Auth Success
 
 export interface AuthState {
   // Core data

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "arisa_app",
+    "name": "Agrisa",
     "slug": "agrisa",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
+        "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,9 +24,15 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT"
-      ]
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "package": "com.tnhaan.agrisa",
+      "versionCode": 1
     },
     "web": {
       "bundler": "metro",
@@ -40,10 +50,26 @@
           "backgroundColor": "#fbe9a8"
         }
       ],
+      "expo-dev-client",
       [
-        "expo-camera",
+        "expo-build-properties",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera."
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 34,
+            "kotlinVersion": "2.0.20",
+            "enableProguardInReleaseBuilds": false,
+            "enableHermes": true,
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Agrisa cần quyền truy cập camera",
+          "disableFrameProcessors": false
         }
       ],
       "expo-font",
@@ -51,7 +77,13 @@
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
+          "faceIDPermission": "Cho phép Agrisa sử dụng Face ID"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Agrisa cần quyền truy cập vị trí để xác định tọa độ"
         }
       ]
     ],

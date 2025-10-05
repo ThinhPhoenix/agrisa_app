@@ -77,9 +77,9 @@ workflows:
           success: true
           failure: false
 
-  # iOS Simulator Workflow
+  # iOS IPA Build for AltStore/Sideloading
   react-native-ios-ipa:
-    name: React Native iOS IPA
+    name: React Native iOS IPA (AltStore Compatible)
     instance_type: mac_mini_m1
     max_build_duration: 120
     environment:
@@ -88,6 +88,7 @@ workflows:
       vars:
         BUNDLE_ID: "com.tnhaan.agrisa"
         EXPO_PROJECT_SLUG: "agrisa"
+        APP_NAME: "Agrisa"
       node: 18
       xcode: latest
       cocoapods: default
@@ -123,144 +124,231 @@ workflows:
           rm -rf ios
           bunx expo prebuild --platform ios
       
+      - name: Modify Xcode Project for Unsigned Build
+        script: |
+          echo "🔧 Configuring Xcode project for unsigned build..."
+          
+          # Tìm file pbxproj
+          PBXPROJ_FILE="ios/Agrisa.xcodeproj/project.pbxproj"
+          
+          if [ -f "$PBXPROJ_FILE" ]; then
+            # Backup file gốc
+            cp "$PBXPROJ_FILE" "$PBXPROJ_FILE.backup"
+            
+            # Disable automatic code signing
+            sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' "$PBXPROJ_FILE"
+            
+            echo "✅ Xcode project configured"
+          else
+            echo "⚠️ Warning: pbxproj file not found"
+          fi
+      
       - name: Install CocoaPods dependencies
         script: |
           cd ios && pod install
       
-      - name: Debug - List Xcode Workspace Info
-        script: |
-          echo "📋 Listing Xcode workspace schemes..."
-          xcodebuild -workspace ios/Agrisa.xcworkspace -list || {
-            echo "⚠️ Warning: Could not list schemes"
-            echo "Checking for workspace file..."
-            ls -la ios/*.xcworkspace/
-          }
-      
-      - name: Build iOS App (Generic iOS Device)
+      - name: Build iOS App Bundle
         script: |
           export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
           
-          echo "🔨 Building iOS app for Generic iOS Device..."
+          echo "🔨 Building iOS .app bundle..."
+          
+          # Build cho iOS device (không archive, chỉ build .app)
           xcodebuild \
             -workspace ios/Agrisa.xcworkspace \
             -scheme Agrisa \
             -configuration Release \
             -sdk iphoneos \
-            -destination "generic/platform=iOS" \
-            -archivePath $CM_BUILD_DIR/build/Agrisa.xcarchive \
+            -derivedDataPath $CM_BUILD_DIR/build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
-            archive
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            build
           
-          echo "✅ Archive created successfully"
-      
-      - name: Export to IPA (Without Code Signing)
-        script: |
-          echo "📦 Exporting IPA without code signing..."
-          
-          # Tạo ExportOptions.plist cho ad-hoc distribution (no signing)
-          cat > $CM_BUILD_DIR/ExportOptions.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>development</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>compileBitcode</key>
-              <false/>
-              <key>stripSwiftSymbols</key>
-              <true/>
-              <key>uploadSymbols</key>
-              <false/>
-              <key>teamID</key>
-              <string></string>
-          </dict>
-          </plist>
-          EOF
-          
-          # Export IPA
-          xcodebuild \
-            -exportArchive \
-            -archivePath $CM_BUILD_DIR/build/Agrisa.xcarchive \
-            -exportPath $CM_BUILD_DIR/build/ipa \
-            -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist \
-            -allowProvisioningUpdates
-          
-          echo "✅ IPA exported successfully"
-      
-      - name: Verify and Prepare IPA for Download
-        script: |
-          echo "🔍 Verifying IPA file..."
-          
-          # Tìm file IPA
-          IPA_FILE=$(find $CM_BUILD_DIR/build/ipa -name "*.ipa" | head -1)
-          
-          if [ -f "$IPA_FILE" ]; then
-            echo "✅ Found IPA: $IPA_FILE"
-            
-            # Copy IPA ra thư mục dễ tìm
-            mkdir -p $CM_BUILD_DIR/output
-            cp "$IPA_FILE" $CM_BUILD_DIR/output/Agrisa.ipa
-            
-            # Show file info
-            ls -lh $CM_BUILD_DIR/output/Agrisa.ipa
-            echo "✅ IPA ready for download"
+          if [ $? -eq 0 ]; then
+            echo "✅ Build completed successfully"
           else
-            echo "❌ IPA file not found!"
-            echo "Searching for any IPA files..."
-            find $CM_BUILD_DIR/build -name "*.ipa"
+            echo "❌ Build failed"
             exit 1
           fi
       
-      - name: Create Manifest for AltStore (Optional)
+      - name: Create IPA from .app Bundle
         script: |
-          echo "📝 Creating manifest.plist for OTA installation..."
+          echo "📦 Creating IPA from .app bundle..."
           
-          cat > $CM_BUILD_DIR/output/manifest.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>items</key>
-              <array>
-                  <dict>
-                      <key>assets</key>
-                      <array>
-                          <dict>
-                              <key>kind</key>
-                              <string>software-package</string>
-                              <key>url</key>
-                              <string>https://your-server.com/Agrisa.ipa</string>
-                          </dict>
-                      </array>
-                      <key>metadata</key>
-                      <dict>
-                          <key>bundle-identifier</key>
-                          <string>com.tnhaan.agrisa</string>
-                          <key>bundle-version</key>
-                          <string>1.0</string>
-                          <key>kind</key>
-                          <string>software</string>
-                          <key>title</key>
-                          <string>Agrisa</string>
-                      </dict>
-                  </dict>
-              </array>
-          </dict>
-          </plist>
+          # Tìm file .app
+          APP_PATH=$(find $CM_BUILD_DIR/build/Build/Products/Release-iphoneos -name "*.app" -type d | head -1)
+          
+          if [ ! -d "$APP_PATH" ]; then
+            echo "❌ .app bundle not found!"
+            echo "Searching for .app files..."
+            find $CM_BUILD_DIR/build -name "*.app" -type d
+            exit 1
+          fi
+          
+          echo "✅ Found .app bundle: $APP_PATH"
+          
+          # Tạo cấu trúc Payload cho IPA
+          mkdir -p $CM_BUILD_DIR/output/Payload
+          
+          # Copy .app vào Payload
+          cp -R "$APP_PATH" $CM_BUILD_DIR/output/Payload/
+          
+          # Tạo file IPA (chỉ là file ZIP với extension .ipa)
+          cd $CM_BUILD_DIR/output
+          zip -r Agrisa.ipa Payload
+          
+          # Cleanup
+          rm -rf Payload
+          
+          # Verify IPA
+          if [ -f "Agrisa.ipa" ]; then
+            echo "✅ IPA created successfully"
+            ls -lh Agrisa.ipa
+            
+            # Show IPA info
+            unzip -l Agrisa.ipa | head -20
+          else
+            echo "❌ Failed to create IPA"
+            exit 1
+          fi
+      
+      - name: Verify IPA Structure
+        script: |
+          echo "🔍 Verifying IPA structure..."
+          
+          cd $CM_BUILD_DIR/output
+          
+          # Extract IPA để kiểm tra
+          mkdir -p ipa_check
+          unzip -q Agrisa.ipa -d ipa_check
+          
+          # Check bundle structure
+          if [ -d "ipa_check/Payload/Agrisa.app" ]; then
+            echo "✅ IPA structure is valid"
+            
+            # Show bundle info
+            echo "📋 Bundle contents:"
+            ls -la ipa_check/Payload/Agrisa.app/ | head -20
+            
+            # Check Info.plist
+            if [ -f "ipa_check/Payload/Agrisa.app/Info.plist" ]; then
+              echo "✅ Info.plist found"
+              plutil -p ipa_check/Payload/Agrisa.app/Info.plist | grep -E "CFBundleIdentifier|CFBundleVersion|CFBundleDisplayName"
+            fi
+          else
+            echo "❌ Invalid IPA structure"
+            ls -la ipa_check/
+            exit 1
+          fi
+          
+          # Cleanup
+          rm -rf ipa_check
+      
+      - name: Create Installation Instructions
+        script: |
+          echo "📝 Creating installation guide..."
+          
+          cat > $CM_BUILD_DIR/output/INSTALL_GUIDE.md << 'EOF'
+          # Hướng dẫn cài đặt Agrisa IPA
+          
+          ## Yêu cầu
+          - iPhone/iPad chạy iOS 14.0 trở lên
+          - AltStore hoặc Sideloadly đã cài đặt
+          - Kết nối WiFi ổn định
+          
+          ## Cách 1: Sử dụng AltStore (Khuyến nghị)
+          
+          ### Bước 1: Cài đặt AltStore
+          1. Tải AltServer từ: https://altstore.io/
+          2. Cài đặt trên máy tính (Windows/Mac)
+          3. Kết nối iPhone qua WiFi (cùng mạng với máy tính)
+          
+          ### Bước 2: Cài đặt app
+          1. Gửi file `Agrisa.ipa` về iPhone (AirDrop/Email/iCloud)
+          2. Mở AltStore trên iPhone
+          3. Chọn tab "My Apps"
+          4. Nhấn nút "+"
+          5. Chọn file `Agrisa.ipa`
+          6. Đăng nhập Apple ID khi được yêu cầu
+          7. Chờ AltStore resign và cài đặt app
+          
+          ### Bước 3: Trust Certificate
+          1. Mở Settings → General → VPN & Device Management
+          2. Tìm profile của Apple ID bạn vừa dùng
+          3. Nhấn "Trust"
+          
+          ## Cách 2: Sử dụng Sideloadly
+          
+          ### Bước 1: Tải Sideloadly
+          - Download: https://sideloadly.io/
+          - Hỗ trợ Windows/Mac/Linux
+          
+          ### Bước 2: Cài đặt
+          1. Kết nối iPhone qua USB
+          2. Mở Sideloadly
+          3. Kéo thả file `Agrisa.ipa` vào Sideloadly
+          4. Nhập Apple ID và password
+          5. Nhấn "Start"
+          6. Chờ quá trình hoàn tất
+          
+          ### Bước 3: Trust Certificate
+          - Tương tự như cách 1
+          
+          ## Lưu ý quan trọng
+          
+          ### Thời hạn app
+          - **Free Apple ID**: App hết hạn sau 7 ngày
+          - **Paid Developer Account**: App hết hạn sau 1 năm
+          - Cần refresh qua AltStore trước khi hết hạn
+          
+          ### Giới hạn
+          - Tối đa 3 apps với free account
+          - AltServer phải chạy khi refresh app
+          
+          ### Troubleshooting
+          
+          **Lỗi "Untrusted Developer"**
+          - Vào Settings → General → VPN & Device Management
+          - Trust certificate
+          
+          **App không mở được**
+          - Kiểm tra app chưa hết hạn
+          - Refresh qua AltStore
+          
+          **AltStore không thấy máy**
+          - Đảm bảo cùng mạng WiFi
+          - Restart AltServer và AltStore
+          
+          ## Hỗ trợ
+          Nếu gặp vấn đề, liên hệ:
+          - Email: nhancd909@gmail.com
+          - Email: hgiap46@gmail.com
           EOF
           
-          echo "✅ Manifest created (update URL before use)"
+          echo "✅ Installation guide created"
+      
+      - name: Generate QR Code for Download (Optional)
+        script: |
+          echo "📱 Installation ready"
+          echo ""
+          echo "==================================================="
+          echo "✅ IPA BUILD THÀNH CÔNG!"
+          echo "==================================================="
+          echo ""
+          echo "📦 File: Agrisa.ipa"
+          echo "📏 Size: $(ls -lh $CM_BUILD_DIR/output/Agrisa.ipa | awk '{print $5}')"
+          echo "📋 Bundle ID: com.tnhaan.agrisa"
+          echo ""
+          echo "📖 Xem file INSTALL_GUIDE.md để biết cách cài đặt"
+          echo ""
+          echo "==================================================="
     
     artifacts:
       - output/Agrisa.ipa
-      - output/manifest.plist
-      - build/Agrisa.xcarchive
-      - build/ipa/**/*
+      - output/INSTALL_GUIDE.md
     
     publishing:
       email:

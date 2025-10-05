@@ -14,6 +14,7 @@ import {
 } from "@gluestack-ui/themed";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { File } from "expo-file-system";
+import * as ImageManipulator from "expo-image-manipulator";
 import { useRouter } from "expo-router";
 import { Camera, CheckCircle2, RotateCcw, X } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
@@ -21,39 +22,39 @@ import { Alert, Dimensions, Platform, StyleSheet } from "react-native";
 import { useEkyc } from "../hooks/use-ekyc";
 import { useEkycStore } from "../stores/ekyc.store";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-// Kích thước khung CCCD (tỷ lệ 16:10 giống thẻ thật - theo tỷ lệ chuẩn CCCD Việt Nam)
-const FRAME_WIDTH = SCREEN_WIDTH * 0.85;
-const FRAME_HEIGHT = FRAME_WIDTH * (10 / 16);
+const FRAME_WIDTH_RATIO = 0.80;
+const CCCD_ASPECT_RATIO = 1.586;
+const CROP_OFFSET_X = 0;
+const CROP_OFFSET_Y = -50;
+const CROP_SCALE_ADJUSTMENT = 1.05;
+const RESIZE_WIDTH = 1300;
+const COMPRESS_QUALITY = 0.9;
+
+const FRAME_WIDTH = SCREEN_WIDTH * FRAME_WIDTH_RATIO;
+const FRAME_HEIGHT = FRAME_WIDTH / CCCD_ASPECT_RATIO;
 
 type CaptureStep = "instruction" | "capturing" | "processing";
 
-// ✅ Helper function để format file size cho dễ đọc
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
-
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-// ✅ Helper function để lấy thông tin file
 const getFileInfo = async (uri: string) => {
   try {
     const file = new File(uri);
     const exists = file.exists;
-
     if (!exists) {
       return { size: 0, uri, exists: false };
     }
-
     const size = file.size;
     return { size, uri, exists: true };
   } catch (error) {
-    console.error("❌ Lỗi khi lấy thông tin file:", error);
     return { size: 0, uri, exists: false };
   }
 };
@@ -61,7 +62,6 @@ const getFileInfo = async (uri: string) => {
 export const OCRIdScreen = () => {
   const router = useRouter();
   const { colors } = useAgrisaColors();
-
   const { ocrIdMutation } = useEkyc();
   const { setOcrData } = useEkycStore();
   const { user } = useAuthStore();
@@ -74,15 +74,12 @@ export const OCRIdScreen = () => {
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [backPhoto, setBackPhoto] = useState<string | null>(null);
 
-  // Chuyển trang khi OCR thành công
   useEffect(() => {
     if (ocrIdMutation.isSuccess) {
-      console.log("✅ OCR ID thành công! Chuyển sang face-scan");
       router.push("/settings/verify/face-scan");
     }
   }, [ocrIdMutation.isSuccess, router]);
 
-  // Request camera permissions
   useEffect(() => {
     if (Platform.OS === "ios" || Platform.OS === "android") {
       if (!permission?.granted) {
@@ -91,7 +88,6 @@ export const OCRIdScreen = () => {
     }
   }, []);
 
-  // Kiểm tra quyền camera
   if (!permission) {
     return (
       <Box
@@ -148,7 +144,58 @@ export const OCRIdScreen = () => {
     );
   }
 
-  // ✅ Chụp ảnh - CÓ LOG FILE SIZE
+  const calculateCropRegion = (photoWidth: number, photoHeight: number) => {
+    const scaleX = photoWidth / SCREEN_WIDTH;
+    const scaleY = photoHeight / SCREEN_HEIGHT;
+
+    const centerX = SCREEN_WIDTH / 2;
+    const centerY = SCREEN_HEIGHT / 2;
+    const frameX = centerX - FRAME_WIDTH / 2;
+    const frameY = centerY - FRAME_HEIGHT / 2;
+
+    let cropX = frameX * scaleX;
+    let cropY = frameY * scaleY;
+    let cropWidth = FRAME_WIDTH * scaleX;
+    let cropHeight = FRAME_HEIGHT * scaleY;
+
+    cropX += CROP_OFFSET_X * scaleX;
+    cropY += CROP_OFFSET_Y * scaleY;
+    cropWidth *= CROP_SCALE_ADJUSTMENT;
+    cropHeight *= CROP_SCALE_ADJUSTMENT;
+
+    const result = {
+      originX: Math.max(0, Math.round(cropX)),
+      originY: Math.max(0, Math.round(cropY)),
+      width: Math.min(
+        Math.round(cropWidth),
+        photoWidth - Math.max(0, Math.round(cropX))
+      ),
+      height: Math.min(
+        Math.round(cropHeight),
+        photoHeight - Math.max(0, Math.round(cropY))
+      ),
+    };
+
+    const targetAspect = CCCD_ASPECT_RATIO;
+    let cropAspect = result.width / result.height;
+    if (cropAspect > targetAspect) {
+      const newWidth = result.height * targetAspect;
+      result.originX += (result.width - newWidth) / 2;
+      result.width = newWidth;
+    } else if (cropAspect < targetAspect) {
+      const newHeight = result.width / targetAspect;
+      result.originY += (result.height - newHeight) / 2;
+      result.height = newHeight;
+    }
+
+    result.originX = Math.round(result.originX);
+    result.originY = Math.round(result.originY);
+    result.width = Math.round(result.width);
+    result.height = Math.round(result.height);
+
+    return result;
+  };
+
   const takePicture = async () => {
     if (!cameraRef.current) return;
 
@@ -161,29 +208,24 @@ export const OCRIdScreen = () => {
 
       if (!photo) return;
 
-      // ✅ Lấy thông tin file size
-      const fileInfo = await getFileInfo(photo.uri);
+      const cropRegion = calculateCropRegion(photo.width, photo.height);
 
-      console.log("📸 Đã chụp ảnh:", {
-        uri: photo.uri,
-        isFront: isCapturingFront,
-        width: photo.width,
-        height: photo.height,
-        // ✅ Log file size
-        fileSizeBytes: fileInfo.size,
-        fileSizeFormatted: formatFileSize(fileInfo.size),
-        fileExists: fileInfo.exists,
-      });
+      const croppedImage = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [{ crop: cropRegion }, { resize: { width: RESIZE_WIDTH } }],
+        {
+          compress: COMPRESS_QUALITY,
+          format: ImageManipulator.SaveFormat.JPEG,
+        }
+      );
 
-      // ✅ Cảnh báo nếu file quá lớn (> 5MB)
-      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      const fileInfo = await getFileInfo(croppedImage.uri);
+
+      const MAX_FILE_SIZE = 5 * 1024 * 1024;
       if (fileInfo.size > MAX_FILE_SIZE) {
-        console.warn("⚠️ File size lớn hơn 5MB:", formatFileSize(fileInfo.size));
         Alert.alert(
           "Cảnh báo",
-          `Ảnh có dung lượng khá lớn (${formatFileSize(
-            fileInfo.size
-          )}). Upload có thể chậm hơn.`,
+          `Ảnh có dung lượng khá lớn (${formatFileSize(fileInfo.size)}). Upload có thể chậm hơn.`,
           [
             { text: "Chụp lại", onPress: () => retakeCurrentPhoto() },
             { text: "Tiếp tục", style: "default" },
@@ -191,15 +233,11 @@ export const OCRIdScreen = () => {
         );
       }
 
-      // ✅ Cảnh báo nếu file quá nhỏ (< 100KB - có thể bị lỗi)
-      const MIN_FILE_SIZE = 100 * 1024; // 100KB
+      const MIN_FILE_SIZE = 50 * 1024;
       if (fileInfo.size < MIN_FILE_SIZE && fileInfo.size > 0) {
-        console.warn("⚠️ File size nhỏ hơn 100KB:", formatFileSize(fileInfo.size));
         Alert.alert(
           "Cảnh báo",
-          `Ảnh có dung lượng quá nhỏ (${formatFileSize(
-            fileInfo.size
-          )}). Có thể không đủ rõ nét.`,
+          `Ảnh có dung lượng quá nhỏ (${formatFileSize(fileInfo.size)}). Có thể không đủ rõ nét.`,
           [
             { text: "Chụp lại", onPress: () => retakeCurrentPhoto() },
             { text: "Tiếp tục", style: "default" },
@@ -207,28 +245,20 @@ export const OCRIdScreen = () => {
         );
       }
 
-      // Lưu ảnh vào state
       if (isCapturingFront) {
-        setFrontPhoto(photo.uri);
-        setOcrData({ cccd_front: photo.uri });
-        console.log("✅ Đã lưu ảnh mặt trước vào store");
+        setFrontPhoto(croppedImage.uri);
+        setOcrData({ cccd_front: croppedImage.uri });
       } else {
-        setBackPhoto(photo.uri);
-        console.log("✅ Đã lưu ảnh mặt sau");
+        setBackPhoto(croppedImage.uri);
       }
     } catch (error) {
-      console.error("❌ Lỗi khi chụp ảnh:", error);
-      Alert.alert("Lỗi", "Không thể chụp ảnh. Vui lòng thử lại.", [
+      Alert.alert("Lỗi", "Không thể xử lý ảnh. Vui lòng thử lại.", [
         { text: "Đóng" },
       ]);
     }
   };
 
-  // Chụp lại ảnh hiện tại
   const retakeCurrentPhoto = () => {
-    console.log(
-      `🔄 Chụp lại ảnh ${isCapturingFront ? "mặt trước" : "mặt sau"}`
-    );
     if (isCapturingFront) {
       setFrontPhoto(null);
     } else {
@@ -236,24 +266,16 @@ export const OCRIdScreen = () => {
     }
   };
 
-  // Xác nhận ảnh hiện tại
   const confirmCurrentPhoto = () => {
     if (isCapturingFront) {
-      console.log("✅ Xác nhận ảnh mặt trước, chuyển sang mặt sau");
       setIsCapturingFront(false);
     } else {
-      console.log("✅ Xác nhận ảnh mặt sau, bắt đầu submit");
       handleSubmit();
     }
   };
 
-  // ✅ Submit FormData - CÓ LOG TỔNG DUNG LƯỢNG
   const handleSubmit = async () => {
-    console.log("🚀 Bắt đầu handleSubmit");
-
-    // Validate
     if (!frontPhoto || !backPhoto) {
-      console.error("❌ Thiếu ảnh CCCD");
       Alert.alert("Lỗi", "Thiếu ảnh CCCD. Vui lòng chụp lại.", [
         { text: "Đóng" },
       ]);
@@ -261,7 +283,6 @@ export const OCRIdScreen = () => {
     }
 
     if (!user?.id) {
-      console.error("❌ Không tìm thấy user_id");
       Alert.alert(
         "Lỗi",
         "Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.",
@@ -273,37 +294,6 @@ export const OCRIdScreen = () => {
     setCurrentStep("processing");
 
     try {
-      // ✅ Lấy file info của cả 2 ảnh
-      const frontFileInfo = await getFileInfo(frontPhoto);
-      const backFileInfo = await getFileInfo(backPhoto);
-
-      const totalSize = frontFileInfo.size + backFileInfo.size;
-
-      console.log("📦 Thông tin file trước khi submit:");
-      console.log("  📄 Mặt trước:", {
-        size: formatFileSize(frontFileInfo.size),
-        sizeBytes: frontFileInfo.size,
-        exists: frontFileInfo.exists,
-      });
-      console.log("  📄 Mặt sau:", {
-        size: formatFileSize(backFileInfo.size),
-        sizeBytes: backFileInfo.size,
-        exists: backFileInfo.exists,
-      });
-      console.log("  📊 Tổng dung lượng:", {
-        size: formatFileSize(totalSize),
-        sizeBytes: totalSize,
-      });
-
-      // ✅ Cảnh báo nếu tổng dung lượng quá lớn
-      const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB
-      if (totalSize > MAX_TOTAL_SIZE) {
-        console.warn("⚠️ Tổng dung lượng > 10MB:", formatFileSize(totalSize));
-      }
-
-      console.log("📦 Bắt đầu tạo FormData...");
-
-      // Tạo FormData
       const formData = new FormData();
 
       formData.append("cccd_front", {
@@ -312,53 +302,20 @@ export const OCRIdScreen = () => {
         name: `cccd_front_${Date.now()}.jpg`,
       } as any);
 
-      console.log("✅ Đã append cccd_front");
-
       formData.append("cccd_back", {
         uri: backPhoto,
         type: "image/jpeg",
         name: `cccd_back_${Date.now()}.jpg`,
       } as any);
 
-      console.log("✅ Đã append cccd_back");
-
       formData.append("user_id", user.id);
 
-      console.log("✅ Đã append user_id:", user.id);
-
-      // Log FormData entries
-      console.log("📋 FormData entries:");
-      // @ts-ignore
-      if (formData._parts) {
-        // @ts-ignore
-        formData._parts.forEach((part: any, index: number) => {
-          console.log(`  Entry ${index}:`, {
-            fieldName: part[0],
-            value: part[1]?.name || part[1],
-          });
-        });
-      }
-
-      console.log("🚀 Gọi mutation với FormData...");
-
-      // Gọi mutation
       await ocrIdMutation.mutateAsync(formData as any);
-
-      console.log("✅ Submit thành công!");
     } catch (error) {
-      console.error("❌ Lỗi khi gửi dữ liệu:", error);
-
-      if (error instanceof Error) {
-        console.error("Error name:", error.name);
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
-
       Alert.alert("Lỗi", "Không thể xử lý ảnh. Vui lòng thử lại.", [
         {
           text: "Chụp lại",
           onPress: () => {
-            console.log("🔄 Reset và chụp lại từ đầu");
             setFrontPhoto(null);
             setBackPhoto(null);
             setIsCapturingFront(true);
@@ -366,30 +323,24 @@ export const OCRIdScreen = () => {
           },
         },
       ]);
-
       setCurrentStep("capturing");
     }
   };
 
-  // Bắt đầu chụp
   const startCapture = () => {
-    console.log("▶️ Bắt đầu chụp CCCD");
     setCurrentStep("capturing");
     setIsCapturingFront(true);
     setFrontPhoto(null);
     setBackPhoto(null);
   };
 
-  // Hủy và quay lại
   const cancelCapture = () => {
-    console.log("❌ Hủy chụp CCCD");
     setCurrentStep("instruction");
     setFrontPhoto(null);
     setBackPhoto(null);
     setIsCapturingFront(true);
   };
 
-  // Render màn hình hướng dẫn
   const renderInstructionScreen = () => (
     <Box flex={1} bg={colors.background} justifyContent="center" p="$6">
       <VStack space="xl" alignItems="center">
@@ -409,7 +360,6 @@ export const OCRIdScreen = () => {
           </Text>
         </VStack>
 
-        {/* Hướng dẫn chi tiết - Dành cho nông dân */}
         <Box
           bg={colors.surface}
           p="$5"
@@ -426,7 +376,7 @@ export const OCRIdScreen = () => {
               <HStack space="sm" alignItems="flex-start">
                 <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Đặt CCCD/CMND vừa khít trong khung chữ nhật
+                  Đặt CCCD/CMND trong khung
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
@@ -460,7 +410,6 @@ export const OCRIdScreen = () => {
     </Box>
   );
 
-  // Render camera với preview overlay
   const renderCameraScreen = () => {
     const label = isCapturingFront ? "Mặt trước" : "Mặt sau";
     const currentPhoto = isCapturingFront ? frontPhoto : backPhoto;
@@ -473,7 +422,6 @@ export const OCRIdScreen = () => {
           facing="back"
         >
           <Box flex={1}>
-            {/* Header */}
             <Box bg="rgba(0,0,0,0.8)" p="$4" pt="$12">
               <HStack justifyContent="space-between" alignItems="center">
                 <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
@@ -485,7 +433,6 @@ export const OCRIdScreen = () => {
               </HStack>
             </Box>
 
-            {/* Vùng camera với khung CCCD */}
             <Box flex={1} justifyContent="center" alignItems="center">
               <Box mb="$4" px="$6">
                 <Text
@@ -494,11 +441,10 @@ export const OCRIdScreen = () => {
                   textAlign="center"
                   fontWeight="$medium"
                 >
-                  Đặt {label.toLowerCase()} CCCD vừa khít trong khung
+                  Đặt {label.toLowerCase()} trong khung
                 </Text>
               </Box>
 
-              {/* Khung CCCD */}
               <Box
                 width={FRAME_WIDTH}
                 height={FRAME_HEIGHT}
@@ -519,7 +465,6 @@ export const OCRIdScreen = () => {
                   />
                 )}
 
-                {/* 4 góc highlight */}
                 <Box
                   position="absolute"
                   top={-2}
@@ -569,13 +514,12 @@ export const OCRIdScreen = () => {
               <Box mt="$4" px="$6">
                 <Text fontSize="$xs" color={colors.text} textAlign="center">
                   {currentPhoto
-                    ? "Kiểm tra ảnh có rõ nét không?"
+                    ? "✅ Ảnh đã được chụp và xử lý"
                     : "Giữ máy thẳng và đảm bảo CCCD nằm gọn trong khung"}
                 </Text>
               </Box>
             </Box>
 
-            {/* Action buttons */}
             <Box pb="$8" px="$6" bg="rgba(0,0,0,0.8)">
               {currentPhoto ? (
                 <HStack space="md">
@@ -645,7 +589,6 @@ export const OCRIdScreen = () => {
     );
   };
 
-  // Render màn hình đang xử lý
   const renderProcessingScreen = () => (
     <Box
       flex={1}
@@ -678,7 +621,6 @@ export const OCRIdScreen = () => {
     </Box>
   );
 
-  // Main render
   switch (currentStep) {
     case "instruction":
       return renderInstructionScreen();

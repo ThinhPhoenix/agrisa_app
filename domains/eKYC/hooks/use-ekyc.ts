@@ -38,6 +38,7 @@ export const useEkyc = () => {
       return await eKYCServices.post.scan_face(payload);
     },
     onSuccess: async (data: any) => {
+      router.push("/settings/profile");
       toast.success("Xác thực khuôn mặt thành công");
     },
     onError: (error) => {

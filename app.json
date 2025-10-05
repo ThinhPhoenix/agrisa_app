@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo/Agrisa_Logo.png",
-    "scheme": "arisaapp",
+    "scheme": "agrisa",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "platforms": ["ios", "android"],

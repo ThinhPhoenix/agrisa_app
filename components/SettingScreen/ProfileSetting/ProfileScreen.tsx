@@ -1,65 +1,67 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, RefreshControl, Alert, Linking } from "react-native";
-import {
-  VStack,
-  HStack,
-  Box,
-  Text,
-  Button,
-  ButtonText,
-  Avatar,
-  AvatarFallbackText,
-  Divider,
-  Badge,
-  BadgeText,
-  Spinner,
-  Pressable,
-} from "@gluestack-ui/themed";
-import {
-  User,
-  Mail,
-  Phone,
-  Shield,
-  CheckCircle,
-  AlertCircle,
-  Edit3,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react-native";
-import { useAuthStore } from "@/domains/auth/stores/auth.store";
-import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { AuthUser } from "@/domains/auth/models/auth.models";
-import { router } from "expo-router";
+import { useAuthStore } from "@/domains/auth/stores/auth.store";
+import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import { useToast } from "@/domains/shared/hooks/useToast";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
+import {
+  Avatar,
+  AvatarFallbackText,
+  Badge,
+  BadgeText,
+  Box,
+  Button,
+  ButtonText,
+  Divider,
+  HStack,
+  Pressable,
+  Spinner,
+  Text,
+  VStack,
+} from "@gluestack-ui/themed";
+import { router } from "expo-router";
+import {
+  AlertCircle,
+  CheckCircle,
+  Edit3,
+  Mail,
+  Phone,
+  RefreshCw,
+  Shield
+} from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, Linking, RefreshControl, ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const { colors } = useAgrisaColors();
   const { user: storeUser, refreshAuth } = useAuthStore();
   const { toast } = useToast();
-
+  const { geteKYCStatusQuery } = useEkyc();
+  
   const [user, setUser] = useState<AuthUser | null>(storeUser);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 🔄 Load user data từ SecureStorage
+  const {
+    data: ekycResponse,
+    isLoading: isEkycLoading,
+    isError: isEkycError,
+  } = user?.id
+    ? geteKYCStatusQuery(user.id)
+    : { data: null, isLoading: false, isError: false };
+
+  // ✅ FIX: Kiểm tra kiểu response trước khi truy cập .data
+  const ekycStatus =
+    ekycResponse && "data" in ekycResponse ? ekycResponse.data : null;
+
   const loadUserData = async () => {
     try {
       setIsLoading(true);
       const userData = await secureStorage.getUser();
       if (userData) {
         setUser(userData);
-        console.log(
-          "✅ [Agrisa Profile] Đã tải thông tin người dùng:",
-          userData.email
-        );
-      } else {
-        console.log(
-          "⚠️ [Agrisa Profile] Không tìm thấy thông tin user trong storage"
-        );
       }
     } catch (error) {
-      console.error("❌ [Agrisa Profile] Lỗi tải thông tin user:", error);
       toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
     } finally {
       setIsLoading(false);
@@ -69,17 +71,16 @@ export default function ProfileScreen() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refreshAuth(); // Refresh từ store
-      await loadUserData(); // Load lại từ storage
-      toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
+      await refreshAuth();
+      await loadUserData();
+      toast.success("Đã làm mới thông tin!");
     } catch (error) {
-      console.error("❌ [Agrisa Profile] Lỗi refresh:", error);
+      toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  // 📱 Gọi điện thoại hỗ trợ Agrisa
   const handleCallSupport = () => {
     Alert.alert(
       "Hỗ trợ Agrisa 📞",
@@ -94,7 +95,6 @@ export default function ProfileScreen() {
     );
   };
 
-  // 📧 Gửi email hỗ trợ
   const handleEmailSupport = () => {
     const subject = encodeURIComponent(
       `[Agrisa] Hỗ trợ từ ${user?.email || "Nông dân"}`
@@ -105,14 +105,12 @@ export default function ProfileScreen() {
     Linking.openURL(`mailto:support@agrisa.vn?subject=${subject}&body=${body}`);
   };
 
-  // 🔥 Load data khi component mount
   useEffect(() => {
     if (!storeUser) {
       loadUserData();
     }
   }, [storeUser]);
 
-  // 🌟 Render status badge
   const renderStatusBadge = (status: string) => {
     const statusConfig = {
       pending_verification: {
@@ -149,7 +147,42 @@ export default function ProfileScreen() {
     );
   };
 
-  // 🎨 Render verification item
+  const getKycButton = () => {
+    if (!ekycStatus) {
+      return {
+        text: "Bắt đầu KYC",
+        route: "/settings/verify/id-scan",
+        disabled: false,
+        icon: Shield,
+      };
+    }
+
+    if (ekycStatus.is_face_verified && ekycStatus.is_ocr_done) {
+      return {
+        text: "Đã xác minh KYC",
+        route: null,
+        disabled: true,
+        icon: CheckCircle,
+      };
+    }
+
+    if (ekycStatus.is_ocr_done && !ekycStatus.is_face_verified) {
+      return {
+        text: "Tiếp tục xác thực mặt",
+        route: "/settings/verify/face-scan",
+        disabled: false,
+        icon: Shield,
+      };
+    }
+
+    return {
+      text: "Bắt đầu KYC",
+      route: "/settings/verify/id-scan",
+      disabled: false,
+      icon: Shield,
+    };
+  };
+
   const renderVerificationItem = (
     title: string,
     isVerified: boolean,
@@ -196,7 +229,6 @@ export default function ProfileScreen() {
     </Box>
   );
 
-  // 🔄 Loading state
   if (isLoading && !user) {
     return (
       <Box
@@ -215,7 +247,6 @@ export default function ProfileScreen() {
     );
   }
 
-  // ❌ Không có user data
   if (!user) {
     return (
       <Box
@@ -271,6 +302,9 @@ export default function ProfileScreen() {
     );
   }
 
+  const kycButton = getKycButton();
+  const IconComponent = kycButton.icon;
+
   return (
     <ScrollView
       refreshControl={
@@ -278,7 +312,6 @@ export default function ProfileScreen() {
       }
     >
       <VStack space="lg" p="$4">
-        {/* 👤 Header Profile */}
         <Box
           bg={colors.card}
           p="$6"
@@ -298,40 +331,55 @@ export default function ProfileScreen() {
                 {user.email.split("@")[0]}
               </Text>
               <Text fontSize="$sm" color={colors.textSecondary}>
-                Nông dân
+                Nông dân Agrisa
               </Text>
               {renderStatusBadge(user.status)}
             </VStack>
-            <Button
-              variant="outline"
-              size="sm"
-              borderColor={colors.border}
-              onPress={() => router.push("/settings/verify/id-scan")}
-            >
-              <HStack alignItems="center" space="xs">
-                <Edit3 size={14} color={colors.text} />
-                <ButtonText color={colors.text} fontSize="$sm">
-                  Xác thực KYC
-                </ButtonText>
-              </HStack>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              borderColor={colors.border}
-              onPress={() => router.push("/settings/profile/edit")}
-            >
-              <HStack alignItems="center" space="xs">
-                <Edit3 size={14} color={colors.text} />
-                <ButtonText color={colors.text} fontSize="$sm">
-                  Chỉnh sửa
-                </ButtonText>
-              </HStack>
-            </Button>
+
+            <HStack space="sm">
+              <Button
+                variant={kycButton.disabled ? "solid" : "outline"}
+                size="sm"
+                bg={kycButton.disabled ? colors.success : "transparent"}
+                borderColor={kycButton.disabled ? "transparent" : colors.border}
+                isDisabled={kycButton.disabled}
+                onPress={() => {
+                  if (kycButton.route) {
+                    router.push(kycButton.route as any);
+                  }
+                }}
+              >
+                <HStack alignItems="center" space="xs">
+                  <IconComponent 
+                    size={14} 
+                    color={kycButton.disabled ? "white" : colors.text} 
+                  />
+                  <ButtonText 
+                    color={kycButton.disabled ? "white" : colors.text} 
+                    fontSize="$sm"
+                  >
+                    {kycButton.text}
+                  </ButtonText>
+                </HStack>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                borderColor={colors.border}
+                onPress={() => router.push("/settings/profile/edit")}
+              >
+                <HStack alignItems="center" space="xs">
+                  <Edit3 size={14} color={colors.text} />
+                  <ButtonText color={colors.text} fontSize="$sm">
+                    Chỉnh sửa
+                  </ButtonText>
+                </HStack>
+              </Button>
+            </HStack>
           </VStack>
         </Box>
 
-        {/* 📱 Thông tin liên hệ */}
         <VStack space="sm">
           <Text fontSize="$lg" fontWeight="$semibold" color={colors.text}>
             Thông tin liên hệ
@@ -370,7 +418,7 @@ export default function ProfileScreen() {
                     Số điện thoại
                   </Text>
                   <Text fontWeight="$medium" color={colors.text}>
-                    {user.phone_number}
+                    {user.phone_number || "Chưa cập nhật"}
                   </Text>
                 </VStack>
                 {!user.phone_verified && (
@@ -381,13 +429,10 @@ export default function ProfileScreen() {
                   </Badge>
                 )}
               </HStack>
-
-              <Divider className="bg-red-950" />
             </VStack>
           </Box>
         </VStack>
 
-        {/* 🛡️ Trạng thái xác minh */}
         <VStack space="sm">
           <Text fontSize="$lg" fontWeight="$semibold" color={colors.text}>
             Trạng thái xác minh
@@ -408,17 +453,20 @@ export default function ProfileScreen() {
 
             {renderVerificationItem(
               "Xác minh danh tính (KYC)",
-              user.kyc_verified,
-              user.kyc_verified
-                ? "Danh tính đã được xác minh, có thể mua bảo hiểm"
-                : "Hoàn tất KYC để sử dụng đầy đủ dịch vụ bảo hiểm",
-              user.kyc_verified ? undefined : "Bắt đầu KYC",
-              user.kyc_verified ? undefined : () => router.push("/settings/kyc")
+              ekycStatus?.is_face_verified || false,
+              ekycStatus?.is_face_verified
+                ? "Danh tính đã được xác minh hoàn tất, có thể mua bảo hiểm"
+                : ekycStatus?.is_ocr_done
+                ? "Đã chụp CCCD thành công, tiếp tục xác thực khuôn mặt"
+                : "Hoàn tất KYC để sử dụng đầy đủ dịch vụ bảo hiểm Agrisa",
+              ekycStatus?.is_face_verified ? undefined : kycButton.text,
+              ekycStatus?.is_face_verified || !kycButton.route
+                ? undefined
+                : () => router.push(kycButton.route as any)
             )}
           </VStack>
         </VStack>
 
-        {/* 🆘 Hỗ trợ */}
         <VStack space="sm">
           <Text fontSize="$lg" fontWeight="$semibold" color={colors.text}>
             Cần hỗ trợ?
@@ -433,8 +481,19 @@ export default function ProfileScreen() {
           >
             <VStack space="md">
               <Text fontSize="$sm" color={colors.textSecondary}>
-                Đội ngũ Agrisa luôn sẵn sàng hỗ trợ bạn 24/7
+                Đội ngũ Agrisa luôn sẵn sàng hỗ trợ bạn 24/7 về:
               </Text>
+              <VStack space="xs" pl="$2">
+                <Text fontSize="$xs" color={colors.textSecondary}>
+                  • Tư vấn bảo hiểm cây trồng
+                </Text>
+                <Text fontSize="$xs" color={colors.textSecondary}>
+                  • Hướng dẫn sử dụng ứng dụng
+                </Text>
+                <Text fontSize="$xs" color={colors.textSecondary}>
+                  • Hỗ trợ kỹ thuật và bồi thường
+                </Text>
+              </VStack>
 
               <HStack space="sm">
                 <Button
@@ -468,21 +527,21 @@ export default function ProfileScreen() {
           </Box>
         </VStack>
 
-        {/* 🔄 Debug info (chỉ hiển thị khi development) */}
         {__DEV__ && (
           <Box bg="$coolGray100" p="$3" borderRadius="$md">
             <Text fontSize="$xs" color="$coolGray600">
-              Debug: User data từ SecureStorage{"\n"}
-              Status: {user.status}
-              {"\n"}
-              KYC: {user.kyc_verified ? "Verified" : "Not verified"}
-              {"\n"}
-              Phone: {user.phone_verified ? "Verified" : "Not verified"}
+              🐛 Debug Info
+              {"\n"}• User ID: {user.id}
+              {"\n"}• Status: {user.status}
+              {"\n"}• KYC Verified: {user.kyc_verified ? "✅" : "❌"}
+              {"\n"}• Phone Verified: {user.phone_verified ? "✅" : "❌"}
+              {"\n"}• OCR Done: {ekycStatus?.is_ocr_done ? "✅" : "❌"}
+              {"\n"}• Face Verified: {ekycStatus?.is_face_verified ? "✅" : "❌"}
+              {"\n"}• CIC No: {ekycStatus?.cic_no || "N/A"}
             </Text>
           </Box>
         )}
 
-        {/* 📱 Spacing bottom cho safe area */}
         <Box h="$8" />
       </VStack>
     </ScrollView>

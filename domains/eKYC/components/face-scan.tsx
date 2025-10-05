@@ -16,11 +16,6 @@ import { useRouter } from "expo-router";
 import { Camera, CheckCircle2, User, X } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Dimensions, Platform, StyleSheet } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 import {
   Camera as VisionCamera,
   useCameraDevice,
@@ -34,20 +29,18 @@ import {
 import { useEkyc } from "../hooks/use-ekyc";
 import { useEkycStore } from "../stores/ekyc.store";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// Kích thước khung oval cho khuôn mặt
 const FACE_FRAME_WIDTH = SCREEN_WIDTH * 0.7;
-const FACE_FRAME_HEIGHT = FACE_FRAME_WIDTH * 1.3; // Tỷ lệ oval cho khuôn mặt
+const FACE_FRAME_HEIGHT = FACE_FRAME_WIDTH * 1.3;
+const CAMERA_HEIGHT = FACE_FRAME_HEIGHT + 200;
 
-// Thời gian recording (10 giây)
-const RECORDING_DURATION = 10000; // 10 seconds
-const COUNTDOWN_DURATION = 3000; // 3 seconds countdown trước khi bắt đầu
+const RECORDING_DURATION = 10000;
+const NO_FACE_TIMEOUT = 120000;
 
 type ScanStep =
   | "instruction"
-  | "preparing"  // ✅ THÊM step mới để chuẩn bị camera
-  | "countdown"
+  | "preparing"
   | "recording"
   | "processing"
   | "success";
@@ -56,41 +49,33 @@ export const FaceScanScreen = () => {
   const router = useRouter();
   const { colors } = useAgrisaColors();
   const { faceScanMutation } = useEkyc();
-  const { ocrData } = useEkycStore(); // Lấy ảnh CMND mặt trước
-  const { user } = useAuthStore(); // Lấy user_id từ auth store
+  const { ocrData } = useEkycStore();
+  const { user } = useAuthStore();
 
   const cameraRef = useRef<VisionCamera>(null);
+  const recordingTimeRef = useRef<number>(0);
+  const lastFaceTimeRef = useRef<number>(Date.now());
+  const noFaceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice("front");
 
   const [currentStep, setCurrentStep] = useState<ScanStep>("instruction");
   const [faceDetected, setFaceDetected] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedVideoPath, setRecordedVideoPath] = useState<string | null>(
-    null
-  );
+  const [isPaused, setIsPaused] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
-  const [countdown, setCountdown] = useState(3);
-  const [waitingForFace, setWaitingForFace] = useState(false); // ✅ Thêm state mới
 
-  // Animated values cho face frame
-  const aFaceW = useSharedValue(0);
-  const aFaceH = useSharedValue(0);
-  const aFaceX = useSharedValue(0);
-  const aFaceY = useSharedValue(0);
-
-  // Chuyển trang khi face scan thành công
   useEffect(() => {
     if (faceScanMutation.isSuccess) {
       setCurrentStep("success");
-
       setTimeout(() => {
         router.push("/settings/profile");
       }, 2000);
     }
   }, [faceScanMutation.isSuccess, router]);
 
-  // Request camera permissions
   useEffect(() => {
     if (Platform.OS === "ios" || Platform.OS === "android") {
       if (!hasPermission) {
@@ -99,7 +84,17 @@ export const FaceScanScreen = () => {
     }
   }, []);
 
-  // Kiểm tra quyền camera
+  useEffect(() => {
+    return () => {
+      if (noFaceTimeoutRef.current) {
+        clearTimeout(noFaceTimeoutRef.current);
+      }
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, []);
+
   if (!hasPermission) {
     return (
       <Box
@@ -156,7 +151,6 @@ export const FaceScanScreen = () => {
     );
   }
 
-  // Face detection options
   const faceDetectionOptions = useRef<FaceDetectionOptions>({
     performanceMode: "accurate",
     landmarkMode: "all",
@@ -164,154 +158,87 @@ export const FaceScanScreen = () => {
     classificationMode: "all",
     trackingEnabled: true,
     windowWidth: SCREEN_WIDTH,
-    windowHeight: SCREEN_HEIGHT,
+    windowHeight: CAMERA_HEIGHT,
   }).current;
 
-  // Vẽ khung khuôn mặt
-  const drawFaceBounds = (face?: Face) => {
-    if (face) {
-      const { width, height, x, y } = face.bounds;
-      aFaceW.value = withTiming(width, { duration: 100 });
-      aFaceH.value = withTiming(height, { duration: 100 });
-      aFaceX.value = withTiming(x, { duration: 100 });
-      aFaceY.value = withTiming(y, { duration: 100 });
-    } else {
-      aFaceW.value = withTiming(0, { duration: 100 });
-      aFaceH.value = withTiming(0, { duration: 100 });
-      aFaceX.value = withTiming(0, { duration: 100 });
-      aFaceY.value = withTiming(0, { duration: 100 });
+  const checkNoFaceTimeout = () => {
+    if (noFaceTimeoutRef.current) {
+      clearTimeout(noFaceTimeoutRef.current);
     }
+
+    noFaceTimeoutRef.current = setTimeout(() => {
+      Alert.alert(
+        "Hết thời gian",
+        "Không phát hiện khuôn mặt sau 2 phút. Vui lòng thử lại sau.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              stopRecording();
+              router.push("/settings/profile");
+            },
+          },
+        ]
+      );
+    }, NO_FACE_TIMEOUT);
   };
 
-  const faceBoxStyle = useAnimatedStyle(() => ({
-    position: "absolute",
-    borderWidth: 4,
-    borderColor: faceDetected ? colors.success : colors.warning,
-    borderRadius: 999, // Oval shape
-    width: aFaceW.value,
-    height: aFaceH.value,
-    left: aFaceX.value,
-    top: aFaceY.value,
-  }));
-
-  // Xử lý khi detect khuôn mặt
   const handleFacesDetection = (faces: Face[]) => {
     try {
       if (faces?.length > 0) {
         const face = faces[0];
-        drawFaceBounds(face);
 
-        // Kiểm tra khuôn mặt có hợp lệ không (mắt mở, nhìn thẳng)
         const isValidFace =
           face.leftEyeOpenProbability > 0.7 &&
           face.rightEyeOpenProbability > 0.7 &&
-          Math.abs(face.yawAngle) < 15 && // Không quay đầu quá 15 độ
-          Math.abs(face.pitchAngle) < 15; // Không ngửa/cúi đầu quá 15 độ
+          Math.abs(face.yawAngle) < 15 &&
+          Math.abs(face.pitchAngle) < 15;
 
         setFaceDetected(isValidFace);
 
-        // Nếu đang recording và mất mặt -> pause
-        if (isRecording && !isValidFace) {
-          pauseRecording();
-        }
-        // Nếu đang recording và có mặt trở lại -> resume
-        else if (isRecording && isValidFace) {
-          resumeRecording();
+        if (isValidFace) {
+          lastFaceTimeRef.current = Date.now();
+
+          if (currentStep === "preparing") {
+            startRecording();
+          } else if (currentStep === "recording" && isPaused) {
+            setIsPaused(false);
+          }
+        } else if (currentStep === "recording" && !isPaused) {
+          setIsPaused(true);
         }
       } else {
-        drawFaceBounds();
         setFaceDetected(false);
-
-        // Nếu đang recording và mất mặt -> pause
-        if (isRecording) {
-          pauseRecording();
+        if (currentStep === "recording" && !isPaused) {
+          setIsPaused(true);
         }
       }
     } catch (error) {
-      console.error("Lỗi khi detect khuôn mặt:", error);
+      setFaceDetected(false);
     }
   };
 
-  // ✅ Sửa lại: Bắt đầu preparing (bật camera trước)
   const startPreparation = () => {
     setCurrentStep("preparing");
-    setWaitingForFace(true);
+    checkNoFaceTimeout();
   };
 
-  // ✅ Auto start countdown khi detect được mặt
-  useEffect(() => {
-    if (currentStep === "preparing" && faceDetected && waitingForFace) {
-      setWaitingForFace(false);
-      startCountdown();
-    }
-  }, [currentStep, faceDetected, waitingForFace]);
-
-  // ✅ Timeout nếu không detect được mặt sau 10 giây
-  useEffect(() => {
-    if (currentStep === "preparing") {
-      const timeout = setTimeout(() => {
-        if (!faceDetected) {
-          Alert.alert(
-            "Không phát hiện khuôn mặt",
-            "Vui lòng đảm bảo khuôn mặt của bạn nằm trong khung và thử lại.",
-            [
-              {
-                text: "Thử lại",
-                onPress: () => {
-                  setCurrentStep("preparing");
-                  setWaitingForFace(true);
-                },
-              },
-              {
-                text: "Hủy",
-                onPress: () => setCurrentStep("instruction"),
-                style: "cancel",
-              },
-            ]
-          );
-        }
-      }, 10000); // 10 giây timeout
-
-      return () => clearTimeout(timeout);
-    }
-  }, [currentStep, faceDetected]);
-
-  // Bắt đầu countdown (không cần check faceDetected nữa)
-  const startCountdown = () => {
-    setCurrentStep("countdown");
-    setCountdown(3);
-
-    const countdownInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdownInterval);
-          startRecording();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  // Bắt đầu recording
   const startRecording = async () => {
-    if (!cameraRef.current || !faceDetected) return;
+    if (!cameraRef.current) return;
 
     try {
       setCurrentStep("recording");
       setIsRecording(true);
+      setIsPaused(false);
+      recordingTimeRef.current = 0;
       setRecordingProgress(0);
 
-      // Bắt đầu recording
       await cameraRef.current.startRecording({
         onRecordingFinished: (video) => {
-          console.log("Recording finished:", video.path);
-          setRecordedVideoPath(video.path);
           setIsRecording(false);
           handleSubmit(video.path);
         },
         onRecordingError: (error) => {
-          console.error("Recording error:", error);
           Alert.alert("Lỗi", "Không thể ghi hình. Vui lòng thử lại.", [
             { text: "Đóng" },
           ]);
@@ -320,21 +247,26 @@ export const FaceScanScreen = () => {
         },
       });
 
-      // Progress bar cho 10 giây
-      const startTime = Date.now();
-      const progressInterval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min((elapsed / RECORDING_DURATION) * 100, 100);
-        setRecordingProgress(progress);
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
 
-        // Dừng sau 10 giây
-        if (elapsed >= RECORDING_DURATION) {
-          clearInterval(progressInterval);
-          stopRecording();
+      recordingIntervalRef.current = setInterval(() => {
+        if (!isPaused) {
+          recordingTimeRef.current += 100;
+
+          const progress = Math.min(
+            (recordingTimeRef.current / RECORDING_DURATION) * 100,
+            100
+          );
+          setRecordingProgress(progress);
+
+          if (recordingTimeRef.current >= RECORDING_DURATION) {
+            stopRecording();
+          }
         }
       }, 100);
     } catch (error) {
-      console.error("Lỗi khi bắt đầu recording:", error);
       Alert.alert("Lỗi", "Không thể bắt đầu ghi hình. Vui lòng thử lại.", [
         { text: "Đóng" },
       ]);
@@ -343,37 +275,24 @@ export const FaceScanScreen = () => {
     }
   };
 
-  // Tạm dừng recording khi mất mặt
-  const pauseRecording = async () => {
-    if (!cameraRef.current || !isRecording) return;
-
-    try {
-      // Note: react-native-vision-camera không hỗ trợ pause/resume
-      // Nên chúng ta sẽ dừng và bắt đầu lại
-      console.log("Mất khuôn mặt - đang chờ detect lại...");
-    } catch (error) {
-      console.error("Lỗi khi pause recording:", error);
-    }
-  };
-
-  // Tiếp tục recording khi có mặt trở lại
-  const resumeRecording = async () => {
-    console.log("Phát hiện khuôn mặt trở lại - tiếp tục recording...");
-  };
-
-  // Dừng recording
   const stopRecording = async () => {
     if (!cameraRef.current || !isRecording) return;
 
     try {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+      if (noFaceTimeoutRef.current) {
+        clearTimeout(noFaceTimeoutRef.current);
+      }
+
       await cameraRef.current.stopRecording();
       setIsRecording(false);
     } catch (error) {
-      console.error("Lỗi khi dừng recording:", error);
+      setIsRecording(false);
     }
   };
 
-  // Submit video lên backend
   const handleSubmit = async (videoPath: string) => {
     if (!user?.id || !ocrData.cccd_front) {
       Alert.alert(
@@ -387,44 +306,34 @@ export const FaceScanScreen = () => {
     setCurrentStep("processing");
 
     try {
-      // Tạo FormData để gửi file
       const formData = new FormData();
 
-      // Append user_id
       formData.append("user_id", user.id.toString());
 
-      // Append video file
       formData.append("video", {
-        uri: Platform.OS === "android" ? videoPath : videoPath.replace("file://", ""),
+        uri:
+          Platform.OS === "android"
+            ? videoPath
+            : videoPath.replace("file://", ""),
         type: "video/mp4",
         name: `face_scan_${Date.now()}.mp4`,
       } as any);
 
-      // Append CMND file (ảnh mặt trước từ OCR)
       formData.append("cmnd", {
-        uri: Platform.OS === "android" 
-          ? ocrData.cccd_front 
-          : ocrData.cccd_front.replace("file://", ""),
+        uri:
+          Platform.OS === "android"
+            ? ocrData.cccd_front
+            : ocrData.cccd_front.replace("file://", ""),
         type: "image/jpeg",
         name: `cmnd_${Date.now()}.jpg`,
       } as any);
 
-      console.log("FormData prepared:", {
-        user_id: user.id,
-        video_path: videoPath,
-        cmnd_path: ocrData.cccd_front,
-      });
-
-
       await faceScanMutation.mutateAsync(formData as any);
-
     } catch (error) {
-      console.error("Lỗi khi gửi dữ liệu:", error);
       Alert.alert("Lỗi", "Không thể xử lý video. Vui lòng thử lại.", [
         {
           text: "Thử lại",
           onPress: () => {
-            setRecordedVideoPath(null);
             setCurrentStep("instruction");
           },
         },
@@ -432,17 +341,16 @@ export const FaceScanScreen = () => {
     }
   };
 
-  // Hủy và quay lại
   const cancelScan = () => {
     if (isRecording) {
       stopRecording();
     }
-    setCurrentStep("instruction");
-    setRecordedVideoPath(null);
+    if (noFaceTimeoutRef.current) {
+      clearTimeout(noFaceTimeoutRef.current);
+    }
     router.back();
   };
 
-  // Render màn hình hướng dẫn
   const renderInstructionScreen = () => (
     <Box flex={1} bg={colors.background} justifyContent="center" p="$6">
       <VStack space="xl" alignItems="center">
@@ -462,7 +370,6 @@ export const FaceScanScreen = () => {
           </Text>
         </VStack>
 
-        {/* Hướng dẫn chi tiết - Dành cho nông dân */}
         <Box
           bg={colors.surface}
           p="$5"
@@ -503,15 +410,13 @@ export const FaceScanScreen = () => {
               <HStack space="sm" alignItems="flex-start">
                 <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Nếu mất khuôn mặt, video sẽ tạm dừng và tiếp tục khi phát hiện
-                  lại
+                  Nếu mất khuôn mặt, video sẽ tạm dừng
                 </Text>
               </HStack>
             </VStack>
           </VStack>
         </Box>
 
-        {/* ✅ Sửa button: Gọi startPreparation thay vì startCountdown */}
         <Button
           size="lg"
           bg={colors.primary}
@@ -536,86 +441,99 @@ export const FaceScanScreen = () => {
     </Box>
   );
 
-  // ✅ Thêm màn hình preparing
-  const renderPreparingScreen = () => (
-    <Box flex={1}>
-      <FaceCamera
-        ref={cameraRef}
-        style={StyleSheet.absoluteFillObject}
-        device={device}
-        isActive={true}  // ✅ Active camera để detect face
-        video={true}
-        audio={false}
-        faceDetectionCallback={handleFacesDetection}
-        faceDetectionOptions={faceDetectionOptions}
-      />
+  const renderCameraScreen = () => (
+    <Box flex={1} bg={colors.background}>
+      <Box bg="rgba(0,0,0,0.9)" p="$4" pt="$12">
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
+            {currentStep === "preparing" ? "Chuẩn bị..." : "Đang quay video"}
+          </Text>
+          <Button size="sm" variant="link" onPress={cancelScan}>
+            <ButtonIcon as={X} color={colors.text} />
+          </Button>
+        </HStack>
+      </Box>
 
-      {/* Overlay */}
-      <Box flex={1} bg="rgba(0,0,0,0.5)">
-        {/* Header */}
-        <Box bg="rgba(0,0,0,0.8)" p="$4" pt="$12">
-          <HStack justifyContent="space-between" alignItems="center">
-            <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
-              Chuẩn bị quay video
-            </Text>
-            <Button size="sm" variant="link" onPress={cancelScan}>
-              <ButtonIcon as={X} color={colors.text} />
-            </Button>
-          </HStack>
-        </Box>
+      <Box
+        height={CAMERA_HEIGHT}
+        width={SCREEN_WIDTH}
+        position="relative"
+        overflow="hidden"
+      >
+        <FaceCamera
+          ref={cameraRef}
+          style={StyleSheet.absoluteFillObject}
+          device={device}
+          isActive={true}
+          video={true}
+          audio={false}
+          faceDetectionCallback={handleFacesDetection}
+          faceDetectionOptions={faceDetectionOptions}
+        />
 
-        {/* Face frame và hướng dẫn */}
-        <Box flex={1} justifyContent="center" alignItems="center">
-          {/* Spinner khi đang chờ detect face */}
-          {!faceDetected && (
+        <Box
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+          bg="rgba(0,0,0,0.3)"
+        >
+          {currentStep === "preparing" && !faceDetected && (
             <Box
               position="absolute"
               zIndex={10}
-              bg="rgba(0,0,0,0.7)"
+              bg="rgba(0,0,0,0.8)"
               borderRadius="$lg"
               p="$6"
               alignItems="center"
             >
               <Spinner size="large" color={colors.primary} />
-              <Text fontSize="$md" color={colors.text} mt="$4" textAlign="center">
+              <Text
+                fontSize="$md"
+                color={colors.text}
+                mt="$4"
+                textAlign="center"
+              >
                 Đang tìm khuôn mặt...
               </Text>
             </Box>
           )}
 
-          {/* Hướng dẫn */}
-          <Box mb="$6" px="$6">
+          <Box mb="$4" px="$6">
             <Text
               fontSize="$md"
               color={colors.text}
               textAlign="center"
               fontWeight="$semibold"
             >
-              {faceDetected
-                ? "Tuyệt vời! Giữ nguyên tư thế..."
-                : "Đưa khuôn mặt vào trong khung"}
+              {!faceDetected
+                ? "Đưa khuôn mặt vào trong khung"
+                : isPaused
+                ? "Giữ khuôn mặt trong khung"
+                : "Tuyệt vời! Đang ghi hình..."}
             </Text>
           </Box>
 
-          {/* Khung oval cho khuôn mặt */}
           <Box
             width={FACE_FRAME_WIDTH}
             height={FACE_FRAME_HEIGHT}
-            borderWidth={3}
-            borderColor={faceDetected ? colors.success : colors.warning}
+            borderWidth={4}
+            borderColor={
+              faceDetected && !isPaused ? colors.success : colors.warning
+            }
             borderRadius={999}
             position="relative"
           >
-            {/* 4 điểm highlight */}
             <Box
               position="absolute"
               top={20}
               left={20}
               width={30}
               height={30}
-              borderTopWidth={4}
-              borderLeftWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
+              borderTopWidth={5}
+              borderLeftWidth={5}
+              borderColor={
+                faceDetected && !isPaused ? colors.success : colors.warning
+              }
               borderTopLeftRadius="$full"
             />
             <Box
@@ -624,9 +542,11 @@ export const FaceScanScreen = () => {
               right={20}
               width={30}
               height={30}
-              borderTopWidth={4}
-              borderRightWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
+              borderTopWidth={5}
+              borderRightWidth={5}
+              borderColor={
+                faceDetected && !isPaused ? colors.success : colors.warning
+              }
               borderTopRightRadius="$full"
             />
             <Box
@@ -635,9 +555,11 @@ export const FaceScanScreen = () => {
               left={20}
               width={30}
               height={30}
-              borderBottomWidth={4}
-              borderLeftWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
+              borderBottomWidth={5}
+              borderLeftWidth={5}
+              borderColor={
+                faceDetected && !isPaused ? colors.success : colors.warning
+              }
               borderBottomLeftRadius="$full"
             />
             <Box
@@ -646,186 +568,60 @@ export const FaceScanScreen = () => {
               right={20}
               width={30}
               height={30}
-              borderBottomWidth={4}
-              borderRightWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
-              borderBottomRightRadius="$full"
+              borderBottomWidth={5}
+              borderRightWidth={5}
+              borderColor={
+                faceDetected && !isPaused ? colors.success : colors.warning
+              }
+              borderBottomLeftRadius="$full"
             />
           </Box>
 
-          {/* Animated face bounds */}
-          <Animated.View style={faceBoxStyle} />
-        </Box>
-
-        {/* Instructions ở bottom */}
-        <Box px="$6" pb="$6" bg="rgba(0,0,0,0.8)">
-          <Text fontSize="$sm" color={colors.text} textAlign="center">
-            {faceDetected
-              ? "Video sẽ tự động bắt đầu sau vài giây..."
-              : "Vui lòng đặt khuôn mặt vào trong khung"}
-          </Text>
-        </Box>
-      </Box>
-    </Box>
-  );
-
-  // Render màn hình camera (countdown + recording)
-  const renderCameraScreen = () => (
-    <Box flex={1}>
-      <FaceCamera
-        ref={cameraRef}
-        style={StyleSheet.absoluteFillObject}
-        device={device}
-        isActive={true}  // ✅ Luôn active
-        video={true}
-        audio={false}
-        faceDetectionCallback={handleFacesDetection}
-        faceDetectionOptions={faceDetectionOptions}
-      />
-
-      {/* Overlay */}
-      <Box flex={1} bg="rgba(0,0,0,0.5)">
-        {/* Header */}
-        <Box bg="rgba(0,0,0,0.8)" p="$4" pt="$12">
-          <HStack justifyContent="space-between" alignItems="center">
-            <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
-              {currentStep === "countdown" ? "Chuẩn bị..." : "Đang quay video"}
-            </Text>
-            <Button size="sm" variant="link" onPress={cancelScan}>
-              <ButtonIcon as={X} color={colors.text} />
-            </Button>
-          </HStack>
-        </Box>
-
-        {/* Face frame và hướng dẫn */}
-        <Box flex={1} justifyContent="center" alignItems="center">
-          {/* Countdown */}
-          {currentStep === "countdown" && (
-            <Box
-              position="absolute"
-              zIndex={10}
-              bg="rgba(0,0,0,0.7)"
-              borderRadius="$full"
-              width={120}
-              height={120}
-              justifyContent="center"
-              alignItems="center"
-            >
-              <Text fontSize="$6xl" fontWeight="$bold" color={colors.text}>
-                {countdown}
+          {isPaused && currentStep === "recording" && (
+            <Box mt="$4" bg="rgba(255,193,7,0.9)" px="$4" py="$2" borderRadius="$md">
+              <Text fontSize="$sm" color={colors.background} fontWeight="$bold">
+                ⏸ Tạm dừng - Vui lòng giữ khuôn mặt trong khung
               </Text>
             </Box>
           )}
-
-          {/* Hướng dẫn */}
-          <Box mb="$6" px="$6">
-            <Text
-              fontSize="$md"
-              color={colors.text}
-              textAlign="center"
-              fontWeight="$semibold"
-            >
-              {faceDetected
-                ? currentStep === "countdown"
-                  ? "Giữ nguyên tư thế..."
-                  : "Đang quay - Nhìn thẳng vào camera"
-                : "Đưa khuôn mặt vào trong khung"}
-            </Text>
-          </Box>
-
-          {/* Khung oval cho khuôn mặt */}
-          <Box
-            width={FACE_FRAME_WIDTH}
-            height={FACE_FRAME_HEIGHT}
-            borderWidth={3}
-            borderColor={faceDetected ? colors.success : colors.warning}
-            borderRadius={999}
-            position="relative"
-          >
-            {/* 4 điểm highlight */}
-            <Box
-              position="absolute"
-              top={20}
-              left={20}
-              width={30}
-              height={30}
-              borderTopWidth={4}
-              borderLeftWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
-              borderTopLeftRadius="$full"
-            />
-            <Box
-              position="absolute"
-              top={20}
-              right={20}
-              width={30}
-              height={30}
-              borderTopWidth={4}
-              borderRightWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
-              borderTopRightRadius="$full"
-            />
-            <Box
-              position="absolute"
-              bottom={20}
-              left={20}
-              width={30}
-              height={30}
-              borderBottomWidth={4}
-              borderLeftWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
-              borderBottomLeftRadius="$full"
-            />
-            <Box
-              position="absolute"
-              bottom={20}
-              right={20}
-              width={30}
-              height={30}
-              borderBottomWidth={4}
-              borderRightWidth={4}
-              borderColor={faceDetected ? colors.success : colors.warning}
-              borderBottomRightRadius="$full"
-            />
-          </Box>
-
-          {/* Status message */}
-          <Box mt="$6" px="$6">
-            <Text fontSize="$xs" color={colors.text} textAlign="center">
-              {!faceDetected && "Vui lòng giữ khuôn mặt trong khung"}
-              {faceDetected &&
-                currentStep === "recording" &&
-                "Tuyệt vời! Đang ghi hình..."}
-            </Text>
-          </Box>
-
-          {/* Animated face bounds */}
-          <Animated.View style={faceBoxStyle} />
         </Box>
-
-        {/* Progress bar khi đang recording */}
-        {currentStep === "recording" && (
-          <Box px="$6" pb="$6" bg="rgba(0,0,0,0.8)">
-            <VStack space="md">
-              <HStack justifyContent="space-between" alignItems="center">
-                <Text fontSize="$sm" color={colors.text}>
-                  Tiến trình: {Math.round(recordingProgress)}%
-                </Text>
-                <Text fontSize="$sm" color={colors.text}>
-                  {Math.round((recordingProgress / 100) * 10)}s / 10s
-                </Text>
-              </HStack>
-              <Progress value={recordingProgress} size="md">
-                <ProgressFilledTrack bg={colors.success} />
-              </Progress>
-            </VStack>
-          </Box>
-        )}
       </Box>
+
+      {currentStep === "recording" && (
+        <Box px="$6" py="$4" bg={colors.background}>
+          <VStack space="md">
+            <HStack justifyContent="space-between" alignItems="center">
+              <Text fontSize="$sm" color={colors.text}>
+                Tiến trình: {Math.round(recordingProgress)}%
+              </Text>
+              <Text fontSize="$sm" color={colors.text}>
+                {Math.round((recordingProgress / 100) * 10)}s / 10s
+              </Text>
+            </HStack>
+            <Progress value={recordingProgress} size="md">
+              <ProgressFilledTrack
+                bg={isPaused ? colors.warning : colors.success}
+              />
+            </Progress>
+            <Text fontSize="$xs" color={colors.textSecondary} textAlign="center">
+              {isPaused
+                ? "Đang tạm dừng - Vui lòng giữ mặt trong khung"
+                : "Đang ghi hình - Giữ nguyên tư thế"}
+            </Text>
+          </VStack>
+        </Box>
+      )}
+
+      {currentStep === "preparing" && (
+        <Box px="$6" py="$4" bg={colors.background}>
+          <Text fontSize="$sm" color={colors.text} textAlign="center">
+            Đưa khuôn mặt vào khung để bắt đầu
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 
-  // Render màn hình đang xử lý
   const renderProcessingScreen = () => (
     <Box
       flex={1}
@@ -858,7 +654,6 @@ export const FaceScanScreen = () => {
     </Box>
   );
 
-  // Render màn hình thành công
   const renderSuccessScreen = () => (
     <Box
       flex={1}
@@ -888,13 +683,10 @@ export const FaceScanScreen = () => {
     </Box>
   );
 
-  // Main render
   switch (currentStep) {
     case "instruction":
       return renderInstructionScreen();
     case "preparing":
-      return renderPreparingScreen();
-    case "countdown":
     case "recording":
       return renderCameraScreen();
     case "processing":

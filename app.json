@@ -11,6 +11,7 @@
     "platforms": ["ios", "android"],
     "ios": {
       "supportsTablet": true,
+      
       "infoPlist": {
         "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
         "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ"
@@ -63,6 +64,9 @@
             "enableProguardInReleaseBuilds": false,
             "enableHermes": true,
             "usesCleartextTraffic": true
+          },
+          "ios": {
+            "deploymentTarget": "13.0"
           }
         }
       ],

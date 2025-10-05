@@ -137,12 +137,17 @@ workflows:
         script: |
           cd ios && pod install
       
+      - name: Debug List Xcode Schemes
+        script: |
+          # Debug để xác nhận schemes (best practice cho CI)
+          xcodebuild -workspace ios/Agrisa.xcworkspace -list || true  # Không fail nếu lỗi, chỉ log
+      
       - name: Build iOS for Simulator
         script: |
           export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
           
-          xcodebuild -workspace ios/agrisa.xcworkspace \
-            -scheme agrisa \
+          xcodebuild -workspace ios/Agrisa.xcworkspace \  # Sửa: Agrisa (hoa A)
+            -scheme Agrisa \  # Sửa: Agrisa (hoa A)
             -configuration Release \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath $CM_BUILD_DIR/build \
@@ -153,8 +158,8 @@ workflows:
       - name: Copy Simulator Build
         script: |
           mkdir -p $CM_BUILD_DIR/simulator_build
-          if [ -d "$CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/agrisa.app" ]; then
-            cp -R $CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/agrisa.app \
+          if [ -d "$CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/Agrisa.app" ]; then  # Sửa: Agrisa (hoa)
+            cp -R $CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/Agrisa.app \
               $CM_BUILD_DIR/simulator_build/
             echo "✅ iOS Simulator build successful"
           else
@@ -163,7 +168,7 @@ workflows:
           fi
     
     artifacts:
-      - simulator_build/agrisa.app
+      - simulator_build/Agrisa.app  # Sửa: Agrisa
       - build/Build/Products/Release-iphonesimulator/**/*
     
     publishing:

@@ -1,12 +1,12 @@
 workflows:
-  # Android Workflow - Chỉ dùng Bun (Đã sửa lỗi --clear)
+  # Android Workflow
   react-native-android:
     name: React Native Android (Bun)
     instance_type: mac_mini_m1
     max_build_duration: 120
     environment:
       groups:
-        - expo_url  # ✅ Chứa EXPO_PUBLIC_API_URL
+        - expo_url
       vars:
         EXPO_PROJECT_SLUG: "agrisa"
       node: 18
@@ -24,10 +24,8 @@ workflows:
           bun install
           bun add -g @expo/cli
       
-      # ✅ MỚI: Setup environment variables TRƯỚC khi prebuild
       - name: Setup Environment Variables
         script: |
-          # Verify biến môi trường đã được load từ Codemagic
           if [ -z "$EXPO_PUBLIC_API_URL" ]; then
             echo "❌ ERROR: EXPO_PUBLIC_API_URL is not set!"
             echo "Please check Codemagic environment group 'expo_url'"
@@ -36,24 +34,16 @@ workflows:
           
           echo "✅ Environment variables loaded:"
           echo "EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL"
-          
-          # Export để Expo có thể đọc được
           export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
       
       - name: Expo Prebuild for Android
         script: |
           export PATH="$HOME/.bun/bin:$PATH"
-          
-          # ✅ Export lại environment variables
           export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
           
-          # Xóa thư mục android cũ
           rm -rf android
-          
-          # Prebuild - app.config.js sẽ đọc process.env.EXPO_PUBLIC_API_URL
           bunx expo prebuild --platform android
           
-          # Verify API URL đã được bake vào build
           if grep -r "EXPO_PUBLIC_API_URL" android/; then
             echo "✅ API URL has been embedded in Android build"
           else
@@ -87,7 +77,7 @@ workflows:
           success: true
           failure: false
 
-  # iOS Simulator Workflow - Không cần Apple Developer Account  
+  # iOS Simulator Workflow
   react-native-ios-simulator:
     name: React Native iOS Simulator (Bun)
     instance_type: mac_mini_m1
@@ -137,17 +127,23 @@ workflows:
         script: |
           cd ios && pod install
       
-      - name: Debug List Xcode Schemes
+      - name: Debug - List Xcode Workspace Info
         script: |
-          # Debug để xác nhận schemes (best practice cho CI)
-          xcodebuild -workspace ios/Agrisa.xcworkspace -list || true  # Không fail nếu lỗi, chỉ log
+          echo "📋 Listing Xcode workspace schemes..."
+          xcodebuild -workspace ios/Agrisa.xcworkspace -list || {
+            echo "⚠️ Warning: Could not list schemes"
+            echo "Checking for workspace file..."
+            ls -la ios/*.xcworkspace/
+          }
       
       - name: Build iOS for Simulator
         script: |
           export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
           
-          xcodebuild -workspace ios/Agrisa.xcworkspace \  # Sửa: Agrisa (hoa A)
-            -scheme Agrisa \  # Sửa: Agrisa (hoa A)
+          echo "🔨 Building iOS for Simulator..."
+          xcodebuild \
+            -workspace ios/Agrisa.xcworkspace \
+            -scheme Agrisa \
             -configuration Release \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath $CM_BUILD_DIR/build \
@@ -158,17 +154,22 @@ workflows:
       - name: Copy Simulator Build
         script: |
           mkdir -p $CM_BUILD_DIR/simulator_build
-          if [ -d "$CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/Agrisa.app" ]; then  # Sửa: Agrisa (hoa)
+          
+          echo "📦 Looking for built .app file..."
+          find $CM_BUILD_DIR/build -name "*.app" -type d
+          
+          if [ -d "$CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/Agrisa.app" ]; then
             cp -R $CM_BUILD_DIR/build/Build/Products/Release-iphonesimulator/Agrisa.app \
               $CM_BUILD_DIR/simulator_build/
-            echo "✅ iOS Simulator build successful"
+            echo "✅ iOS Simulator build copied successfully"
           else
-            echo "❌ iOS Simulator build not found"
+            echo "❌ Agrisa.app not found at expected location"
+            echo "Searching for any .app files..."
             find $CM_BUILD_DIR/build -name "*.app" -type d
           fi
     
     artifacts:
-      - simulator_build/Agrisa.app  # Sửa: Agrisa
+      - simulator_build/Agrisa.app
       - build/Build/Products/Release-iphonesimulator/**/*
     
     publishing:

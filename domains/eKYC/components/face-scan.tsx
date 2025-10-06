@@ -14,7 +14,7 @@ import {
 } from "@gluestack-ui/themed";
 import { useRouter } from "expo-router";
 import { Camera, CheckCircle2, User, X } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Dimensions, Platform, StyleSheet } from "react-native";
 import {
   Camera as VisionCamera,
@@ -31,12 +31,15 @@ import { useEkycStore } from "../stores/ekyc.store";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+// Constants - Đặt ở ngoài component
 const FACE_FRAME_WIDTH = SCREEN_WIDTH * 0.7;
 const FACE_FRAME_HEIGHT = FACE_FRAME_WIDTH * 1.3;
 const CAMERA_HEIGHT = FACE_FRAME_HEIGHT + 200;
 
-const RECORDING_DURATION = 10000;
-const NO_FACE_TIMEOUT = 120000;
+const RECORDING_DURATION = 10000; // 10 giây
+const NO_FACE_TIMEOUT = 120000; // 2 phút
+const FACE_DETECTION_INTERVAL = 500; // Kiểm tra mỗi 500ms
+const MAX_NO_FACE_PAUSE = 3000; // Cảnh báo sau 3 giây không có face
 
 type ScanStep =
   | "instruction"
@@ -52,25 +55,56 @@ export const FaceScanScreen = () => {
   const { ocrData } = useEkycStore();
   const { user } = useAuthStore();
 
-  const cameraRef = useRef<VisionCamera>(null);
-  const recordingTimeRef = useRef<number>(0);
-  const lastFaceTimeRef = useRef<number>(Date.now());
-  const noFaceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const isRecordingRef = useRef<boolean>(false);
-  const recordedVideoPathRef = useRef<string | null>(null);
-
+  // Camera hooks - Phải gọi TRƯỚC các điều kiện return
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice("front");
 
+  // Refs
+  const cameraRef = useRef<VisionCamera>(null);
+  const recordingTimeRef = useRef<number>(0);
+  const pausedTimeRef = useRef<number>(0);
+  const lastFaceDetectedTimeRef = useRef<number>(Date.now());
+  const faceDetectionCallCountRef = useRef<number>(0);
+  const isFaceDetectionWorkingRef = useRef<boolean>(false);
+  const isRecordingRef = useRef<boolean>(false);
+  const recordedVideoPathRef = useRef<string | null>(null);
+  
+  // Timeout refs
+  const noFaceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const faceDetectionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pauseCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // States
   const [currentStep, setCurrentStep] = useState<ScanStep>("instruction");
   const [faceDetected, setFaceDetected] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingProgress, setRecordingProgress] = useState(0);
+  const [faceDetectionStatus, setFaceDetectionStatus] = useState<
+    "working" | "error" | "checking"
+  >("checking");
 
-  // Cleanup function
-  const cleanupRecording = () => {
+  // Face Detection Options - Dùng useMemo thay vì useRef
+  const faceDetectionOptions = useMemo<FaceDetectionOptions>(
+    () => ({
+      performanceMode: "accurate",
+      landmarkMode: "all",
+      contourMode: "none",
+      classificationMode: "all",
+      trackingEnabled: true,
+      windowWidth: SCREEN_WIDTH,
+      windowHeight: CAMERA_HEIGHT,
+    }),
+    []
+  );
+
+  // ==================== CLEANUP FUNCTIONS ====================
+
+  const cleanupRecording = useCallback(() => {
+    console.log("🧹 Cleaning up recording...");
+
+    // Clear all intervals và timeouts
     if (recordingIntervalRef.current) {
       clearInterval(recordingIntervalRef.current);
       recordingIntervalRef.current = null;
@@ -79,23 +113,445 @@ export const FaceScanScreen = () => {
       clearTimeout(noFaceTimeoutRef.current);
       noFaceTimeoutRef.current = null;
     }
+    if (faceDetectionCheckIntervalRef.current) {
+      clearInterval(faceDetectionCheckIntervalRef.current);
+      faceDetectionCheckIntervalRef.current = null;
+    }
+    if (pauseCheckIntervalRef.current) {
+      clearInterval(pauseCheckIntervalRef.current);
+      pauseCheckIntervalRef.current = null;
+    }
+
+    // Reset refs
     recordingTimeRef.current = 0;
+    pausedTimeRef.current = 0;
     isRecordingRef.current = false;
     recordedVideoPathRef.current = null;
-  };
+    isFaceDetectionWorkingRef.current = false;
+    faceDetectionCallCountRef.current = 0;
+  }, []);
 
-  // Reset về trạng thái ban đầu
-  const resetToInitialState = () => {
+  const resetToInitialState = useCallback(() => {
+    console.log("🔄 Resetting to initial state...");
     cleanupRecording();
     setCurrentStep("instruction");
     setFaceDetected(false);
     setIsRecording(false);
     setIsPaused(false);
     setRecordingProgress(0);
-  };
+    setFaceDetectionStatus("checking");
+  }, [cleanupRecording]);
 
+  // ==================== FACE DETECTION HEALTH CHECK ====================
+
+  const startFaceDetectionCheck = useCallback(() => {
+    console.log("🔍 Starting face detection health check...");
+
+    if (faceDetectionCheckIntervalRef.current) {
+      clearInterval(faceDetectionCheckIntervalRef.current);
+    }
+
+    let checkCount = 0;
+    const maxChecks = 10; // 5 giây
+
+    faceDetectionCheckIntervalRef.current = setInterval(() => {
+      checkCount++;
+      console.log(
+        `🔍 Check ${checkCount}/${maxChecks}, callbacks: ${faceDetectionCallCountRef.current}`
+      );
+
+      // Nếu có ít nhất 3 callbacks -> face detection hoạt động
+      if (faceDetectionCallCountRef.current >= 3) {
+        console.log("✅ Face detection is working!");
+        isFaceDetectionWorkingRef.current = true;
+        setFaceDetectionStatus("working");
+
+        if (faceDetectionCheckIntervalRef.current) {
+          clearInterval(faceDetectionCheckIntervalRef.current);
+          faceDetectionCheckIntervalRef.current = null;
+        }
+        return;
+      }
+
+      // Sau 5 giây không có callback -> fallback mode
+      if (checkCount >= maxChecks) {
+        console.warn("⚠️ Face detection NOT working! Using auto mode.");
+        isFaceDetectionWorkingRef.current = false;
+        setFaceDetectionStatus("error");
+
+        if (faceDetectionCheckIntervalRef.current) {
+          clearInterval(faceDetectionCheckIntervalRef.current);
+          faceDetectionCheckIntervalRef.current = null;
+        }
+
+        Alert.alert(
+          "Thông báo",
+          "Không thể sử dụng tính năng phát hiện khuôn mặt. Hệ thống sẽ tự động ghi hình 10 giây.\n\nVui lòng giữ khuôn mặt trong khung trong suốt quá trình.",
+          [
+            {
+              text: "Tiếp tục",
+              onPress: () => {
+                setTimeout(() => {
+                  if (currentStep === "preparing") {
+                    startRecording();
+                  }
+                }, 1000);
+              },
+            },
+            {
+              text: "Hủy",
+              style: "cancel",
+              onPress: () => resetToInitialState(),
+            },
+          ]
+        );
+      }
+    }, FACE_DETECTION_INTERVAL);
+  }, [currentStep, resetToInitialState]);
+
+  // ==================== FACE DETECTION CALLBACK ====================
+
+  const handleFacesDetection = useCallback(
+    (faces: Face[]) => {
+      try {
+        // Tăng counter
+        faceDetectionCallCountRef.current++;
+
+        if (faces?.length > 0) {
+          const face = faces[0];
+
+          const isValidFace =
+            face.leftEyeOpenProbability > 0.7 &&
+            face.rightEyeOpenProbability > 0.7 &&
+            Math.abs(face.yawAngle) < 15 &&
+            Math.abs(face.pitchAngle) < 15;
+
+          setFaceDetected(isValidFace);
+
+          if (isValidFace) {
+            lastFaceDetectedTimeRef.current = Date.now();
+
+            // Preparing -> Start recording
+            if (
+              currentStep === "preparing" &&
+              isFaceDetectionWorkingRef.current
+            ) {
+              startRecording();
+            }
+            // Recording & paused -> Resume
+            else if (currentStep === "recording" && isPaused) {
+              console.log("😊 Face detected, resuming...");
+              setIsPaused(false);
+              pausedTimeRef.current = 0;
+            }
+          } else if (currentStep === "recording" && !isPaused) {
+            console.log("😟 Invalid face, pausing...");
+            setIsPaused(true);
+          }
+        } else {
+          setFaceDetected(false);
+
+          if (currentStep === "recording" && !isPaused) {
+            console.log("😟 No face, pausing...");
+            setIsPaused(true);
+          }
+        }
+      } catch (error) {
+        console.error("❌ Face detection error:", error);
+        setFaceDetected(false);
+      }
+    },
+    [currentStep, isPaused]
+  );
+
+  // ==================== RECORDING FUNCTIONS ====================
+
+  const startPreparation = useCallback(() => {
+    console.log("🎬 Starting preparation...");
+
+    // Reset state
+    cleanupRecording();
+    setFaceDetected(false);
+    setIsRecording(false);
+    setIsPaused(false);
+    setRecordingProgress(0);
+    setFaceDetectionStatus("checking");
+
+    setCurrentStep("preparing");
+
+    // Bắt đầu health check
+    startFaceDetectionCheck();
+
+    // Timeout 2 phút
+    noFaceTimeoutRef.current = setTimeout(() => {
+      console.error("⏰ No face timeout");
+      Alert.alert(
+        "Hết thời gian",
+        "Không phát hiện khuôn mặt sau 2 phút. Vui lòng thử lại.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              if (isRecordingRef.current) {
+                stopRecording();
+              }
+              resetToInitialState();
+            },
+          },
+        ]
+      );
+    }, NO_FACE_TIMEOUT);
+  }, [cleanupRecording, startFaceDetectionCheck, resetToInitialState]);
+
+  const startRecording = useCallback(async () => {
+    if (!cameraRef.current || isRecordingRef.current) {
+      console.log("⚠️ Cannot start recording");
+      return;
+    }
+
+    try {
+      console.log("🎥 Starting recording...");
+
+      setCurrentStep("recording");
+      setIsRecording(true);
+      isRecordingRef.current = true;
+      setIsPaused(false);
+      recordingTimeRef.current = 0;
+      pausedTimeRef.current = 0;
+      setRecordingProgress(0);
+
+      await cameraRef.current.startRecording({
+        onRecordingFinished: (video) => {
+          console.log("✅ Recording finished:", video.path);
+          recordedVideoPathRef.current = video.path;
+          isRecordingRef.current = false;
+          setIsRecording(false);
+
+          // Submit nếu đủ 10 giây
+          if (recordingTimeRef.current >= RECORDING_DURATION) {
+            handleSubmit(video.path);
+          }
+        },
+        onRecordingError: (error) => {
+          console.error("❌ Recording error:", error);
+          isRecordingRef.current = false;
+          setIsRecording(false);
+
+          Alert.alert("Lỗi", "Không thể ghi hình. Vui lòng thử lại.", [
+            {
+              text: "Thử lại",
+              onPress: () => resetToInitialState(),
+            },
+          ]);
+        },
+      });
+
+      // Clear interval cũ
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+
+      // Interval cập nhật progress
+      recordingIntervalRef.current = setInterval(() => {
+        // CHỈ tăng progress khi KHÔNG bị pause
+        if (!isPaused) {
+          recordingTimeRef.current += 100;
+
+          const progress = Math.min(
+            (recordingTimeRef.current / RECORDING_DURATION) * 100,
+            100
+          );
+          setRecordingProgress(progress);
+
+          console.log(
+            `📊 Progress: ${progress.toFixed(1)}% (${recordingTimeRef.current}ms)`
+          );
+
+          // Đủ 10 giây -> stop
+          if (recordingTimeRef.current >= RECORDING_DURATION) {
+            console.log("✅ Recording duration reached");
+            stopRecording();
+          }
+        } else {
+          // Tăng paused time
+          pausedTimeRef.current += 100;
+          console.log(`⏸️ Paused: ${pausedTimeRef.current}ms`);
+        }
+      }, 100);
+
+      // Interval kiểm tra pause quá lâu (chỉ khi face detection hoạt động)
+      if (isFaceDetectionWorkingRef.current) {
+        if (pauseCheckIntervalRef.current) {
+          clearInterval(pauseCheckIntervalRef.current);
+        }
+
+        pauseCheckIntervalRef.current = setInterval(() => {
+          if (isPaused) {
+            const timeSinceLastFace =
+              Date.now() - lastFaceDetectedTimeRef.current;
+
+            if (timeSinceLastFace > MAX_NO_FACE_PAUSE) {
+              console.warn("⚠️ Paused too long");
+
+              if (pauseCheckIntervalRef.current) {
+                clearInterval(pauseCheckIntervalRef.current);
+                pauseCheckIntervalRef.current = null;
+              }
+
+              Alert.alert(
+                "Cảnh báo",
+                "Không phát hiện khuôn mặt trong 3 giây. Vui lòng đưa khuôn mặt vào khung.",
+                [
+                  {
+                    text: "Tiếp tục",
+                    onPress: () => {
+                      lastFaceDetectedTimeRef.current = Date.now();
+                      pausedTimeRef.current = 0;
+                    },
+                  },
+                  {
+                    text: "Bắt đầu lại",
+                    onPress: () => {
+                      stopRecording();
+                      resetToInitialState();
+                    },
+                  },
+                ]
+              );
+            }
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error("❌ Start recording error:", error);
+      isRecordingRef.current = false;
+      setIsRecording(false);
+
+      Alert.alert("Lỗi", "Không thể bắt đầu ghi hình. Vui lòng thử lại.", [
+        {
+          text: "Thử lại",
+          onPress: () => resetToInitialState(),
+        },
+      ]);
+    }
+  }, [isPaused, resetToInitialState]);
+
+  const stopRecording = useCallback(async () => {
+    if (!cameraRef.current || !isRecordingRef.current) {
+      console.log("⚠️ Already stopped or not recording");
+      return;
+    }
+
+    try {
+      console.log("🛑 Stopping recording...");
+
+      // Clear intervals
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+      if (noFaceTimeoutRef.current) {
+        clearTimeout(noFaceTimeoutRef.current);
+        noFaceTimeoutRef.current = null;
+      }
+      if (pauseCheckIntervalRef.current) {
+        clearInterval(pauseCheckIntervalRef.current);
+        pauseCheckIntervalRef.current = null;
+      }
+
+      // Stop camera recording
+      await cameraRef.current.stopRecording();
+      console.log("✅ Recording stopped");
+    } catch (error) {
+      console.error("❌ Stop recording error:", error);
+      isRecordingRef.current = false;
+      setIsRecording(false);
+    }
+  }, []);
+
+  // ==================== SUBMIT ====================
+
+  const handleSubmit = useCallback(
+    async (videoPath: string) => {
+      console.log("📤 Submitting...");
+      console.log("User ID:", user?.id);
+      console.log("CCCD:", ocrData.cccd_front);
+      console.log("Video:", videoPath);
+
+      if (!user?.id || !ocrData.cccd_front) {
+        Alert.alert(
+          "Lỗi",
+          "Thiếu thông tin xác thực. Vui lòng quay lại và thực hiện lại từ đầu.",
+          [
+            {
+              text: "Đóng",
+              onPress: () => router.back(),
+            },
+          ]
+        );
+        return;
+      }
+
+      setCurrentStep("processing");
+
+      try {
+        const formData = new FormData();
+
+        formData.append("user_id", user.id.toString());
+
+        // FIX: Chuẩn hóa file path cho video
+        let videoUri = videoPath;
+        if (Platform.OS === "ios" && !videoUri.startsWith("file://")) {
+          videoUri = `file://${videoUri}`;
+        } else if (Platform.OS === "android" && videoUri.startsWith("file://")) {
+          videoUri = videoUri.replace("file://", "");
+        }
+
+        formData.append("video", {
+          uri: videoUri,
+          type: "video/mp4",
+          name: `face_scan_${Date.now()}.mp4`,
+        } as any);
+
+        // FIX: Chuẩn hóa file path cho CCCD
+        let cccdUri = ocrData.cccd_front;
+        if (Platform.OS === "ios" && !cccdUri.startsWith("file://")) {
+          cccdUri = `file://${cccdUri}`;
+        } else if (Platform.OS === "android" && cccdUri.startsWith("file://")) {
+          cccdUri = cccdUri.replace("file://", "");
+        }
+
+        formData.append("cmnd", {
+          uri: cccdUri,
+          type: "image/jpeg",
+          name: `cmnd_${Date.now()}.jpg`,
+        } as any);
+
+        console.log("🚀 Calling mutation...");
+        await faceScanMutation.mutateAsync(formData as any);
+        console.log("✅ Mutation successful");
+      } catch (error) {
+        console.error("❌ Submit error:", error);
+      }
+    },
+    [user, ocrData, router, faceScanMutation]
+  );
+
+  const cancelScan = useCallback(() => {
+    console.log("❌ Canceling...");
+    if (isRecordingRef.current) {
+      stopRecording();
+    }
+    cleanupRecording();
+    router.back();
+  }, [stopRecording, cleanupRecording, router]);
+
+  // ==================== EFFECTS ====================
+
+  // Handle mutation results
   useEffect(() => {
     if (faceScanMutation.isSuccess) {
+      console.log("✅ Success");
       setCurrentStep("success");
       const timeout = setTimeout(() => {
         router.push("/settings/profile");
@@ -104,6 +560,7 @@ export const FaceScanScreen = () => {
     }
 
     if (faceScanMutation.isError) {
+      console.error("❌ Error:", faceScanMutation.error);
       Alert.alert(
         "Lỗi xác thực",
         faceScanMutation.error?.message ||
@@ -127,21 +584,39 @@ export const FaceScanScreen = () => {
         ]
       );
     }
-  }, [faceScanMutation.isSuccess, faceScanMutation.isError, router]);
+  }, [faceScanMutation.isSuccess, faceScanMutation.isError, router, resetToInitialState]);
 
+  // Request permission
   useEffect(() => {
     if (Platform.OS === "ios" || Platform.OS === "android") {
       if (!hasPermission) {
         requestPermission();
       }
     }
-  }, []);
+  }, [hasPermission, requestPermission]);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
+      console.log("🧹 Component unmounting");
       cleanupRecording();
     };
-  }, []);
+  }, [cleanupRecording]);
+
+  // Update isPaused state trong interval
+  useEffect(() => {
+    if (currentStep === "recording") {
+      // Force update isPaused từ faceDetected
+      if (faceDetectionStatus === "working") {
+        setIsPaused(!faceDetected);
+      } else if (faceDetectionStatus === "error") {
+        // Không pause khi ở auto mode
+        setIsPaused(false);
+      }
+    }
+  }, [faceDetected, currentStep, faceDetectionStatus]);
+
+  // ==================== RENDER CHECKS ====================
 
   if (!hasPermission) {
     return (
@@ -199,245 +674,7 @@ export const FaceScanScreen = () => {
     );
   }
 
-  const faceDetectionOptions = useRef<FaceDetectionOptions>({
-    performanceMode: "accurate",
-    landmarkMode: "all",
-    contourMode: "none",
-    classificationMode: "all",
-    trackingEnabled: true,
-    windowWidth: SCREEN_WIDTH,
-    windowHeight: CAMERA_HEIGHT,
-  }).current;
-
-  const checkNoFaceTimeout = () => {
-    if (noFaceTimeoutRef.current) {
-      clearTimeout(noFaceTimeoutRef.current);
-    }
-
-    noFaceTimeoutRef.current = setTimeout(() => {
-      Alert.alert(
-        "Hết thời gian",
-        "Không phát hiện khuôn mặt sau 2 phút. Vui lòng thử lại sau.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              stopRecording();
-              resetToInitialState();
-            },
-          },
-        ]
-      );
-    }, NO_FACE_TIMEOUT);
-  };
-
-  const handleFacesDetection = (faces: Face[]) => {
-    try {
-      if (faces?.length > 0) {
-        const face = faces[0];
-
-        const isValidFace =
-          face.leftEyeOpenProbability > 0.7 &&
-          face.rightEyeOpenProbability > 0.7 &&
-          Math.abs(face.yawAngle) < 15 &&
-          Math.abs(face.pitchAngle) < 15;
-
-        setFaceDetected(isValidFace);
-
-        if (isValidFace) {
-          lastFaceTimeRef.current = Date.now();
-
-          if (currentStep === "preparing") {
-            startRecording();
-          } else if (currentStep === "recording" && isPaused) {
-            setIsPaused(false);
-          }
-        } else if (currentStep === "recording" && !isPaused) {
-          setIsPaused(true);
-        }
-      } else {
-        setFaceDetected(false);
-        if (currentStep === "recording" && !isPaused) {
-          setIsPaused(true);
-        }
-      }
-    } catch (error) {
-      console.error("Face detection error:", error);
-      setFaceDetected(false);
-    }
-  };
-
-  const startPreparation = () => {
-    // Reset trạng thái trước khi bắt đầu
-    cleanupRecording();
-    setFaceDetected(false);
-    setIsRecording(false);
-    setIsPaused(false);
-    setRecordingProgress(0);
-
-    setCurrentStep("preparing");
-    checkNoFaceTimeout();
-  };
-
-  const startRecording = async () => {
-    if (!cameraRef.current || isRecordingRef.current) return;
-
-    try {
-      setCurrentStep("recording");
-      setIsRecording(true);
-      isRecordingRef.current = true;
-      setIsPaused(false);
-      recordingTimeRef.current = 0;
-      setRecordingProgress(0);
-
-      await cameraRef.current.startRecording({
-        onRecordingFinished: (video) => {
-          console.log("Recording finished:", video.path);
-          recordedVideoPathRef.current = video.path;
-          isRecordingRef.current = false;
-          setIsRecording(false);
-
-          // Submit video ngay sau khi ghi xong
-          if (recordingTimeRef.current >= RECORDING_DURATION) {
-            handleSubmit(video.path);
-          }
-        },
-        onRecordingError: (error) => {
-          console.error("Recording error:", error);
-          isRecordingRef.current = false;
-          setIsRecording(false);
-
-          Alert.alert("Lỗi", "Không thể ghi hình. Vui lòng thử lại.", [
-            {
-              text: "Thử lại",
-              onPress: () => resetToInitialState(),
-            },
-          ]);
-        },
-      });
-
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-      }
-
-      recordingIntervalRef.current = setInterval(() => {
-        if (!isPaused) {
-          recordingTimeRef.current += 100;
-
-          const progress = Math.min(
-            (recordingTimeRef.current / RECORDING_DURATION) * 100,
-            100
-          );
-          setRecordingProgress(progress);
-
-          // Khi đạt 10 giây, dừng recording
-          if (recordingTimeRef.current >= RECORDING_DURATION) {
-            console.log("Recording duration reached, stopping...");
-            stopRecording();
-          }
-        }
-      }, 100);
-    } catch (error) {
-      console.error("Start recording error:", error);
-      isRecordingRef.current = false;
-      setIsRecording(false);
-
-      Alert.alert("Lỗi", "Không thể bắt đầu ghi hình. Vui lòng thử lại.", [
-        {
-          text: "Thử lại",
-          onPress: () => resetToInitialState(),
-        },
-      ]);
-    }
-  };
-
-  const stopRecording = async () => {
-    if (!cameraRef.current || !isRecordingRef.current) {
-      console.log("Already stopped or not recording");
-      return;
-    }
-
-    try {
-      console.log("Stopping recording...");
-
-      // Clear intervals trước
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
-      if (noFaceTimeoutRef.current) {
-        clearTimeout(noFaceTimeoutRef.current);
-        noFaceTimeoutRef.current = null;
-      }
-
-      // Stop recording
-      await cameraRef.current.stopRecording();
-      console.log("Recording stopped successfully");
-    } catch (error) {
-      console.error("Stop recording error:", error);
-      isRecordingRef.current = false;
-      setIsRecording(false);
-    }
-  };
-
-  const handleSubmit = async (videoPath: string) => {
-    if (!user?.id || !ocrData.cccd_front) {
-      Alert.alert(
-        "Lỗi",
-        "Thiếu thông tin xác thực. Vui lòng quay lại và thực hiện lại từ đầu.",
-        [
-          {
-            text: "Đóng",
-            onPress: () => router.back(),
-          },
-        ]
-      );
-      return;
-    }
-
-    setCurrentStep("processing");
-
-    try {
-      console.log("Submitting video:", videoPath);
-
-      const formData = new FormData();
-
-      formData.append("user_id", user.id.toString());
-
-      formData.append("video", {
-        uri:
-          Platform.OS === "android"
-            ? videoPath
-            : videoPath.replace("file://", ""),
-        type: "video/mp4",
-        name: `face_scan_${Date.now()}.mp4`,
-      } as any);
-
-      formData.append("cmnd", {
-        uri:
-          Platform.OS === "android"
-            ? ocrData.cccd_front
-            : ocrData.cccd_front.replace("file://", ""),
-        type: "image/jpeg",
-        name: `cmnd_${Date.now()}.jpg`,
-      } as any);
-
-      console.log("Calling mutation...");
-      await faceScanMutation.mutateAsync(formData as any);
-      console.log("Mutation successful");
-    } catch (error) {
-      console.error("Submit error:", error);
-      // Error được handle trong useEffect
-    }
-  };
-
-  const cancelScan = () => {
-    if (isRecordingRef.current) {
-      stopRecording();
-    }
-    cleanupRecording();
-    router.back();
-  };
+  // ==================== RENDER SCREENS ====================
 
   const renderInstructionScreen = () => (
     <Box flex={1} bg={colors.background} justifyContent="center" p="$6">
@@ -492,13 +729,13 @@ export const FaceScanScreen = () => {
               <HStack space="sm" alignItems="flex-start">
                 <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Video sẽ tự động dừng và gửi sau 10 giây
+                  Video sẽ tự động dừng sau 10 giây ghi hình
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
                 <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Nếu mất khuôn mặt, video sẽ tạm dừng
+                  Nếu mất khuôn mặt, quá trình sẽ tạm dừng
                 </Text>
               </HStack>
             </VStack>
@@ -533,9 +770,16 @@ export const FaceScanScreen = () => {
     <Box flex={1} bg={colors.background}>
       <Box bg="rgba(0,0,0,0.9)" p="$4" pt="$12">
         <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
-            {currentStep === "preparing" ? "Chuẩn bị..." : "Đang quay video"}
-          </Text>
+          <VStack>
+            <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
+              {currentStep === "preparing" ? "Chuẩn bị..." : "Đang quay video"}
+            </Text>
+            {faceDetectionStatus === "error" && (
+              <Text fontSize="$xs" color={colors.warning}>
+                ⚠️ Chế độ tự động
+              </Text>
+            )}
+          </VStack>
           <Button size="sm" variant="link" onPress={cancelScan}>
             <ButtonIcon as={X} color={colors.text} />
           </Button>
@@ -565,26 +809,51 @@ export const FaceScanScreen = () => {
           alignItems="center"
           bg="rgba(0,0,0,0.3)"
         >
-          {currentStep === "preparing" && !faceDetected && (
-            <Box
-              position="absolute"
-              zIndex={10}
-              bg="rgba(0,0,0,0.8)"
-              borderRadius="$lg"
-              p="$6"
-              alignItems="center"
-            >
-              <Spinner size="large" color={colors.primary} />
-              <Text
-                fontSize="$md"
-                color={colors.text}
-                mt="$4"
-                textAlign="center"
+          {currentStep === "preparing" &&
+            !faceDetected &&
+            faceDetectionStatus === "checking" && (
+              <Box
+                position="absolute"
+                zIndex={10}
+                bg="rgba(0,0,0,0.8)"
+                borderRadius="$lg"
+                p="$6"
+                alignItems="center"
               >
-                Đang tìm khuôn mặt...
-              </Text>
-            </Box>
-          )}
+                <Spinner size="large" color={colors.primary} />
+                <Text
+                  fontSize="$md"
+                  color={colors.text}
+                  mt="$4"
+                  textAlign="center"
+                >
+                  Đang kiểm tra camera...
+                </Text>
+              </Box>
+            )}
+
+          {currentStep === "preparing" &&
+            faceDetectionStatus === "working" &&
+            !faceDetected && (
+              <Box
+                position="absolute"
+                zIndex={10}
+                bg="rgba(0,0,0,0.8)"
+                borderRadius="$lg"
+                p="$6"
+                alignItems="center"
+              >
+                <Spinner size="large" color={colors.primary} />
+                <Text
+                  fontSize="$md"
+                  color={colors.text}
+                  mt="$4"
+                  textAlign="center"
+                >
+                  Đang tìm khuôn mặt...
+                </Text>
+              </Box>
+            )}
 
           <Box mb="$4" px="$6">
             <Text
@@ -593,11 +862,13 @@ export const FaceScanScreen = () => {
               textAlign="center"
               fontWeight="$semibold"
             >
-              {!faceDetected
+              {faceDetectionStatus === "error"
+                ? "Vui lòng giữ khuôn mặt trong khung"
+                : !faceDetected
                 ? "Đưa khuôn mặt vào trong khung"
                 : isPaused
-                  ? "Giữ khuôn mặt trong khung"
-                  : "Tuyệt vời! Đang ghi hình..."}
+                ? "Giữ khuôn mặt trong khung"
+                : "Tuyệt vời! Đang ghi hình..."}
             </Text>
           </Box>
 
@@ -611,6 +882,7 @@ export const FaceScanScreen = () => {
             borderRadius={999}
             position="relative"
           >
+            {/* Corner indicators */}
             <Box
               position="absolute"
               top={20}
@@ -705,9 +977,14 @@ export const FaceScanScreen = () => {
               {isPaused
                 ? "Đang tạm dừng - Vui lòng giữ mặt trong khung"
                 : recordingProgress >= 99
-                  ? "Đang xử lý video..."
-                  : "Đang ghi hình - Giữ nguyên tư thế"}
+                ? "Đang xử lý video..."
+                : "Đang ghi hình - Giữ nguyên tư thế"}
             </Text>
+            {pausedTimeRef.current > 0 && isPaused && (
+              <Text fontSize="$xs" color={colors.warning} textAlign="center">
+                Đã tạm dừng: {Math.round(pausedTimeRef.current / 1000)}s
+              </Text>
+            )}
           </VStack>
         </Box>
       )}
@@ -715,7 +992,11 @@ export const FaceScanScreen = () => {
       {currentStep === "preparing" && (
         <Box px="$6" py="$4" bg={colors.background}>
           <Text fontSize="$sm" color={colors.text} textAlign="center">
-            Đưa khuôn mặt vào khung để bắt đầu
+            {faceDetectionStatus === "checking"
+              ? "Đang kiểm tra camera..."
+              : faceDetectionStatus === "error"
+              ? "Sẵn sàng ghi hình tự động"
+              : "Đưa khuôn mặt vào khung để bắt đầu"}
           </Text>
         </Box>
       )}
@@ -782,6 +1063,8 @@ export const FaceScanScreen = () => {
       </Text>
     </Box>
   );
+
+  // ==================== MAIN RENDER ====================
 
   switch (currentStep) {
     case "instruction":

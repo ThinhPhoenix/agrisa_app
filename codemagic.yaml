@@ -2,13 +2,15 @@ workflows:
   # Android Workflow
   react-native-android:
     name: React Native Android (Bun)
-    instance_type: mac_mini_m1
+    instance_type: mac_mini_m1  # Hoặc mac_pro để có nhiều RAM hơn
     max_build_duration: 120
     environment:
       groups:
         - expo_url
       vars:
         EXPO_PROJECT_SLUG: "agrisa"
+        # Thêm biến để tăng heap size
+        GRADLE_OPTS: "-Xmx4096m -XX:MaxMetaspaceSize=1024m"
       node: 18
     cache:
       cache_paths:
@@ -61,8 +63,25 @@ workflows:
       - name: Build Android APK
         script: |
           cd android
+          
+          # Set heap size cho Gradle
+          export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError"
           export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
-          ./gradlew assembleRelease
+          
+          # Clean trước khi build
+          ./gradlew clean
+          
+          # Build với parallel disabled để giảm memory usage
+          ./gradlew assembleRelease --no-daemon --max-workers=2
+          
+          # Kiểm tra APK
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            echo "✅ APK built successfully"
+            ls -lh app/build/outputs/apk/release/app-release.apk
+          else
+            echo "❌ APK build failed"
+            exit 1
+          fi
     
     artifacts:
       - android/app/build/outputs/**/*.apk

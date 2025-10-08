@@ -757,8 +757,7 @@ export const FaceScanScreen = () => {
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          rotation={-90}
-          origin={`${centerX}, ${centerY}`}
+          transform={`rotate(-90 ${centerX} ${centerY})`}
         />
       </Svg>
     );
@@ -929,11 +928,11 @@ export const FaceScanScreen = () => {
             <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
               {currentStep === "preparing"
                 ? "Chuẩn bị..."
-                : "Đang quét khuôn mặt"}
+                : "Xác thực khuôn mặt"}
             </Text>
             {faceDetectionStatus === "error" && (
               <Text fontSize="$xs" color={colors.warning}>
-                Chế độ tự động
+                Tự động quét và ghi hình
               </Text>
             )}
             {faceDetectionStatus === "working" && isPaused && (
@@ -948,26 +947,29 @@ export const FaceScanScreen = () => {
         </HStack>
       </Box>
 
-      {/* ✅ Cảnh báo đã tạm dừng - Hiện ngay dưới header */}
-      {isPaused && currentStep === "recording" && (
+      {currentStep === "recording" && (
         <Box
           position="absolute"
-          top={80}
+          bottom={40}
           left={0}
           right={0}
-          px="$4"
+          alignItems="center"
           zIndex={20}
         >
-          <Box bg={colors.warning} p="$3" borderRadius="$lg">
-            <Text
-              fontSize="$sm"
-              color="white"
-              fontWeight="$bold"
-              textAlign="center"
-            >
-              Đã tạm dừng - Giữ khuôn mặt trong khung
-            </Text>
-          </Box>
+          <Button
+            size="lg"
+            bg="$red600"
+            borderRadius="$full"
+            px="$8"
+            isDisabled={true}
+          >
+            <HStack space="sm" alignItems="center">
+              <ButtonIcon as={Video} color="white" size="xl" />
+              <ButtonText color="white" fontWeight="$bold" fontSize="$md">
+                Đang quay
+              </ButtonText>
+            </HStack>
+          </Button>
         </Box>
       )}
 
@@ -1066,33 +1068,6 @@ export const FaceScanScreen = () => {
         </Box>
       </Box>
 
-      {/* Nút Đang quay (bottom) */}
-      {currentStep === "recording" && (
-        <Box
-          position="absolute"
-          bottom={40}
-          left={0}
-          right={0}
-          alignItems="center"
-          zIndex={20}
-        >
-          <Button
-            size="lg"
-            bg="$red600"
-            borderRadius="$full"
-            px="$8"
-            py="$3"
-            isDisabled={true}
-          >
-            <HStack space="sm" alignItems="center">
-              <ButtonIcon as={Video} color="white" size="xl" />
-              <ButtonText color="white" fontWeight="$bold" fontSize="$md">
-                Đang quay
-              </ButtonText>
-            </HStack>
-          </Button>
-        </Box>
-      )}
 
       {/* Hướng dẫn preparing */}
       {currentStep === "preparing" && (

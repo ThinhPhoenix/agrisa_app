@@ -36,9 +36,9 @@ import { useEkycStore } from "../stores/ekyc.store";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-// Constants
-const FACE_OVAL_WIDTH = SCREEN_WIDTH * 0.65;
-const FACE_OVAL_HEIGHT = FACE_OVAL_WIDTH * 1.4;
+// ✅ Constants - Tăng kích thước khung face
+const FACE_OVAL_WIDTH = SCREEN_WIDTH * 0.75; // Tăng từ 0.65 lên 0.75
+const FACE_OVAL_HEIGHT = FACE_OVAL_WIDTH * 1.35; // Giảm tỷ lệ từ 1.4 xuống 1.35 để cân đối hơn
 const CAMERA_HEIGHT = SCREEN_HEIGHT;
 
 const RECORDING_DURATION = 10000; // 10 giây
@@ -48,7 +48,7 @@ const MAX_NO_FACE_PAUSE = 3000; // Cảnh báo sau 3 giây không có face
 
 // Loading ring constants
 const RING_STROKE_WIDTH = 6;
-const RING_GAP = 15; // Khoảng cách từ viền oval đến vòng loading
+const RING_GAP = 12; // Giảm gap từ 15 xuống 12
 
 type ScanStep =
   | "instruction"
@@ -713,7 +713,7 @@ export const FaceScanScreen = () => {
     );
   };
 
-  // ✅ Component vẽ vòng loading xung quanh oval (giống hình mẫu)
+  // ✅ Component vẽ vòng loading xung quanh oval - FIX: Đứng đúng hướng
   const OvalLoadingRing = ({ progress }: { progress: number }) => {
     const centerX = SCREEN_WIDTH / 2;
     const centerY = CAMERA_HEIGHT / 2;
@@ -721,8 +721,11 @@ export const FaceScanScreen = () => {
     const radiusY = FACE_OVAL_HEIGHT / 2 + RING_GAP;
 
     // Tính circumference của ellipse (công thức Ramanujan xấp xỉ)
-    const h = Math.pow((radiusX - radiusY), 2) / Math.pow((radiusX + radiusY), 2);
-    const circumference = Math.PI * (radiusX + radiusY) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
+    const h = Math.pow(radiusX - radiusY, 2) / Math.pow(radiusX + radiusY, 2);
+    const circumference =
+      Math.PI *
+      (radiusX + radiusY) *
+      (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
 
     const strokeDashoffset = circumference - (circumference * progress) / 100;
 
@@ -742,7 +745,7 @@ export const FaceScanScreen = () => {
           stroke="rgba(200,200,200,0.3)"
           strokeWidth={RING_STROKE_WIDTH}
         />
-        {/* Progress ring */}
+        {/* Progress ring - ✅ FIX: Bắt đầu từ trên cùng (rotation=-90) */}
         <Ellipse
           cx={centerX}
           cy={centerY}
@@ -754,7 +757,7 @@ export const FaceScanScreen = () => {
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
-          rotation="-90"
+          rotation={-90}
           origin={`${centerX}, ${centerY}`}
         />
       </Svg>
@@ -838,7 +841,7 @@ export const FaceScanScreen = () => {
         p="$6"
       >
         <Spinner size="large" color={colors.primary} />
-        <Text mt="$4" color={colors.textWhiteButton}>
+        <Text mt="$4" color={colors.text}>
           Đang khởi tạo camera...
         </Text>
       </Box>
@@ -856,7 +859,7 @@ export const FaceScanScreen = () => {
           <Text
             fontSize="$2xl"
             fontWeight="$bold"
-            color={colors.textWhiteButton}
+            color={colors.text}
             textAlign="center"
           >
             Xác thực khuôn mặt
@@ -924,7 +927,9 @@ export const FaceScanScreen = () => {
         <HStack justifyContent="space-between" alignItems="center">
           <VStack flex={1}>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
-              {currentStep === "preparing" ? "Chuẩn bị..." : "Đang quét khuôn mặt"}
+              {currentStep === "preparing"
+                ? "Chuẩn bị..."
+                : "Đang quét khuôn mặt"}
             </Text>
             {faceDetectionStatus === "error" && (
               <Text fontSize="$xs" color={colors.warning}>
@@ -942,6 +947,29 @@ export const FaceScanScreen = () => {
           </Button>
         </HStack>
       </Box>
+
+      {/* ✅ Cảnh báo đã tạm dừng - Hiện ngay dưới header */}
+      {isPaused && currentStep === "recording" && (
+        <Box
+          position="absolute"
+          top={80}
+          left={0}
+          right={0}
+          px="$4"
+          zIndex={20}
+        >
+          <Box bg={colors.warning} p="$3" borderRadius="$lg">
+            <Text
+              fontSize="$sm"
+              color="white"
+              fontWeight="$bold"
+              textAlign="center"
+            >
+              Đã tạm dừng - Giữ khuôn mặt trong khung
+            </Text>
+          </Box>
+        </Box>
+      )}
 
       {/* Camera với overlays */}
       <Box flex={1} position="relative">
@@ -971,7 +999,7 @@ export const FaceScanScreen = () => {
         {/* Status messages phía trên khung */}
         <Box
           position="absolute"
-          top={100}
+          top={isPaused ? 140 : 100}
           left={0}
           right={0}
           alignItems="center"
@@ -1013,7 +1041,7 @@ export const FaceScanScreen = () => {
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}
         <Box
           position="absolute"
-          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 60}
+          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 70}
           left={0}
           right={0}
           px="$6"
@@ -1036,28 +1064,6 @@ export const FaceScanScreen = () => {
                 : "Đặt khuôn mặt vào khung"}
           </Text>
         </Box>
-
-        {/* Cảnh báo pause */}
-        {isPaused && currentStep === "recording" && (
-          <Box
-            position="absolute"
-            top={CAMERA_HEIGHT / 2 + FACE_OVAL_HEIGHT / 2 + 40}
-            left={0}
-            right={0}
-            px="$6"
-          >
-            <Box bg={colors.warning} p="$3" borderRadius="$lg">
-              <Text
-                fontSize="$sm"
-                color="white"
-                fontWeight="$bold"
-                textAlign="center"
-              >
-                Đã tạm dừng - Giữ khuôn mặt trong khung
-              </Text>
-            </Box>
-          </Box>
-        )}
       </Box>
 
       {/* Nút Đang quay (bottom) */}

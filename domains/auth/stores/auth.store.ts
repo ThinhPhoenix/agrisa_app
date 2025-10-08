@@ -160,6 +160,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         console.log("✅ [Auth] Authentication refreshed from storage");
+        router.push("/(tabs)");
       } else {
         set({
           accessToken: null,
@@ -168,6 +169,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         console.log("⚠️ [Auth] No stored authentication found");
+        Alert.alert(
+          "Phiên đăng nhập hết hạn",
+          "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
+          [
+            {
+              text: "Đăng nhập",
+              onPress: () => router.push("/auth/sign-in"),
+            },
+          ]
+        );
       }
     } catch (error) {
       console.error("❌ [Auth] Error refreshing auth:", error);

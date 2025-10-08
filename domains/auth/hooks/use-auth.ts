@@ -32,7 +32,7 @@ export const useAuth = () => {
     },
     onSuccess: async (data: any) => {
       await setAuth(data.data.access_token, data.data.user);
-      router.replace("/auth/sign-in");
+      router.replace("/(tabs)");
       toast.success("Đăng nhập thành công");
     },
     onError: (error) => {

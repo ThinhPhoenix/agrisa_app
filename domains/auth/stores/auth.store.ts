@@ -168,16 +168,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         console.log("⚠️ [Auth] No stored authentication found");
-        Alert.alert(
-          "Phiên đăng nhập hết hạn",
-          "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
-          [
-            {
-              text: "Đăng nhập",
-              onPress: () => router.replace("/auth/sign-in"),
-            },
-          ]
-        );
       }
     } catch (error) {
       console.error("❌ [Auth] Error refreshing auth:", error);

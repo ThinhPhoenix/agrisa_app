@@ -678,8 +678,8 @@ export const FaceScanScreen = () => {
   const OvalMaskOverlay = () => {
     const centerX = SCREEN_WIDTH / 2;
     const centerY = CAMERA_HEIGHT / 2;
-    const radiusX = FACE_OVAL_HEIGHT / 2;
-    const radiusY = FACE_OVAL_WIDTH / 2;
+    const radiusX = FACE_OVAL_WIDTH / 2;
+    const radiusY = FACE_OVAL_HEIGHT / 2;
 
     return (
       <Svg
@@ -739,8 +739,8 @@ export const FaceScanScreen = () => {
         <Ellipse
           cx={centerX}
           cy={centerY}
-          rx={radiusX}
-          ry={radiusY}
+          rx={radiusY}
+          ry={radiusX}
           fill="none"
           stroke="rgba(200,200,200,0.3)"
           strokeWidth={RING_STROKE_WIDTH}
@@ -944,34 +944,33 @@ export const FaceScanScreen = () => {
             <ButtonIcon as={X} color={colors.text} />
           </Button>
         </HStack>
-        {currentStep === "recording" && (
-          <Box
-            position="absolute"
-            bottom={40}
-            left={0}
-            right={0}
-            alignItems="center"
-            zIndex={20}
-          >
-            <Button
-              size="lg"
-              bg="$red600"
-              borderRadius="$full"
-              px="$8"
-              isDisabled={true}
-            >
-              <HStack space="sm" alignItems="center">
-                <ButtonIcon as={Video} color="white" size="xl" />
-                <ButtonText color="white" fontWeight="$bold" fontSize="$md">
-                  Đang quay
-                </ButtonText>
-              </HStack>
-            </Button>
-          </Box>
-        )}
       </Box>
 
-
+      {currentStep === "recording" && (
+        <Box
+          position="absolute"
+          bottom={40}
+          left={0}
+          right={0}
+          alignItems="center"
+          zIndex={20}
+        >
+          <Button
+            size="lg"
+            bg="$red600"
+            borderRadius="$full"
+            px="$8"
+            isDisabled={true}
+          >
+            <HStack space="sm" alignItems="center">
+              <ButtonIcon as={Video} color="white" size="xl" />
+              <ButtonText color="white" fontWeight="$bold" fontSize="$md">
+                Đang quay
+              </ButtonText>
+            </HStack>
+          </Button>
+        </Box>
+      )}
       {/* Camera với overlays */}
       <Box flex={1} position="relative">
         {/* Camera view */}
@@ -1066,7 +1065,6 @@ export const FaceScanScreen = () => {
           </Text>
         </Box>
       </Box>
-
 
       {/* Hướng dẫn preparing */}
       {currentStep === "preparing" && (

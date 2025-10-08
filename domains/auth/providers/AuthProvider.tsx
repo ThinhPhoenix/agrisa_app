@@ -19,6 +19,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initializeAuth = async () => {
       console.log('🚀 [AuthProvider] Initializing authentication...');
       await authStore.refreshAuth();
+      await authStore.checkAuth();
     };
 
     initializeAuth();

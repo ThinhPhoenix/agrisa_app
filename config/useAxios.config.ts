@@ -33,10 +33,6 @@ class NetworkUtils {
 
 const API_URL = Constants.expoConfig?.extra?.apiUrl;
 
-/**
- * ✅ Enhanced Axios instance với network detection
- * KHÔNG SỬ DỤNG top-level await
- */
 const useAxios: AxiosInstance = axios.create({
   baseURL: API_URL,
   timeout: 300000,
@@ -201,7 +197,6 @@ useAxios.interceptors.response.use(
       if (__DEV__) {
         console.warn("🔐 Unauthorized - Token may be expired or invalid");
       }
-      router.push("/auth/sign-in");
       return Promise.reject({
         response: error.response,
         message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",

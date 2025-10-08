@@ -47,7 +47,6 @@ export default function HomeHeader() {
             <HStack alignItems="center" space="xs">
               <VStack space="xs">
                 <Text
-                  color={colors.text}
                   fontSize="$xl"
                   fontWeight="bold"
                   lineHeight={24}

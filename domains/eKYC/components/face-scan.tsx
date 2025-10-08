@@ -19,7 +19,7 @@ import {
   documentDirectory,
 } from "expo-file-system/legacy";
 import { useRouter } from "expo-router";
-import { Camera, CheckCircle2, User, X } from "lucide-react-native";
+import { Camera, CheckCircle2, ScanFace, User, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Dimensions, Platform, StyleSheet } from "react-native";
 import {
@@ -751,9 +751,9 @@ export const FaceScanScreen = () => {
   // ==================== RENDER SCREENS ====================
 
   const renderInstructionScreen = () => (
-    <Box flex={1} bg={colors.background} justifyContent="center" p="$6">
+    <Box flex={1} bg={colors.background} justifyContent="center" px="$6">
       <VStack space="xl" alignItems="center">
-        <User size={80} color={colors.primary} />
+        <ScanFace size={80} color={colors.primary} />
 
         <VStack space="md" alignItems="center">
           <Text
@@ -783,33 +783,23 @@ export const FaceScanScreen = () => {
             </Text>
             <VStack space="sm">
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Đặt khuôn mặt vào trong khung oval
+                  Đặt khuôn mặt vào trong khung
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
                   Nhìn thẳng vào camera và giữ nguyên tư thế
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
                   Đảm bảo có đủ ánh sáng, tránh ngược sáng
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Video sẽ ghi đủ 10 giây khi phát hiện khuôn mặt
-                </Text>
-              </HStack>
-              <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
-                <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Nếu mất khuôn mặt, quá trình sẽ tạm dừng
+                  Nếu không tìm thấy khuôn mặt, quá trình sẽ tạm dừng hoặc huỷ
                 </Text>
               </HStack>
             </VStack>
@@ -826,23 +816,13 @@ export const FaceScanScreen = () => {
             Bắt đầu quay
           </ButtonText>
         </Button>
-
-        <Button
-          size="lg"
-          variant="outline"
-          borderColor={colors.border}
-          onPress={cancelScan}
-          w="$full"
-        >
-          <ButtonText color={colors.text}>Hủy</ButtonText>
-        </Button>
       </VStack>
     </Box>
   );
 
   const renderCameraScreen = () => (
     <Box flex={1} bg={colors.background}>
-      <Box bg="rgba(0,0,0,0.9)" p="$4" pt="$12">
+      <Box bg="rgba(0,0,0,0.9)" p="$4">
         <HStack justifyContent="space-between" alignItems="center">
           <VStack>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
@@ -850,12 +830,12 @@ export const FaceScanScreen = () => {
             </Text>
             {faceDetectionStatus === "error" && (
               <Text fontSize="$xs" color={colors.warning}>
-                ⚠️ Chế độ tự động
+                Chế độ tự động
               </Text>
             )}
             {faceDetectionStatus === "working" && isPaused && (
               <Text fontSize="$xs" color={colors.warning}>
-                ⏸️ Đã tạm dừng
+                Đã tạm dừng
               </Text>
             )}
           </VStack>
@@ -937,7 +917,7 @@ export const FaceScanScreen = () => {
           <Box mb="$4" px="$6">
             <Text
               fontSize="$md"
-              color={colors.text}
+              color={colors.textWhiteButton}
               textAlign="center"
               fontWeight="$semibold"
             >
@@ -947,7 +927,7 @@ export const FaceScanScreen = () => {
                   ? "Đưa khuôn mặt vào trong khung"
                   : isPaused
                     ? "Giữ khuôn mặt trong khung"
-                    : "Tuyệt vời! Đang ghi hình..."}
+                    : "Đang ghi hình..."}
             </Text>
           </Box>
 
@@ -1018,13 +998,11 @@ export const FaceScanScreen = () => {
           {isPaused && currentStep === "recording" && (
             <Box
               mt="$4"
-              bg="rgba(255,193,7,0.9)"
               px="$4"
               py="$2"
-              borderRadius="$md"
             >
               <Text fontSize="$sm" color={colors.background} fontWeight="$bold">
-                ⏸ Tạm dừng - Vui lòng giữ khuôn mặt trong khung
+                Đã tạm dừng - Vui lòng giữ khuôn mặt trong khung
               </Text>
             </Box>
           )}
@@ -1032,7 +1010,7 @@ export const FaceScanScreen = () => {
       </Box>
 
       {currentStep === "recording" && (
-        <Box px="$6" py="$4" bg={colors.background}>
+        <Box px="$6" py="$10" bg={colors.background}>
           <VStack space="md">
             <HStack justifyContent="space-between" alignItems="center">
               <Text fontSize="$sm" color={colors.text}>
@@ -1069,7 +1047,7 @@ export const FaceScanScreen = () => {
 
       {currentStep === "preparing" && (
         <Box px="$6" py="$4" bg={colors.background}>
-          <Text fontSize="$sm" color={colors.text} textAlign="center">
+          <Text fontSize="$sm" color={colors.textWhiteButton} textAlign="center">
             {faceDetectionStatus === "checking"
               ? "Đang kiểm tra camera..."
               : faceDetectionStatus === "error"

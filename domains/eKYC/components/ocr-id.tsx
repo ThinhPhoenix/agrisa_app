@@ -16,7 +16,13 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { File } from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useRouter } from "expo-router";
-import { Camera, CheckCircle2, RotateCcw, X } from "lucide-react-native";
+import {
+  Camera,
+  CheckCircle2,
+  IdCard,
+  RotateCcw,
+  X,
+} from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Dimensions, Platform, StyleSheet } from "react-native";
 import { useEkyc } from "../hooks/use-ekyc";
@@ -24,7 +30,7 @@ import { useEkycStore } from "../stores/ekyc.store";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const FRAME_WIDTH_RATIO = 0.80;
+const FRAME_WIDTH_RATIO = 0.8;
 const CCCD_ASPECT_RATIO = 1.586;
 const CROP_OFFSET_X = 0;
 const CROP_OFFSET_Y = -50;
@@ -73,12 +79,6 @@ export const OCRIdScreen = () => {
   const [isCapturingFront, setIsCapturingFront] = useState(true);
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [backPhoto, setBackPhoto] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (ocrIdMutation.isSuccess) {
-      router.push("/settings/verify/face-scan");
-    }
-  }, [ocrIdMutation.isSuccess, router]);
 
   useEffect(() => {
     if (Platform.OS === "ios" || Platform.OS === "android") {
@@ -342,9 +342,9 @@ export const OCRIdScreen = () => {
   };
 
   const renderInstructionScreen = () => (
-    <Box flex={1} bg={colors.background} justifyContent="center" p="$6">
+    <Box flex={1} bg={colors.background} justifyContent="center" px="$6">
       <VStack space="xl" alignItems="center">
-        <Camera size={80} color={colors.primary} />
+        <IdCard size={80} color={colors.primary} />
 
         <VStack space="md" alignItems="center">
           <Text
@@ -374,25 +374,21 @@ export const OCRIdScreen = () => {
             </Text>
             <VStack space="sm">
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
                   Đặt CCCD/CMND trong khung
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
                   Chụp ở nơi có ánh sáng đủ, tránh chói sáng
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
                   Đảm bảo thông tin rõ nét, không bị mờ
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text color={colors.primary}>•</Text>
                 <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
                   Tránh bóng đổ che khuất thông tin
                 </Text>
@@ -414,6 +410,9 @@ export const OCRIdScreen = () => {
     const label = isCapturingFront ? "Mặt trước" : "Mặt sau";
     const currentPhoto = isCapturingFront ? frontPhoto : backPhoto;
 
+    // Tính toán vị trí của khung CCCD
+    const frameTop = (SCREEN_HEIGHT - FRAME_HEIGHT) / 2;
+
     return (
       <Box flex={1}>
         <CameraView
@@ -422,166 +421,207 @@ export const OCRIdScreen = () => {
           facing="back"
         >
           <Box flex={1}>
-            <Box bg="rgba(0,0,0,0.8)" p="$4" pt="$12">
-              <HStack justifyContent="space-between" alignItems="center">
-                <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
-                  Chụp {label} CCCD
-                </Text>
-                <Pressable onPress={cancelCapture}>
-                  <X size={24} color={colors.text} />
-                </Pressable>
-              </HStack>
-            </Box>
+            {/* Header - Kéo dài đến sát khung CCCD */}
+            <Box
+              bg="rgba(0,0,0,1)"
+              position="absolute"
+              top={0}
+              left={0}
+              right={0}
+              height={350}
+              justifyContent="space-between"
+              pb="$4"
+            >
+              {/* Top bar với nút đóng */}
+              <Box p="$4">
+                <HStack justifyContent="space-between" alignItems="center">
+                  <Text
+                    fontSize="$lg"
+                    fontWeight="$bold"
+                    color={colors.textWhiteButton}
+                  >
+                    Chụp {label} CCCD
+                  </Text>
+                  <Pressable onPress={cancelCapture}>
+                    <X size={24} color={colors.textWhiteButton} />
+                  </Pressable>
+                </HStack>
+              </Box>
 
-            <Box flex={1} justifyContent="center" alignItems="center">
-              <Box mb="$4" px="$6">
+              {/* Hướng dẫn nằm trong vùng header */}
+              <Box px="$6" pb="$2">
                 <Text
-                  fontSize="$sm"
-                  color={colors.text}
+                  fontSize="$lg"
+                  color={colors.textWhiteButton}
                   textAlign="center"
                   fontWeight="$medium"
                 >
-                  Đặt {label.toLowerCase()} trong khung
+                  Đặt {label.toLowerCase()} CCCD vào trong khung
                 </Text>
-              </Box>
-
-              <Box
-                width={FRAME_WIDTH}
-                height={FRAME_HEIGHT}
-                borderWidth={3}
-                borderColor={currentPhoto ? colors.success : colors.primary}
-                borderRadius="$lg"
-                position="relative"
-                overflow="hidden"
-              >
-                {currentPhoto && (
-                  <Image
-                    source={{ uri: currentPhoto }}
-                    alt={`Preview ${label}`}
-                    width={FRAME_WIDTH}
-                    height={FRAME_HEIGHT}
-                    position="absolute"
-                    resizeMode="cover"
-                  />
-                )}
-
-                <Box
-                  position="absolute"
-                  top={-2}
-                  left={-2}
-                  width={30}
-                  height={30}
-                  borderTopWidth={5}
-                  borderLeftWidth={5}
-                  borderColor={currentPhoto ? colors.success : colors.primary}
-                  borderTopLeftRadius="$lg"
-                />
-                <Box
-                  position="absolute"
-                  top={-2}
-                  right={-2}
-                  width={30}
-                  height={30}
-                  borderTopWidth={5}
-                  borderRightWidth={5}
-                  borderColor={currentPhoto ? colors.success : colors.primary}
-                  borderTopRightRadius="$lg"
-                />
-                <Box
-                  position="absolute"
-                  bottom={-2}
-                  left={-2}
-                  width={30}
-                  height={30}
-                  borderBottomWidth={5}
-                  borderLeftWidth={5}
-                  borderColor={currentPhoto ? colors.success : colors.primary}
-                  borderBottomLeftRadius="$lg"
-                />
-                <Box
-                  position="absolute"
-                  bottom={-2}
-                  right={-2}
-                  width={30}
-                  height={30}
-                  borderBottomWidth={5}
-                  borderRightWidth={5}
-                  borderColor={currentPhoto ? colors.success : colors.primary}
-                  borderBottomRightRadius="$lg"
-                />
-              </Box>
-
-              <Box mt="$4" px="$6">
-                <Text fontSize="$xs" color={colors.text} textAlign="center">
+                <Text
+                  fontSize="$sm"
+                  color={colors.textWhiteButton}
+                  textAlign="center"
+                  mt="$2"
+                  opacity={0.8}
+                >
                   {currentPhoto
-                    ? "✅ Ảnh đã được chụp và xử lý"
-                    : "Giữ máy thẳng và đảm bảo CCCD nằm gọn trong khung"}
+                    ? "Ảnh đã được chụp"
+                    : "Giữ máy thẳng và đảm bảo CCCD nằm ở trong khung"}
                 </Text>
               </Box>
             </Box>
 
-            <Box pb="$8" px="$6" bg="rgba(0,0,0,0.8)">
-              {currentPhoto ? (
-                <HStack space="md">
-                  <Button
-                    flex={1}
-                    size="lg"
-                    variant="outline"
-                    borderColor={colors.border}
-                    onPress={retakeCurrentPhoto}
-                  >
-                    <ButtonIcon as={RotateCcw} color={colors.text} mr="$2" />
-                    <ButtonText color={colors.text}>Chụp lại</ButtonText>
-                  </Button>
-                  <Button
-                    flex={1}
-                    size="lg"
-                    bg={colors.success}
-                    onPress={confirmCurrentPhoto}
-                    isDisabled={ocrIdMutation.isPending}
-                  >
-                    {ocrIdMutation.isPending ? (
-                      <Spinner color={colors.text} />
-                    ) : (
-                      <>
-                        <ButtonIcon
-                          as={CheckCircle2}
-                          color={colors.text}
-                          mr="$2"
-                        />
-                        <ButtonText color={colors.text}>
-                          {isCapturingFront ? "Tiếp tục" : "Xác nhận"}
-                        </ButtonText>
-                      </>
-                    )}
-                  </Button>
-                </HStack>
-              ) : (
-                <VStack space="md" alignItems="center">
-                  <Pressable onPress={takePicture}>
-                    <Box
-                      width={70}
-                      height={70}
-                      borderRadius="$full"
-                      bg={colors.text}
-                      borderWidth={5}
-                      borderColor={colors.primary}
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <Box
-                        width={50}
-                        height={50}
-                        borderRadius="$full"
-                        bg={colors.primary}
-                      />
-                    </Box>
-                  </Pressable>
-                  <Text fontSize="$sm" color={colors.text}>
-                    Chạm để chụp
-                  </Text>
-                </VStack>
+            {/* Khung CCCD - Ở giữa màn hình */}
+            <Box
+              position="absolute"
+              top={frameTop}
+              left={(SCREEN_WIDTH - FRAME_WIDTH) / 2}
+              width={FRAME_WIDTH}
+              height={FRAME_HEIGHT}
+              borderWidth={3}
+              borderColor={currentPhoto ? colors.success : colors.primary}
+              borderRadius="$lg"
+              overflow="hidden"
+            >
+              {currentPhoto && (
+                <Image
+                  source={{ uri: currentPhoto }}
+                  alt={`Preview ${label}`}
+                  width={FRAME_WIDTH}
+                  height={FRAME_HEIGHT}
+                  position="absolute"
+                  resizeMode="cover"
+                />
               )}
+
+              {/* Corner decorations */}
+              <Box
+                position="absolute"
+                top={-2}
+                left={-2}
+                width={30}
+                height={30}
+                borderTopWidth={5}
+                borderLeftWidth={5}
+                borderColor={currentPhoto ? colors.success : colors.primary}
+                borderTopLeftRadius="$lg"
+              />
+              <Box
+                position="absolute"
+                top={-2}
+                right={-2}
+                width={30}
+                height={30}
+                borderTopWidth={5}
+                borderRightWidth={5}
+                borderColor={currentPhoto ? colors.success : colors.primary}
+                borderTopRightRadius="$lg"
+              />
+              <Box
+                position="absolute"
+                bottom={-2}
+                left={-2}
+                width={30}
+                height={30}
+                borderBottomWidth={5}
+                borderLeftWidth={5}
+                borderColor={currentPhoto ? colors.success : colors.primary}
+                borderBottomLeftRadius="$lg"
+              />
+              <Box
+                position="absolute"
+                bottom={-2}
+                right={-2}
+                width={30}
+                height={30}
+                borderBottomWidth={5}
+                borderRightWidth={5}
+                borderColor={currentPhoto ? colors.success : colors.primary}
+                borderBottomRightRadius="$lg"
+              />
+            </Box>
+
+            {/* Footer - Kéo dài từ dưới khung CCCD đến cuối màn hình */}
+            <Box
+              bg="rgba(0,0,0,1)"
+              position="absolute"
+              bottom={0}
+              left={0}
+              right={0}
+              height={290}
+              justifyContent="flex-end"
+              pb="$10"
+            >
+              <Box px="$6">
+                {currentPhoto ? (
+                  <HStack space="md">
+                    <Button
+                      flex={1}
+                      size="lg"
+                      variant="outline"
+                      borderColor={colors.border}
+                      onPress={retakeCurrentPhoto}
+                    >
+                      <ButtonIcon
+                        as={RotateCcw}
+                        color={colors.textWhiteButton}
+                        mr="$2"
+                      />
+                      <ButtonText color={colors.textWhiteButton}>
+                        Chụp lại
+                      </ButtonText>
+                    </Button>
+                    <Button
+                      flex={1}
+                      size="lg"
+                      bg={colors.success}
+                      onPress={confirmCurrentPhoto}
+                      isDisabled={ocrIdMutation.isPending}
+                    >
+                      {ocrIdMutation.isPending ? (
+                        <Spinner color={colors.text} />
+                      ) : (
+                        <>
+                          <ButtonIcon
+                            as={CheckCircle2}
+                            color={colors.text}
+                            mr="$2"
+                          />
+                          <ButtonText color={colors.text}>
+                            {isCapturingFront ? "Tiếp tục" : "Xác nhận"}
+                          </ButtonText>
+                        </>
+                      )}
+                    </Button>
+                  </HStack>
+                ) : (
+                  <VStack space="md" alignItems="center">
+                    <Pressable onPress={takePicture}>
+                      <Box
+                        width={70}
+                        height={70}
+                        borderRadius="$full"
+                        bg={colors.text}
+                        borderWidth={5}
+                        borderColor={colors.primary}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
+                        <Box
+                          width={50}
+                          height={50}
+                          borderRadius="$full"
+                          bg={colors.primary}
+                        />
+                      </Box>
+                    </Pressable>
+                    <Text fontSize="$sm" color={colors.textWhiteButton}>
+                      Chạm để chụp
+                    </Text>
+                  </VStack>
+                )}
+              </Box>
             </Box>
           </Box>
         </CameraView>

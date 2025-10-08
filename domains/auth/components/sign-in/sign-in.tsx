@@ -463,33 +463,6 @@ const SignInComponentUI = () => {
                   </ButtonText>
                 </Button>
 
-                {/* Nút reset form khi có lỗi hoặc form đã thay đổi */}
-                {(form.formState.isDirty || error) && (
-                  <Button
-                    onPress={() => {
-                      reset();
-                      clearErrors();
-                    }}
-                    variant="outline"
-                    size="sm"
-                    style={{
-                      borderColor: colors.border,
-                      borderRadius: 8,
-                      width: "100%",
-                      marginTop: 12,
-                    }}
-                  >
-                    <ButtonText
-                      style={{
-                        color: colors.textSecondary,
-                        fontWeight: "600",
-                        fontSize: 14,
-                      }}
-                    >
-                      Làm mới form
-                    </ButtonText>
-                  </Button>
-                )}
               </Box>
 
               {/* Navigation và hỗ trợ */}

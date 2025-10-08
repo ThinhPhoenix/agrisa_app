@@ -292,7 +292,7 @@ export default function ProfileScreen() {
             <Button
               variant="outline"
               borderColor={colors.border}
-              onPress={() => router.push("/auth/signin")}
+              onPress={() => router.push("/auth/sign-in")}
             >
               <ButtonText color={colors.text}>Đăng nhập lại</ButtonText>
             </Button>

@@ -59,4 +59,5 @@ export interface AuthState {
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   clearAuth: () => void;
+  checkAuth: () => Promise<void>;
 }

@@ -2,6 +2,14 @@
 *Nền tảng Bảo hiểm Nông nghiệp Thông minh*
 
 ---
+
+## 🗓️ Ngày 08/10/2025
+#### **Feature EKYC**
+> **👤 Người thực hiện:** Nhân  
+> **🌿 Branch:** `nhan/ekyc`
+
+
+
 ## 🗓️ Ngày 25/09/2025
 
 #### **Update API Connection for ekyc include Service, Custom Hooks**

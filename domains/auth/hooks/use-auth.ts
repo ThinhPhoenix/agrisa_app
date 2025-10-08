@@ -31,10 +31,8 @@ export const useAuth = () => {
       return await AuthServices.signin(payload);
     },
     onSuccess: async (data: any) => {
-      
-
       await setAuth(data.data.access_token, data.data.user);
-      router.replace("/(tabs)");
+      router.replace("/auth/sign-in");
       toast.success("Đăng nhập thành công");
     },
     onError: (error) => {

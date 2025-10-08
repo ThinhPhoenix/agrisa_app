@@ -717,8 +717,8 @@ export const FaceScanScreen = () => {
   const OvalLoadingRing = ({ progress }: { progress: number }) => {
     const centerX = SCREEN_WIDTH / 2;
     const centerY = CAMERA_HEIGHT / 2;
-    const radiusX = FACE_OVAL_WIDTH / 2 + RING_GAP;
-    const radiusY = FACE_OVAL_HEIGHT / 2 + RING_GAP;
+    const radiusX = FACE_OVAL_HEIGHT / 2 + RING_GAP;
+    const radiusY = FACE_OVAL_WIDTH / 2 + RING_GAP;
 
     // Tính circumference của ellipse (công thức Ramanujan xấp xỉ)
     const h = Math.pow(radiusX - radiusY, 2) / Math.pow(radiusX + radiusY, 2);
@@ -745,7 +745,6 @@ export const FaceScanScreen = () => {
           stroke="rgba(200,200,200,0.3)"
           strokeWidth={RING_STROKE_WIDTH}
         />
-        {/* Progress ring - ✅ FIX: Bắt đầu từ trên cùng (rotation=-90) */}
         <Ellipse
           cx={centerX}
           cy={centerY}

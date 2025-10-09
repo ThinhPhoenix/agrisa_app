@@ -1,4 +1,4 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import {
   Box,
   Button,
@@ -13,8 +13,8 @@ import {
   Text,
   View,
 } from "@gluestack-ui/themed";
-import { KeyRound, IdCard, Phone, ArrowLeft } from "lucide-react-native";
-import React, { useState } from "react";
+import { IdCard, KeyRound, Phone } from "lucide-react-native";
+import React from "react";
 import { Dimensions, KeyboardAvoidingView, Platform } from "react-native";
 import { create } from "zustand";
 

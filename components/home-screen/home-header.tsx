@@ -1,4 +1,4 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import {
   Box,
   HStack,
@@ -10,7 +10,7 @@ import {
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import { Bell, Menu } from "lucide-react-native";
 import { useState } from "react";
-import UserDrawer from "./UserDrawer/UserDrawer";
+import UserDrawer from "./user-drawer";
 
 export default function HomeHeader() {
   const { colors } = useAgrisaColors();
@@ -21,7 +21,6 @@ export default function HomeHeader() {
     setSearchValue(text);
     console.log("Tìm kiếm trong Agrisa:", text);
   };
-
 
   const openDrawer = () => {
     console.log("Mở drawer menu"); // Debug log

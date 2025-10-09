@@ -1,4 +1,4 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import {
   Box,
   Button,
@@ -26,9 +26,9 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { secureStorage } from "../../../shared/utils/secureStorage";
+import { secureStorage } from "../../../shared/utils/secure-storage";
 import { useAuthForm } from "../../hooks/use-auth-form";
-import { SignInPayloadSchema } from "../../schemas/auth.schema";
+import { SignInPayloadSchema } from "../../schemas/auth-schema";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 

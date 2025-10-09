@@ -1,14 +1,14 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { useThemeStore } from "@/domains/agrisa-theme/stores/theme-store";
 import { Box, HStack, Pressable } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import { Moon, Sun } from "lucide-react-native";
+import { useEffect } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { useEffect } from "react";
 
 export default function ThemeToggle() {
   const { colors, isDark } = useAgrisaColors();

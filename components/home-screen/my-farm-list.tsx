@@ -1,13 +1,13 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import { Box, HStack, Pressable, VStack } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import {
-  ChevronRight,
-  MapPin,
-  Calendar,
   AlertTriangle,
-  Leaf,
+  Calendar,
+  ChevronRight,
   Droplets,
+  Leaf,
+  MapPin,
 } from "lucide-react-native";
 
 interface FarmItem {

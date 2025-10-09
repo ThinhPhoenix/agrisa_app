@@ -1,7 +1,7 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { Box, HStack, Pressable, VStack } from "@gluestack-ui/themed";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { HStack, Pressable, VStack } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
-import { HelpCircle, Phone, PlusSquare, Satellite, UserPlus } from "lucide-react-native";
+import { HelpCircle, Phone, PlusSquare, Satellite } from "lucide-react-native";
 
 interface QuickAction {
   id: string;
@@ -48,8 +48,6 @@ export default function QuickActions() {
 
   return (
     <VStack space="md" paddingHorizontal={20}>
-     
-
       {/* 4 cột ngang đều nhau */}
       <HStack space="sm" justifyContent="space-between">
         {mockActions.map((action) => {
@@ -66,7 +64,6 @@ export default function QuickActions() {
                 space="sm"
                 paddingVertical={10}
                 paddingHorizontal={8}
-
                 shadowOffset={{ width: 0, height: 2 }}
                 shadowOpacity={0.1}
                 shadowRadius={4}
@@ -74,7 +71,7 @@ export default function QuickActions() {
                 minHeight={0} // Đảm bảo chiều cao tối thiểu đồng đều
               >
                 {/* Icon với background màu */}
-                
+
                 <IconComponent size={30} color={action.color} />
 
                 {/* Text content */}
@@ -88,7 +85,6 @@ export default function QuickActions() {
                   >
                     {action.title}
                   </Text>
-                  
                 </VStack>
               </VStack>
             </Pressable>

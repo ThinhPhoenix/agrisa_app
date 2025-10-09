@@ -1,12 +1,12 @@
-import React from "react";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { useResponsive } from "@/domains/shared/hooks/use-responsive";
 import { View } from "@gluestack-ui/themed";
+import React from "react";
 import {
-  widthPercentageToDP as wp,
   heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useResponsive } from "@/domains/shared/hooks/useResponsive";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 
 interface ResponsiveWrapperProps {
   children: React.ReactNode;
@@ -20,7 +20,6 @@ const ResponsiveWrapper: React.FC<ResponsiveWrapperProps> = ({
   const { isLandscape } = useResponsive();
   const insets = useSafeAreaInsets();
   const { colors } = useAgrisaColors();
-
 
   return (
     <View

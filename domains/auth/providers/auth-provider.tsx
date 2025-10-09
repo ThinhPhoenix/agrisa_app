@@ -1,6 +1,6 @@
-import React, { createContext, ReactNode, useContext, useEffect } from 'react';
-import { AuthState } from '../models/auth.models';
-import { useAuthStore } from '../stores/auth.store';
+import React, { createContext, ReactNode, useContext, useEffect } from "react";
+import { AuthState } from "../models/auth-model";
+import { useAuthStore } from "../stores/auth-store";
 
 // Context
 const AuthContext = createContext<AuthState | null>(null);
@@ -17,7 +17,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Initialize auth on app start
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log('🚀 [AuthProvider] Initializing authentication...');
+      console.log("🚀 [AuthProvider] Initializing authentication...");
       await authStore.refreshAuth();
     };
 
@@ -25,20 +25,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={authStore}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={authStore}>{children}</AuthContext.Provider>
   );
 };
 
 // Hook to use auth context
 export const useAuth = (): AuthState => {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  
+
   return context;
 };
 
@@ -48,9 +46,9 @@ interface AuthGuardProps {
   fallback?: ReactNode;
 }
 
-export const AuthGuard: React.FC<AuthGuardProps> = ({ 
-  children, 
-  fallback = null 
+export const AuthGuard: React.FC<AuthGuardProps> = ({
+  children,
+  fallback = null,
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
 

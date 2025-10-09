@@ -1,4 +1,4 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import { Box, Button, ButtonText, HStack, VStack } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import { Link } from "expo-router";

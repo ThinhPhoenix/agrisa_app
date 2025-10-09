@@ -1,4 +1,4 @@
-import useAxios from "@/config/useAxios.config"
+import useAxios from "@/config/axios";
 
 export const TestService = {
     post: {},

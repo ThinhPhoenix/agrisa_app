@@ -1,5 +1,5 @@
-import { AgrisaHeader } from "@/components/Header";
-import ProfileScreen from "@/components/SettingScreen/ProfileSetting/ProfileScreen";
+import { AgrisaHeader } from "@/components/custom-header";
+import ProfileScreen from "@/components/settings-screen/profile-settings";
 
 export default function Profile() {
   return (

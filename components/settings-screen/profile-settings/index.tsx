@@ -1,37 +1,34 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, RefreshControl, Alert, Linking } from "react-native";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { AuthUser } from "@/domains/auth/models/auth-model";
+import { useAuthStore } from "@/domains/auth/stores/auth-store";
+import { useToast } from "@/domains/shared/hooks/use-toast";
+import { secureStorage } from "@/domains/shared/utils/secure-storage";
 import {
-  VStack,
-  HStack,
-  Box,
-  Text,
-  Button,
-  ButtonText,
   Avatar,
   AvatarFallbackText,
-  Divider,
   Badge,
   BadgeText,
-  Spinner,
+  Box,
+  Button,
+  ButtonText,
+  Divider,
+  HStack,
   Pressable,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
+import { router } from "expo-router";
 import {
-  User,
+  AlertCircle,
+  CheckCircle,
+  Edit3,
   Mail,
   Phone,
-  Shield,
-  CheckCircle,
-  AlertCircle,
-  Edit3,
   RefreshCw,
-  ExternalLink,
 } from "lucide-react-native";
-import { useAuthStore } from "@/domains/auth/stores/auth.store";
-import { secureStorage } from "@/domains/shared/utils/secureStorage";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { AuthUser } from "@/domains/auth/models/auth.models";
-import { router } from "expo-router";
-import { useToast } from "@/domains/shared/hooks/useToast";
+import React, { useEffect, useState } from "react";
+import { Alert, Linking, RefreshControl, ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const { colors } = useAgrisaColors();

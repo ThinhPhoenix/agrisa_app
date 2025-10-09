@@ -18,6 +18,7 @@ import {
 import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import QuickActions from "../../../components/quick-actions";
+import { AppImgs } from "@/assets";
 
 const quickActionItems = [
   {
@@ -149,7 +150,7 @@ export default function Dummy() {
         >
           <Image
             className="-right-18 -top-10"
-            source={require("../../../assets/images/leave.jpg")}
+            source={AppImgs.ImgBgLeave}
             style={{
               width: 300,
               height: 220,

@@ -9,7 +9,7 @@ import {
   Box,
 } from "@gluestack-ui/themed";
 import { CheckCircle, XCircle, AlertTriangle, Info } from "lucide-react-native";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 
 // Interface cập nhật: Thêm heading và bullets cho layout như PDF
 interface ToastProps {

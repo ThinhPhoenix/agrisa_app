@@ -1,4 +1,4 @@
-import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
+import { AgrisaColors } from "@/domains/shared/constants/agrisa-colors";
 import { config as defaultConfig } from "@gluestack-ui/config";
 
 // Tạo function để generate config based on theme

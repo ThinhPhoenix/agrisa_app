@@ -1,4 +1,4 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import {
   Actionsheet,
   ActionsheetBackdrop,
@@ -25,14 +25,9 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
-  IdCard,
-  Mail,
-  MapPin,
-  Phone,
-  User,
   UserPlus,
 } from "lucide-react-native";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import {
   Alert,
@@ -43,10 +38,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useAuthForm } from "../../hooks/use-auth-form";
-import { SignUpPayloadSchema } from "../../schemas/auth.schema";
+import { SignUpPayloadSchema } from "../../schemas/auth-schema";
 // Import cho date picker
+import { useThemeStore } from "@/domains/agrisa-theme/stores/theme-store";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -62,7 +57,7 @@ const SignUpComponentUI = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date(1990, 0, 15)); // Default date
 
   // Sử dụng hook auth form cho Agrisa
-  const { form, onSubmit, isLoading} = useAuthForm({
+  const { form, onSubmit, isLoading } = useAuthForm({
     type: "sign-up",
   });
 
@@ -254,11 +249,8 @@ const SignUpComponentUI = () => {
                 </Text>
               </Box>
 
-              
-
               {/* Form fields */}
               <Box style={{ width: "100%" }}>
-                
                 {/* Họ và tên */}
                 <Controller
                   control={signUpFormControl}
@@ -371,7 +363,7 @@ const SignUpComponentUI = () => {
                           }}
                         />
                       </Input>
-                      
+
                       {fieldState.error && (
                         <FormControlError>
                           <FormControlErrorText
@@ -598,8 +590,6 @@ const SignUpComponentUI = () => {
                         </Box>
                       </TouchableOpacity>
 
-                     
-
                       {fieldState.error && (
                         <FormControlError>
                           <FormControlErrorText
@@ -629,7 +619,11 @@ const SignUpComponentUI = () => {
                           }
                           // Locale Việt Nam
                           locale="vi-VN"
-                          themeVariant={useThemeStore.getState().mode === "dark" ? "dark" : "light"}
+                          themeVariant={
+                            useThemeStore.getState().mode === "dark"
+                              ? "dark"
+                              : "light"
+                          }
                         />
                       )}
                     </FormControl>
@@ -958,8 +952,6 @@ const SignUpComponentUI = () => {
                     {isLoading ? "Đang xử lý..." : "Đăng Ký Agrisa"}
                   </ButtonText>
                 </Button>
-
-                
               </Box>
 
               {/* Footer */}

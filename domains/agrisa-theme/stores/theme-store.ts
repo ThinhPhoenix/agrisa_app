@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
 // Key để lưu theme trong AsyncStorage
-const THEME_STORAGE_KEY = "agrisa_theme";
+const THEME_STORAGE_KEY = "agrisa-theme";
 
 export type ThemeMode = "light" | "dark";
 

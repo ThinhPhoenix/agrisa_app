@@ -1,34 +1,34 @@
-import ThemeToggle from "@/components/theme/ThemeSetting";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import ThemeToggle from "@/components/theme/theme-settings";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import {
-    Avatar,
-    AvatarFallbackText,
-    AvatarImage,
-    Box,
-    HStack,
-    VStack,
+  Avatar,
+  AvatarFallbackText,
+  AvatarImage,
+  Box,
+  HStack,
+  VStack,
 } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import { router } from "expo-router";
 import {
-    ChevronRight,
-    HelpCircle,
-    LogOut,
-    Settings,
-    Shield,
-    X
+  ChevronRight,
+  HelpCircle,
+  LogOut,
+  Settings,
+  Shield,
+  X,
 } from "lucide-react-native";
 import React, { useEffect } from "react";
 import {
-    Modal,
-    Pressable,
-    ScrollView,
-    useWindowDimensions,
+  Modal,
+  Pressable,
+  ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withTiming,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 interface UserDrawerProps {
@@ -77,7 +77,7 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
   ];
 
   const onUserPress = () => {
-    router.push("/settings/profile")
+    router.push("/settings/profile");
     onClose();
   };
 
@@ -244,22 +244,21 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
               <ThemeToggle />
             </Box>
 
-            <Box height={1} bg={colors.border} width="100%" marginVertical={16} />
-
+            <Box
+              height={1}
+              bg={colors.border}
+              width="100%"
+              marginVertical={16}
+            />
 
             {/* Logout */}
             <Pressable
               onPress={() => {
-                router.push("/auth/sign-in")
+                router.push("/auth/sign-in");
                 onClose();
               }}
             >
-                
-              <HStack
-                alignItems="center"
-                space="md"
-                paddingHorizontal={4}
-              >
+              <HStack alignItems="center" space="md" paddingHorizontal={4}>
                 <Box padding={8} borderRadius={8}>
                   <LogOut size={18} color={colors.error} />
                 </Box>

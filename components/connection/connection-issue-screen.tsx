@@ -1,7 +1,7 @@
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { RotateCcw, WifiOff } from "lucide-react-native";
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { WifiOff, RotateCcw } from "lucide-react-native";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface Props {
   onRetry: () => void;
@@ -12,7 +12,7 @@ const NoConnectionScreen: React.FC<Props> = ({
   onRetry,
   isRetrying = false,
 }) => {
-    const { colors } = useAgrisaColors();
+  const { colors } = useAgrisaColors();
 
   return (
     <View
@@ -69,13 +69,15 @@ const NoConnectionScreen: React.FC<Props> = ({
           color="#FFF"
           className={`mr-2 ${isRetrying ? "animate-spin" : ""}`}
         />
-        <Text style={{ color: colors.textWhiteButton }} className="text-base font-semibold">
+        <Text
+          style={{ color: colors.textWhiteButton }}
+          className="text-base font-semibold"
+        >
           {isRetrying ? "Đang kiểm tra..." : "Thử lại"}
         </Text>
       </TouchableOpacity>
 
       {/* Thông tin thêm cho nông dân */}
-      
     </View>
   );
 };

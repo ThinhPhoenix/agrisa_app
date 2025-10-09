@@ -12,15 +12,15 @@ import {
 
 import { useEffect } from "react";
 
-import { AgrisaThemeProvider } from "@/components/theme/AgrisaThemeProvider";
-import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
-import { QueryProvider } from "@/libs/query/QueryClientProvider";
-import NetworkWrapper from "@/components/connection/NetworkWrapper";
-import ResponsiveWrapper from "@/components/common/ResponsiveWrapper";
+import ResponsiveWrapper from "@/components/common/responsive-wrapper";
+import NetworkWrapper from "@/components/connection/network-wrapper";
+import { AgrisaThemeProvider } from "@/components/theme/agrisa-theme-provider";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { useThemeStore } from "@/domains/agrisa-theme/stores/theme-store";
+import { AuthProvider } from "@/domains/auth/providers/auth-provider";
+import { ToastProvider } from "@/domains/shared/hooks/use-toast";
+import { QueryProvider } from "@/libs/query/query-client-providers";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ToastProvider } from "@/domains/shared/hooks/useToast";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { AuthProvider } from "@/domains/auth/providers/AuthProvider";
 
 export default function RootLayout() {
   const { initializeTheme } = useThemeStore();

@@ -1,5 +1,5 @@
-import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
-import { AgrisaColors, ColorKey } from "@/domains/shared/constants/AgrisaColors";
+import { useThemeStore } from "@/domains/agrisa-theme/stores/theme-store";
+import { AgrisaColors, ColorKey } from "@/domains/shared/constants/agrisa-colors";
 
 /**
  * Hook để sử dụng colors của Agrisa một cách dễ dàng

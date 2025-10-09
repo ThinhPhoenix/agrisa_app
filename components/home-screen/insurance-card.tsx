@@ -1,19 +1,19 @@
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  VStack,
 } from "@gluestack-ui/themed";
 import { Text } from "@gluestack-ui/themed/build/components/Badge/styled-components";
 import {
-    CheckCircle,
-    Clock,
-    CloudRain,
-    DollarSign,
-    Eye,
-    EyeOff
+  CheckCircle,
+  Clock,
+  CloudRain,
+  DollarSign,
+  Eye,
+  EyeOff,
 } from "lucide-react-native";
 import { useState } from "react";
 
@@ -230,8 +230,8 @@ export default function InsuranceCards() {
                               fontWeight="600"
                             >
                               {card.status === "money" &&
-                                info.value.includes("VNĐ") &&
-                                !showMoney
+                              info.value.includes("VNĐ") &&
+                              !showMoney
                                 ? "***"
                                 : info.value}
                             </Text>
@@ -239,7 +239,6 @@ export default function InsuranceCards() {
                         ))}
                       </VStack>
                     )}
-
                   </VStack>
                 </Box>
               </Pressable>

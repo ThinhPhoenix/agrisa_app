@@ -1,6 +1,6 @@
 import React from "react";
 import { useNetworkStatus } from "@/domains/connection/hooks/use-connection";
-import NoConnectionScreen from "./ConnectionIssueScreen";
+import NoConnectionScreen from "./connection-issue-screen";
 
 interface Props {
   children: React.ReactNode;

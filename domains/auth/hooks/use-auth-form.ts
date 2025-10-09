@@ -1,12 +1,12 @@
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { SignInPayload, SignUpPayload } from "../models/auth-model";
 import {
-  signInSchema,
-  signUpSchema,
   SignInPayloadSchema,
+  signInSchema,
   SignUpPayloadSchema,
-} from "../schemas/auth.schema";
-import { SignInPayload, SignUpPayload } from "../models/auth.models";
+  signUpSchema,
+} from "../schemas/auth-schema";
 import { useAuth } from "./use-auth";
 
 interface AuthFormHooks {

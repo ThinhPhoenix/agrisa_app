@@ -1,10 +1,10 @@
-import { useToast } from "@/domains/shared/hooks/useToast";
+import { useToast } from "@/domains/shared/hooks/use-toast";
 import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { SignInApiResponse, SignInPayload, SignUpPayload } from "../models/auth.models";
-import { AuthServices } from "../service/auth.service";
-import { useAuthStore } from "../stores/auth.store";
+import { SignInPayload, SignUpPayload } from "../models/auth-model";
+import { AuthServices } from "../service/auth-service";
+import { useAuthStore } from "../stores/auth-store";
 
 export const useAuth = () => {
   const { toast } = useToast();

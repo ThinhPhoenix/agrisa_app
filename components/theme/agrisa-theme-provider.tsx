@@ -1,4 +1,4 @@
-import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
+import { useThemeStore } from "@/domains/agrisa-theme/stores/theme-store";
 import { createAgrisaConfig } from "@/gluestack-ui.config";
 import { GluestackUIProvider } from "@gluestack-ui/themed";
 import React, { useEffect } from "react";

@@ -1,8 +1,8 @@
-import HomeHeader from "@/components/HomeScreen/HomeHeader";
-import InsuranceCards from "@/components/HomeScreen/InsuranceCards";
-import MyFormsList from "@/components/HomeScreen/MyFarmList";
-import QuickActions from "@/components/HomeScreen/QuickActions";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import HomeHeader from "@/components/home-screen/home-header";
+import InsuranceCards from "@/components/home-screen/insurance-card";
+import MyFormsList from "@/components/home-screen/my-farm-list";
+import QuickActions from "@/components/home-screen/quick-actions";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import { ScrollView, VStack } from "@gluestack-ui/themed";
 
 export default function HomeScreen() {

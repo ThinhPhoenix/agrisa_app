@@ -1,6 +1,6 @@
 import { QueryKey } from "@/domains/shared/stores/query-key"
 import { useQuery } from "@tanstack/react-query"
-import { TestService } from "../service/test.service"
+import { TestService } from "../service/test-service"
 
 
 export const useTest = {

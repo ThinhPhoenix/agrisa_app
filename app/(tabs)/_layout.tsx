@@ -1,13 +1,11 @@
-import { Tabs } from 'expo-router';
+import { Tabs } from "expo-router";
 import React from "react";
 
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
 import { History, Home, MessageCircle, Wheat } from "lucide-react-native";
-import { Image } from '@gluestack-ui/themed';
 
 export default function TabLayout() {
   const { colors } = useAgrisaColors();
-
 
   return (
     <Tabs

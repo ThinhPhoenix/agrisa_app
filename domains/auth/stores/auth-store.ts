@@ -1,6 +1,6 @@
-import { secureStorage } from "@/domains/shared/utils/secureStorage";
+import { secureStorage } from "@/domains/shared/utils/secure-storage";
 import { create } from "zustand";
-import { AuthState, AuthUser } from "../models/auth.models";
+import { AuthState, AuthUser } from "../models/auth-model";
 
 export const useAuthStore = create<AuthState>((set, get) => ({
 

@@ -1,8 +1,8 @@
-import React from "react";
-import { HStack, Pressable, Text, Box } from "@gluestack-ui/themed";
-import { ChevronLeft } from "lucide-react-native";
+import { useAgrisaColors } from "@/domains/agrisa-theme/hooks/use-agrisa-colors";
+import { Box, HStack, Pressable, Text } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { ChevronLeft } from "lucide-react-native";
+import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface AgrisaHeaderProps {

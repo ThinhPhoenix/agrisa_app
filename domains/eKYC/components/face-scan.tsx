@@ -714,7 +714,7 @@ export const FaceScanScreen = () => {
     );
   };
 
-  // ✅ Component vẽ vòng loading xung quanh oval - FIX: Đứng đúng hướng
+  // ✅ Component vẽ vòng loading xung quanh oval
   const OvalLoadingRing = ({ progress }: { progress: number }) => {
     const centerX = SCREEN_WIDTH / 2;
     const centerY = CAMERA_HEIGHT / 2;
@@ -953,7 +953,7 @@ export const FaceScanScreen = () => {
         overflow="hidden"
         left={0}
         right={0}
-        bottom={insets.bottom}
+        bottom={0}
       >
         {/* Camera view */}
         <FaceCamera
@@ -1020,12 +1020,9 @@ export const FaceScanScreen = () => {
             )}
           {currentStep === "recording" && (
             <Box
-              position="absolute"
-              top={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 80} // ← Tính toán chính xác
-              left={0}
-              right={0}
+              borderRadius="$lg"
+              p="$4"
               alignItems="center"
-              zIndex={10}
             >
               <HStack space="sm" alignItems="center" px="$4">
                 <ButtonIcon as={Video} color={colors.error} size="lg" />
@@ -1035,7 +1032,6 @@ export const FaceScanScreen = () => {
               </HStack>
             </Box>
           )}
-          
         </Box>
 
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}

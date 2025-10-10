@@ -33,13 +33,12 @@ import {
 } from "react-native-vision-camera-face-detector";
 import { useEkyc } from "../hooks/use-ekyc";
 import { useEkycStore } from "../stores/ekyc.store";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-
 // ✅ Constants - Tăng kích thước khung face
 const FACE_OVAL_WIDTH = SCREEN_WIDTH * 0.75; // Tăng từ 0.65 lên 0.75
 const FACE_OVAL_HEIGHT = FACE_OVAL_WIDTH * 1.35; // Giảm tỷ lệ từ 1.4 xuống 1.35 để cân đối hơn
-const CAMERA_HEIGHT = SCREEN_HEIGHT;
 
 const RECORDING_DURATION = 10000; // 10 giây
 const NO_FACE_TIMEOUT = 120000; // 2 phút
@@ -51,13 +50,17 @@ const RING_STROKE_WIDTH = 6;
 const RING_GAP = 12; // Giảm gap từ 15 xuống 12
 
 type ScanStep =
-  | "instruction"
-  | "preparing"
-  | "recording"
-  | "processing"
-  | "success";
+| "instruction"
+| "preparing"
+| "recording"
+| "processing"
+| "success";
 
 export const FaceScanScreen = () => {
+  const insets = useSafeAreaInsets();
+  const CAMERA_HEIGHT = useMemo(() => {
+    return SCREEN_HEIGHT - insets.top - insets.bottom;
+  }, [insets.top, insets.bottom]);
   const router = useRouter();
   const { colors } = useAgrisaColors();
   const { faceScanMutation } = useEkyc();
@@ -106,7 +109,7 @@ export const FaceScanScreen = () => {
       windowWidth: SCREEN_WIDTH,
       windowHeight: CAMERA_HEIGHT,
     }),
-    []
+    [CAMERA_HEIGHT]
   );
 
   // ==================== CLEANUP FUNCTIONS ====================
@@ -213,8 +216,6 @@ export const FaceScanScreen = () => {
       }
     }, FACE_DETECTION_INTERVAL);
   }, [resetToInitialState]);
-
-  // ==================== FACE DETECTION CALLBACK ====================
 
   const handleFacesDetection = useCallback(
     (faces: Face[]) => {
@@ -919,7 +920,7 @@ export const FaceScanScreen = () => {
         left={0}
         right={0}
         zIndex={20}
-        bg="rgba(255,255,255,0.95)"
+        bg="$white"
         p="$4"
       >
         <HStack justifyContent="space-between" alignItems="center">
@@ -931,7 +932,7 @@ export const FaceScanScreen = () => {
             </Text>
             {faceDetectionStatus === "error" && (
               <Text fontSize="$xs" color={colors.warning}>
-                Tự động quét và ghi hình
+                Có lỗi khi quay hình, hãy huỷ và bắt đầu lại
               </Text>
             )}
             {faceDetectionStatus === "working" && isPaused && (
@@ -946,8 +947,7 @@ export const FaceScanScreen = () => {
         </HStack>
       </Box>
 
-      {/* Camera với overlays */}
-      <Box position="absolute" top={0} left={0} right={0} bottom={0}>
+      <Box position="absolute" top={insets.top} height={CAMERA_HEIGHT} overflow="hidden" left={0} right={0} bottom={0}>
         {/* Camera view */}
         <FaceCamera
           ref={cameraRef}
@@ -1013,16 +1013,13 @@ export const FaceScanScreen = () => {
             )}
           {currentStep === "recording" && (
             <Box
-              position="absolute"
-              bottom={40}
-              left={0}
-              right={0}
+              borderRadius="$lg"
+              p="$4"
+              bg="$red600"
               alignItems="center"
-              zIndex={20}
             >
               <Button
                 size="lg"
-                bg="$red600"
                 borderRadius="$full"
                 px="$8"
                 isDisabled={true}
@@ -1066,32 +1063,7 @@ export const FaceScanScreen = () => {
         </Box>
       </Box>
 
-      {/* Hướng dẫn preparing */}
-      {currentStep === "preparing" && (
-        <Box
-          position="absolute"
-          bottom={40}
-          left={0}
-          right={0}
-          px="$6"
-          zIndex={20}
-        >
-          <Box bg="rgba(255,255,255,0.95)" p="$4" borderRadius="$lg">
-            <Text
-              fontSize="$sm"
-              color={colors.text}
-              textAlign="center"
-              fontWeight="$semibold"
-            >
-              {faceDetectionStatus === "checking"
-                ? "Đang kiểm tra camera..."
-                : faceDetectionStatus === "error"
-                  ? "Sẵn sàng ghi hình tự động"
-                  : "Đưa khuôn mặt vào khung để bắt đầu"}
-            </Text>
-          </Box>
-        </Box>
-      )}
+      
     </Box>
   );
 

@@ -947,7 +947,14 @@ export const FaceScanScreen = () => {
         </HStack>
       </Box>
 
-      <Box position="absolute" top={insets.top} height={CAMERA_HEIGHT} overflow="hidden" left={0} right={0} bottom={0}>
+      <Box
+        position="absolute"
+        top={insets.top}
+        overflow="hidden"
+        left={0}
+        right={0}
+        bottom={insets.bottom}
+      >
         {/* Camera view */}
         <FaceCamera
           ref={cameraRef}
@@ -1013,26 +1020,22 @@ export const FaceScanScreen = () => {
             )}
           {currentStep === "recording" && (
             <Box
-              borderRadius="$lg"
-              p="$4"
-              bg="$red600"
+              position="absolute"
+              top={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 80} // ← Tính toán chính xác
+              left={0}
+              right={0}
               alignItems="center"
+              zIndex={10}
             >
-              <Button
-                size="lg"
-                borderRadius="$full"
-                px="$8"
-                isDisabled={true}
-              >
-                <HStack space="sm" alignItems="center">
-                  <ButtonIcon as={Video} color="white" size="xl" />
-                  <ButtonText color="white" fontWeight="$bold" fontSize="$md">
-                    Đang quay
-                  </ButtonText>
-                </HStack>
-              </Button>
+              <HStack space="sm" alignItems="center" px="$4">
+                <ButtonIcon as={Video} color={colors.error} size="lg" />
+                <Text color={colors.error} fontWeight="$bold" fontSize="$md">
+                  {isPaused ? "Đã tạm dừng" : "Đang quay"}
+                </Text>
+              </HStack>
             </Box>
           )}
+          
         </Box>
 
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}
@@ -1048,7 +1051,7 @@ export const FaceScanScreen = () => {
             color={colors.text}
             textAlign="center"
             fontWeight="$bold"
-            bg="rgba(255,255,255,0.9)"
+            bg="$white"
             p="$3"
             borderRadius="$lg"
           >
@@ -1062,8 +1065,6 @@ export const FaceScanScreen = () => {
           </Text>
         </Box>
       </Box>
-
-      
     </Box>
   );
 

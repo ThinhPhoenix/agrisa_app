@@ -279,12 +279,12 @@ export const FaceScanScreen = () => {
     setIsPaused(false);
     setRecordingProgress(0);
     setFaceDetectionStatus("checking");
-
     setCurrentStep("preparing");
     startFaceDetectionCheck();
 
     noFaceTimeoutRef.current = setTimeout(() => {
       console.error("⏰ No face timeout");
+      stopRecording();
       Alert.alert(
         "Hết thời gian",
         "Không phát hiện khuôn mặt sau 2 phút. Vui lòng thử lại.",
@@ -706,7 +706,7 @@ export const FaceScanScreen = () => {
           width={SCREEN_WIDTH}
           height={CAMERA_HEIGHT}
           fill="white"
-          opacity={0.95}
+          opacity={1}
           mask="url(#oval-mask)"
         />
       </Svg>
@@ -946,33 +946,8 @@ export const FaceScanScreen = () => {
         </HStack>
       </Box>
 
-      {currentStep === "recording" && (
-        <Box
-          position="absolute"
-          bottom={40}
-          left={0}
-          right={0}
-          alignItems="center"
-          zIndex={20}
-        >
-          <Button
-            size="lg"
-            bg="$red600"
-            borderRadius="$full"
-            px="$8"
-            isDisabled={true}
-          >
-            <HStack space="sm" alignItems="center">
-              <ButtonIcon as={Video} color="white" size="xl" />
-              <ButtonText color="white" fontWeight="$bold" fontSize="$md">
-                Đang quay
-              </ButtonText>
-            </HStack>
-          </Button>
-        </Box>
-      )}
       {/* Camera với overlays */}
-      <Box flex={1} position="relative">
+      <Box position="absolute" top={0} left={0} right={0} bottom={0}>
         {/* Camera view */}
         <FaceCamera
           ref={cameraRef}
@@ -1025,7 +1000,7 @@ export const FaceScanScreen = () => {
             faceDetectionStatus === "working" &&
             !faceDetected && (
               <Box
-                bg="rgba(0,0,0,0.7)"
+                bg="rgba(0,0,0,0.2)"
                 borderRadius="$lg"
                 p="$4"
                 alignItems="center"
@@ -1036,6 +1011,31 @@ export const FaceScanScreen = () => {
                 </Text>
               </Box>
             )}
+          {currentStep === "recording" && (
+            <Box
+              position="absolute"
+              bottom={40}
+              left={0}
+              right={0}
+              alignItems="center"
+              zIndex={20}
+            >
+              <Button
+                size="lg"
+                bg="$red600"
+                borderRadius="$full"
+                px="$8"
+                isDisabled={true}
+              >
+                <HStack space="sm" alignItems="center">
+                  <ButtonIcon as={Video} color="white" size="xl" />
+                  <ButtonText color="white" fontWeight="$bold" fontSize="$md">
+                    Đang quay
+                  </ButtonText>
+                </HStack>
+              </Button>
+            </Box>
+          )}
         </Box>
 
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}

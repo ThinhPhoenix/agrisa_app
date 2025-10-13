@@ -962,7 +962,7 @@ export const FaceScanScreen = () => {
         overflow="hidden"
         left={0}
         right={0}
-        bottom={insets.bottom}
+        bottom={insets.bottom + 20}
       >
         {/* Camera view */}
         <FaceCamera
@@ -1032,7 +1032,7 @@ export const FaceScanScreen = () => {
               borderRadius="$lg"
               p="$4"
               alignItems="center"
-              bg="$red600"
+              bg={colors.primary}
             >
               <HStack space="sm" alignItems="center" px="$4">
                 <ButtonIcon as={Video} color={colors.error} size="lg" />

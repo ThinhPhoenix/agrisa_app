@@ -337,6 +337,7 @@ export const FaceScanScreen = () => {
           console.error("❌ Recording error:", error);
           isRecordingRef.current = false;
           setIsRecording(false);
+          stopRecording();
 
           Alert.alert("Lỗi", "Không thể ghi hình. Vui lòng thử lại.", [
             {
@@ -395,6 +396,7 @@ export const FaceScanScreen = () => {
                 clearInterval(pauseCheckIntervalRef.current);
                 pauseCheckIntervalRef.current = null;
               }
+              stopRecording();
 
               Alert.alert(
                 "Cảnh báo",
@@ -405,6 +407,7 @@ export const FaceScanScreen = () => {
                     onPress: () => {
                       lastFaceDetectedTimeRef.current = Date.now();
                       pausedTimeRef.current = 0;
+                      startRecording();
                     },
                   },
                   {
@@ -424,6 +427,7 @@ export const FaceScanScreen = () => {
       console.error("❌ Start recording error:", error);
       isRecordingRef.current = false;
       setIsRecording(false);
+      stopRecording();
 
       Alert.alert("Lỗi", "Không thể bắt đầu ghi hình. Vui lòng thử lại.", [
         {
@@ -473,6 +477,8 @@ export const FaceScanScreen = () => {
       console.log("Original video path:", videoPath);
 
       if (!user?.id || !ocrData.cccd_front) {
+        stopRecording();
+
         Alert.alert(
           "Lỗi",
           "Thiếu thông tin xác thực. Vui lòng quay lại và thực hiện lại từ đầu.",
@@ -578,6 +584,7 @@ export const FaceScanScreen = () => {
         console.error("❌ Submit error:", error);
 
         setCurrentStep("instruction");
+              stopRecording();
 
         Alert.alert(
           "Lỗi xác thực",
@@ -628,6 +635,8 @@ export const FaceScanScreen = () => {
 
     if (faceScanMutation.isError) {
       console.error("❌ Error:", faceScanMutation.error);
+            stopRecording();
+
       Alert.alert(
         "Lỗi xác thực",
         faceScanMutation.error?.message ||
@@ -953,7 +962,7 @@ export const FaceScanScreen = () => {
         overflow="hidden"
         left={0}
         right={0}
-        bottom={0}
+        bottom={CAMERA_HEIGHT - 10}
       >
         {/* Camera view */}
         <FaceCamera
@@ -981,7 +990,7 @@ export const FaceScanScreen = () => {
         {/* Status messages phía trên khung */}
         <Box
           position="absolute"
-          top={isPaused ? 140 : 100}
+          top={140}
           left={0}
           right={0}
           alignItems="center"
@@ -1023,6 +1032,7 @@ export const FaceScanScreen = () => {
               borderRadius="$lg"
               p="$4"
               alignItems="center"
+              bg="$red600"
             >
               <HStack space="sm" alignItems="center" px="$4">
                 <ButtonIcon as={Video} color={colors.error} size="lg" />
@@ -1037,7 +1047,7 @@ export const FaceScanScreen = () => {
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}
         <Box
           position="absolute"
-          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 70}
+          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 50}
           left={0}
           right={0}
           px="$6"

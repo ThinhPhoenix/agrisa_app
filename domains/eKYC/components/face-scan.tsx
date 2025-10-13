@@ -388,16 +388,17 @@ export const FaceScanScreen = () => {
           if (currentlyPausedRef.current) {
             const timeSinceLastFace =
               Date.now() - lastFaceDetectedTimeRef.current;
-
-            if (timeSinceLastFace > MAX_NO_FACE_PAUSE) {
-              console.warn("⚠️ Paused too long");
+              
+              if (timeSinceLastFace > MAX_NO_FACE_PAUSE) {
+                console.warn("⚠️ Paused too long");
+                stopRecording();
 
               if (pauseCheckIntervalRef.current) {
                 clearInterval(pauseCheckIntervalRef.current);
                 pauseCheckIntervalRef.current = null;
+                stopRecording();
               }
-              stopRecording();
-
+              
               Alert.alert(
                 "Cảnh báo",
                 "Không phát hiện khuôn mặt trong 3 giây. Vui lòng đưa khuôn mặt vào khung.",
@@ -944,11 +945,6 @@ export const FaceScanScreen = () => {
                 Có lỗi khi quay hình, hãy huỷ và bắt đầu lại
               </Text>
             )}
-            {faceDetectionStatus === "working" && isPaused && (
-              <Text fontSize="$xs" color={colors.warning}>
-                Đã tạm dừng
-              </Text>
-            )}
           </VStack>
           <Button size="sm" variant="link" onPress={cancelScan}>
             <ButtonIcon as={X} color={colors.text} />
@@ -962,7 +958,7 @@ export const FaceScanScreen = () => {
         overflow="hidden"
         left={0}
         right={0}
-        bottom={insets.bottom + 20}
+        bottom={insets.bottom + 40}
       >
         {/* Camera view */}
         <FaceCamera

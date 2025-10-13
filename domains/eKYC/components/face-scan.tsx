@@ -962,7 +962,7 @@ export const FaceScanScreen = () => {
         overflow="hidden"
         left={0}
         right={0}
-        bottom={CAMERA_HEIGHT - 10}
+        bottom={insets.bottom}
       >
         {/* Camera view */}
         <FaceCamera

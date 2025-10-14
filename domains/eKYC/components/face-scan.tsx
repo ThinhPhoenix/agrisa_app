@@ -288,7 +288,7 @@ export const FaceScanScreen = () => {
       stopRecording();
       Alert.alert(
         "Hết thời gian",
-        "Không phát hiện khuôn mặt sau 2 phút. Vui lòng thử lại.",
+        "Không phát hiện khuôn mặt. Vui lòng thử lại.",
         [
           {
             text: "OK",
@@ -401,7 +401,7 @@ export const FaceScanScreen = () => {
               
               Alert.alert(
                 "Cảnh báo",
-                "Không phát hiện khuôn mặt trong 3 giây. Vui lòng đưa khuôn mặt vào khung.",
+                "Không phát hiện khuôn mặt. Vui lòng đưa khuôn mặt vào khung.",
                 [
                   {
                     text: "Tiếp tục",
@@ -958,7 +958,7 @@ export const FaceScanScreen = () => {
         overflow="hidden"
         left={0}
         right={0}
-        bottom={insets.bottom + 40}
+        bottom={insets.bottom + 60}
       >
         {/* Camera view */}
         <FaceCamera
@@ -986,7 +986,7 @@ export const FaceScanScreen = () => {
         {/* Status messages phía trên khung */}
         <Box
           position="absolute"
-          top={140}
+          top={120}
           left={0}
           right={0}
           alignItems="center"
@@ -1024,15 +1024,18 @@ export const FaceScanScreen = () => {
               </Box>
             )}
           {currentStep === "recording" && (
-            <Box
-              borderRadius="$lg"
-              p="$4"
-              alignItems="center"
-              bg={colors.primary}
-            >
+            <Box borderRadius="$lg" p="$4" alignItems="center" bg="$red600">
               <HStack space="sm" alignItems="center" px="$4">
-                <ButtonIcon as={Video} color={colors.error} size="lg" />
-                <Text color={colors.error} fontWeight="$bold" fontSize="$md">
+                <ButtonIcon
+                  as={Video}
+                  color={colors.textWhiteButton}
+                  size="lg"
+                />
+                <Text
+                  color={colors.textWhiteButton}
+                  fontWeight="$bold"
+                  fontSize="$md"
+                >
                   {isPaused ? "Đã tạm dừng" : "Đang quay"}
                 </Text>
               </HStack>
@@ -1043,7 +1046,7 @@ export const FaceScanScreen = () => {
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}
         <Box
           position="absolute"
-          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 50}
+          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 30}
           left={0}
           right={0}
           px="$6"
@@ -1053,7 +1056,6 @@ export const FaceScanScreen = () => {
             color={colors.text}
             textAlign="center"
             fontWeight="$bold"
-            bg="$white"
             p="$3"
             borderRadius="$lg"
           >

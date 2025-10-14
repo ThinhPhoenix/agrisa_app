@@ -1046,7 +1046,7 @@ export const FaceScanScreen = () => {
         {/* Text hướng dẫn ở giữa (phía dưới khung oval) */}
         <Box
           position="absolute"
-          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 30}
+          bottom={CAMERA_HEIGHT / 2 - FACE_OVAL_HEIGHT / 2 - 70}
           left={0}
           right={0}
           px="$6"

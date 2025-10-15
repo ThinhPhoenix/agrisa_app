@@ -1,7 +1,6 @@
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import axios from "axios";
 import { router } from "expo-router";
-import { Alert } from "react-native";
 import { create } from "zustand";
 import { AuthState, AuthUser } from "../models/auth.models";
 
@@ -30,7 +29,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // ✅ Cập nhật checkAuth - Sử dụng eKYC progress để verify token
+  // ✅ Cập nhật checkAuth - KHÔNG alert, chỉ clear và log
   checkAuth: async () => {
     try {
       set({ isLoading: true });
@@ -76,9 +75,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       } catch (error: any) {
         if (error?.response?.status === 401) {
-          console.log("❌ [Auth] Token expired or invalid (401)");
+          console.log("❌ [Auth] Token expired or invalid (401) - Detected by checkAuth");
 
-          // Clear auth
+          // ✅ Chỉ clear auth, KHÔNG alert (để Axios interceptor xử lý)
           await secureStorage.clearAuth();
           set({
             accessToken: null,
@@ -87,23 +86,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             isLoading: false,
           });
 
-          // Thông báo và redirect
-          Alert.alert(
-            "Phiên đăng nhập hết hạn",
-            "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
-            [
-              {
-                text: "Đăng nhập",
-                onPress: () => router.replace("/auth/sign-in"),
-              },
-            ]
-          );
+          // ✅ Silent redirect - Axios interceptor sẽ hiển thị alert
+          console.log("🔄 [Auth] Redirecting to sign-in (silent)");
+          // Không cần router.replace ở đây vì Axios interceptor đã xử lý
         } else {
           console.error("⚠️ [Auth] Error checking auth:", error);
+          // Vẫn cho phép sử dụng offline nếu lỗi mạng
           set({
             accessToken: token,
             user,
-            isAuthenticated: true, // Vẫn cho phép sử dụng offline
+            isAuthenticated: true,
             isLoading: false,
           });
         }
@@ -142,7 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Refresh auth từ storage (dùng khi app start)
+  // ✅ Refresh auth từ storage - CHỈ alert nếu KHÔNG có token trong storage
   refreshAuth: async () => {
     try {
       set({ isLoading: true });
@@ -169,16 +161,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         console.log("⚠️ [Auth] No stored authentication found");
-        Alert.alert(
-          "Phiên đăng nhập hết hạn",
-          "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
-          [
-            {
-              text: "Đăng nhập",
-              onPress: () => router.push("/auth/sign-in"),
-            },
-          ]
-        );
+        
+        // ✅ KHÔNG alert ở đây - User chưa đăng nhập là bình thường
+        // Chỉ redirect về sign-in
+        router.push("/auth/sign-in");
       }
     } catch (error) {
       console.error("❌ [Auth] Error refreshing auth:", error);
@@ -188,16 +174,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         isLoading: false,
       });
-      Alert.alert(
-        "Phiên đăng nhập hết hạn",
-        "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
-        [
-          {
-            text: "Đăng nhập",
-            onPress: () => router.replace("/auth/sign-in"),
-          },
-        ]
-      );
+      
+      // ✅ KHÔNG alert - redirect silent
+      router.replace("/auth/sign-in");
     }
   },
 

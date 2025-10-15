@@ -312,18 +312,15 @@ export const OCRIdScreen = () => {
 
       await ocrIdMutation.mutateAsync(formData as any);
     } catch (error) {
+      setCurrentStep("instruction");
+      setFrontPhoto(null);
+      setBackPhoto(null);
+      setIsCapturingFront(true);
       Alert.alert("Lỗi", "Không thể xử lý ảnh. Vui lòng thử lại.", [
         {
-          text: "Chụp lại",
-          onPress: () => {
-            setFrontPhoto(null);
-            setBackPhoto(null);
-            setIsCapturingFront(true);
-            setCurrentStep("capturing");
-          },
+          text: "Đóng",
         },
       ]);
-      setCurrentStep("capturing");
     }
   };
 
@@ -428,7 +425,7 @@ export const OCRIdScreen = () => {
               top={0}
               left={0}
               right={0}
-              height={350}
+              
               justifyContent="space-between"
               pb="$4"
             >
@@ -549,13 +546,13 @@ export const OCRIdScreen = () => {
               bottom={0}
               left={0}
               right={0}
-              height={290}
               justifyContent="flex-end"
               pb="$10"
+              pt="$4"
             >
-              <Box px="$6">
+              <Box px="$7">
                 {currentPhoto ? (
-                  <HStack space="md">
+                  <HStack space="md" pb="$2">
                     <Button
                       flex={1}
                       size="lg"

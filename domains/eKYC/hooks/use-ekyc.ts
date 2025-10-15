@@ -27,7 +27,6 @@ export const useEkyc = () => {
     },
     onError: (error) => {
       toast.error("Xác thực CCCD thất bại");
-      router.push("/settings/profile");
       console.error(error);
     },
   });
@@ -38,10 +37,11 @@ export const useEkyc = () => {
       return await eKYCServices.post.scan_face(payload);
     },
     onSuccess: async (data: any) => {
-      router.push("/settings/profile");
+      router.push("/settings/verify/ekyc-status");
       toast.success("Xác thực khuôn mặt thành công");
     },
     onError: (error) => {
+      router.push("/settings/verify/ekyc-status");
       toast.error("Xác thực khuôn mặt thất bại");
       console.error(error);
     },

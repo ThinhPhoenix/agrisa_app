@@ -103,7 +103,7 @@ workflows:
     max_build_duration: 120
     environment:
       groups:
-        - expo_url
+        - expo_url 
       vars:
         BUNDLE_ID: "com.tnhaan.agrisa"
         EXPO_PROJECT_SLUG: "agrisa"

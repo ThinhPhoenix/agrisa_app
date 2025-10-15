@@ -33,9 +33,9 @@ import React, { useEffect, useState } from "react";
 import { Alert, Linking, RefreshControl, ScrollView } from "react-native";
 
 export default function ProfileScreen() {
-  const { colors } = useAgrisaColors();
   const { user: storeUser, refreshAuth } = useAuthStore();
   const { toast } = useToast();
+  const { colors } = useAgrisaColors();
   const { geteKYCStatusQuery } = useEkyc();
   
   const [user, setUser] = useState<AuthUser | null>(storeUser);

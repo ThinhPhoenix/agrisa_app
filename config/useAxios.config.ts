@@ -1,8 +1,17 @@
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import NetInfo from "@react-native-community/netinfo";
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
-import { router } from "expo-router";
 import Constants from "expo-constants";
+import { router } from "expo-router";
+import { Alert } from "react-native";
+
+// ✅ Extend AxiosRequestConfig để thêm skipAuth flag
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuth?: boolean; // Flag để bỏ qua authentication
+  }
+}
+
 /**
  * Network utility functions
  */
@@ -63,7 +72,17 @@ useAxios.interceptors.request.use(
       });
     }
 
-    // ✅ Lấy token ĐỘNG từ storage cho mỗi request
+    // ✅ Kiểm tra skipAuth flag - Nếu true thì bỏ qua việc thêm token
+    if (config.skipAuth === true) {
+      if (__DEV__) {
+        console.log("🌐 Public endpoint (skipAuth): ", config.url);
+      }
+      // Xóa Authorization header nếu có
+      delete config.headers.Authorization;
+      return config;
+    }
+
+    // ✅ Lấy token ĐỘNG từ storage cho mỗi request (chỉ khi không có skipAuth)
     try {
       const token = await secureStorage.getToken();
 
@@ -97,6 +116,7 @@ useAxios.interceptors.request.use(
         url: config.url,
         hasAuth: !!config.headers.Authorization,
         hasData: !!config.data,
+        skipAuth: config.skipAuth,
       });
     }
 
@@ -106,6 +126,9 @@ useAxios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// ✅ Biến để tránh hiển thị nhiều alert 401 cùng lúc
+let isShowing401Alert = false;
 
 /**
  * Response interceptor - Handle success/error và network errors
@@ -197,6 +220,40 @@ useAxios.interceptors.response.use(
       if (__DEV__) {
         console.warn("🔐 Unauthorized - Token may be expired or invalid");
       }
+
+      // ✅ Clear auth data
+      try {
+        await secureStorage.clearAuth();
+        console.log("🗑️ Auth data cleared due to 401");
+      } catch (clearError) {
+        console.error("❌ Error clearing auth:", clearError);
+      }
+
+      // ✅ Hiển thị alert chỉ 1 lần (tránh spam)
+      if (!isShowing401Alert) {
+        isShowing401Alert = true;
+
+        Alert.alert(
+          "Phiên đăng nhập hết hạn",
+          "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
+          [
+            {
+              text: "Đăng nhập",
+              onPress: () => {
+                isShowing401Alert = false;
+                router.replace("/auth/sign-in");
+              },
+            },
+          ],
+          {
+            cancelable: false, // Không cho phép đóng bằng cách tap ngoài
+            onDismiss: () => {
+              isShowing401Alert = false;
+            },
+          }
+        );
+      }
+
       return Promise.reject({
         response: error.response,
         message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",

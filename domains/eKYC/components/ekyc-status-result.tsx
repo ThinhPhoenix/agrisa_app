@@ -19,7 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 export default function EKYCStatusResultScreen() {
   const { colors } = useAgrisaColors();
   const { user } = useAuthStore();
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(15);
   const [isRefetching, setIsRefetching] = useState(false);
 
   const { geteKYCStatusQuery } = useEkyc();

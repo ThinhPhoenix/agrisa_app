@@ -152,7 +152,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
         });
         console.log("✅ [Auth] Authentication refreshed from storage");
-        router.push("/(tabs)");
       } else {
         set({
           accessToken: null,
@@ -162,8 +161,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
         console.log("⚠️ [Auth] No stored authentication found");
         
-        // ✅ KHÔNG alert ở đây - User chưa đăng nhập là bình thường
-        // Chỉ redirect về sign-in
+        
         router.push("/auth/sign-in");
       }
     } catch (error) {

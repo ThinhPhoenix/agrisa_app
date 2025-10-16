@@ -19,6 +19,7 @@ import {
   Text,
   VStack,
 } from "@gluestack-ui/themed";
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import {
   AlertCircle,
@@ -27,9 +28,9 @@ import {
   Mail,
   Phone,
   RefreshCw,
-  Shield
+  Shield,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Linking, RefreshControl, ScrollView } from "react-native";
 
 export default function ProfileScreen() {
@@ -37,20 +38,21 @@ export default function ProfileScreen() {
   const { toast } = useToast();
   const { colors } = useAgrisaColors();
   const { geteKYCStatusQuery } = useEkyc();
-  
+
   const [user, setUser] = useState<AuthUser | null>(storeUser);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // ✅ FIX: Auto-refetch eKYC status khi có user.id
   const {
     data: ekycResponse,
     isLoading: isEkycLoading,
     isError: isEkycError,
+    refetch: refetchEkyc, // 🔥 Thêm refetch function
   } = user?.id
     ? geteKYCStatusQuery(user.id)
-    : { data: null, isLoading: false, isError: false };
+    : { data: null, isLoading: false, isError: false, refetch: () => {} };
 
-  // ✅ FIX: Kiểm tra kiểu response trước khi truy cập .data
   const ekycStatus =
     ekycResponse && "data" in ekycResponse ? ekycResponse.data : null;
 
@@ -68,13 +70,20 @@ export default function ProfileScreen() {
     }
   };
 
+  // 🔥 NEW: Hàm refresh toàn bộ data (user + eKYC)
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refreshAuth();
       await loadUserData();
-      toast.success("Đã làm mới thông tin!");
+
+      // Refetch eKYC status
+      if (user?.id) {
+        await refetchEkyc();
+      }
+
+      console.log("✅ [Agrisa Profile] Đã refresh user & eKYC status");
     } catch (error) {
+      console.error("❌ [Agrisa Profile] Lỗi khi refresh:", error);
       toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
     } finally {
       setIsRefreshing(false);
@@ -105,11 +114,53 @@ export default function ProfileScreen() {
     Linking.openURL(`mailto:support@agrisa.vn?subject=${subject}&body=${body}`);
   };
 
+  // 🔥 NEW: Auto-load khi component mount
   useEffect(() => {
+    console.log("🚀 [Agrisa Profile] Component mounted");
     if (!storeUser) {
       loadUserData();
     }
   }, [storeUser]);
+
+  // 🔥 NEW: Auto-refetch eKYC mỗi khi user.id thay đổi
+  useEffect(() => {
+    if (user?.id) {
+      console.log("🔄 [Agrisa Profile] Auto-refetch eKYC cho user:", user.id);
+      refetchEkyc();
+    }
+  }, [user?.id]);
+
+  // 🔥 NEW: Auto-refresh khi màn hình được focus (quay lại từ màn hình khác)
+  useFocusEffect(
+    useCallback(() => {
+      console.log(
+        "👁️ [Agrisa Profile] Screen focused - Auto refreshing data..."
+      );
+
+      // Refresh data khi user quay lại màn hình
+      const refreshOnFocus = async () => {
+        try {
+          await loadUserData();
+          if (user?.id) {
+            await refetchEkyc();
+          }
+          console.log("✅ [Agrisa Profile] Auto-refresh on focus thành công");
+        } catch (error) {
+          console.error(
+            "❌ [Agrisa Profile] Lỗi auto-refresh on focus:",
+            error
+          );
+        }
+      };
+
+      refreshOnFocus();
+
+      // Cleanup function (tùy chọn)
+      return () => {
+        console.log("👋 [Agrisa Profile] Screen unfocused");
+      };
+    }, [user?.id]) // Re-run khi user.id thay đổi
+  );
 
   const renderStatusBadge = (status: string) => {
     const statusConfig = {
@@ -308,7 +359,12 @@ export default function ProfileScreen() {
   return (
     <ScrollView
       refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.success]} // 🎨 Custom color cho spinner Android
+          tintColor={colors.success} // 🎨 Custom color cho spinner iOS
+        />
       }
     >
       <VStack space="lg" p="$4">
@@ -350,12 +406,12 @@ export default function ProfileScreen() {
                 }}
               >
                 <HStack alignItems="center" space="xs">
-                  <IconComponent 
-                    size={14} 
-                    color={kycButton.disabled ? "white" : colors.text} 
+                  <IconComponent
+                    size={14}
+                    color={kycButton.disabled ? "white" : colors.text}
                   />
-                  <ButtonText 
-                    color={kycButton.disabled ? "white" : colors.text} 
+                  <ButtonText
+                    color={kycButton.disabled ? "white" : colors.text}
                     fontSize="$sm"
                   >
                     {kycButton.text}
@@ -457,8 +513,8 @@ export default function ProfileScreen() {
               ekycStatus?.is_face_verified
                 ? "Danh tính đã được xác minh hoàn tất, có thể mua bảo hiểm"
                 : ekycStatus?.is_ocr_done
-                ? "Đã chụp CCCD thành công, tiếp tục xác thực khuôn mặt"
-                : "Hoàn tất KYC để sử dụng đầy đủ dịch vụ bảo hiểm Agrisa",
+                  ? "Đã chụp CCCD thành công, tiếp tục xác thực khuôn mặt"
+                  : "Hoàn tất KYC để sử dụng đầy đủ dịch vụ bảo hiểm Agrisa",
               ekycStatus?.is_face_verified ? undefined : kycButton.text,
               ekycStatus?.is_face_verified || !kycButton.route
                 ? undefined
@@ -536,7 +592,8 @@ export default function ProfileScreen() {
               {"\n"}• KYC Verified: {user.kyc_verified ? "✅" : "❌"}
               {"\n"}• Phone Verified: {user.phone_verified ? "✅" : "❌"}
               {"\n"}• OCR Done: {ekycStatus?.is_ocr_done ? "✅" : "❌"}
-              {"\n"}• Face Verified: {ekycStatus?.is_face_verified ? "✅" : "❌"}
+              {"\n"}• Face Verified:{" "}
+              {ekycStatus?.is_face_verified ? "✅" : "❌"}
               {"\n"}• CIC No: {ekycStatus?.cic_no || "N/A"}
             </Text>
           </Box>

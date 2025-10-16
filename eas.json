@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 16.19.3",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL"  // Lấy từ secrets
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL"  // Lấy từ secrets
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL"  // Lấy từ secrets
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

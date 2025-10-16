@@ -1,0 +1,379 @@
+workflows:
+  # Android Workflow
+  react-native-android:
+    name: React Native Android (Bun)
+    instance_type: mac_mini_m1  # Hoặc mac_pro để có nhiều RAM hơn
+    max_build_duration: 120
+    environment:
+      groups:
+        - expo_url
+      vars:
+        EXPO_PROJECT_SLUG: "agrisa"
+        # Thêm biến để tăng heap size
+        GRADLE_OPTS: "-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+      node: 18
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/node_modules
+    scripts:
+      - name: Install Bun và dependencies
+        script: |
+          curl -fsSL https://bun.sh/install | bash
+          source ~/.bashrc || true
+          export PATH="$HOME/.bun/bin:$PATH"
+          
+          which bun && bun --version
+          bun install
+          bun add -g @expo/cli
+      
+      - name: Setup Environment Variables
+        script: |
+          if [ -z "$EXPO_PUBLIC_API_URL" ]; then
+            echo "❌ ERROR: EXPO_PUBLIC_API_URL is not set!"
+            echo "Please check Codemagic environment group 'expo_url'"
+            exit 1
+          fi
+          
+          echo "✅ Environment variables loaded:"
+          echo "EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL"
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+      
+      - name: Expo Prebuild for Android
+        script: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
+          rm -rf android
+          bunx expo prebuild --platform android
+          
+          if grep -r "EXPO_PUBLIC_API_URL" android/; then
+            echo "✅ API URL has been embedded in Android build"
+          else
+            echo "⚠️ Warning: API URL might not be embedded"
+          fi
+      
+      - name: Set up debug.keystore for Android
+        script: |
+          rm -f ~/.android/debug.keystore
+          keytool -genkeypair -alias androiddebugkey -keypass android \
+            -keystore ~/.android/debug.keystore -storepass android \
+            -dname 'CN=Android Debug,O=Android,C=US' -keyalg 'RSA' \
+            -keysize 2048 -validity 10000
+      
+      - name: Build Android APK
+        script: |
+          cd android
+          
+          # Set heap size cho Gradle
+          export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError"
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
+          # Clean trước khi build
+          ./gradlew clean
+          
+          # Build với parallel disabled để giảm memory usage
+          ./gradlew assembleRelease --no-daemon --max-workers=2
+          
+          # Kiểm tra APK
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            echo "✅ APK built successfully"
+            ls -lh app/build/outputs/apk/release/app-release.apk
+          else
+            echo "❌ APK build failed"
+            exit 1
+          fi
+    
+    artifacts:
+      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/**/*.aab
+    
+    publishing:
+      email:
+        recipients:
+          - nhancd909@gmail.com
+          - hgiap46@gmail.com
+        notify:
+          success: true
+          failure: false
+
+  # iOS IPA Build for AltStore/Sideloading
+  react-native-ios-ipa:
+    name: React Native iOS IPA (AltStore Compatible)
+    instance_type: mac_mini_m1
+    max_build_duration: 120
+    environment:
+      groups:
+        - expo_url 
+      vars:
+        BUNDLE_ID: "com.tnhaan.agrisa"
+        EXPO_PROJECT_SLUG: "agrisa"
+        APP_NAME: "Agrisa"
+      node: 18
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/node_modules
+    scripts:
+      - name: Install Bun và dependencies
+        script: |
+          curl -fsSL https://bun.sh/install | bash
+          source ~/.bashrc || true
+          export PATH="$HOME/.bun/bin:$PATH"
+          
+          which bun && bun --version
+          bun install
+          bun add -g @expo/cli
+      
+      - name: Setup Environment Variables
+        script: |
+          if [ -z "$EXPO_PUBLIC_API_URL" ]; then
+            echo "❌ ERROR: EXPO_PUBLIC_API_URL is not set!"
+            exit 1
+          fi
+          
+          echo "✅ EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL"
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+      
+      - name: Expo Prebuild for iOS
+        script: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
+          rm -rf ios
+          bunx expo prebuild --platform ios
+      
+      - name: Modify Xcode Project for Unsigned Build
+        script: |
+          echo "🔧 Configuring Xcode project for unsigned build..."
+          
+          # Tìm file pbxproj
+          PBXPROJ_FILE="ios/Agrisa.xcodeproj/project.pbxproj"
+          
+          if [ -f "$PBXPROJ_FILE" ]; then
+            # Backup file gốc
+            cp "$PBXPROJ_FILE" "$PBXPROJ_FILE.backup"
+            
+            # Disable automatic code signing
+            sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' "$PBXPROJ_FILE"
+            
+            echo "✅ Xcode project configured"
+          else
+            echo "⚠️ Warning: pbxproj file not found"
+          fi
+      
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install
+      
+      - name: Build iOS App Bundle
+        script: |
+          export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
+          
+          echo "🔨 Building iOS .app bundle..."
+          
+          # Build cho iOS device (không archive, chỉ build .app)
+          xcodebuild \
+            -workspace ios/Agrisa.xcworkspace \
+            -scheme Agrisa \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath $CM_BUILD_DIR/build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            build
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Build completed successfully"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+      
+      - name: Create IPA from .app Bundle
+        script: |
+          echo "📦 Creating IPA from .app bundle..."
+          
+          # Tìm file .app
+          APP_PATH=$(find $CM_BUILD_DIR/build/Build/Products/Release-iphoneos -name "*.app" -type d | head -1)
+          
+          if [ ! -d "$APP_PATH" ]; then
+            echo "❌ .app bundle not found!"
+            echo "Searching for .app files..."
+            find $CM_BUILD_DIR/build -name "*.app" -type d
+            exit 1
+          fi
+          
+          echo "✅ Found .app bundle: $APP_PATH"
+          
+          # Tạo cấu trúc Payload cho IPA
+          mkdir -p $CM_BUILD_DIR/output/Payload
+          
+          # Copy .app vào Payload
+          cp -R "$APP_PATH" $CM_BUILD_DIR/output/Payload/
+          
+          # Tạo file IPA (chỉ là file ZIP với extension .ipa)
+          cd $CM_BUILD_DIR/output
+          zip -r Agrisa.ipa Payload
+          
+          # Cleanup
+          rm -rf Payload
+          
+          # Verify IPA
+          if [ -f "Agrisa.ipa" ]; then
+            echo "✅ IPA created successfully"
+            ls -lh Agrisa.ipa
+            
+            # Show IPA info
+            unzip -l Agrisa.ipa | head -20
+          else
+            echo "❌ Failed to create IPA"
+            exit 1
+          fi
+      
+      - name: Verify IPA Structure
+        script: |
+          echo "🔍 Verifying IPA structure..."
+          
+          cd $CM_BUILD_DIR/output
+          
+          # Extract IPA để kiểm tra
+          mkdir -p ipa_check
+          unzip -q Agrisa.ipa -d ipa_check
+          
+          # Check bundle structure
+          if [ -d "ipa_check/Payload/Agrisa.app" ]; then
+            echo "✅ IPA structure is valid"
+            
+            # Show bundle info
+            echo "📋 Bundle contents:"
+            ls -la ipa_check/Payload/Agrisa.app/ | head -20
+            
+            # Check Info.plist
+            if [ -f "ipa_check/Payload/Agrisa.app/Info.plist" ]; then
+              echo "✅ Info.plist found"
+              plutil -p ipa_check/Payload/Agrisa.app/Info.plist | grep -E "CFBundleIdentifier|CFBundleVersion|CFBundleDisplayName"
+            fi
+          else
+            echo "❌ Invalid IPA structure"
+            ls -la ipa_check/
+            exit 1
+          fi
+          
+          # Cleanup
+          rm -rf ipa_check
+      
+      - name: Create Installation Instructions
+        script: |
+          echo "📝 Creating installation guide..."
+          
+          cat > $CM_BUILD_DIR/output/INSTALL_GUIDE.md << 'EOF'
+          # Hướng dẫn cài đặt Agrisa IPA
+          
+          ## Yêu cầu
+          - iPhone/iPad chạy iOS 14.0 trở lên
+          - AltStore hoặc Sideloadly đã cài đặt
+          - Kết nối WiFi ổn định
+          
+          ## Cách 1: Sử dụng AltStore (Khuyến nghị)
+          
+          ### Bước 1: Cài đặt AltStore
+          1. Tải AltServer từ: https://altstore.io/
+          2. Cài đặt trên máy tính (Windows/Mac)
+          3. Kết nối iPhone qua WiFi (cùng mạng với máy tính)
+          
+          ### Bước 2: Cài đặt app
+          1. Gửi file `Agrisa.ipa` về iPhone (AirDrop/Email/iCloud)
+          2. Mở AltStore trên iPhone
+          3. Chọn tab "My Apps"
+          4. Nhấn nút "+"
+          5. Chọn file `Agrisa.ipa`
+          6. Đăng nhập Apple ID khi được yêu cầu
+          7. Chờ AltStore resign và cài đặt app
+          
+          ### Bước 3: Trust Certificate
+          1. Mở Settings → General → VPN & Device Management
+          2. Tìm profile của Apple ID bạn vừa dùng
+          3. Nhấn "Trust"
+          
+          ## Cách 2: Sử dụng Sideloadly
+          
+          ### Bước 1: Tải Sideloadly
+          - Download: https://sideloadly.io/
+          - Hỗ trợ Windows/Mac/Linux
+          
+          ### Bước 2: Cài đặt
+          1. Kết nối iPhone qua USB
+          2. Mở Sideloadly
+          3. Kéo thả file `Agrisa.ipa` vào Sideloadly
+          4. Nhập Apple ID và password
+          5. Nhấn "Start"
+          6. Chờ quá trình hoàn tất
+          
+          ### Bước 3: Trust Certificate
+          - Tương tự như cách 1
+          
+          ## Lưu ý quan trọng
+          
+          ### Thời hạn app
+          - **Free Apple ID**: App hết hạn sau 7 ngày
+          - **Paid Developer Account**: App hết hạn sau 1 năm
+          - Cần refresh qua AltStore trước khi hết hạn
+          
+          ### Giới hạn
+          - Tối đa 3 apps với free account
+          - AltServer phải chạy khi refresh app
+          
+          ### Troubleshooting
+          
+          **Lỗi "Untrusted Developer"**
+          - Vào Settings → General → VPN & Device Management
+          - Trust certificate
+          
+          **App không mở được**
+          - Kiểm tra app chưa hết hạn
+          - Refresh qua AltStore
+          
+          **AltStore không thấy máy**
+          - Đảm bảo cùng mạng WiFi
+          - Restart AltServer và AltStore
+          
+          ## Hỗ trợ
+          Nếu gặp vấn đề, liên hệ:
+          - Email: nhancd909@gmail.com
+          - Email: hgiap46@gmail.com
+          EOF
+          
+          echo "✅ Installation guide created"
+      
+      - name: Generate QR Code for Download (Optional)
+        script: |
+          echo "📱 Installation ready"
+          echo ""
+          echo "==================================================="
+          echo "✅ IPA BUILD THÀNH CÔNG!"
+          echo "==================================================="
+          echo ""
+          echo "📦 File: Agrisa.ipa"
+          echo "📏 Size: $(ls -lh $CM_BUILD_DIR/output/Agrisa.ipa | awk '{print $5}')"
+          echo "📋 Bundle ID: com.tnhaan.agrisa"
+          echo ""
+          echo "📖 Xem file INSTALL_GUIDE.md để biết cách cài đặt"
+          echo ""
+          echo "==================================================="
+    
+    artifacts:
+      - output/Agrisa.ipa
+      - output/INSTALL_GUIDE.md
+    
+    publishing:
+      email:
+        recipients:
+          - nhancd909@gmail.com
+          - hgiap46@gmail.com
+        notify:
+          success: true
+          failure: true

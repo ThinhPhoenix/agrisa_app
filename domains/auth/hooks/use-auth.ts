@@ -31,8 +31,6 @@ export const useAuth = () => {
       return await AuthServices.signin(payload);
     },
     onSuccess: async (data: any) => {
-      
-
       await setAuth(data.data.access_token, data.data.user);
       router.replace("/(tabs)");
       toast.success("Đăng nhập thành công");

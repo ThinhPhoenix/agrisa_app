@@ -1,9 +1,16 @@
-import axios, {
-  AxiosInstance,
-  AxiosRequestConfig,
-  InternalAxiosRequestConfig,
-} from "axios";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import NetInfo from "@react-native-community/netinfo";
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
+import Constants from "expo-constants";
+import { router } from "expo-router";
+import { Alert } from "react-native";
+
+// ✅ Extend AxiosRequestConfig để thêm skipAuth flag
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    skipAuth?: boolean; // Flag để bỏ qua authentication
+  }
+}
 
 /**
  * Network utility functions
@@ -33,12 +40,11 @@ class NetworkUtils {
   }
 }
 
-/**
- * Enhanced Axios instance với network detection
- */
+const API_URL = Constants.expoConfig?.extra?.apiUrl;
+
 const useAxios: AxiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || "https://your-api-url.com/api",
-  timeout: 15000, // Tăng timeout cho mobile network
+  baseURL: API_URL,
+  timeout: 300000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -47,7 +53,7 @@ const useAxios: AxiosInstance = axios.create({
 });
 
 /**
- * Request interceptor - Check network trước khi gửi
+ * ✅ Request interceptor - Lấy token ĐỘNG cho mỗi request
  */
 useAxios.interceptors.request.use(
   async (
@@ -66,12 +72,51 @@ useAxios.interceptors.request.use(
       });
     }
 
+    // ✅ Kiểm tra skipAuth flag - Nếu true thì bỏ qua việc thêm token
+    if (config.skipAuth === true) {
+      if (__DEV__) {
+        console.log("🌐 Public endpoint (skipAuth): ", config.url);
+      }
+      // Xóa Authorization header nếu có
+      delete config.headers.Authorization;
+      return config;
+    }
+
+    // ✅ Lấy token ĐỘNG từ storage cho mỗi request (chỉ khi không có skipAuth)
+    try {
+      const token = await secureStorage.getToken();
+
+      if (__DEV__) {
+        console.log(
+          "🔑 Token retrieved:",
+          token ? `${String(token).substring(0, 20)}...` : "NULL"
+        );
+      }
+
+      // ✅ Chỉ set Authorization nếu có token
+      if (token && typeof token === "string") {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        // ⚠️ Không có token - có thể là public endpoint hoặc chưa login
+        if (__DEV__) {
+          console.warn("⚠️ No token found for request:", config.url);
+        }
+        // Xóa Authorization header nếu có
+        delete config.headers.Authorization;
+      }
+    } catch (error) {
+      console.error("❌ Error getting token:", error);
+      delete config.headers.Authorization;
+    }
+
     // Log request (development only)
     if (__DEV__) {
       console.debug("🌐 API Request:", {
         method: config.method,
         url: config.url,
+        hasAuth: !!config.headers.Authorization,
         hasData: !!config.data,
+        skipAuth: config.skipAuth,
       });
     }
 
@@ -81,6 +126,9 @@ useAxios.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// ✅ Biến để tránh hiển thị nhiều alert 401 cùng lúc
+let isShowing401Alert = false;
 
 /**
  * Response interceptor - Handle success/error và network errors
@@ -164,6 +212,54 @@ useAxios.interceptors.response.use(
         status,
         statusText: error.response.statusText,
         data,
+      });
+    }
+
+    // ✅ Handle 401 Unauthorized - Token expired hoặc invalid
+    if (status === 401) {
+      if (__DEV__) {
+        console.warn("🔐 Unauthorized - Token may be expired or invalid");
+      }
+
+      // ✅ Clear auth data
+      try {
+        await secureStorage.clearAuth();
+        console.log("🗑️ Auth data cleared due to 401");
+      } catch (clearError) {
+        console.error("❌ Error clearing auth:", clearError);
+      }
+
+      // ✅ Hiển thị alert chỉ 1 lần (tránh spam)
+      if (!isShowing401Alert) {
+        isShowing401Alert = true;
+
+        Alert.alert(
+          "Phiên đăng nhập hết hạn",
+          "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
+          [
+            {
+              text: "Đăng nhập",
+              onPress: () => {
+                isShowing401Alert = false;
+                router.replace("/auth/sign-in");
+              },
+            },
+          ],
+          {
+            cancelable: false, // Không cho phép đóng bằng cách tap ngoài
+            onDismiss: () => {
+              isShowing401Alert = false;
+            },
+          }
+        );
+      }
+
+      return Promise.reject({
+        response: error.response,
+        message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+        code: "UNAUTHORIZED",
+        status: 401,
+        isAuthError: true,
       });
     }
 

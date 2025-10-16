@@ -6,6 +6,12 @@ export const QueryKey = {
     SIGN_UP: "sign-up",
   },
 
+  EKYC: {
+    STATUS: "ekyc-status",
+    OCR_ID: "ekyc-ocr-id",
+    FACE_SCAN: "ekyc-face-scan",
+  },
+
   TEST: "test",
   
 };

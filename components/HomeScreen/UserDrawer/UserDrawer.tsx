@@ -1,5 +1,6 @@
 import ThemeToggle from "@/components/theme/ThemeSetting";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import {
     Avatar,
     AvatarFallbackText,
@@ -39,7 +40,7 @@ interface UserDrawerProps {
 export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
   const { colors } = useAgrisaColors();
   const { width: screenWidth } = useWindowDimensions();
-
+  const { logout } = useAuthStore();
   // Animation values
   const translateX = useSharedValue(screenWidth);
   const backdropOpacity = useSharedValue(0);
@@ -181,7 +182,7 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
 
                 <VStack flex={1} justifyContent="center" space="xs">
                   <Text color={colors.text} fontSize="$xl" fontWeight="bold">
-                    VÕ THANH NHÂN
+                    VÕ THÀNH NHÂN
                   </Text>
                   <Text color={colors.textSecondary} fontSize="$sm">
                     Hồ sơ người dùng
@@ -250,7 +251,8 @@ export default function UserDrawer({ isOpen, onClose }: UserDrawerProps) {
             {/* Logout */}
             <Pressable
               onPress={() => {
-                router.push("/auth/sign-in")
+                logout();
+                router.push("/auth/sign-in");
                 onClose();
               }}
             >

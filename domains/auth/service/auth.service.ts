@@ -4,9 +4,9 @@ import { SignInPayload, SignInResponse, SignUpPayload } from "../models/auth.mod
 
 export const AuthServices = {
     signin: async (payload: SignInPayload): Promise<ApiResponse<SignInResponse>> => { 
-        return useAxios.post("/auth/public/login", payload, { skipAuth: true });
+        return useAxios.post("/auth/public/login", payload);
     },
     signup: async (payload: SignUpPayload): Promise<ApiResponse<void>> => { 
-        return useAxios.post("/auth/public/register", payload, { skipAuth: true });
+        return useAxios.post("/auth/public/register", payload);
     }
 }

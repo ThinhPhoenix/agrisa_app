@@ -9,7 +9,6 @@ export const eKYCServices = {
               headers: {
                 "content-type": "multipart/form-data",
               },
-              skipAuth: false,
             });
         },
         scan_face: async (payload: FaceScanPayload): Promise<ApiResponse<EKYCStatusResponse>> => {
@@ -20,7 +19,6 @@ export const eKYCServices = {
                 headers: {
                   "content-type": "multipart/form-data",
                 },
-                skipAuth: false,
               }
             );
         }
@@ -28,7 +26,7 @@ export const eKYCServices = {
 
     get: {
         ekyc_status: async(i: string) : Promise<ApiResponse<EKYCStatusResponse>> => {
-            return useAxios.get(`/auth/protected/api/v2/ekyc-progress/${i}`, { skipAuth: false });
+            return useAxios.get(`/auth/protected/api/v2/ekyc-progress/${i}`);
         }
 
     },

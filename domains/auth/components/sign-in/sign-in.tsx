@@ -1,539 +1,675 @@
+import useAxios from "@/config/useAxios.config";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
   Box,
   Button,
+  ButtonIcon,
   ButtonText,
   FormControl,
   FormControlError,
   FormControlErrorText,
-  FormControlLabel,
-  FormControlLabelText,
+  HStack,
+  Image,
   Input,
   InputField,
+  InputSlot,
+  Pressable,
   Text,
-  View,
+  VStack,
 } from "@gluestack-ui/themed";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
-import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react-native";
-import React, { useState } from "react";
+import {
+  Eye,
+  EyeOff,
+  Fingerprint,
+  Lock,
+  LogIn,
+  Mail,
+  Newspaper,
+  Phone,
+  PhoneIcon,
+  ScanFace,
+  ShieldCheck,
+  User
+} from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import {
   Alert,
   Dimensions,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
+import { SignInPayload } from "../../models/auth.models";
 import { SignInPayloadSchema } from "../../schemas/auth.schema";
+import { useAuthStore } from "../../stores/auth.store";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const PRIMARY_RED = "#A3142A";
+const PRIMARY_RED_DARK = "#7E1021";
+const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.45)";
+const CARD_GRADIENT = ["rgba(255,255,255,0.7)", "rgba(255,237,237,0.7)"];
 
 const SignInComponentUI = () => {
   const { colors } = useAgrisaColors();
   const [showPassword, setShowPassword] = useState(false);
+  const [cachedIdentifier, setCachedIdentifier] = useState<string | null>(null);
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
+  const [isLoadingBiometric, setIsLoadingBiometric] = useState(false);
+  const [biometricType, setBiometricType] = useState<string>("Vân tay");
 
-  // Sử dụng hook auth form đã được chuẩn hóa cho đăng nhập Agrisa
-  const { form, onSubmit, isLoading, error, reset, clearErrors } = useAuthForm({
+  const { setAuth } = useAuthStore();
+
+  const { form, onSubmit, isLoading } = useAuthForm({
     type: "sign-in",
   });
 
-  // Type assertion an toàn cho sign-in form (fix lỗi TypeScript)
   const signInFormControl = form.control as Control<SignInPayloadSchema>;
 
+  // ============================================
+  // 🔧 TRANSFORM IDENTIFIER TO PAYLOAD
+  // ============================================
+  const transformIdentifierToPayload = (
+    identifier: string,
+    password: string
+  ): SignInPayload => {
+    const trimmedIdentifier = identifier.trim();
+
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedIdentifier);
+    if (isEmail) {
+      return { email: trimmedIdentifier, password };
+    }
+
+    const isPhoneVN = /^(\+84|84|0)(3|5|7|8|9)([0-9]{8})$/.test(
+      trimmedIdentifier.replace(/\s+/g, "")
+    );
+
+    if (isPhoneVN) {
+      let normalizedPhone = trimmedIdentifier.replace(/\s+/g, "");
+
+      if (normalizedPhone.startsWith("0")) {
+        normalizedPhone = "+84" + normalizedPhone.substring(1);
+      } else if (normalizedPhone.startsWith("84")) {
+        normalizedPhone = "+" + normalizedPhone;
+      }
+
+      return { phone: normalizedPhone, password };
+    }
+
+    throw new Error("Định dạng không hợp lệ");
+  };
+
+  // ============================================
+  // 🔄 LOAD CACHED DATA
+  // ============================================
+  useEffect(() => {
+    const loadCachedData = async () => {
+      try {
+        const supportedTypes =
+          await LocalAuthentication.supportedAuthenticationTypesAsync();
+
+        if (
+          supportedTypes.includes(
+            LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+          )
+        ) {
+          setBiometricType("Khuôn mặt");
+        } else if (
+          supportedTypes.includes(
+            LocalAuthentication.AuthenticationType.FINGERPRINT
+          )
+        ) {
+          setBiometricType("Vân tay");
+        }
+
+        const lastIdentifier = await secureStorage.getIdentifier();
+
+        if (!lastIdentifier) {
+          router.replace("/auth/username-sign-in");
+          return;
+        }
+
+        setCachedIdentifier(lastIdentifier);
+
+        const biometricEnabled =
+          await secureStorage.isBiometricEnabled(lastIdentifier);
+        setIsBiometricEnabled(biometricEnabled);
+      } catch (error) {
+        console.error("❌ [Sign-in] Error loading cached data:", error);
+      }
+    };
+
+    loadCachedData();
+  }, []);
+
+  // ============================================
+  // 🔄 CHANGE ACCOUNT
+  // ============================================
+  const handleChangeAccount = () => {
+    Alert.alert("Đổi tài khoản", "Bạn muốn đăng nhập bằng tài khoản khác?", [
+      { text: "Hủy", style: "cancel" },
+      {
+        text: "Đổi tài khoản",
+        onPress: async () => {
+          await secureStorage.clearIdentifier();
+          router.replace("/auth/username-sign-in");
+        },
+      },
+    ]);
+  };
+
+  // ============================================
+  // 🔐 BIOMETRIC AUTHENTICATION
+  // ============================================
   const authenticateWithBiometrics = async () => {
     try {
-      console.log("Starting FaceID authentication...");
-      const enabled = await secureStorage.getEnableFaceID();
-      console.log("FaceID enabled:", enabled);
+      setIsLoadingBiometric(true);
+
+      if (!cachedIdentifier) {
+        Alert.alert("Lỗi", "Không tìm thấy thông tin tài khoản");
+        return;
+      }
+
+      const enabled = await secureStorage.isBiometricEnabled(cachedIdentifier);
+
       if (!enabled) {
         Alert.alert(
           "Tính năng chưa bật",
-          "Vui lòng bật FaceID trong cài đặt trước."
+          `Vui lòng bật xác thực ${biometricType} trong cài đặt sau khi đăng nhập.`
         );
         return;
       }
 
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      console.log("Has hardware:", hasHardware, "Is enrolled:", isEnrolled);
 
       if (!hasHardware || !isEnrolled) {
         Alert.alert(
           "Không hỗ trợ",
-          "Thiết bị không hỗ trợ FaceID hoặc chưa thiết lập."
+          `Thiết bị không hỗ trợ ${biometricType} hoặc chưa thiết lập.`
         );
         return;
       }
 
-      console.log("Calling authenticateAsync...");
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Đăng nhập bằng FaceID",
-        fallbackLabel: "Sử dụng mật khẩu",
+        promptMessage: `Đăng nhập Agrisa bằng ${biometricType}`,
+        disableDeviceFallback: false,
+        fallbackLabel: "Dùng mật khẩu",
+        cancelLabel: "Hủy",
       });
-      console.log("Authentication result:", result);
 
       if (result.success) {
-        // Giả lập đăng nhập thành công với FaceID
-        Alert.alert("Thành công", "Đăng nhập bằng FaceID thành công!");
-        // Có thể navigate đến trang chính
+        const password =
+          await secureStorage.getBiometricPassword(cachedIdentifier);
+
+        if (!password) {
+          Alert.alert(
+            "Lỗi",
+            "Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập bằng mật khẩu."
+          );
+          return;
+        }
+
+        const loginPayload = transformIdentifierToPayload(
+          cachedIdentifier,
+          password
+        );
+
+        const response = await useAxios.post(
+          "/auth/public/login",
+          loginPayload
+        );
+
+        const { access_token, user } = response.data;
+
+        await setAuth(access_token, user);
+
         router.replace("/(tabs)");
-      } else {
-        Alert.alert("Thất bại", "Xác thực thất bại.");
       }
-    } catch (error) {
-      console.error("FaceID error:", error);
-      Alert.alert("Lỗi", "Có lỗi xảy ra khi xác thực.");
+    } catch (error: any) {
+      console.error("❌ [Biometric] Error:", error);
+
+      if (error?.response?.status === 401) {
+        Alert.alert(
+          "Đăng nhập thất bại",
+          "Thông tin đăng nhập không đúng. Vui lòng đăng nhập lại bằng mật khẩu."
+        );
+
+        if (cachedIdentifier) {
+          await secureStorage.clearBiometricPassword(cachedIdentifier);
+          setIsBiometricEnabled(false);
+        }
+      } else {
+        Alert.alert(
+          "Lỗi",
+          error.message || `Có lỗi xảy ra khi đăng nhập bằng ${biometricType}.`
+        );
+      }
+    } finally {
+      setIsLoadingBiometric(false);
     }
   };
 
-  // Helper để detect loại identifier và hiển thị icon phù hợp cho nông dân
-  const getIdentifierIcon = (value: string) => {
-    if (!value) return <User size={20} color={colors.textMuted} />;
+  // ============================================
+  // 🎨 UI HELPERS
+  // ============================================
+  const getIdentifierIcon = () => {
+    if (!cachedIdentifier)
+      return <User size={20} color={PRIMARY_RED} strokeWidth={2.5} />;
 
-    // Kiểm tra email pattern
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
-      return <Mail size={20} color={colors.success} />;
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cachedIdentifier.trim())) {
+      return <Mail size={20} color={PRIMARY_RED} strokeWidth={2.5} />;
     }
 
-    // Kiểm tra phone pattern Việt Nam
-    if (/^(\+84|84|0)(3|5|7|8|9)([0-9]{8})$/.test(value.replace(/\s+/g, ""))) {
-      return <Phone size={20} color={colors.success} />;
-    }
-
-    return <User size={20} color={colors.textMuted} />;
+    return <Phone size={20} color={PRIMARY_RED} strokeWidth={2.5} />;
   };
 
-  // Helper để format phone number tự động cho nông dân Việt Nam
-  const formatPhoneNumber = (phone: string): string => {
-    const cleaned = phone.replace(/\s+/g, "").replace(/\D/g, "");
-
-    // Chuyển từ 0xxx sang +84xxx (phổ biến ở nông thôn)
-    if (cleaned.startsWith("0")) {
-      return "+84" + cleaned.substring(1);
+  // Lấy tên hiển thị từ identifier
+  const getDisplayName = () => {
+    if (!cachedIdentifier) return "Nông dân";
+    // Nếu là email, lấy phần trước @
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cachedIdentifier)) {
+      const name = cachedIdentifier.split("@")[0];
+      // Capitalize first letter of each word
+      return name
+        .split(/[._-]/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
     }
 
-    // Chuyển từ 84xxx sang +84xxx
-    if (cleaned.startsWith("84") && !cleaned.startsWith("+84")) {
-      return "+" + cleaned;
-    }
-
-    return phone;
+    // Nếu là số điện thoại, format lại
+    const phone = cachedIdentifier.replace("+84", "0");
+    return phone.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
   };
+
+  const shortcuts = [
+    { label: "Điều khoản sử dụng", icon: Newspaper },
+    { label: "Liên hệ hỗ trợ", icon: PhoneIcon },
+  ];
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
-      <ScrollView
-        style={{ flex: 1, backgroundColor: colors.background }}
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+    <Box flex={1}>
+      <ImageBackground
+        source={require("@/assets/images/Login/Login-BG.png")}
+        style={{
+          width: SCREEN_WIDTH,
+          height: SCREEN_HEIGHT,
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
+        imageStyle={{
+          width: SCREEN_WIDTH,
+          height: SCREEN_HEIGHT,
+          resizeMode: "cover",
+        }}
       >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-            paddingVertical: 20,
-            paddingHorizontal: 16,
-          }}
+        <LinearGradient
+          colors={["rgba(255,255,255,0)", "rgba(163,20,42,0.45)"]}
+          style={{ flex: 1 }}
         >
-          {/* Container chính - responsive design cho mọi thiết bị nông thôn */}
-          <Box
-            style={{
-              width: "100%",
-              maxWidth: 420, // Tối ưu cho tablet và điện thoại lớn
-              justifyContent: "center",
-              alignItems: "center",
-            }}
+          <HStack
+            alignItems="center"
+            space="sm"
+            position="absolute"
+            top={Platform.OS === "ios" ? 60 : 50}
+            zIndex={10}
           >
-            {/* Card form đăng nhập Agrisa */}
-            <Box
-              style={{
-                width: "100%",
-                backgroundColor: colors.card,
-                borderRadius: 20,
-                padding: 28,
-                shadowColor: colors.shadow,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.15,
-                shadowRadius: 12,
-                elevation: 8,
-                alignItems: "center",
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
+            <Image
+              source={require("@/assets/images/Logo/Agrisa_Logo.png")}
+              alt="Agrisa Logo"
+              style={{ width: 100, height: 100 }}
+              resizeMode="contain"
+            />
+            <Text
+              fontSize="$2xl"
+              fontWeight="$black"
+              color="$white"
+              letterSpacing={1.2}
             >
-              {/* Header với branding Agrisa */}
-              <Box
-                style={{
-                  alignItems: "center",
-                  marginBottom: 32,
-                  width: "100%",
-                }}
+              Agrisa
+            </Text>
+          </HStack>
+        </LinearGradient>
+      </ImageBackground>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{
+          flex: 1,
+          justifyContent: "flex-end",
+        }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-end" }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}
+        >
+          <VStack px="$5" pb="$10" space="lg">
+            <Box
+              borderRadius={32}
+              overflow="hidden"
+              borderWidth={1}
+              borderColor={CARD_BORDER_COLOR}
+              shadowColor="#63101B"
+              shadowOffset={{ width: 0, height: 20 }}
+              shadowOpacity={0.18}
+              shadowRadius={30}
+              elevation={18}
+            >
+              <LinearGradient
+                colors={CARD_GRADIENT}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{ flex: 1 }}
               >
-                {/* Logo Agrisa */}
-                <Box
-                  style={{
-                    backgroundColor: colors.success, // Màu xanh lá nông nghiệp
-                    padding: 16,
-                    borderRadius: 20,
-                    marginBottom: 16,
-                  }}
-                >
-                  <Lock size={32} color="white" />
-                </Box>
-
-                <Text
-                  style={{
-                    fontSize: 28,
-                    fontWeight: "bold",
-                    color: colors.text,
-                    textAlign: "center",
-                    marginBottom: 8,
-                  }}
-                >
-                  Đăng Nhập Agrisa
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 15,
-                    color: colors.textSecondary,
-                    textAlign: "center",
-                    lineHeight: 20,
-                  }}
-                >
-                  Nền tảng bảo hiểm nông nghiệp thông minh
-                </Text>
-              </Box>
-
-              <Box style={{ width: "100%" }}>
-                {/* Trường password */}
-                <Controller
-                  control={signInFormControl}
-                  name="identifier"
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      isInvalid={!!fieldState.error}
-                      style={{ marginBottom: 20 }}
-                    >
-                      <FormControlLabel>
-                        <FormControlLabelText
-                          style={{
-                            color: colors.text,
-                            fontWeight: "600",
-                            fontSize: 16,
-                            marginBottom: 8,
-                          }}
-                        >
-                          Số điện thoại hoặc Email
-                        </FormControlLabelText>
-                      </FormControlLabel>
-
-                      <Box style={{ position: "relative" }}>
-                        <Input
-                          variant="outline"
-                          size="md"
-                          style={{
-                            borderColor: fieldState.error
-                              ? colors.error
-                              : colors.border,
-                            borderRadius: 12,
-                            borderWidth: 2,
-                            backgroundColor: colors.surface,
-                          }}
-                        >
-                          <InputField
-                            value={field.value}
-                            onChangeText={(text) => {
-                              // Auto-format phone number cho nông dân Việt Nam
-                              const isPhone = /^[0-9+]/.test(text);
-                              if (isPhone && !text.includes("@")) {
-                                const formatted = formatPhoneNumber(text);
-                                field.onChange(formatted);
-                              } else {
-                                field.onChange(text);
-                              }
-                            }}
-                            placeholder="0987654321 hoặc email@example.com"
-                            placeholderTextColor={colors.textMuted}
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            keyboardType="default"
-                            style={{
-                              fontSize: 16,
-                              color: colors.text,
-                              paddingHorizontal: 16,
-                              paddingRight: 50, // Chỗ cho icon
-                            }}
-                          />
-                        </Input>
-
+            
+                <Box px="$6" py="$7">
+                  {cachedIdentifier && (
+                    <VStack space="md" mb="$5">
+                      <HStack space="md" alignItems="center">
                         <Box
-                          style={{
-                            position: "absolute",
-                            right: 16,
-                            top: "50%",
-                            transform: [{ translateY: -14 }],
-                            padding: 4,
-                          }}
+                          bg="rgba(163, 20, 42, 0.12)"
+                          borderRadius="$full"
+                          p="$2.5"
                         >
-                          {getIdentifierIcon(field.value)}
-                        </Box>
-                      </Box>
-
-                      {/* Hint text hướng dẫn cho nông dân */}
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.textMuted,
-                          marginTop: 4,
-                          fontStyle: "italic",
-                        }}
-                      >
-                        Ví dụ: 0987654321 hoặc nongdan@email.com
-                      </Text>
-
-                      {fieldState.error && (
-                        <FormControlError>
-                          <FormControlErrorText
-                            style={{
-                              color: colors.error,
-                              fontSize: 13,
-                              marginTop: 6,
-                              fontWeight: "500",
-                            }}
-                          >
-                            {fieldState.error.message}
-                          </FormControlErrorText>
-                        </FormControlError>
-                      )}
-                    </FormControl>
-                  )}
-                />
-
-                {/* Trường mật khẩu */}
-                <Controller
-                  control={signInFormControl}
-                  name="password"
-                  render={({ field, fieldState }) => (
-                    <FormControl
-                      isInvalid={!!fieldState.error}
-                      style={{ marginBottom: 28 }}
-                    >
-                      <FormControlLabel>
-                        <FormControlLabelText
-                          style={{
-                            color: colors.text,
-                            fontWeight: "600",
-                            fontSize: 16,
-                            marginBottom: 8,
-                          }}
-                        >
-                          Mật khẩu
-                        </FormControlLabelText>
-                      </FormControlLabel>
-
-                      <Box style={{ position: "relative" }}>
-                        <Input
-                          variant="outline"
-                          size="md"
-                          style={{
-                            borderColor: fieldState.error
-                              ? colors.error
-                              : colors.border,
-                            borderRadius: 12,
-                            borderWidth: 2,
-                            backgroundColor: colors.surface,
-                          }}
-                        >
-                          <InputField
-                            value={field.value}
-                            onChangeText={field.onChange}
-                            placeholder="••••••••"
-                            placeholderTextColor={colors.textMuted}
-                            secureTextEntry={!showPassword}
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            style={{
-                              fontSize: 16,
-                              color: colors.text,
-                              paddingHorizontal: 16,
-                              paddingRight: 50, // Chỗ cho icon
-                            }}
+                          <ShieldCheck
+                            size={22}
+                            color={PRIMARY_RED}
+                            strokeWidth={2.6}
                           />
-                        </Input>
-
-                        {/* Toggle hiển thị mật khẩu */}
-                        <TouchableOpacity
-                          onPress={() => setShowPassword(!showPassword)}
-                          style={{
-                            position: "absolute",
-                            right: 16,
-                            top: "50%",
-                            transform: [{ translateY: -12 }],
-                            padding: 4,
-                          }}
-                        >
-                          {showPassword ? (
-                            <EyeOff size={20} color={colors.textMuted} />
-                          ) : (
-                            <Eye size={20} color={colors.textMuted} />
-                          )}
-                        </TouchableOpacity>
-                      </Box>
-
-                      {fieldState.error && (
-                        <FormControlError>
-                          <FormControlErrorText
-                            style={{
-                              color: colors.error,
-                              fontSize: 13,
-                              marginTop: 6,
-                              fontWeight: "500",
-                            }}
+                        </Box>
+                        <VStack flex={1}>
+                          <Text fontSize="$md" color={colors.textMuted}>
+                            Xin chào,
+                          </Text>
+                          <Text
+                            fontSize="$xl"
+                            fontWeight="$bold"
+                            color={colors.text}
+                            numberOfLines={1}
                           >
-                            {fieldState.error.message}
-                          </FormControlErrorText>
-                        </FormControlError>
-                      )}
-                    </FormControl>
+                            {getDisplayName()}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                    </VStack>
                   )}
-                />
 
-                {/* Nút đăng nhập với loading state */}
-                <Button
-                  onPress={onSubmit}
-                  isDisabled={isLoading}
-                  size="md"
-                  style={{
-                    backgroundColor: colors.success,
-                    borderRadius: 12,
-                    width: "100%",
-                    opacity: isLoading ? 0.8 : 1,
-                    shadowColor: colors.success,
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 8,
-                    elevation: 6,
-                  }}
-                >
-                  <ButtonText
-                    style={{
-                      color: "white",
-                      fontWeight: "700",
-                      fontSize: 18,
-                    }}
-                  >
-                    {isLoading ? "Đang xử lý..." : "Đăng Nhập Agrisa"}
-                  </ButtonText>
-                </Button>
+                  <Box
+                    h={1}
+                    bg="rgba(163, 20, 42, 0.1)"
+                    mb="$5"
+                    borderRadius={999}
+                  />
 
-                {/* Nút đăng nhập bằng FaceID */}
-                <Button
-                  onPress={authenticateWithBiometrics}
-                  variant="outline"
-                  size="md"
-                  style={{
-                    borderColor: colors.success,
-                    borderRadius: 12,
-                    width: "100%",
-                    marginTop: 12,
-                    shadowColor: colors.success,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.2,
-                    shadowRadius: 4,
-                    elevation: 3,
-                  }}
-                >
-                  <ButtonText
-                    style={{
-                      color: colors.success,
-                      fontWeight: "600",
-                      fontSize: 16,
-                    }}
-                  >
-                    Đăng Nhập Bằng FaceID
-                  </ButtonText>
-                </Button>
+                  <VStack space="md">
+                    <Controller
+                      control={signInFormControl}
+                      name="password"
+                      render={({ field, fieldState }) => (
+                        <FormControl isInvalid={!!fieldState.error}>
+                          <VStack space="xs">
+                            <Text
+                              fontSize="$xl"
+                              fontWeight="$semibold"
+                              pb={10}
+                              color={colors.text}
+                            >
+                              Mật khẩu
+                            </Text>
 
-              </Box>
+                            <HStack space="sm" alignItems="flex-start" pb={5}>
+                              <Box flex={1}>
+                                <Input
+                                  variant="outline"
+                                  size="lg"
+                                  borderWidth={1.5}
+                                  borderRadius="$3xl"
+                                  borderColor={
+                                    fieldState.error
+                                      ? colors.error
+                                      : "rgba(163, 20, 42, 0.25)"
+                                  }
+                                  bg="rgba(255,255,255,0.96)"
+                                  h="$12"
+                                  shadowColor="rgba(99,16,27,0.12)"
+                                  shadowOffset={{ width: 0, height: 8 }}
+                                  shadowOpacity={0.18}
+                                  shadowRadius={16}
+                                  elevation={8}
+                                  $focus={{
+                                    borderColor: PRIMARY_RED,
+                                    borderWidth: 2,
+                                  }}
+                                >
+                                  <InputSlot pl="$4">
+                                    <Lock
+                                      size={20}
+                                      color={
+                                        fieldState.error
+                                          ? colors.error
+                                          : colors.textMuted
+                                      }
+                                      strokeWidth={2.5}
+                                    />
+                                  </InputSlot>
+                                  <InputField
+                                    value={field.value}
+                                    onChangeText={field.onChange}
+                                    placeholder="Nhập mật khẩu"
+                                    placeholderTextColor={colors.textMuted}
+                                    secureTextEntry={!showPassword}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    pr="$10"
+                                    fontSize="$sm"
+                                    fontWeight="$medium"
+                                    color={colors.text}
+                                  />
+                                  <InputSlot pr="$4">
+                                    <Pressable
+                                      onPress={() =>
+                                        setShowPassword(!showPassword)
+                                      }
+                                      hitSlop={{
+                                        top: 10,
+                                        bottom: 10,
+                                        left: 10,
+                                        right: 10,
+                                      }}
+                                    >
+                                      {showPassword ? (
+                                        <EyeOff
+                                          size={18}
+                                          color={colors.textMuted}
+                                          strokeWidth={2.5}
+                                        />
+                                      ) : (
+                                        <Eye
+                                          size={18}
+                                          color={colors.textMuted}
+                                          strokeWidth={2.5}
+                                        />
+                                      )}
+                                    </Pressable>
+                                  </InputSlot>
+                                </Input>
 
-              {/* Navigation và hỗ trợ */}
-              <Box
-                style={{
-                  marginTop: 24,
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                {/* Link đăng ký */}
-                <Text
-                  style={{
-                    color: colors.textSecondary,
-                    fontSize: 14,
-                    textAlign: "center",
-                    marginBottom: 12,
-                  }}
-                >
-                  Chưa có tài khoản Agrisa?{" "}
-                  <Text
-                    onPress={() => {
-                      router.push("/auth/sign-up");
-                    }}
-                    style={{
-                      color: colors.success,
-                      fontWeight: "600",
-                      textDecorationLine: "underline",
-                    }}
-                  >
-                    Đăng ký ngay
-                  </Text>
-                </Text>
+                                {fieldState.error && (
+                                  <FormControlError mt="$1">
+                                    <FormControlErrorText
+                                      fontSize="$xs"
+                                      color={colors.error}
+                                    >
+                                      {fieldState.error.message}
+                                    </FormControlErrorText>
+                                  </FormControlError>
+                                )}
+                              </Box>
 
-                {/* Link quên mật khẩu */}
-                <Text
-                  onPress={() => {
-                    router.push("/auth/forgot-password");
-                  }}
-                  style={{
-                    color: colors.success,
-                    fontSize: 14,
-                    fontWeight: "600",
-                    textAlign: "center",
-                    textDecorationLine: "underline",
-                  }}
-                >
-                  Quên mật khẩu?
-                </Text>
+                              {isBiometricEnabled && (
+                                <Pressable
+                                  onPress={authenticateWithBiometrics}
+                                  disabled={isLoadingBiometric || isLoading}
+                                  style={{
+                                    opacity:
+                                      isLoadingBiometric || isLoading ? 0.5 : 1,
+                                  }}
+                                >
+                                  <Box
+                                    bg={PRIMARY_RED}
+                                    borderRadius="$full"
+                                    w="$12"
+                                    h="$12"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    shadowColor="rgba(99,16,27,0.35)"
+                                    shadowOffset={{ width: 0, height: 6 }}
+                                    shadowOpacity={0.24}
+                                    shadowRadius={8}
+                                    elevation={10}
+                                  >
+                                    {Platform.OS === "ios" ? (
+                                      <ScanFace
+                                        size={26}
+                                        color="#FFFFFF"
+                                        strokeWidth={2.5}
+                                      />
+                                    ) : (
+                                      <Fingerprint
+                                        size={26}
+                                        color="#FFFFFF"
+                                        strokeWidth={2.5}
+                                      />
+                                    )}
+                                  </Box>
+                                </Pressable>
+                              )}
+                            </HStack>
+                          </VStack>
+                        </FormControl>
+                      )}
+                    />
 
-                {/* Thông tin hỗ trợ cho nông dân */}
-                <Text
-                  style={{
-                    color: colors.textMuted,
-                    fontSize: 12,
-                    textAlign: "center",
-                    marginTop: 16,
-                    fontStyle: "italic",
-                    lineHeight: 16,
-                  }}
-                >
-                  Hỗ trợ 24/7: 1900-AGRISA (1900-247472)
-                  {"\n"}
-                  Chăm sóc nông dân mọi lúc mọi nơi
-                </Text>
-              </Box>
+                    <HStack
+                      justifyContent="space-between"
+                      alignItems="center"
+                      mt="$2"
+                    >
+                      <Pressable
+                        onPress={handleChangeAccount}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text
+                          fontSize="$md"
+                          fontWeight="$semibold"
+                          color={colors.error}
+                        >
+                          Tài khoản khác
+                        </Text>
+                      </Pressable>
+
+                      <Pressable
+                        onPress={() => router.push("/auth/forgot-password")}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text
+                          fontSize="$md"
+                          fontWeight="$semibold"
+                          color={PRIMARY_RED}
+                        >
+                          Quên mật khẩu?
+                        </Text>
+                      </Pressable>
+                    </HStack>
+
+                    <Button
+                      onPress={onSubmit}
+                      isDisabled={isLoading}
+                      size="lg"
+                      bg={PRIMARY_RED}
+                      borderRadius="$full"
+                      h="$12"
+                      shadowColor="rgba(99,16,27,0.35)"
+                      shadowOffset={{ width: 0, height: 12 }}
+                      shadowOpacity={0.24}
+                      shadowRadius={16}
+                      elevation={12}
+                      $active={{
+                        bg: PRIMARY_RED_DARK,
+                        opacity: 0.95,
+                      }}
+                      mt="$5"
+                    >
+                      <ButtonText
+                        fontSize="$md"
+                        fontWeight="$bold"
+                        color="$white"
+                      >
+                        {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+                      </ButtonText>
+                      <ButtonIcon as={LogIn} ml="$2" color="$white" />
+                    </Button>
+                  </VStack>
+                </Box>
+              </LinearGradient>
             </Box>
-          </Box>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+            <HStack
+              mt="$3"
+              alignItems="center"
+              justifyContent="space-between"
+              px="$1"
+            >
+              {shortcuts.map(({ label, icon: Icon }) => (
+                <Pressable
+                  key={label}
+                  accessibilityRole="button"
+                  style={{ flex: 1 }}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  onPress={() => {}}
+                >
+                  <VStack alignItems="center" space="xs">
+                    <Box
+                      bg="rgba(255,255,255,0.75)"
+                      borderRadius="$full"
+                      w="$12"
+                      h="$12"
+                      alignItems="center"
+                      justifyContent="center"
+                      borderWidth={1}
+                      borderColor="rgba(163, 20, 42, 0.2)"
+                    >
+                      <Icon size={20} color={PRIMARY_RED} strokeWidth={2.5} />
+                    </Box>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.textWhiteButton}
+                      numberOfLines={2}
+                      textAlign="center"
+                    >
+                      {label}
+                    </Text>
+                  </VStack>
+                </Pressable>
+              ))}
+            </HStack>
+          </VStack>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </Box>
   );
 };
 

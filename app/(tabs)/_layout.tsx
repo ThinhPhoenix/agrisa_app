@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import React from "react";
 
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { History, Home, MessageCircle, Wheat } from "lucide-react-native";
+import { History, Home, MessageCircle, User, Wheat } from "lucide-react-native";
 import { Image } from '@gluestack-ui/themed';
 
 export default function TabLayout() {
@@ -54,6 +54,15 @@ export default function TabLayout() {
 
           tabBarIcon: ({ color, size }) => (
             <MessageCircle size={size || 24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile/index"
+        options={{
+          title: "Tôi",
+          tabBarIcon: ({ color, size }) => (
+            <User size={size || 24} color={color} />
           ),
         }}
       />

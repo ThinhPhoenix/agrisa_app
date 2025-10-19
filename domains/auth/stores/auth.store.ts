@@ -1,10 +1,9 @@
+import useAxios from "@/config/useAxios.config";
 import { logger } from "@/domains/shared/utils/logger";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
-import axios from "axios";
 import { router } from "expo-router";
 import { create } from "zustand";
 import { AuthState, AuthUser } from "../models/auth.models";
-import useAxios from "@/config/useAxios.config";
 import { Alert } from "react-native";
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -19,36 +18,45 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await secureStorage.setToken(token);
       await secureStorage.setUser(user);
 
+      // Lưu identifier để nhớ tài khoản
+      const identifier = user.email || user.phone_number;
+      if (identifier) {
+        await secureStorage.setIdentifier(identifier);
+      }
+
       set({
         accessToken: token,
         user,
         isAuthenticated: true,
         isLoading: false,
       });
-
-      logger.auth.authSuccess("Authentication set successfully", {
-        userId: user.id,
-        email: user.email,
-      });
+      console.log("✅ [Auth] Authentication set successfully");
     } catch (error) {
-      logger.auth.authError("Error setting auth", error);
+      console.error("❌ [Auth] Error setting auth:", error);
       set({ isLoading: false });
     }
   },
 
-  // ✅ Cập nhật checkAuth với logger
   checkAuth: async () => {
     set({ isLoading: true });
     logger.auth.tokenCheck("Starting token validation");
+    const [token, user] = await Promise.all([
+      secureStorage.getToken(),
+      secureStorage.getUser(),
+    ]);
+
     try {
-      const [user] = await Promise.all([secureStorage.getUser()]);
-      logger.warn("1", "1");
       const response = await useAxios.get(
         `/auth/protected/api/v2/ekyc-progress/${user.id}`
       );
 
-      // Token hợp lệ -> Set auth state
       if (response.status === 200) {
+        set({
+          accessToken: token,
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
         logger.auth.authSuccess("Token verified successfully", {
           userId: user.id,
           ekycStatus: response.data?.data?.status,
@@ -56,11 +64,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
     } catch (error: any) {
       if (error?.response?.status === 401) {
-        logger.auth.tokenExpired("Token expired or invalid (401)");
-        await secureStorage.clearAuth();
-        logger.info("Auth", "Redirecting to sign-in (silent)");
+        const currentState = get();
+
+        if (currentState.isAuthenticated && currentState.user) {
+          logger.auth.tokenExpired("Token expired during active session");
+
+          await secureStorage.clearAuth();
+          set({
+            accessToken: null,
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        } else {
+          logger.auth.tokenCheck(
+            "401 error but user already logged out, ignoring"
+          );
+          set({ isLoading: false });
+        }
       } else {
         logger.auth.authError("Error checking auth", error);
+        set({ isLoading: false });
         Alert.alert(
           "Phiên đăng nhập hết hạn",
           "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
@@ -74,25 +98,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 router.replace("/auth/sign-in");
               },
             },
-          ],
-          {
-            cancelable: false,
-          }
+          ]
         );
       }
     }
   },
 
-  // Logout user
   logout: async () => {
     try {
       set({ isLoading: true });
       logger.auth.logout("Starting logout process");
 
-      // Clear SecureStore
       await secureStorage.clearAuth();
 
-      // Reset state
       set({
         accessToken: null,
         user: null,
@@ -101,13 +119,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       logger.auth.logout("Logged out successfully");
+      router.replace("/auth/sign-in");
     } catch (error) {
       logger.auth.authError("Error during logout", error);
       set({ isLoading: false });
     }
   },
 
-  // ✅ Refresh auth từ storage
   refreshAuth: async () => {
     try {
       set({ isLoading: true });
@@ -148,20 +166,84 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // Clear auth (dùng khi logout hoặc token invalid)
+  // ✅ SIMPLIFIED: Enable biometric - CHỈ 1 FUNCTION DUY NHẤT
+  enableBiometric: async (password: string) => {
+    try {
+      const { user } = get();
+
+      if (!user) {
+        throw new Error("Chưa đăng nhập");
+      }
+
+      const identifier = user.email || user.phone_number;
+
+      if (!identifier || identifier.trim().length === 0) {
+        throw new Error("Không tìm thấy thông tin tài khoản");
+      }
+
+      if (!password || password.trim().length === 0) {
+        throw new Error("Vui lòng nhập mật khẩu");
+      }
+
+      console.log(`🔐 [Auth] Enabling biometric for: ${identifier}`);
+
+      // ✅ CHỈ GỌI 1 FUNCTION DUY NHẤT
+      // Function này vừa lưu password, vừa enable biometric
+      await secureStorage.setBiometricPassword(
+        identifier.trim(),
+        password.trim()
+      );
+
+      console.log(`✅ [Auth] Biometric enabled successfully`);
+      return true;
+    } catch (error: any) {
+      console.error("❌ [Auth] Error enabling biometric:", error);
+      throw new Error(error.message || "Không thể kích hoạt Face ID");
+    }
+  },
+
+  // ✅ SIMPLIFIED: Disable biometric - CHỈ GỌI clearBiometricPassword
+  disableBiometric: async () => {
+    try {
+      const { user } = get();
+
+      if (!user) {
+        console.log("⚠️ [Auth] No user to disable biometric");
+        return;
+      }
+
+      const identifier = user.email || user.phone_number;
+
+      if (!identifier || identifier.trim().length === 0) {
+        console.log("⚠️ [Auth] No valid identifier");
+        return;
+      }
+
+      console.log(`🔐 [Auth] Disabling biometric for: ${identifier}`);
+
+      // ✅ CHỈ GỌI 1 FUNCTION
+      await secureStorage.clearBiometricPassword(identifier.trim());
+
+      console.log(`✅ [Auth] Biometric disabled successfully`);
+    } catch (error) {
+      console.error("❌ [Auth] Error disabling biometric:", error);
+      throw error;
+    }
+  },
+
   clearAuth: async () => {
     try {
-      logger.auth.logout("Clearing auth data");
       await secureStorage.clearAuth();
+
       set({
         accessToken: null,
         user: null,
         isAuthenticated: false,
         isLoading: false,
       });
-      logger.auth.authSuccess("Auth cleared successfully");
+      console.log("✅ [Auth] Auth cleared");
     } catch (error) {
-      logger.auth.authError("Error clearing auth", error);
+      console.error("❌ [Auth] Error clearing auth:", error);
     }
   },
 }));

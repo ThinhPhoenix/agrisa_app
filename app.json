@@ -14,7 +14,9 @@
       
       "infoPlist": {
         "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
-        "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ"
+        "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ",
+        "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng"
+
       },
       "bundleIdentifier": "com.tnhaan.agrisa"
     },

@@ -1,3 +1,4 @@
+import { logger } from "@/domains/shared/utils/logger";
 import React, {
   createContext,
   ReactNode,
@@ -25,7 +26,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // ✅ Initialize auth khi app khởi động
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log("🚀 [AuthProvider] Initializing authentication...");
+      logger.info("AuthProvider", "Initializing authentication");
       await authStore.refreshAuth();
       await authStore.checkAuth();
     };
@@ -33,21 +34,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initializeAuth();
   }, []);
 
-  // ✅ Kiểm tra token khi app quay lại foreground (từ background)
+  // ✅ Kiểm tra token khi app quay lại foreground
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",
       async (nextAppState: AppStateStatus) => {
-        // Khi app chuyển từ background/inactive sang active
         if (
           appState.current.match(/inactive|background/) &&
           nextAppState === "active"
         ) {
-          console.log("🔄 [AuthProvider] App returned to foreground");
+          logger.info("AuthProvider", "App returned to foreground");
 
-          // ✅ Chỉ check auth nếu user đã đăng nhập
           if (authStore.isAuthenticated) {
-            console.log("🔍 [AuthProvider] Checking token validity...");
+            logger.auth.tokenCheck("Checking token validity after foreground");
             await authStore.checkAuth();
           }
         }
@@ -60,57 +59,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [authStore.isAuthenticated]);
 
-  // ✅ Kiểm tra token định kỳ mỗi 5 phút (khi app đang active)
+  // ✅ Kiểm tra token định kỳ mỗi 5 phút
   useEffect(() => {
-    // Chỉ check khi user đã đăng nhập
     if (!authStore.isAuthenticated) {
-      console.log(
-        "⏭️ [AuthProvider] Skip periodic check - User not authenticated"
+      logger.debug(
+        "AuthProvider",
+        "Skip periodic check - User not authenticated"
       );
       return;
     }
 
-    console.log(
-      "⏰ [AuthProvider] Starting periodic token check (every 5 minutes)"
+    logger.info(
+      "AuthProvider",
+      "Starting periodic token check (every 5 minutes)"
     );
-    const CHECK_INTERVAL = 5 * 60 * 1000; // 5 phút
+    const CHECK_INTERVAL = 5 * 60 * 1000;
 
     const interval = setInterval(async () => {
-      // Chỉ check khi app đang active (không ở background)
       if (AppState.currentState === "active" && authStore.isAuthenticated) {
-        console.log("🔄 [AuthProvider] Periodic token check");
+        logger.auth.tokenCheck("Periodic token check");
         await authStore.checkAuth();
       }
     }, CHECK_INTERVAL);
 
     return () => {
-      console.log("🛑 [AuthProvider] Stopping periodic token check");
+      logger.info("AuthProvider", "Stopping periodic token check");
       clearInterval(interval);
     };
   }, [authStore.isAuthenticated]);
 
-  // ✅ Kiểm tra token khi user tương tác với app (optional - aggressive checking)
+  // ✅ Kiểm tra token khi user tương tác
   useEffect(() => {
     if (!authStore.isAuthenticated) return;
 
     let lastCheckTime = Date.now();
-    const MIN_CHECK_INTERVAL = 60 * 1000; // Tối thiểu 1 phút giữa các lần check
+    const MIN_CHECK_INTERVAL = 60 * 1000;
 
     const handleUserInteraction = async () => {
       const now = Date.now();
 
-      // Chỉ check nếu đã qua MIN_CHECK_INTERVAL từ lần check cuối
       if (
         now - lastCheckTime > MIN_CHECK_INTERVAL &&
         authStore.isAuthenticated
       ) {
-        console.log("👆 [AuthProvider] User interaction - Checking token");
+        logger.auth.tokenCheck("User interaction detected - Checking token");
         lastCheckTime = now;
         await authStore.checkAuth();
       }
     };
 
-    // Lắng nghe AppState change để detect user interaction
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (nextAppState === "active") {
         handleUserInteraction();

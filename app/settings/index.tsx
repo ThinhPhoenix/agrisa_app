@@ -1,9 +1,11 @@
-import { Text, View } from "@gluestack-ui/themed";
+import { AgrisaHeader } from "@/components/Header";
+import SettingsScreen from "@/components/setting-screen";
 
-export default function SettingsScreen() {
+export default function SettingsPage() {
     return (
-        <View>
-            <Text>Settings Screen</Text>
-        </View>
-    )
+      <>
+        <AgrisaHeader title="Cài đặt chung"/>
+        <SettingsScreen />
+      </>
+    );
 };

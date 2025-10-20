@@ -224,27 +224,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSwitchAccount = () => {
-    Alert.alert(
-      "Đổi tài khoản",
-      "Bạn muốn đăng nhập bằng tài khoản khác?",
-      [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Đồng ý",
-          onPress: async () => {
-            try {
-              await logout();
-              router.replace("/auth/sign-in");
-            } catch (error) {
-              console.error("❌ [Profile] Lỗi switch account:", error);
-              toast.error("Có lỗi khi đổi tài khoản!");
-            }
-          },
-        },
-      ]
-    );
-  };
+  
 
   const handleHelpCenter = () => {
     router.push("/settings/help-center");
@@ -593,21 +573,6 @@ export default function ProfileScreen() {
           {/* ============================================ */}
           <VStack space="xs">
             <HStack space="sm">
-              {/* Đổi tài khoản */}
-              <Button
-                flex={1}
-                variant="outline"
-                borderColor={colors.border}
-                onPress={handleSwitchAccount}
-              >
-                <HStack alignItems="center" space="xs">
-                  <RefreshCw size={18} color={colors.text} />
-                  <ButtonText color={colors.text} fontSize="$sm">
-                    Đổi tài khoản
-                  </ButtonText>
-                </HStack>
-              </Button>
-              {/* Đăng xuất */}
               <Button
                 flex={1}
                 bg={colors.error}

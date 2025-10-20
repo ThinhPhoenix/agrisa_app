@@ -1,5 +1,5 @@
-import { useFonts } from "expo-font";
 import "@/global.css";
+import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
@@ -12,15 +12,16 @@ import {
 
 import { useEffect } from "react";
 
-import { AgrisaThemeProvider } from "@/components/theme/AgrisaThemeProvider";
-import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
-import { QueryProvider } from "@/libs/query/QueryClientProvider";
-import NetworkWrapper from "@/components/connection/NetworkWrapper";
 import ResponsiveWrapper from "@/components/common/ResponsiveWrapper";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ToastProvider } from "@/domains/shared/hooks/useToast";
+import NetworkWrapper from "@/components/connection/NetworkWrapper";
+import { AgrisaThemeProvider } from "@/components/theme/AgrisaThemeProvider";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
 import { AuthProvider } from "@/domains/auth/providers/AuthProvider";
+import { ToastProvider } from "@/domains/shared/hooks/useToast";
+import { QueryProvider } from "@/libs/query/QueryClientProvider";
+import * as NavigationBar from "expo-navigation-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   const { initializeTheme } = useThemeStore();
@@ -47,12 +48,18 @@ export default function RootLayout() {
     return null;
   }
 
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync(colors.background);
+    NavigationBar.setButtonStyleAsync(isDark ? "light" : "dark");
+  }, [colors.background, isDark]);
+
   return (
     <SafeAreaProvider>
       <StatusBar
         backgroundColor={colors.background}
         style={isDark ? "light" : "dark"}
       />
+
       <AuthProvider>
         <NetworkWrapper>
           <QueryProvider>

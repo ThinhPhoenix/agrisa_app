@@ -43,15 +43,15 @@ export default function RootLayout() {
     }
   }, [loaded, error]);
 
+  useEffect(() => {
+    NavigationBar.setBackgroundColorAsync(colors.background);
+    NavigationBar.setButtonStyleAsync(isDark ? "light" : "dark");
+  }, [colors.background, isDark]);
   // Hiển thị loading cho đến khi font được tải
   if (!loaded && !error) {
     return null;
   }
 
-  useEffect(() => {
-    NavigationBar.setBackgroundColorAsync(colors.background);
-    NavigationBar.setButtonStyleAsync(isDark ? "light" : "dark");
-  }, [colors.background, isDark]);
 
   return (
     <SafeAreaProvider>
@@ -74,6 +74,13 @@ export default function RootLayout() {
                       },
                     }}
                   >
+                    <Stack.Screen
+                      name="index"
+                      options={{
+                        headerShown: false,
+                        gestureEnabled: false,
+                      }}
+                    />
                     <Stack.Screen
                       name="(tabs)"
                       options={{ headerShown: false }}

@@ -87,7 +87,7 @@ useAxios.interceptors.request.use(
           data: {
             url: config.url,
             method: config.method?.toUpperCase(),
-            tokenPreview: `${token.substring(0, 20)}...`,
+            tokenPreview: token,
           },
         });
       } else {
@@ -130,7 +130,7 @@ useAxios.interceptors.request.use(
 let isShowing401Alert = false;
 
 /**
- * ✅ Response interceptor - XỬ LÝ TOKEN EXPIRED
+ * ✅ Response interceptor - PHÂN BIỆT 2 LOẠI LỖI 401
  */
 useAxios.interceptors.response.use(
   // Success handler
@@ -248,36 +248,129 @@ useAxios.interceptors.response.use(
       },
     });
 
-    // ✅ Handle 401 Unauthorized - TOKEN EXPIRED
+    // ✅ Handle 401 Unauthorized - PHÂN BIỆT 2 TRƯỜNG HỢP
     if (status === 401) {
-      logger.auth.tokenExpired("Token expired or invalid (401)", {
+      const errorCode = data?.error?.code;
+      const errorMessage = data?.error?.message;
+
+      logger.auth.tokenExpired("401 Unauthorized detected", {
         url: error.config.url,
+        errorCode,
+        errorMessage,
       });
 
-      // ✅ Clear auth data ngay lập tức
+      // ============================================
+      // 🔴 CASE 1: INVALID_CREDENTIALS
+      // → Sai username/password khi đăng nhập
+      // → KHÔNG clear auth, KHÔNG show alert
+      // → Để form xử lý hiển thị lỗi
+      // ============================================
+      if (errorCode === "INVALID_CREDENTIALS") {
+        logger.auth.authError("Invalid login credentials", {
+          url: error.config.url,
+        });
+
+        return Promise.reject({
+          response: error.response,
+          message: errorMessage || "Tên đăng nhập hoặc mật khẩu không đúng",
+          code: "INVALID_CREDENTIALS",
+          status: 401,
+          isAuthError: false, // ❌ Không phải lỗi auth (là lỗi input)
+          isLoginError: true, // ✅ Đánh dấu là lỗi đăng nhập
+        });
+      }
+
+      // ============================================
+      // 🔴 CASE 2: SESSION_INVALID
+      // → Token hết hạn khi đang sử dụng app
+      // → Clear auth data
+      // → Show alert yêu cầu đăng nhập lại
+      // ============================================
+      if (errorCode === "SESSION_INVALID") {
+        logger.auth.tokenExpired("Session invalid - token expired", {
+          url: error.config.url,
+        });
+
+        // ✅ Clear auth data ngay lập tức
+        try {
+          await secureStorage.clearAuth();
+          logger.auth.logout("Auth data cleared due to SESSION_INVALID");
+        } catch (clearError) {
+          logger.auth.authError("Error clearing auth", clearError);
+        }
+
+        // ✅ Hiển thị alert CHỈ 1 LẦN
+        if (!isShowing401Alert) {
+          isShowing401Alert = true;
+          logger.info("Auth", "Showing session expired alert to user");
+
+          Alert.alert(
+            "Phiên đăng nhập hết hạn",
+            "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
+            [
+              {
+                text: "Đăng nhập",
+                onPress: () => {
+                  isShowing401Alert = false;
+                  logger.auth.logout(
+                    "User dismissed session expired alert, redirecting to sign-in"
+                  );
+                  router.replace("/auth/sign-in");
+                },
+              },
+            ],
+            {
+              cancelable: false,
+              onDismiss: () => {
+                isShowing401Alert = false;
+              },
+            }
+          );
+        }
+
+        return Promise.reject({
+          response: error.response,
+          message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+          code: "SESSION_INVALID",
+          status: 401,
+          isAuthError: true, // ✅ Đây là lỗi auth thật sự
+          isSessionExpired: true, // ✅ Đánh dấu session expired
+        });
+      }
+
+      // ============================================
+      // 🔴 CASE 3: 401 KHÁC (không có error code rõ ràng)
+      // → Xử lý giống SESSION_INVALID (an toàn hơn)
+      // ============================================
+      logger.auth.tokenExpired(
+        "Unknown 401 error - treating as session invalid",
+        {
+          url: error.config.url,
+          errorCode,
+          errorMessage,
+        }
+      );
+
+      // Clear auth data
       try {
         await secureStorage.clearAuth();
-        logger.auth.logout("Auth data cleared due to 401");
+        logger.auth.logout("Auth data cleared due to unknown 401");
       } catch (clearError) {
         logger.auth.authError("Error clearing auth", clearError);
       }
 
-      // ✅ Hiển thị alert CHỈ 1 LẦN
+      // Show alert
       if (!isShowing401Alert) {
         isShowing401Alert = true;
-        logger.info("Auth", "Showing 401 alert to user");
 
         Alert.alert(
-          "Phiên đăng nhập hết hạn",
-          "Vui lòng đăng nhập lại để tiếp tục sử dụng.",
+          "Lỗi xác thực",
+          "Có lỗi xảy ra với phiên đăng nhập. Vui lòng đăng nhập lại.",
           [
             {
               text: "Đăng nhập",
               onPress: () => {
                 isShowing401Alert = false;
-                logger.auth.logout(
-                  "User dismissed 401 alert, redirecting to sign-in"
-                );
                 router.replace("/auth/sign-in");
               },
             },
@@ -293,8 +386,8 @@ useAxios.interceptors.response.use(
 
       return Promise.reject({
         response: error.response,
-        message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
-        code: "UNAUTHORIZED",
+        message: errorMessage || "Có lỗi xảy ra với phiên đăng nhập",
+        code: errorCode || "UNAUTHORIZED",
         status: 401,
         isAuthError: true,
       });

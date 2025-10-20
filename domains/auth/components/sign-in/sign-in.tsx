@@ -56,7 +56,7 @@ const SignInComponentUI = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoadingBiometric, setIsLoadingBiometric] = useState(false);
 
-  const { setAuth } = useAuthStore();
+  const { setAuth, refreshAuth } = useAuthStore();
 
   // ✅ Sử dụng hook cached auth mới
   const {
@@ -75,12 +75,21 @@ const SignInComponentUI = () => {
 
   const signInFormControl = form.control as Control<SignInPayloadSchema>;
 
-  // ✅ Set identifier vào form khi load xong cached data
+  // ✅ DI CHUYỂN TẤT CẢ useEffect LÊN TRƯỚC early return
+  // useEffect 1: Refresh auth khi component mount
+  useEffect(() => {
+    const initAuth = async () => {
+      await refreshAuth();
+    };
+    initAuth();
+  }, [refreshAuth]);
+
+  // useEffect 2: Set identifier vào form khi load xong cached data
   useEffect(() => {
     if (cachedIdentifier && !isCachedLoading) {
       form.setValue("identifier", cachedIdentifier);
     }
-  }, [cachedIdentifier, isCachedLoading]);
+  }, [cachedIdentifier, isCachedLoading, form]);
 
   // ============================================
   // 🔄 CHANGE ACCOUNT
@@ -146,7 +155,8 @@ const SignInComponentUI = () => {
     { label: "Liên hệ hỗ trợ", icon: PhoneIcon },
   ];
 
-  // Show loading khi đang load cached data
+  // ✅ GIỜ early return nằm SAU TẤT CẢ hooks
+  // Đảm bảo hooks luôn được gọi theo cùng thứ tự
   if (isCachedLoading) {
     return (
       <Box
@@ -459,7 +469,6 @@ const SignInComponentUI = () => {
                       </Pressable>
                     </HStack>
 
-                    {/* ✅ Nút đăng nhập thông thường */}
                     <Button
                       onPress={onSubmit}
                       isDisabled={isLoading}

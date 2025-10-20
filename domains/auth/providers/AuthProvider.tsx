@@ -23,18 +23,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const authStore = useAuthStore();
   const appState = useRef(AppState.currentState);
 
-  // ✅ Initialize auth khi app khởi động
-  useEffect(() => {
-    const initializeAuth = async () => {
-      logger.info("AuthProvider", "Initializing authentication");
-      await authStore.refreshAuth();
-      await authStore.checkAuth();
-    };
+  // ❌ BỎ useEffect này - Không auto check auth khi app start
+  // useEffect(() => {
+  //   const initializeAuth = async () => {
+  //     logger.info("AuthProvider", "Initializing authentication");
+  //     await authStore.refreshAuth();
+  //     await authStore.checkAuth();
+  //   };
+  //   initializeAuth();
+  // }, []);
 
-    initializeAuth();
-  }, []);
-
-  // ✅ Kiểm tra token khi app quay lại foreground
+  // ✅ GIỮ NGUYÊN - Check auth khi app quay lại foreground (chỉ khi đã authenticated)
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",
@@ -45,6 +44,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         ) {
           logger.info("AuthProvider", "App returned to foreground");
 
+          // CHỈ check nếu user đã đăng nhập
           if (authStore.isAuthenticated) {
             logger.auth.tokenCheck("Checking token validity after foreground");
             await authStore.checkAuth();
@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [authStore.isAuthenticated]);
 
-  // ✅ Kiểm tra token định kỳ mỗi 5 phút
+  // ✅ GIỮ NGUYÊN - Periodic token check (chỉ khi đã authenticated)
   useEffect(() => {
     if (!authStore.isAuthenticated) {
       logger.debug(
@@ -76,46 +76,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const CHECK_INTERVAL = 5 * 60 * 1000;
 
     const interval = setInterval(async () => {
-      if (AppState.currentState === "active" && authStore.isAuthenticated) {
-        logger.auth.tokenCheck("Periodic token check");
-        await authStore.checkAuth();
-      }
+      logger.auth.tokenCheck("Running periodic token check");
+      await authStore.checkAuth();
     }, CHECK_INTERVAL);
 
     return () => {
       logger.info("AuthProvider", "Stopping periodic token check");
       clearInterval(interval);
-    };
-  }, [authStore.isAuthenticated]);
-
-  // ✅ Kiểm tra token khi user tương tác
-  useEffect(() => {
-    if (!authStore.isAuthenticated) return;
-
-    let lastCheckTime = Date.now();
-    const MIN_CHECK_INTERVAL = 60 * 1000;
-
-    const handleUserInteraction = async () => {
-      const now = Date.now();
-
-      if (
-        now - lastCheckTime > MIN_CHECK_INTERVAL &&
-        authStore.isAuthenticated
-      ) {
-        logger.auth.tokenCheck("User interaction detected - Checking token");
-        lastCheckTime = now;
-        await authStore.checkAuth();
-      }
-    };
-
-    const subscription = AppState.addEventListener("change", (nextAppState) => {
-      if (nextAppState === "active") {
-        handleUserInteraction();
-      }
-    });
-
-    return () => {
-      subscription.remove();
     };
   }, [authStore.isAuthenticated]);
 

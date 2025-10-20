@@ -119,6 +119,7 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
       await signInMutation.mutateAsync(payload);
     } catch (error) {
       logger.auth.authError("Lỗi đăng nhập", error);
+      
     }
   });
 

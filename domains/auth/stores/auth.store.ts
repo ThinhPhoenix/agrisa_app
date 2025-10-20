@@ -2,9 +2,9 @@ import useAxios from "@/config/useAxios.config";
 import { logger } from "@/domains/shared/utils/logger";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import { router } from "expo-router";
+import { Alert } from "react-native";
 import { create } from "zustand";
 import { AuthState, AuthUser } from "../models/auth.models";
-import { Alert } from "react-native";
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   accessToken: null,
@@ -146,6 +146,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         logger.auth.authSuccess("Authentication refreshed from storage", {
           userId: user.id,
         });
+
+        // ✅ THÊM: Verify token ngay sau khi refresh
+        // Nếu token hết hạn sẽ tự động logout
+        await get().checkAuth();
       } else {
         set({
           accessToken: null,

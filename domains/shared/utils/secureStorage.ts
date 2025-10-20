@@ -156,7 +156,7 @@ export const secureStorage = {
   setToken: async (token: string): Promise<void> => {
     try {
       await SecureStore.setItemAsync(STORAGE_KEYS.ACCESS_TOKEN, token);
-      console.log("✅ [SecureStorage] Token stored");
+      console.log("✅ [SecureStorage] Token stored: " + token);
     } catch (error) {
       console.error("❌ [SecureStorage] Error storing token:", error);
       throw error;

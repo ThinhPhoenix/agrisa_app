@@ -1,7 +1,6 @@
 import { logger } from "@/domains/shared/utils/logger";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import * as LocalAuthentication from "expo-local-authentication";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
 
 /**
@@ -13,7 +12,7 @@ import { useEffect, useState } from "react";
 export const useCachedAuth = () => {
   const [cachedIdentifier, setCachedIdentifier] = useState<string | null>(null);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
-  const [biometricType, setBiometricType] = useState<string>("Face ID");
+  const [biometricType, setBiometricType] = useState<string>("Vân tay");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -25,34 +24,44 @@ export const useCachedAuth = () => {
       setIsLoading(true);
 
       // 1. Detect biometric type
-      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+      const supportedTypes =
+        await LocalAuthentication.supportedAuthenticationTypesAsync();
 
-      if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+      if (
+        supportedTypes.includes(
+          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+        )
+      ) {
         setBiometricType("Khuôn mặt");
-      } else if (supportedTypes.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+      } else if (
+        supportedTypes.includes(
+          LocalAuthentication.AuthenticationType.FINGERPRINT
+        )
+      ) {
         setBiometricType("Vân tay");
       }
 
       // 2. Load cached identifier
       const lastIdentifier = await secureStorage.getIdentifier();
 
-      if (!lastIdentifier) {
-        logger.auth.authError("No cached identifier found, redirecting to username-sign-in");
-        router.replace("/auth/username-sign-in");
-        return;
+      if (lastIdentifier) {
+        setCachedIdentifier(lastIdentifier);
+
+        // 3. Check biometric status
+        const biometricEnabled =
+          await secureStorage.isBiometricEnabled(lastIdentifier);
+        setIsBiometricEnabled(biometricEnabled);
+
+        logger.auth.authSuccess("Cached auth loaded", {
+          identifier: lastIdentifier,
+          biometricEnabled,
+          biometricType,
+        });
+      } else {
+        logger.auth.authSuccess("No cached identifier found");
+        // ❌ BỎ auto redirect - Để app/index.tsx xử lý
+        // router.replace("/auth/username-sign-in");
       }
-
-      setCachedIdentifier(lastIdentifier);
-
-      // 3. Check biometric status
-      const biometricEnabled = await secureStorage.isBiometricEnabled(lastIdentifier);
-      setIsBiometricEnabled(biometricEnabled);
-
-      logger.auth.authSuccess("Cached auth loaded", {
-        identifier: lastIdentifier,
-        biometricEnabled,
-        biometricType,
-      });
     } catch (error) {
       logger.auth.authError("Error loading cached data", error);
       // Don't redirect on error, let user try manual login
@@ -74,7 +83,7 @@ export const useCachedAuth = () => {
 
   const refreshBiometricStatus = async () => {
     if (!cachedIdentifier) return;
-    
+
     try {
       const enabled = await secureStorage.isBiometricEnabled(cachedIdentifier);
       setIsBiometricEnabled(enabled);

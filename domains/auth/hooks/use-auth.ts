@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { SignInApiResponse, SignInPayload, SignUpPayload } from "../models/auth.models";
 import { AuthServices } from "../service/auth.service";
 import { useAuthStore } from "../stores/auth.store";
+import { Alert } from "react-native";
 
 export const useAuth = () => {
   const { toast } = useToast();
@@ -36,7 +37,10 @@ export const useAuth = () => {
       toast.success("Đăng nhập thành công");
     },
     onError: (error) => {
-      toast.error("Đăng nhập thất bại");
+      Alert.alert(
+        "Đăng nhập thất bại",
+        "Tên đăng nhập hoặc mật khẩu không đúng"
+      );
       console.error(error);
     },
   });

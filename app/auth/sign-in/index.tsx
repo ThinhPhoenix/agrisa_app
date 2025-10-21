@@ -3,6 +3,7 @@
 // import { View } from "react-native";
 
 import SignInComponentUI from "@/domains/auth/components/sign-in/sign-in";
+import SignInV2 from "@/domains/auth/components/sign-inv2";
 
 export default function SignInScreen() {
   // const fields: FormField[] = [
@@ -37,7 +38,8 @@ export default function SignInScreen() {
     //   </View>
     // </VStack>
     <>
-      <SignInComponentUI />
+      {/* <SignInComponentUI /> */}
+      <SignInV2/>
     </>
   );
 }

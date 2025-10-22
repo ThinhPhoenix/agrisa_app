@@ -1,9 +1,9 @@
 import { router } from "expo-router";
 import {
-    ChevronLeft,
-    FingerprintIcon,
-    ScanFaceIcon,
-    Users
+  ChevronLeft,
+  FingerprintIcon,
+  ScanFaceIcon,
+  Users,
 } from "lucide-react-native";
 // SignInV2.tsx
 import { colors } from "@/domains/shared/constants/colors";
@@ -17,18 +17,18 @@ import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import { Controller } from "react-hook-form";
 import {
-    Alert,
-    Image,
-    ImageBackground,
-    Platform,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  Alert,
+  Image,
+  ImageBackground,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useAuthForm } from "../../hooks/use-auth-form";
 import { useCachedAuth } from "../../hooks/use-cached-auth";
@@ -112,18 +112,18 @@ export default function SignInV2() {
           style={[styles.greetingContainer, { top: insets.top + 8, left: 16 }]}
         >
           <View style={styles.greetingTextWrap}>
-                  <Pressable
-                    onPress={handleChangeAccount}
-                    android_ripple={{
-                      color: "rgba(255,255,255,0.2)",
-                      borderless: false,
-                    }}
-                    style={styles.accountPressable}
-                  >
-                    <BlurView intensity={20} style={styles.bioBlur}>
-                      <Users size={20} color={colors.primary800} />
-                    </BlurView>
-                  </Pressable>
+            <Pressable
+              onPress={handleChangeAccount}
+              android_ripple={{
+                color: "rgba(255,255,255,0.2)",
+                borderless: false,
+              }}
+              style={styles.accountPressable}
+            >
+              <BlurView intensity={20} style={styles.bioBlur}>
+                <Users size={20} color={colors.primary800} />
+              </BlurView>
+            </Pressable>
             <Text
               style={{
                 fontFamily: "DancingScript_400Regular",
@@ -149,7 +149,6 @@ export default function SignInV2() {
               {getDisplayName()}
             </Text>
           </View>
-
         </View>
         {/* Logo top-right */}
         <View

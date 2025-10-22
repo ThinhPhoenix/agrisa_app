@@ -29,7 +29,7 @@ import {
 import {
     SafeAreaView,
     useSafeAreaInsets,
-} from "react-native-safe-area-context"; // <- edges
+} from "react-native-safe-area-context";
 import { useAuthForm } from "../../hooks/use-auth-form";
 import { useCachedAuth } from "../../hooks/use-cached-auth";
 import { useAuthStore } from "../../stores/auth.store";

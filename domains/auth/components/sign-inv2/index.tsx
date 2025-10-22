@@ -378,6 +378,8 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   greetingTextWrap: {
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 8,
   },
   accountPressable: {

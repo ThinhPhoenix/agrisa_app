@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-APP_NAME="Agrisa"
+APP_NAME="agrisa_dev_$(date +%s)"
 
 rm -rf ios/build build *.ipa
 
-bun install || npm install
+bun i
 bunx expo prebuild --platform ios
 
 cd ios

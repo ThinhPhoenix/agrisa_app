@@ -109,7 +109,7 @@ export default function SignInV2() {
         {/* Greeting positioned absolute using safe-area inset; includes an account-change blur button */}
         <View
           pointerEvents="box-none"
-          style={[styles.greetingContainer, { top: insets.top + 8, left: 16 }]}
+          style={[styles.greetingContainer, { top: insets.top + 8, left: 20 }]}
         >
           <View style={styles.greetingTextWrap}>
             <Pressable
@@ -139,8 +139,8 @@ export default function SignInV2() {
             <Text
               style={{
                 color: "#fff",
-                fontSize: 16,
-                marginTop: -2,
+                fontSize: 18,
+                marginTop: 2,
                 textShadowColor: "rgba(0,0,0,0.2)",
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
@@ -287,6 +287,14 @@ export default function SignInV2() {
                 </Pressable>
               )}
             </View>
+
+            {/* Add sign-up link for users without account */}
+            <View style={styles.signUpRow}>
+              <Text style={styles.signUpText}>Không có tài khoản? </Text>
+              <Pressable onPress={() => router.push("/auth/sign-up")}>
+                <Text style={styles.signUpLink}>Đăng ký</Text>
+              </Pressable>
+            </View>
           </View>
         </SafeAreaView>
       </ImageBackground>
@@ -380,11 +388,31 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginRight: 8,
+    gap: 8,
   },
   accountPressable: {
     width: 44,
     height: 44,
     borderRadius: 8,
     overflow: "hidden",
+  },
+  signUpRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16,
+    backgroundColor: colors.primary800,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  signUpText: {
+    color: "#fff",
+    fontSize: 14,
+  },
+  signUpLink: {
+    color: colors.primary200,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

@@ -3,10 +3,13 @@ import { Button, Text as GlueText, Switch, VStack } from "@gluestack-ui/themed";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { secureStorage } from "../../../domains/shared/utils/secureStorage";
+import useAuthMe from "@/domains/auth/hooks/use-auth-me";
 
 export default function Dummy2() {
   const [enableFaceID, setEnableFaceID] = useState(false);
   const { mutate, isPending } = useCreatePayment();
+
+  const { data, error, isLoading, refetch } = useAuthMe();
 
   useEffect(() => {
     const loadEnableFaceID = async () => {

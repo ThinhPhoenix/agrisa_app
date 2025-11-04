@@ -315,7 +315,7 @@ useAxios.interceptors.response.use(
                   logger.auth.logout(
                     "User dismissed session expired alert, redirecting to sign-in"
                   );
-                  router.replace("/auth/sign-in");
+                  router.replace("/auth/username-sign-in");
                 },
               },
             ],
@@ -371,7 +371,7 @@ useAxios.interceptors.response.use(
               text: "Đăng nhập",
               onPress: () => {
                 isShowing401Alert = false;
-                router.replace("/auth/sign-in");
+                router.replace("/auth/username-sign-in");
               },
             },
           ],

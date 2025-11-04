@@ -95,7 +95,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 logger.auth.logout(
                   "User dismissed 401 alert, redirecting to sign-in"
                 );
-                router.replace("/auth/sign-in");
+                router.replace("/auth/username-sign-in");
               },
             },
           ]
@@ -119,7 +119,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       logger.auth.logout("Logged out successfully");
-      router.replace("/auth/sign-in");
+      router.replace("/auth/username-sign-in");
     } catch (error) {
       logger.auth.authError("Error during logout", error);
       set({ isLoading: false });

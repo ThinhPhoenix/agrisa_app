@@ -30,6 +30,7 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
 import { useCachedAuth } from "../../hooks/use-cached-auth";
 import { useAuthStore } from "../../stores/auth.store";
@@ -56,12 +57,29 @@ export default function SignInV2() {
 
   const { setAuth } = useAuthStore();
 
-  // Prefill identifier into form when cached
+  // Prefill identifier and password into form when cached
   React.useEffect(() => {
     if (cachedIdentifier) {
       (form as any).setValue("identifier", cachedIdentifier);
+
+      // If biometric is enabled, try to get stored password and go to password step
+      if (isBiometricEnabled) {
+        const getStoredPassword = async () => {
+          try {
+            const storedPassword =
+              await secureStorage.getBiometricPassword(cachedIdentifier);
+            if (storedPassword) {
+              (form as any).setValue("password", storedPassword);
+              setEnterPassword(true);
+            }
+          } catch (error) {
+            console.error("Error getting stored password:", error);
+          }
+        };
+        getStoredPassword();
+      }
     }
-  }, [cachedIdentifier, form]);
+  }, [cachedIdentifier, isBiometricEnabled, form]);
 
   if (!fontsLoaded) return null;
   if (isCachedLoading) return null;

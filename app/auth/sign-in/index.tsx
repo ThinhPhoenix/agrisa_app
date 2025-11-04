@@ -8,7 +8,7 @@ import {
 // SignInV2.tsx
 import { colors } from "@/domains/shared/constants/colors";
 import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
-import { Button, ButtonText, Input, InputField } from "@gluestack-ui/themed";
+import { Button, ButtonText, Input, InputField, VStack } from "@gluestack-ui/themed";
 import { BlurView } from "expo-blur";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
@@ -88,25 +88,19 @@ export default function SignInScreen() {
         text: "Đổi tài khoản",
         onPress: async () => {
           await clearCachedIdentifier();
-          router.replace("/auth/username-sign-in");
+          router.replace("/auth/sign-in");
         },
       },
     ]);
   };
 
   return (
-    <>
+    <VStack style={styles.root}>
       {/* 1. Status bar trong suốt */}
       <StatusBar style="light" translucent backgroundColor="transparent" />
 
       {/* 2. Container root để đảm bảo bao phủ toàn màn hình */}
       <View style={{ flex: 1 }}>
-        {/* 3. ImageBackground ở ngoài cùng -> vẽ dưới status-bar */}
-        <ImageBackground
-          source={require("@/assets/images/auth-bg.jpg")}
-          style={styles.root}
-          resizeMode="cover"
-        >
           {/* 3. SafeArea chỉ bao phần UI, edges=['bottom'] để KHÔNG cắn thêm top */}
           {/* Greeting positioned absolute using safe-area inset; includes an account-change blur button */}
           <View
@@ -134,8 +128,6 @@ export default function SignInScreen() {
                   fontFamily: "DancingScript_400Regular",
                   color: colors.primary500,
                   fontSize: 22,
-                  textShadowColor: "rgba(0,0,0,0.2)",
-                  textShadowOffset: { width: 0, height: 1 },
                   textShadowRadius: 2,
                   marginRight: 8,
                 }}
@@ -144,11 +136,9 @@ export default function SignInScreen() {
               </Text>
               <Text
                 style={{
-                  color: "#fff",
+                  color: "#000000",
                   fontSize: 18,
                   marginTop: 4,
-                  textShadowColor: "rgba(0,0,0,0.2)",
-                  textShadowOffset: { width: 0, height: 1 },
                   textShadowRadius: 2,
                 }}
               >
@@ -218,7 +208,7 @@ export default function SignInScreen() {
                     }}
                     style={styles.backRow}
                   >
-                    <ChevronLeft color="#fff" size={15} />
+                    <ChevronLeft color="#000000" size={15} />
                     <Text style={styles.backText}>Quay lại</Text>
                   </Pressable>
                   <View style={[styles.inputWrapper, { marginBottom: 16 }]}>
@@ -307,9 +297,8 @@ export default function SignInScreen() {
               </View>
             </View>
           </SafeAreaView>
-        </ImageBackground>
       </View>
-    </>
+    </VStack>
   );
 }
 
@@ -366,7 +355,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   backText: {
-    color: "#fff",
+    color: "#000000",
     marginLeft: 6,
     fontSize: 15,
   },

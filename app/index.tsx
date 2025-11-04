@@ -54,10 +54,10 @@ export default function Index() {
     );
   }
 
-  // Redirect dựa trên kết quả check
-  if (hasIdentifier) {
-    return <Redirect href="/auth/sign-in" />;
-  }
+  // // Redirect dựa trên kết quả check
+  // if (hasIdentifier) {
+  //   return <Redirect href="/auth/sign-in" />;
+  // }
 
-  return <Redirect href="/auth/username-sign-in" />;
+  return <Redirect href="/auth/sign-in" />;
 }

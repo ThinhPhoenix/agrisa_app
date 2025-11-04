@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import {
   ChevronLeft,
+  Eye,
+  EyeOff,
   FingerprintIcon,
   ScanFaceIcon,
   Users,
@@ -8,15 +10,22 @@ import {
 // SignInV2.tsx
 import { colors } from "@/domains/shared/constants/colors";
 import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
-import { Button, ButtonText, Input, InputField, VStack } from "@gluestack-ui/themed";
+import {
+  Button,
+  ButtonText,
+  Input,
+  InputField,
+  InputSlot,
+  VStack,
+} from "@gluestack-ui/themed";
 import { BlurView } from "expo-blur";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-// (icons imported above)
 import { useAuthForm } from "@/domains/auth/hooks/use-auth-form";
 import { useCachedAuth } from "@/domains/auth/hooks/use-cached-auth";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import React, { useState } from "react";
 import { Controller } from "react-hook-form";
 import {
@@ -37,6 +46,7 @@ import {
 export default function SignInScreen() {
   const [biometric] = useState(true);
   const [enterPassword, setEnterPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [fontsLoaded] = useFonts({ DancingScript_400Regular });
   const insets = useSafeAreaInsets();
 
@@ -56,12 +66,29 @@ export default function SignInScreen() {
 
   const { setAuth } = useAuthStore();
 
-  // Prefill identifier into form when cached
+  // Prefill identifier and password into form when cached
   React.useEffect(() => {
     if (cachedIdentifier) {
       (form as any).setValue("identifier", cachedIdentifier);
+
+      // If biometric is enabled, try to get stored password and go to password step
+      if (isBiometricEnabled) {
+        const getStoredPassword = async () => {
+          try {
+            const storedPassword =
+              await secureStorage.getBiometricPassword(cachedIdentifier);
+            if (storedPassword) {
+              (form as any).setValue("password", storedPassword);
+              setEnterPassword(true);
+            }
+          } catch (error) {
+            console.error("Error getting stored password:", error);
+          }
+        };
+        getStoredPassword();
+      }
     }
-  }, [cachedIdentifier, form]);
+  }, [cachedIdentifier, isBiometricEnabled, form]);
 
   if (!fontsLoaded) return null;
   if (isCachedLoading) return null;
@@ -223,8 +250,18 @@ export default function SignInScreen() {
                             placeholder="Mật khẩu"
                             style={styles.inputField}
                             placeholderTextColor="#666"
-                            secureTextEntry
+                            secureTextEntry={!showPassword}
                           />
+                          <InputSlot
+                            pr="$3"
+                            onPress={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff color="#666" size={20} />
+                            ) : (
+                              <Eye color="#666" size={20} />
+                            )}
+                          </InputSlot>
                         </Input>
                       )}
                     />

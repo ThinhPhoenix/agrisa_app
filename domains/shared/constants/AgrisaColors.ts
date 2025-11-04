@@ -1,13 +1,5 @@
 /**
  * 🎨 Hệ thống màu sắc Agrisa
- *
- * 🌞 LIGHT MODE (Mặc định): Phù hợp với nông dân sử dụng ngoài trời
- * - Background chính: #fbe9a8 (vàng nhạt ấm áp, dễ nhìn dưới ánh sáng mặt trời)
- * - Text: Tông tối để dễ đọc
- *
- * 🌙 DARK MODE: Cho việc sử dụng trong nhà hoặc ban đêm
- * - Background chính: #262624 (xám đen chuyên nghiệp)
- * - Text: Tông sáng
  */
 
 export const AgrisaColors = {
@@ -24,11 +16,20 @@ export const AgrisaColors = {
     textSecondary: "#4a5568", // Text phụ xám
     textMuted: "#718096", // Text mờ
     textWhiteButton: "#f7fafc",
+
     // Brand colors Agrisa
     success: "#059669", // Xanh lá đặc trưng
     warning: "#ea580c", // Cam cảnh báo
     error: "#dc2626", // Đỏ lỗi
     info: "#0ea5e9", // Xanh thông tin
+    pending: "#f59e0b", // Màu chờ
+
+    // Soft backgrounds cho badges/pills
+    primarySoft: "#fef3c7",
+    successSoft: "#d1fae5",
+    warningSoft: "#fed7aa",
+    errorSoft: "#fee2e2",
+    infoSoft: "#dbeafe",
 
     // UI elements
     border: "#4a5568", // Viền nhạt
@@ -42,7 +43,7 @@ export const AgrisaColors = {
     pending: "#f59e0b",
   },
 
-  // 🌙 DARK MODE - Cho sử dụng ban đêm
+  // 🌙 DARK MODE
   dark: {
     // Background colors
     primary: "#262624", // Xám đen chuyên nghiệp
@@ -56,11 +57,19 @@ export const AgrisaColors = {
     textMuted: "#a0aec0", // Text mờ
     textWhiteButton: "#f7fafc",
 
-    // Brand colors (điều chỉnh cho dark mode)
+    // Brand colors
     success: "#10b981", // Xanh lá sáng hơn
     warning: "#f97316", // Cam sáng hơn
     error: "#f87171", // Đỏ sáng hơn
     info: "#38bdf8", // Xanh sáng hơn
+    pending: "#fbbf24", // Màu chờ sáng hơn
+
+    // Soft backgrounds cho badges/pills
+    primarySoft: "#3f3f1e",
+    successSoft: "#064e3b",
+    warningSoft: "#7c2d12",
+    errorSoft: "#7f1d1d",
+    infoSoft: "#164e63",
 
     // UI elements
     border: "#4a5568", // Viền tối

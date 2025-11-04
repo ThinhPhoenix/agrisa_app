@@ -12,6 +12,11 @@ export const QueryKey = {
     FACE_SCAN: "ekyc-face-scan",
   },
 
+  POLICY: {
+    BASE: "policy-base",
+    DETAIL: "policy-detail",
+  },
+
   TEST: "test",
   
 };

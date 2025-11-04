@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-APP_NAME="agrisa_dev_$(date +%s)"
+APP_NAME="Agrisa"
 
 rm -rf ios/build build *.ipa
 

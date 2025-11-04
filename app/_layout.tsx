@@ -35,7 +35,7 @@ export default function RootLayout() {
   // Khởi tạo theme khi app start
   useEffect(() => {
     initializeTheme();
-  }, []);
+  }, [initializeTheme]);
 
   useEffect(() => {
     if (loaded || error) {
@@ -52,7 +52,6 @@ export default function RootLayout() {
     return null;
   }
 
-
   return (
     <SafeAreaProvider>
       <StatusBar
@@ -60,9 +59,9 @@ export default function RootLayout() {
         style={isDark ? "light" : "dark"}
       />
 
-      <AuthProvider>
-        <NetworkWrapper>
-          <QueryProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <NetworkWrapper>
             <AgrisaThemeProvider>
               <ResponsiveWrapper>
                 <ToastProvider>
@@ -90,9 +89,9 @@ export default function RootLayout() {
                 </ToastProvider>
               </ResponsiveWrapper>
             </AgrisaThemeProvider>
-          </QueryProvider>
-        </NetworkWrapper>
-      </AuthProvider>
+          </NetworkWrapper>
+        </AuthProvider>
+      </QueryProvider>
     </SafeAreaProvider>
   );
 }

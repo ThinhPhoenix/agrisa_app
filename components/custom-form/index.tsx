@@ -1,3 +1,4 @@
+import { colors } from "@/domains/shared/constants/colors";
 import {
   Button,
   ButtonText,
@@ -42,13 +43,14 @@ import {
   TextareaInput,
   VStack,
 } from "@gluestack-ui/themed";
+import { LinearGradient } from "expo-linear-gradient";
 import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
   useState,
 } from "react";
-import { Animated } from "react-native";
+import { Animated, View } from "react-native";
 
 export interface FormField {
   name: string;
@@ -157,7 +159,6 @@ export const CustomForm = forwardRef(function CustomForm(
       });
     });
   };
-
   useImperativeHandle(ref, () => ({
     validateFields: () => {
       const validationErrors: Record<string, string> = {};
@@ -165,7 +166,7 @@ export const CustomForm = forwardRef(function CustomForm(
       fields.forEach((field) => {
         if (
           field.required &&
-          (!formData[field.name] || formData[field.name] === "")
+          (formData[field.name] === undefined || formData[field.name] === "")
         ) {
           validationErrors[field.name] =
             `Vui lòng ${field.type === "select" || field.type === "multiselect" ? "chọn" : "nhập"} ${field.label.toLowerCase()}!`;
@@ -186,9 +187,7 @@ export const CustomForm = forwardRef(function CustomForm(
   }));
 
   useEffect(() => {
-    if (initialValues) {
-      setFormData(initialValues);
-    }
+    if (initialValues) setFormData(initialValues);
   }, [initialValues]);
 
   useEffect(() => {
@@ -197,54 +196,74 @@ export const CustomForm = forwardRef(function CustomForm(
 
   const handleFieldChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSubmit = () => {
     const validationResult = (ref as any).current?.validateFields();
-    if (validationResult) {
-      onSubmit && onSubmit(formData);
-    }
+    if (validationResult) onSubmit && onSubmit(formData);
   };
 
+  const inputContainerStyle = {
+    backgroundColor: "rgba(222,222,222,1)",
+    minHeight: 56,
+    borderRadius: 8,
+    justifyContent: "center",
+    overflow: "hidden",
+  } as const;
+
   const renderField = (field: FormField) => {
+    const commonLabel = (
+      <FormControlLabel>
+        <FormControlLabelText
+          className="text-gray-700 font-medium mb-2 text-xs"
+          style={{ fontSize: 12 }}
+        >
+          {field.label}
+          {field.required && (
+            <Text style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}>
+              *
+            </Text>
+          )}
+        </FormControlLabelText>
+      </FormControlLabel>
+    );
+
     switch (field.type) {
       case "input":
+      case "number":
         return (
           <FormControl
             key={field.name}
             isInvalid={!!errors[field.name]}
             style={field.style}
           >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-gray-700 font-medium mb-2 text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text
-                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
-                  >
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
+            {commonLabel}
             <Input
-              className={`bg-white border-2 ${
-                focusedFields[field.name]
-                  ? "border-blue-400 ring-1 ring-blue-200"
-                  : "border-gray-200"
-              } shadow-sm`}
-              style={{ borderRadius: 8, overflow: "hidden" }}
+              style={{
+                ...inputContainerStyle,
+                borderWidth: 2,
+                borderColor: focusedFields[field.name] ? "#60A5FA" : "#E5E7EB",
+              }}
             >
               <InputField
                 placeholder={field.placeholder}
-                value={formData[field.name] || ""}
-                onChangeText={(value) => handleFieldChange(field.name, value)}
+                value={
+                  formData[field.name] !== undefined
+                    ? String(formData[field.name])
+                    : ""
+                }
+                onChangeText={(text) =>
+                  handleFieldChange(
+                    field.name,
+                    field.type === "number"
+                      ? text
+                        ? Number(text)
+                        : undefined
+                      : text
+                  )
+                }
+                keyboardType={field.type === "number" ? "numeric" : undefined}
                 editable={!field.disabled}
                 onFocus={() =>
                   setFocusedFields((p) => ({ ...p, [field.name]: true }))
@@ -252,13 +271,12 @@ export const CustomForm = forwardRef(function CustomForm(
                 onBlur={() =>
                   setFocusedFields((p) => ({ ...p, [field.name]: false }))
                 }
-                className="px-4 py-3 text-gray-800 bg-transparent"
                 style={{
-                  borderRadius: 8,
-                  textAlignVertical: "center",
+                  paddingHorizontal: 16,
+                  color: "#111827",
                   height: "100%",
                 }}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#666"
               />
             </Input>
             {field.helperText && (
@@ -283,33 +301,19 @@ export const CustomForm = forwardRef(function CustomForm(
             isInvalid={!!errors[field.name]}
             style={field.style}
           >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-gray-700 font-medium mb-2 text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text
-                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
-                  >
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
+            {commonLabel}
             <Input
-              className={`bg-white border-2 ${
-                focusedFields[field.name]
-                  ? "border-blue-400 ring-1 ring-blue-200"
-                  : "border-gray-200"
-              } shadow-sm relative`}
-              style={{ borderRadius: 8, overflow: "hidden" }}
+              style={{
+                ...inputContainerStyle,
+                position: "relative",
+                borderWidth: 2,
+                borderColor: focusedFields[field.name] ? "#60A5FA" : "#E5E7EB",
+              }}
             >
               <InputField
                 placeholder={field.placeholder}
                 value={formData[field.name] || ""}
-                onChangeText={(value) => handleFieldChange(field.name, value)}
+                onChangeText={(v) => handleFieldChange(field.name, v)}
                 secureTextEntry={!showPassword[field.name]}
                 editable={!field.disabled}
                 onFocus={() =>
@@ -318,22 +322,27 @@ export const CustomForm = forwardRef(function CustomForm(
                 onBlur={() =>
                   setFocusedFields((p) => ({ ...p, [field.name]: false }))
                 }
-                className="px-4 py-3 text-gray-800 pr-12 bg-transparent"
                 style={{
-                  borderRadius: 8,
-                  textAlignVertical: "center",
+                  paddingHorizontal: 16,
+                  color: "#111827",
                   height: "100%",
                 }}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#666"
               />
               <Pressable
                 onPress={() =>
-                  setShowPassword((prev) => ({
-                    ...prev,
-                    [field.name]: !prev[field.name],
+                  setShowPassword((s) => ({
+                    ...s,
+                    [field.name]: !s[field.name],
                   }))
                 }
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 rounded-full"
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  justifyContent: "center",
+                }}
                 accessibilityRole="button"
               >
                 {showPassword[field.name] ? (
@@ -358,112 +367,27 @@ export const CustomForm = forwardRef(function CustomForm(
           </FormControl>
         );
 
-      case "number":
-        return (
-          <FormControl
-            key={field.name}
-            isInvalid={!!errors[field.name]}
-            style={field.style}
-          >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-gray-700 font-medium mb-2 text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text
-                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
-                  >
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Input
-              className={`bg-white border-2 ${
-                focusedFields[field.name]
-                  ? "border-blue-400 ring-1 ring-blue-200"
-                  : "border-gray-200"
-              } shadow-sm`}
-              style={{ borderRadius: 8, overflow: "hidden" }}
-            >
-              <InputField
-                placeholder={field.placeholder}
-                value={formData[field.name]?.toString() || ""}
-                onChangeText={(text) =>
-                  handleFieldChange(
-                    field.name,
-                    text ? parseFloat(text) : undefined
-                  )
-                }
-                keyboardType="numeric"
-                editable={!field.disabled}
-                onFocus={() =>
-                  setFocusedFields((p) => ({ ...p, [field.name]: true }))
-                }
-                onBlur={() =>
-                  setFocusedFields((p) => ({ ...p, [field.name]: false }))
-                }
-                className="px-4 py-3 text-gray-800 bg-transparent"
-                style={{
-                  borderRadius: 8,
-                  textAlignVertical: "center",
-                  height: "100%",
-                }}
-                placeholderTextColor="#9CA3AF"
-              />
-            </Input>
-            {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
-                  {field.helperText}
-                </FormControlHelperText>
-              </FormControlHelper>
-            )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
-                {errors[field.name]}
-              </FormControlErrorText>
-            </FormControlError>
-          </FormControl>
-        );
-
       case "select":
+      case "multiselect":
         return (
           <FormControl
             key={field.name}
             isInvalid={!!errors[field.name]}
             style={field.style}
           >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-gray-700 font-medium mb-2 text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text
-                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
-                  >
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
+            {commonLabel}
             <Select
               selectedValue={formData[field.name]}
               onValueChange={(value) => handleFieldChange(field.name, value)}
             >
               <SelectTrigger
-                className="bg-white border-2 border-gray-200 shadow-sm min-h-[50px]"
-                style={{ borderRadius: 8, overflow: "hidden" }}
+                className="bg-white border-2 border-gray-200 shadow-sm"
+                style={{ borderRadius: 8, minHeight: 56 }}
               >
                 <SelectInput
                   placeholder={field.placeholder}
                   className="px-4 py-3 text-gray-800"
                   placeholderTextColor="#9CA3AF"
-                  style={{ textAlignVertical: "center", height: "100%" }}
                 />
                 <SelectIcon
                   as={ChevronDownIcon}
@@ -474,7 +398,7 @@ export const CustomForm = forwardRef(function CustomForm(
                 <SelectBackdrop />
                 <SelectContent
                   className="bg-white border-2 border-gray-200 shadow-lg"
-                  style={{ borderRadius: 8, overflow: "hidden" }}
+                  style={{ borderRadius: 8 }}
                 >
                   <SelectDragIndicatorWrapper>
                     <SelectDragIndicator />
@@ -505,151 +429,6 @@ export const CustomForm = forwardRef(function CustomForm(
           </FormControl>
         );
 
-      case "multiselect":
-        return (
-          <FormControl
-            key={field.name}
-            isInvalid={!!errors[field.name]}
-            style={field.style}
-          >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-gray-700 font-medium mb-2 text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text
-                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
-                  >
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Select
-              selectedValue={formData[field.name]}
-              onValueChange={(value) => handleFieldChange(field.name, value)}
-            >
-              <SelectTrigger className="bg-white border-2 border-gray-200 rounded-lg shadow-sm min-h-[50px]">
-                <SelectInput
-                  placeholder={field.placeholder}
-                  className="px-4 py-3 text-gray-800"
-                  placeholderTextColor="#9CA3AF"
-                  style={{ textAlignVertical: "center", height: "100%" }}
-                />
-                <SelectIcon
-                  as={ChevronDownIcon}
-                  className="text-gray-500 mr-3"
-                />
-              </SelectTrigger>
-              <SelectPortal>
-                <SelectBackdrop />
-                <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
-                  <SelectDragIndicatorWrapper>
-                    <SelectDragIndicator />
-                  </SelectDragIndicatorWrapper>
-                  {field.options?.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      label={option.label}
-                      value={option.value}
-                      className="px-4 py-3 hover:bg-gray-50"
-                    />
-                  ))}
-                </SelectContent>
-              </SelectPortal>
-            </Select>
-            {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
-                  {field.helperText}
-                </FormControlHelperText>
-              </FormControlHelper>
-            )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
-                {errors[field.name]}
-              </FormControlErrorText>
-            </FormControlError>
-          </FormControl>
-        );
-
-      case "action":
-      case "button":
-        return (
-          <FormControl key={field.name} style={field.style}>
-            <Button
-              onPress={
-                field.isSubmit
-                  ? handleSubmit
-                  : field.onClick ||
-                    (() => {
-                      if (field.onAction) {
-                        field.onAction(formData, {
-                          getFieldsValue: () => formData,
-                          setFieldsValue: handleFieldChange,
-                          resetFields: () => setFormData(initialValues || {}),
-                        });
-                      }
-                    })
-              }
-              onPressIn={(e: any) => {
-                // create ripple using nativeEvent if available
-                const nativeEvent = e?.nativeEvent || {
-                  locationX: 0,
-                  locationY: 0,
-                };
-                createRipple(field.name, nativeEvent);
-              }}
-              variant={field.variant || "solid"}
-              size={field.size || "md"}
-              isDisabled={field.disabled}
-              className={`shadow-md ${
-                field.variant === "outline"
-                  ? "border-2 border-blue-500 bg-transparent"
-                  : "bg-blue-500 hover:bg-blue-600"
-              }`}
-              style={{ borderRadius: 8, overflow: "hidden" }}
-            >
-              <ButtonText
-                className={`font-semibold ${
-                  field.variant === "outline" ? "text-blue-500" : "text-white"
-                }`}
-              >
-                {field.buttonText || field.label}
-              </ButtonText>
-
-              {/* render ripple if present for this button */}
-              {ripples[field.name] && (
-                <Animated.View
-                  pointerEvents="none"
-                  style={{
-                    position: "absolute",
-                    left: ripples[field.name].x - 150,
-                    top: ripples[field.name].y - 150,
-                    width: 300,
-                    height: 300,
-                    borderRadius: 150,
-                    backgroundColor: "rgba(0,0,0,0.12)",
-                    transform: [
-                      {
-                        scale: ripples[field.name].anim.interpolate
-                          ? ripples[field.name].anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0.1, 1],
-                            })
-                          : 1,
-                      },
-                    ],
-                    opacity: ripples[field.name].opacity,
-                  }}
-                />
-              )}
-            </Button>
-          </FormControl>
-        );
-
       case "textarea":
         return (
           <FormControl
@@ -657,33 +436,19 @@ export const CustomForm = forwardRef(function CustomForm(
             isInvalid={!!errors[field.name]}
             style={field.style}
           >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-gray-700 font-medium mb-2 text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text
-                    style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}
-                  >
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
-            <Textarea
-              className="bg-white border-2 border-gray-200 shadow-sm"
-              style={{ borderRadius: 8, overflow: "hidden" }}
-            >
+            {commonLabel}
+            <Textarea style={{ borderRadius: 8, minHeight: 100, padding: 0 }}>
               <TextareaInput
                 placeholder={field.placeholder}
                 value={formData[field.name] || ""}
-                onChangeText={(value) => handleFieldChange(field.name, value)}
+                onChangeText={(v) => handleFieldChange(field.name, v)}
                 editable={!field.disabled}
-                className="px-4 py-3 text-gray-800 min-h-[100px]"
-                style={{ textAlignVertical: "top" }}
                 placeholderTextColor="#9CA3AF"
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  color: "#111827",
+                }}
               />
             </Textarea>
             {field.helperText && (
@@ -754,19 +519,7 @@ export const CustomForm = forwardRef(function CustomForm(
             isInvalid={!!errors[field.name]}
             style={field.style}
           >
-            <FormControlLabel>
-              <FormControlLabelText
-                className="text-xs"
-                style={{ fontSize: 12 }}
-              >
-                {field.label}
-                {field.required && (
-                  <Text className="text-red-500 ml-1" style={{ fontSize: 12 }}>
-                    *
-                  </Text>
-                )}
-              </FormControlLabelText>
-            </FormControlLabel>
+            {commonLabel}
             <RadioGroup
               value={formData[field.name]}
               onChange={(value) => handleFieldChange(field.name, value)}
@@ -792,14 +545,174 @@ export const CustomForm = forwardRef(function CustomForm(
           </FormControl>
         );
 
+      case "action":
+      case "button":
+        return (
+          <FormControl key={field.name} style={field.style}>
+            {/* If this is a submit button, render it with a gradient like sign-in-v2 */}
+            {field.isSubmit ? (
+              <LinearGradient
+                colors={[colors.primary500, colors.primary700]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{
+                  height: 56,
+                  borderRadius: 8,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 6,
+                  elevation: 6,
+                  overflow: "hidden",
+                }}
+              >
+                <Button
+                  onPress={handleSubmit}
+                  onPressIn={(e: any) =>
+                    createRipple(
+                      field.name,
+                      e?.nativeEvent || { locationX: 0, locationY: 0 }
+                    )
+                  }
+                  isDisabled={field.disabled}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "transparent",
+                  }}
+                >
+                  <ButtonText
+                    style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
+                  >
+                    {field.buttonText || field.label}
+                  </ButtonText>
+                </Button>
+              </LinearGradient>
+            ) : (
+              <Button
+                onPress={
+                  field.onClick ||
+                  (() => {
+                    if (field.onAction)
+                      field.onAction(formData, {
+                        getFieldsValue: () => formData,
+                        setFieldsValue: handleFieldChange,
+                        resetFields: () => setFormData(initialValues || {}),
+                      });
+                  })
+                }
+                onPressIn={(e: any) =>
+                  createRipple(
+                    field.name,
+                    e?.nativeEvent || { locationX: 0, locationY: 0 }
+                  )
+                }
+                variant={field.variant || "solid"}
+                size={field.size || "md"}
+                isDisabled={field.disabled}
+                className={`shadow-md ${field.variant === "outline" ? "border-2 border-blue-500 bg-transparent" : "bg-blue-500 hover:bg-blue-600"}`}
+                style={{ borderRadius: 8, overflow: "hidden" }}
+              >
+                <ButtonText
+                  className={`font-semibold ${field.variant === "outline" ? "text-blue-500" : "text-white"}`}
+                >
+                  {field.buttonText || field.label}
+                </ButtonText>
+                {ripples[field.name] && (
+                  <Animated.View
+                    pointerEvents="none"
+                    style={{
+                      position: "absolute",
+                      left: ripples[field.name].x - 150,
+                      top: ripples[field.name].y - 150,
+                      width: 300,
+                      height: 300,
+                      borderRadius: 150,
+                      backgroundColor: "rgba(0,0,0,0.12)",
+                      transform: [
+                        {
+                          scale: ripples[field.name].anim.interpolate
+                            ? ripples[field.name].anim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0.1, 1],
+                              })
+                            : 1,
+                        },
+                      ],
+                      opacity: ripples[field.name].opacity,
+                    }}
+                  />
+                )}
+              </Button>
+            )}
+          </FormControl>
+        );
+
       default:
         return null;
     }
   };
+  const hasSubmitField = fields.some(
+    (f) => (f.type === "button" || f.type === "action") && f.isSubmit
+  );
 
   return (
-    <VStack space={typeof gap === "number" ? "md" : gap} style={formStyle}>
-      {fields.map(renderField)}
+    <VStack style={formStyle}>
+      {fields.map((f, idx) => (
+        <View
+          key={f.name + "-wrap"}
+          style={{ marginBottom: idx === fields.length - 1 ? 0 : gap }}
+        >
+          {renderField(f)}
+        </View>
+      ))}
+
+      {/* render a default submit button when caller provided onSubmit but
+          didn't include an explicit submit field */}
+      {!hasSubmitField && onSubmit && (
+        <View style={{ marginTop: gap }}>
+          <LinearGradient
+            colors={[colors.primary500, colors.primary700]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              height: 56,
+              borderRadius: 8,
+              justifyContent: "center",
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.25,
+              shadowRadius: 6,
+              elevation: 6,
+              overflow: "hidden",
+            }}
+          >
+            <Button
+              onPress={handleSubmit}
+              onPressIn={(e: any) =>
+                createRipple(
+                  "__default_submit",
+                  e?.nativeEvent || { locationX: 0, locationY: 0 }
+                )
+              }
+              style={{
+                width: "100%",
+                height: "100%",
+                backgroundColor: "transparent",
+              }}
+            >
+              <ButtonText
+                style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
+              >
+                Submit
+              </ButtonText>
+            </Button>
+          </LinearGradient>
+        </View>
+      )}
     </VStack>
   );
 });

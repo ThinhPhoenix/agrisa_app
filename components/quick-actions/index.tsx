@@ -1,4 +1,5 @@
-import { View, Text } from "@gluestack-ui/themed";
+import { Pressable, Text, View } from "@gluestack-ui/themed";
+import { router } from "expo-router";
 import React from "react";
 
 interface QuickActionItem {
@@ -25,8 +26,9 @@ export default function QuickActions({ items }: QuickActionsProps) {
       }}
     >
       {items.map((item) => (
-        <View
+        <Pressable
           key={item.key}
+          onPress={() => router.push(item.href || `/${item.key}`)}
           style={{
             flexBasis: "25%",
             alignItems: "center",
@@ -43,7 +45,7 @@ export default function QuickActions({ items }: QuickActionsProps) {
           >
             {item.name}
           </Text>
-        </View>
+        </Pressable>
       ))}
     </View>
   );

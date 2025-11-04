@@ -1,4 +1,5 @@
 import { CustomForm, FormField } from "@/components/custom-form";
+import { VStack } from "@gluestack-ui/themed";
 import React from "react";
 import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 
@@ -46,23 +47,25 @@ export default function RegisterPolicyScreen() {
   }));
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1 }}
-    >
-      <ScrollView
-        contentContainerStyle={{ padding: 16 }}
-        keyboardShouldPersistTaps="handled"
+    <VStack className="flex-1 bg-white">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
       >
-        <CustomForm
-          gap={24}
-          fields={fields}
-          onSubmit={(values) => {
-            // replace with real submit handler later
-            console.log("register-policy submit:", values);
-          }}
-        />
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <ScrollView
+          contentContainerStyle={{ padding: 16 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <CustomForm
+            gap={24}
+            fields={fields}
+            onSubmit={(values) => {
+              // replace with real submit handler later
+              console.log("register-policy submit:", values);
+            }}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </VStack>
   );
 }

@@ -295,7 +295,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="farm"
+        name="farm/index"
         options={{
           title: "Trang trại",
           tabBarIcon: ({ color, size }) => (
@@ -304,7 +304,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="policy"
+        name="policy/index"
         options={{
           title: "Hợp đồng",
           tabBarIcon: ({ color, size }) => (

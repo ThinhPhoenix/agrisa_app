@@ -1,9 +1,8 @@
-import React from "react";
-import { HStack, Pressable, Text, Box } from "@gluestack-ui/themed";
-import { ChevronLeft } from "lucide-react-native";
-import { router } from "expo-router";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Box, HStack, Pressable, Text } from "@gluestack-ui/themed";
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
+import React from "react";
 
 interface AgrisaHeaderProps {
   title: string;
@@ -17,7 +16,6 @@ export const AgrisaHeader: React.FC<AgrisaHeaderProps> = ({
   showBackButton = true,
 }) => {
   const { colors } = useAgrisaColors();
-  const insets = useSafeAreaInsets();
 
   const handleBack = () => {
     if (onBack) {
@@ -28,11 +26,7 @@ export const AgrisaHeader: React.FC<AgrisaHeaderProps> = ({
   };
 
   return (
-    <Box
-      bg={colors.background}
-      borderBottomWidth={1}
-      borderBottomColor={colors.border}
-    >
+    <Box bg={colors.background}>
       <HStack
         alignItems="center"
         justifyContent="space-between"

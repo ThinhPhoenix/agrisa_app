@@ -109,7 +109,10 @@ export default function SignInV2() {
         {/* Greeting positioned absolute using safe-area inset; includes an account-change blur button */}
         <View
           pointerEvents="box-none"
-          style={[styles.greetingContainer, { top: insets.top + 8, left: 16 }]}
+          style={[
+            styles.greetingContainer,
+            { top: insets.top + 8, left: 16, right: 0, alignItems: "center" },
+          ]}
         >
           <View style={styles.greetingTextWrap}>
             <Pressable
@@ -132,6 +135,7 @@ export default function SignInV2() {
                 textShadowColor: "rgba(0,0,0,0.2)",
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
+                marginRight: 8,
               }}
             >
               Xin chào,
@@ -139,8 +143,8 @@ export default function SignInV2() {
             <Text
               style={{
                 color: "#fff",
-                fontSize: 16,
-                marginTop: -2,
+                fontSize: 18,
+                marginTop: 4,
                 textShadowColor: "rgba(0,0,0,0.2)",
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
@@ -372,6 +376,7 @@ const styles = StyleSheet.create({
   cachedName: { color: "#fff", fontSize: 16, fontWeight: "700" },
   changeAccount: { color: colors.primary500, fontSize: 13 },
   greetingContainer: {
+    position: "absolute",
     flexDirection: "row",
     alignItems: "center",
     zIndex: 20,
@@ -379,12 +384,13 @@ const styles = StyleSheet.create({
   greetingTextWrap: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 8,
+    justifyContent: "center",
   },
   accountPressable: {
     width: 44,
     height: 44,
     borderRadius: 8,
     overflow: "hidden",
+    marginRight: 8,
   },
 });

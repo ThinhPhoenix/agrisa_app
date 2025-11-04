@@ -46,6 +46,35 @@ export interface SignInApiResponse extends ApiSuccessResponse<SignInResponse> {
   data: SignInResponse;
 }
 
+export interface UserProfile {
+  profile_id: string;
+  user_id: string;
+  role_id: string;
+  partner_id: string;
+  full_name: string;
+  display_name: string;
+  date_of_birth: string;
+  gender: "M" | "F" | string;
+  nationality: string;
+  primary_phone: string;
+  alternate_phone: string;
+  email: string;
+  permanent_address: string;
+  current_address: string;
+  province_code: string;
+  province_name: string;
+  district_code: string;
+  district_name: string;
+  ward_code: string;
+  ward_name: string;
+  postal_code: string;
+  created_at: string;
+  updated_at: string;
+  last_updated_by: string;
+  last_updated_by_name: string;
+}
+
+
 /**
  * ============================================
  * AUTH STATE - Quản lý trạng thái xác thực

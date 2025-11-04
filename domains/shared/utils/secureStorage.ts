@@ -1,3 +1,4 @@
+import { UserProfile } from "@/domains/auth/models/auth.models";
 import * as Application from "expo-application";
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
@@ -12,6 +13,7 @@ export const STORAGE_KEYS = {
   SAVED_IDENTIFIER: "agrisa_saved_identifier",
   DEVICE_ID: "agrisa_device_id",
   BIOMETRIC_PREFIX: "agrisa_biometric",
+  USER_PROFILE: "agrisa_user_profile",
 } as const;
 
 // ============================================
@@ -564,4 +566,13 @@ export const secureStorage = {
       console.error("❌ [SecureStorage] Error clearing all data:", error);
     }
   },
+
+  profileStore: async (profile: UserProfile): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(STORAGE_KEYS.USER_PROFILE, JSON.stringify(profile));
+      console.log("✅ [SecureStorage] User profile stored");
+    } catch (error) {
+      console.error("❌ [SecureStorage] Error storing user profile:", error);
+    }
+  }
 };

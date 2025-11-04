@@ -6,15 +6,8 @@ import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import { useToast } from "@/domains/shared/hooks/useToast";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import {
-  Avatar,
-  AvatarFallbackText,
-  Badge,
-  BadgeText,
   Box,
-  Button,
-  ButtonText,
-  Divider,
-  HStack,
+  Heading,
   Pressable,
   Spinner,
   Switch,
@@ -22,27 +15,10 @@ import {
   VStack,
 } from "@gluestack-ui/themed";
 import { useFocusEffect } from "@react-navigation/native";
-import { router } from "expo-router";
-import {
-  AlertCircle,
-  Bell,
-  CheckCircle,
-  ChevronRight,
-  CogIcon,
-  Edit3,
-  HelpCircle,
-  LogOut,
-  Mail,
-  MessageCircle,
-  Palette,
-  Phone,
-  RefreshCw,
-  Shield,
-  Smartphone,
-  User as UserIcon,
-} from "lucide-react-native";
-import React, { useCallback, useState } from "react";
-import { Alert, RefreshControl, ScrollView, Share } from "react-native";
+import { Link, router } from "expo-router";
+import { CheckCircle, LogOut, Shield } from "lucide-react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { RefreshControl, ScrollView, Share, View } from "react-native";
 
 /**
  * 🌾 ProfileScreen - Màn hình hồ sơ người dùng Agrisa
@@ -58,22 +34,20 @@ import { Alert, RefreshControl, ScrollView, Share } from "react-native";
 export default function ProfileScreen() {
   const { user: storeUser, logout } = useAuthStore();
   const { toast } = useToast();
-  const { colors, isDark } = useAgrisaColors();
+  const { isDark } = useAgrisaColors();
   const { toggleTheme } = useThemeStore();
   const { geteKYCStatusQuery } = useEkyc();
 
   const [user, setUser] = useState<AuthUser | null>(storeUser);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const isRefreshingRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(storeUser?.id || null);
 
   // ✅ Fetch eKYC status
-  const {
-    data: ekycResponse,
-    isLoading: isEkycLoading,
-    refetch: refetchEkyc,
-  } = user?.id
+  const { data: ekycResponse, refetch: refetchEkyc } = user?.id
     ? geteKYCStatusQuery(user.id)
-    : { data: null, isLoading: false, refetch: () => {} };
+    : { data: null, refetch: () => {} };
 
   const ekycStatus =
     ekycResponse && "data" in ekycResponse ? ekycResponse.data : null;
@@ -82,7 +56,7 @@ export default function ProfileScreen() {
   // 📦 DATA LOADING
   // ============================================
 
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       setIsLoading(true);
       const userData = await secureStorage.getUser();
@@ -95,14 +69,30 @@ export default function ProfileScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  // Refs for stable function references
+  const loadUserDataRef = useRef(loadUserData);
+  const refetchEkycRef = useRef(refetchEkyc);
+  const userRef = useRef(user);
+
+  // Update refs when dependencies change
+  loadUserDataRef.current = loadUserData;
+  refetchEkycRef.current = refetchEkyc;
+  userRef.current = user;
 
   const handleRefresh = async () => {
+    if (isRefreshingRef.current) {
+      console.log("⏭️ [Profile] Refresh already in progress, skipping...");
+      return;
+    }
+
+    isRefreshingRef.current = true;
     setIsRefreshing(true);
     try {
-      await loadUserData();
-      if (user?.id) {
-        await refetchEkyc();
+      await loadUserDataRef.current();
+      if (userRef.current?.id) {
+        await refetchEkycRef.current();
       }
       console.log("✅ [Profile] Refresh thành công");
     } catch (error) {
@@ -110,6 +100,7 @@ export default function ProfileScreen() {
       toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
     } finally {
       setIsRefreshing(false);
+      isRefreshingRef.current = false;
     }
   };
 
@@ -118,13 +109,32 @@ export default function ProfileScreen() {
     useCallback(() => {
       console.log("👁️ [Profile] Screen focused - Refreshing...");
       const refreshOnFocus = async () => {
+        const currentUser = userRef.current;
+        // Only refresh if user ID changed or this is the first time
+        if (
+          lastUserIdRef.current === currentUser?.id &&
+          lastUserIdRef.current !== null
+        ) {
+          console.log("⏭️ [Profile] User ID unchanged, skipping refresh...");
+          return;
+        }
+
+        if (isRefreshingRef.current) {
+          console.log("⏭️ [Profile] Refresh already in progress, skipping...");
+          return;
+        }
+
+        lastUserIdRef.current = currentUser?.id || null;
+        isRefreshingRef.current = true;
         try {
-          await loadUserData();
-          if (user?.id) {
-            await refetchEkyc();
+          await loadUserDataRef.current();
+          if (currentUser?.id) {
+            await refetchEkycRef.current();
           }
         } catch (error) {
           console.error("❌ [Profile] Lỗi auto-refresh:", error);
+        } finally {
+          isRefreshingRef.current = false;
         }
       };
       refreshOnFocus();
@@ -132,48 +142,12 @@ export default function ProfileScreen() {
       return () => {
         console.log("👋 [Profile] Screen unfocused");
       };
-    }, [user?.id])
+    }, []) // Empty dependency array to prevent re-running
   );
 
   // ============================================
   // 🎨 UI COMPONENTS
   // ============================================
-
-  const renderStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending_verification: {
-        color: "warning",
-        text: "Chờ xác minh",
-        icon: AlertCircle,
-      },
-      verified: {
-        color: "success",
-        text: "Đã xác minh",
-        icon: CheckCircle,
-      },
-      suspended: {
-        color: "error",
-        text: "Tạm khóa",
-        icon: AlertCircle,
-      },
-    };
-
-    const config =
-      statusConfig[status as keyof typeof statusConfig] ||
-      statusConfig.pending_verification;
-    const IconComponent = config.icon;
-
-    return (
-      <Badge variant="solid" bg={`$${config.color}500`}>
-        <HStack alignItems="center" space="xs">
-          <IconComponent size={12} color="white" />
-          <BadgeText color="white" fontSize="$xs">
-            {config.text}
-          </BadgeText>
-        </HStack>
-      </Badge>
-    );
-  };
 
   const getKycButton = () => {
     if (!ekycStatus) {
@@ -224,8 +198,6 @@ export default function ProfileScreen() {
     }
   };
 
-  
-
   const handleHelpCenter = () => {
     router.push("/settings/help-center");
   };
@@ -264,331 +236,177 @@ export default function ProfileScreen() {
 
   if (isLoading && !user) {
     return (
-      <Box
-        flex={1}
+      <VStack
+        className="flex-1 bg-white"
         justifyContent="center"
         alignItems="center"
-        bg={colors.background}
       >
         <VStack alignItems="center" space="md">
-          <Spinner size="large" color={colors.text} />
-          <Text color={colors.textSecondary}>
-            Đang tải thông tin profile...
-          </Text>
+          <Spinner size="large" />
+          <Text>Đang tải thông tin profile...</Text>
         </VStack>
-      </Box>
+      </VStack>
     );
   }
 
-  
-
   const kycButton = getKycButton();
-  const IconComponent = kycButton.icon;
 
   return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          colors={[colors.success]}
-          tintColor={colors.success}
-        />
-      }
-    >
-      <VStack bg={colors.background} flex={1}>
+    <VStack className="flex-1 bg-white">
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={["#59AC77"]}
+            tintColor="#59AC77"
+          />
+        }
+      >
         <VStack space="lg" p="$4" pb="$8">
           {/* ============================================ */}
           {/* 👤 HEADER: Avatar + Info + Actions */}
           {/* ============================================ */}
-          <Box
-            bg={colors.card}
-            p="$6"
-            borderRadius="$xl"
-            borderWidth={1}
-            borderColor={colors.border}
-          >
-            <VStack alignItems="center" space="md">
-              {/* Avatar */}
-              <Avatar size="xl" bg={colors.text}>
-                <AvatarFallbackText color="white" fontSize="$2xl">
+          <View className="bg-white p-4 rounded-xl border border-gray-300 relative">
+            <View className="flex-row gap-1 absolute top-2 right-2 z-10 bg-green-200 border border-green-500 px-1 py-0.5 rounded-md">
+              <Text className="text-green-600 font-semibold text-xs capitalize">
+                {user?.status || "active"}
+              </Text>
+            </View>
+            <View className="items-center mb-4">
+              <View className="w-20 h-20 bg-gray-300 rounded-full items-center justify-center mb-2">
+                <Text className="text-2xl font-bold text-white">
                   {user?.email.charAt(0).toUpperCase()}
-                </AvatarFallbackText>
-              </Avatar>
-
-              {/* User Info */}
-              <VStack alignItems="center" space="xs">
-                <Text fontSize="$xl" fontWeight="$bold" color={colors.text}>
-                  {user?.email.split("@")[0]}
                 </Text>
-                {renderStatusBadge(user?.status)}
-              </VStack>
-
-              {/* Actions: KYC + Edit */}
-              <HStack space="sm" w="100%">
-                <Button
-                  flex={1}
-                  variant={kycButton.disabled ? "solid" : "outline"}
-                  size="sm"
-                  bg={kycButton.disabled ? colors.success : "transparent"}
-                  borderColor={
-                    kycButton.disabled ? "transparent" : colors.border
+              </View>
+              <Text className="text-black font-bold text-xl mb-2">
+                {user?.email.split("@")[0]}
+              </Text>
+            </View>
+            <View className="flex-row gap-2">
+              <Pressable
+                onPress={() => {
+                  if (kycButton.route) {
+                    router.push(kycButton.route as any);
                   }
-                  isDisabled={kycButton.disabled}
-                  onPress={() => {
-                    if (kycButton.route) {
-                      router.push(kycButton.route as any);
-                    }
-                  }}
+                }}
+                disabled={kycButton.disabled}
+                className={`flex-1 p-3 rounded-lg border ${kycButton.disabled ? "bg-green-500 border-green-500" : "bg-white border-gray-300"}`}
+              >
+                <Text
+                  className={`text-center font-semibold ${kycButton.disabled ? "text-white" : "text-black"}`}
                 >
-                  <HStack alignItems="center" space="xs">
-                    <IconComponent
-                      size={16}
-                      color={kycButton.disabled ? "white" : colors.text}
-                    />
-                    <ButtonText
-                      color={kycButton.disabled ? "white" : colors.text}
-                      fontSize="$sm"
-                    >
-                      {kycButton.text}
-                    </ButtonText>
-                  </HStack>
-                </Button>
-
-                <Button
-                  flex={1}
-                  variant="outline"
-                  size="sm"
-                  borderColor={colors.border}
-                  onPress={() => router.push("/settings/profile/edit")}
-                >
-                  <HStack alignItems="center" space="xs">
-                    <Edit3 size={16} color={colors.text} />
-                    <ButtonText color={colors.text} fontSize="$sm">
-                      Chỉnh sửa
-                    </ButtonText>
-                  </HStack>
-                </Button>
-              </HStack>
-            </VStack>
-          </Box>
+                  {kycButton.text}
+                </Text>
+              </Pressable>
+              <Link
+                href={`/edit-profile`}
+                className="flex-1 p-3 rounded-lg border border-gray-300 bg-white"
+              >
+                <Text className="text-center font-semibold text-black">
+                  Chỉnh sửa
+                </Text>
+              </Link>
+            </View>
+          </View>
 
           {/* ============================================ */}
           {/* 📞 THÔNG TIN CÁ NHÂN */}
           {/* ============================================ */}
-          <VStack space="sm">
-            <Text
-              fontSize="$lg"
-              fontWeight="$semibold"
-              color={colors.text}
-              ml="$1"
-            >
+          <View className="bg-white p-4 rounded-xl border border-gray-300 mb-4">
+            <Heading className="text-black text-lg mb-4">
               Thông tin cá nhân
-            </Text>
+            </Heading>
 
-            <Box
-              bg={colors.card}
-              p="$4"
-              borderRadius="$lg"
-              borderWidth={1}
-              borderColor={colors.border}
+            <View className="mb-3">
+              <Text className="text-gray-600 text-sm">Email</Text>
+              <Text className="text-black font-medium">{user?.email}</Text>
+            </View>
+
+            <View className="mb-3">
+              <Text className="text-gray-600 text-sm">Số điện thoại</Text>
+              <Text className="text-black font-medium">
+                {user?.phone_number || "Chưa cập nhật"}
+              </Text>
+            </View>
+          </View>
+
+          {/* ============================================ */}
+          {/* ⚙️ CÀI ĐẶT */}
+          {/* ============================================ */}
+          <View className="bg-white p-4 rounded-xl border border-gray-300 mb-4">
+            <Heading className="text-black text-lg mb-4">Cài đặt</Heading>
+
+            <Pressable
+              onPress={handleSettings}
+              className="flex-row items-center py-3"
             >
-              <VStack space="md">
-                {/* Email */}
-                <HStack alignItems="center" space="md">
-                  <Box p="$2" borderRadius="$md">
-                    <Mail size={20} color={colors.text} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.textSecondary}>
-                      Email
-                    </Text>
-                    <Text
-                      fontWeight="$medium"
-                      color={colors.text}
-                      fontSize="$sm"
-                    >
-                      {user?.email}
-                    </Text>
-                  </VStack>
-                </HStack>
+              <Text className="text-black font-medium flex-1">
+                Cài đặt chung
+              </Text>
+              <Text className="text-gray-400">›</Text>
+            </Pressable>
 
-                <Divider bg={colors.border} />
+            <View className="h-px bg-gray-200 my-2" />
 
-                {/* Phone */}
-                <HStack alignItems="center" space="md">
-                  <Box p="$2" borderRadius="$md">
-                    <Phone size={20} color={colors.text} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.textSecondary}>
-                      Số điện thoại
-                    </Text>
-                    <Text
-                      fontWeight="$medium"
-                      color={colors.text}
-                      fontSize="$sm"
-                    >
-                      {user?.phone_number || "Chưa cập nhật"}
-                    </Text>
-                  </VStack>
-                  {!user?.phone_verified && (
-                    <Badge variant="solid" bg="$warning500">
-                      <BadgeText color="white" fontSize="$xs">
-                        Chưa xác minh
-                      </BadgeText>
-                    </Badge>
-                  )}
-                </HStack>
-              </VStack>
-            </Box>
-          </VStack>
-
-          {/* ============================================ */}
-          {/* ⚙️ CÀI ĐẶT (Giống format thông tin cá nhân) */}
-          {/* ============================================ */}
-          <VStack space="sm">
-            <Text
-              fontSize="$lg"
-              fontWeight="$semibold"
-              color={colors.text}
-              ml="$1"
+            <Pressable
+              onPress={handleAbout}
+              className="flex-row items-center py-3"
             >
-              Cài đặt
-            </Text>
+              <Text className="text-black font-medium flex-1">
+                Thông tin chung
+              </Text>
+              <Text className="text-gray-400">›</Text>
+            </Pressable>
 
-            <Box
-              bg={colors.card}
-              p="$4"
-              borderRadius="$lg"
-              borderWidth={1}
-              borderColor={colors.border}
+            {/* <View className="h-px bg-gray-200 my-2" /> */}
+
+            {/* <View className="flex-row items-center justify-between py-3">
+              <Text className="text-black font-medium">Đổi màu nền</Text>
+              <Switch
+                value={isDark}
+                onValueChange={handleThemeToggle}
+                size="sm"
+              />
+            </View> */}
+
+            <View className="h-px bg-gray-200 my-2" />
+
+            <Pressable
+              onPress={handleHelpCenter}
+              className="flex-row items-center py-3"
             >
-              <VStack space="md">
-                {/* 🛟 Trung tâm trợ giúp */}
+              <Text className="text-black font-medium flex-1">
+                Trung tâm trợ giúp
+              </Text>
+              <Text className="text-gray-400">›</Text>
+            </Pressable>
 
-                {/* 🔔 Cài đặt thông báo */}
-                <Pressable onPress={handleSettings}>
-                  <HStack alignItems="center" space="md">
-                    <Box p="$2" borderRadius="$md">
-                      <CogIcon size={20} color={colors.text} />
-                    </Box>
-                    <Text
-                      flex={1}
-                      fontWeight="$medium"
-                      color={colors.text}
-                      fontSize="$sm"
-                    >
-                      Cài đặt chung
-                    </Text>
-                    <ChevronRight size={20} color={colors.textMuted} />
-                  </HStack>
-                </Pressable>
+            <View className="h-px bg-gray-200 my-2" />
 
-                <Divider bg={colors.border} />
-
-                {/* 📱 Thông tin chung */}
-                <Pressable onPress={handleAbout}>
-                  <HStack alignItems="center" space="md">
-                    <Box p="$2" borderRadius="$md">
-                      <Smartphone size={20} color={colors.text} />
-                    </Box>
-                    <Text
-                      flex={1}
-                      fontWeight="$medium"
-                      color={colors.text}
-                      fontSize="$sm"
-                    >
-                      Thông tin chung
-                    </Text>
-                    <ChevronRight size={20} color={colors.textMuted} />
-                  </HStack>
-                </Pressable>
-
-                <Divider bg={colors.border} />
-
-                {/* 🎨 Đổi hình nền */}
-                <HStack alignItems="center" space="md">
-                  <Box p="$2" borderRadius="$md">
-                    <Palette size={20} color={colors.text} />
-                  </Box>
-                  <Text
-                    flex={1}
-                    fontWeight="$medium"
-                    color={colors.text}
-                    fontSize="$sm"
-                  >
-                    Đổi màu nền
-                  </Text>
-                  <Switch
-                    value={isDark}
-                    onValueChange={handleThemeToggle}
-                    size="sm"
-                  />
-                </HStack>
-                <Divider bg={colors.border} />
-
-                <Pressable onPress={handleHelpCenter}>
-                  <HStack alignItems="center" space="md">
-                    <Box p="$2" borderRadius="$md">
-                      <HelpCircle size={20} color={colors.text} />
-                    </Box>
-                    <Text
-                      flex={1}
-                      fontWeight="$medium"
-                      color={colors.text}
-                      fontSize="$sm"
-                    >
-                      Trung tâm trợ giúp
-                    </Text>
-                    <ChevronRight size={20} color={colors.textMuted} />
-                  </HStack>
-                </Pressable>
-
-                <Divider bg={colors.border} />
-
-                {/* 📱 Thông tin chung */}
-                <Pressable onPress={handleFeedback}>
-                  <HStack alignItems="center" space="md">
-                    <Box p="$2" borderRadius="$md">
-                      <MessageCircle size={20} color={colors.text} />
-                    </Box>
-                    <Text
-                      flex={1}
-                      fontWeight="$medium"
-                      color={colors.text}
-                      fontSize="$sm"
-                    >
-                      Đóng góp ý kiến
-                    </Text>
-                    <ChevronRight size={20} color={colors.textMuted} />
-                  </HStack>
-                </Pressable>
-              </VStack>
-            </Box>
-          </VStack>
+            <Pressable
+              onPress={handleFeedback}
+              className="flex-row items-center py-3"
+            >
+              <Text className="text-black font-medium flex-1">
+                Đóng góp ý kiến
+              </Text>
+              <Text className="text-gray-400">›</Text>
+            </Pressable>
+          </View>
 
           {/* ============================================ */}
-          {/* 🚪 ĐĂNG XUẤT / ĐỔI TÀI KHOẢN */}
+          {/* 🚪 ĐĂNG XUẤT */}
           {/* ============================================ */}
-          <VStack space="xs">
-            <HStack space="sm">
-              <Button
-                flex={1}
-                bg={colors.error}
-                variant="outline"
-                borderColor={colors.error}
-                onPress={handleLogout}
-              >
-                <HStack alignItems="center" space="xs">
-                  <LogOut size={18} color={colors.textWhiteButton} />
-                  <ButtonText color={colors.textWhiteButton} fontSize="$sm">
-                    Đăng xuất
-                  </ButtonText>
-                </HStack>
-              </Button>
-            </HStack>
-          </VStack>
+          <Pressable
+            onPress={handleLogout}
+            className="bg-white p-4 rounded-xl border border-gray-300"
+          >
+            <View className="flex-row items-center justify-center">
+              <LogOut size={20} color="#dc2626" />
+              <Text className="text-red-600 font-semibold ml-2">Đăng xuất</Text>
+            </View>
+          </Pressable>
 
           {/* ============================================ */}
           {/* 🐛 DEBUG INFO (chỉ hiện ở dev mode) */}
@@ -610,7 +428,7 @@ export default function ProfileScreen() {
             </Box>
           )}
         </VStack>
-      </VStack>
-    </ScrollView>
+      </ScrollView>
+    </VStack>
   );
 }

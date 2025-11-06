@@ -233,7 +233,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       name: "irrigation_type",
       label: "Loại hệ thống tưới",
       placeholder: "Chọn loại hệ thống tưới",
-      type: "select", // ✅ Changed to combobox
+      type: "select",
       required: false,
       options: [
         { label: "Kênh mương", value: "canal" },
@@ -272,7 +272,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
               const result = await ImagePicker.launchCameraAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
-                aspect: [4, 3],
+                aspect: [16, 9],
                 quality: 0.9,
               });
 
@@ -288,7 +288,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
               const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
-                aspect: [4, 3],
+                aspect: [16, 9],
                 quality: 0.9,
               });
 

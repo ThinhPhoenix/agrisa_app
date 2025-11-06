@@ -75,10 +75,6 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
     const cropLabels: Record<string, string> = {
       rice: 'Lúa',
       coffee: 'Cà phê',
-      corn: 'Ngô',
-      pepper: 'Tiêu',
-      dragon_fruit: 'Thanh long',
-      durian: 'Sầu riêng',
     };
     return cropLabels[cropType] || cropType;
   };
@@ -134,7 +130,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
         onPress={() => {
           // ✅ Navigate to edit screen với farm ID thật
           router.push({
-            pathname: '/(farmer)/form-farm/[id]',
+            pathname: '/(farmer)/form-farm/[id]?mode=view',
             params: { id: farm.id } // ID thật của farm
           });
         }}

@@ -1,5 +1,6 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { DetailFarm } from "@/domains/farm/components/detail-farm";
 import { RegisterFarmForm } from "@/domains/farm/components/register-farm";
 import { Farm, FormFarmDTO } from "@/domains/farm/models/farm.models";
 import { useToast } from "@/domains/shared/hooks/useToast";
@@ -8,19 +9,18 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 
 /**
- * 🌾 Farm Form Screen - Màn hình đăng ký/cập nhật nông trại Agrisa
+ * 🌾 Farm Form Screen - Màn hình quản lý nông trại Agrisa
  *
- * Route: /(farmer)/form-farm/[id]
- * - [id] = "new" → Create Mode (Tạo mới nông trại)
- * - [id] = farm_id → Edit Mode (Cập nhật nông trại)
- * 
+ * Routes:
+ * - /(farmer)/form-farm/new → Create Mode (Tạo mới)
+ * - /(farmer)/form-farm/[id]?mode=detail → Detail Mode (Xem chi tiết)
+ * - /(farmer)/form-farm/[id]?mode=edit → Edit Mode (Chỉnh sửa)
+ *
  * Features:
- * - ✅ Auto-detect mode từ params.id
- * - ✅ OCR sổ đỏ (chỉ Create Mode)
+ * - ✅ Auto-detect mode từ params
+ * - ✅ OCR sổ đỏ (Create Mode)
+ * - ✅ Detail view với nút Edit
  * - ✅ Pre-fill data (Edit Mode)
- * - ✅ Loading states
- * - ✅ Error handling
- * - ✅ Navigate back sau khi submit
  */
 export default function FarmFormScreen() {
   const { colors } = useAgrisaColors();
@@ -34,27 +34,37 @@ export default function FarmFormScreen() {
 
   // ===== MODE DETECTION =====
   const farmId = params.id as string;
-  const isEditMode = farmId && farmId !== "new";
+  const queryMode = params.mode as string | undefined;
 
-  console.log('📋 [FarmForm] Params:', params);
-  console.log('📋 [FarmForm] Farm ID:', farmId);
-  console.log('📋 [FarmForm] Mode:', isEditMode ? '✏️ EDIT' : '➕ CREATE');
+  // Normalize mode: "view" hoặc "detail" đều là Detail Mode
+  const normalizedMode = queryMode === "view" ? "detail" : queryMode;
+  const mode = normalizedMode || "detail"; // default: detail nếu có id
 
-  // ===== FETCH FARM DATA (Edit Mode Only) =====
+  const isCreateMode = farmId === "new";
+  const isDetailMode = !isCreateMode && (mode === "detail" || !mode);
+  const isEditMode = !isCreateMode && mode === "edit";
+
+  console.log("📋 [FarmForm] Params:", params);
+  console.log("📋 [FarmForm] Farm ID:", farmId);
+  console.log(
+    "📋 [FarmForm] Mode:",
+    isCreateMode ? "➕ CREATE" : isDetailMode ? "👁️ DETAIL" : "✏️ EDIT"
+  );
+
+  // ===== FETCH FARM DATA (Detail/Edit Mode) =====
   useEffect(() => {
-    if (isEditMode) {
+    if (!isCreateMode) {
       fetchFarmData(farmId);
     }
-  }, [farmId, isEditMode]);
+  }, [farmId, isCreateMode]);
 
   /**
-   * Fetch farm data để edit
+   * Fetch farm data
    */
   const fetchFarmData = async (id: string) => {
     try {
       setIsLoadingFarm(true);
-
-      console.log("📥 [FarmForm] Fetching farm for edit:", id);
+      console.log("📥 [FarmForm] Fetching farm:", id);
 
       // TODO: Call API to get farm by ID
       // const response = await getFarmByIdAPI(id);
@@ -104,12 +114,10 @@ export default function FarmFormScreen() {
       };
 
       setFarmData(mockFarm);
-      console.log("✅ [FarmForm] Farm data loaded successfully");
+      console.log("✅ [FarmForm] Farm data loaded");
     } catch (error) {
       console.error("❌ [FarmForm] Fetch farm error:", error);
       toast.error("Không thể tải thông tin nông trại");
-
-      // Quay lại list nếu không tải được
       router.back();
     } finally {
       setIsLoadingFarm(false);
@@ -128,58 +136,52 @@ export default function FarmFormScreen() {
         console.log("📝 [FarmForm] Updating farm:", farmId);
         console.log("Data:", formData);
 
-        // TODO: Call API to update farm
-        // const response = await updateFarmAPI(farmId, formData);
-
-        // Mock API call
+        // TODO: Call API
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         toast.success("✅ Cập nhật nông trại thành công!");
 
-        console.log("✅ [FarmForm] Farm updated successfully");
+        // Quay về Detail Mode sau khi update
+        router.replace(`/(farmer)/form-farm/${farmId}?mode=detail`);
       } else {
         // ===== CREATE MODE =====
         console.log("📝 [FarmForm] Creating new farm");
         console.log("Data:", formData);
 
-        // TODO: Call API to create farm
-        // const response = await createFarmAPI(formData);
-
-        // Mock API call
+        // TODO: Call API
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         toast.success("✅ Đăng ký nông trại thành công!");
 
-        console.log("✅ [FarmForm] Farm created successfully");
+        // Quay về danh sách
+        router.replace("/(farmer)/farm");
       }
-
-      // ✅ Navigate back to farms list
-      router.replace("/(farmer)/farm");
     } catch (error) {
       console.error("❌ [FarmForm] Submit error:", error);
-
-      const errorMessage = isEditMode
-        ? "Không thể cập nhật nông trại. Vui lòng thử lại."
-        : "Không thể đăng ký nông trại. Vui lòng thử lại.";
-
-      toast.error(errorMessage);
+      toast.error(
+        isEditMode
+          ? "Không thể cập nhật nông trại"
+          : "Không thể đăng ký nông trại"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ===== LOADING STATE (Đang fetch farm data để edit) =====
-  if (isEditMode && isLoadingFarm) {
+  /**
+   * Handle Edit button click từ Detail view
+   */
+  const handleEditClick = () => {
+    console.log("✏️ [FarmForm] Switching to Edit Mode");
+    router.push(`/(farmer)/form-farm/${farmId}?mode=edit`);
+  };
+
+  // ===== LOADING STATE =====
+  if (!isCreateMode && isLoadingFarm) {
     return (
       <Box flex={1} bg={colors.background}>
         <AgrisaHeader title="Đang tải..." onBack={() => router.back()} />
-
-        <VStack
-          flex={1}
-          alignItems="center"
-          justifyContent="center"
-          space="md"
-        >
+        <VStack flex={1} alignItems="center" justifyContent="center" space="md">
           <Spinner size="large" color={colors.success} />
           <Text fontSize="$sm" color={colors.textSecondary}>
             Đang tải thông tin nông trại...
@@ -189,12 +191,11 @@ export default function FarmFormScreen() {
     );
   }
 
-  // ===== ERROR STATE (Không tìm thấy farm trong Edit Mode) =====
-  if (isEditMode && !farmData) {
+  // ===== ERROR STATE =====
+  if (!isCreateMode && !farmData) {
     return (
       <Box flex={1} bg={colors.background}>
         <AgrisaHeader title="Lỗi" onBack={() => router.back()} />
-
         <VStack
           flex={1}
           alignItems="center"
@@ -210,11 +211,7 @@ export default function FarmFormScreen() {
           >
             Không tìm thấy nông trại
           </Text>
-          <Text
-            fontSize="$sm"
-            color={colors.textSecondary}
-            textAlign="center"
-          >
+          <Text fontSize="$sm" color={colors.textSecondary} textAlign="center">
             Nông trại này không tồn tại hoặc đã bị xóa
           </Text>
         </VStack>
@@ -223,21 +220,35 @@ export default function FarmFormScreen() {
   }
 
   // ===== MAIN RENDER =====
+  // Xác định title động
+  const headerTitle = isCreateMode
+    ? "Đăng ký nông trại"
+    : isDetailMode
+      ? "Chi tiết nông trại"
+      : "Cập nhật nông trại";
+
   return (
     <Box flex={1} bg={colors.background}>
       {/* Header - Động theo mode */}
-      <AgrisaHeader
-        title={isEditMode ? "Cập nhật nông trại" : "Đăng ký nông trại"}
-        onBack={() => router.back()}
-      />
+      <AgrisaHeader title={headerTitle} onBack={() => router.back()} />
 
-      {/* Register Farm Form Component */}
-      <RegisterFarmForm
-        mode={isEditMode ? "edit" : "create"}
-        initialData={farmData}
-        onSubmitSuccess={handleSubmit}
-        isSubmitting={isSubmitting}
-      />
+      {/* Render theo Mode */}
+      {isDetailMode ? (
+        // ===== DETAIL MODE =====
+        <DetailFarm
+          farm={farmData!}
+          onEdit={handleEditClick}
+          isLoading={isLoadingFarm}
+        />
+      ) : (
+        // ===== CREATE/EDIT MODE =====
+        <RegisterFarmForm
+          mode={isCreateMode ? "create" : "edit"}
+          initialData={farmData}
+          onSubmitSuccess={handleSubmit}
+          isSubmitting={isSubmitting}
+        />
+      )}
     </Box>
   );
 }

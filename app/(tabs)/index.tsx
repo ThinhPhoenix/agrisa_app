@@ -1,3 +1,4 @@
+import usePushNoti from "@/domains/shared/hooks/usePushNoti";
 import {
   DancingScript_400Regular,
   useFonts,
@@ -55,7 +56,17 @@ const quickActionItems = [
 export default function HomeScreen() {
   const [fontsLoaded] = useFonts({ DancingScript_400Regular });
   const [moneyVisible, setMoneyVisible] = useState(false);
+
+  const sendNotification = usePushNoti({
+    title: "Thông báo từ Agrisa",
+    body: "Bạn vừa chạm vào xem ngay!",
+  });
+
   if (!fontsLoaded) return null;
+
+  const handleTouchEnd = () => {
+    sendNotification();
+  };
 
   return (
     <VStack className="flex-1 bg-white">
@@ -128,9 +139,11 @@ export default function HomeScreen() {
                 <Text className="text-black truncate">Gạo ST25</Text>
               </View>
               <View className="absolute bottom-4 right-4 z-10">
-                <Text className="text-primary-500 font-semibold text-xs">
-                  Xem ngay
-                </Text>
+                <Pressable onTouchEnd={handleTouchEnd}>
+                  <Text className="text-primary-500 font-semibold text-xs">
+                    Xem ngay
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </View>

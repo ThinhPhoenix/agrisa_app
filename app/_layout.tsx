@@ -18,6 +18,7 @@ import { AgrisaThemeProvider } from "@/components/theme/AgrisaThemeProvider";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
 import { AuthProvider } from "@/domains/auth/providers/AuthProvider";
+import NotificationInitializer from "@/domains/shared/components/NotificationInitializer";
 import { ToastProvider } from "@/domains/shared/hooks/useToast";
 import { QueryProvider } from "@/libs/query/QueryClientProvider";
 import * as NavigationBar from "expo-navigation-bar";
@@ -65,6 +66,7 @@ export default function RootLayout() {
             <AgrisaThemeProvider>
               <ResponsiveWrapper>
                 <ToastProvider>
+                  <NotificationInitializer />
                   <Stack
                     screenOptions={{
                       headerShown: false,

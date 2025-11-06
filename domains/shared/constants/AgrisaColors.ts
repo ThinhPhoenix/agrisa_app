@@ -40,7 +40,6 @@ export const AgrisaColors = {
     // Status colors
     online: "#10b981",
     offline: "#6b7280",
-    pending: "#f59e0b",
   },
 
   // 🌙 DARK MODE
@@ -80,7 +79,6 @@ export const AgrisaColors = {
     // Status colors
     online: "#34d399",
     offline: "#9ca3af",
-    pending: "#fbbf24",
   },
 };
 

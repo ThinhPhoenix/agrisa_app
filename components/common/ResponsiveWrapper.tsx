@@ -7,6 +7,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResponsive } from "@/domains/shared/hooks/useResponsive";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { usePathname } from "expo-router";
 
 interface ResponsiveWrapperProps {
   children: React.ReactNode;
@@ -20,17 +21,27 @@ const ResponsiveWrapper: React.FC<ResponsiveWrapperProps> = ({
   const { isLandscape } = useResponsive();
   const insets = useSafeAreaInsets();
   const { colors } = useAgrisaColors();
+  const pathname = usePathname();
 
+  // Danh sách các route cần full-screen (không padding-top, transparent background)
+  const fullScreenRoutes = [
+    "/auth/sign-in",
+    "/auth/sign-up",
+    "/auth/forgot-password",
+
+  ];
+
+  const isFullScreen = fullScreenRoutes.includes(pathname || "");
 
   return (
     <View
       flex={1}
       w={wp("100%")}
       h={hp("100%")}
-      pt={insets.top}
+      pt={isFullScreen ? 0 : insets.top} // Không padding-top cho full-screen routes
       pl={insets.left}
       pr={insets.right}
-      backgroundColor={colors.background} // Áp dụng màu nền từ theme
+      backgroundColor={isFullScreen ? "transparent" : colors.background} // Transparent cho full-screen
     >
       {children}
     </View>

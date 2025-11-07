@@ -1,4 +1,24 @@
+import { useAuthForm } from "@/domains/auth/hooks/use-auth-form";
+import { useCachedAuth } from "@/domains/auth/hooks/use-cached-auth";
+import { useAuthStore } from "@/domains/auth/stores/auth.store";
+import { colors } from "@/domains/shared/constants/colors";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
+import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
+import {
+  Box,
+  Button,
+  ButtonText,
+  HStack,
+  Input,
+  InputField,
+  InputSlot,
+  VStack
+} from "@gluestack-ui/themed";
+import { BlurView } from "expo-blur";
+import { useFonts } from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import {
   ChevronLeft,
   Eye,
@@ -7,25 +27,6 @@ import {
   ScanFaceIcon,
   Users,
 } from "lucide-react-native";
-// SignInV2.tsx
-import { colors } from "@/domains/shared/constants/colors";
-import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
-import {
-  Button,
-  ButtonText,
-  Input,
-  InputField,
-  InputSlot,
-  VStack,
-} from "@gluestack-ui/themed";
-import { BlurView } from "expo-blur";
-import { useFonts } from "expo-font";
-import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "expo-status-bar";
-import { useAuthForm } from "@/domains/auth/hooks/use-auth-form";
-import { useCachedAuth } from "@/domains/auth/hooks/use-cached-auth";
-import { useAuthStore } from "@/domains/auth/stores/auth.store";
-import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import React, { useState } from "react";
 import { Controller } from "react-hook-form";
 import {
@@ -34,7 +35,6 @@ import {
   ImageBackground,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -122,325 +122,259 @@ export default function SignInScreen() {
   };
 
   return (
-    <VStack style={styles.root}>
-      {/* 1. Status bar trong suốt */}
-      <StatusBar style="light" translucent backgroundColor="transparent" />
+    <View className="flex-1 bg-transparent">
+      {/* Status bar - translucent để background tràn lên */}
+      <StatusBar style="dark" translucent backgroundColor="transparent" />
 
-      {/* 2. Container root để đảm bảo bao phủ toàn màn hình */}
-      <View style={{ flex: 1 }}>
-          {/* 3. SafeArea chỉ bao phần UI, edges=['bottom'] để KHÔNG cắn thêm top */}
-          {/* Greeting positioned absolute using safe-area inset; includes an account-change blur button */}
-          <View
-            pointerEvents="box-none"
-            style={[
-              styles.greetingContainer,
-              { top: insets.top + 8, left: 16, right: 0, alignItems: "center" },
-            ]}
-          >
-            <View style={styles.greetingTextWrap}>
-              <Pressable
-                onPress={handleChangeAccount}
-                android_ripple={{
-                  color: "rgba(255,255,255,0.2)",
-                  borderless: false,
-                }}
-                style={styles.accountPressable}
-              >
-                <BlurView intensity={20} style={styles.bioBlur}>
-                  <Users size={20} color={colors.primary800} />
-                </BlurView>
-              </Pressable>
-              <Text
-                style={{
-                  fontFamily: "DancingScript_400Regular",
-                  color: colors.primary500,
-                  fontSize: 22,
-                  textShadowRadius: 2,
-                  marginRight: 8,
-                }}
-              >
-                Xin chào,
-              </Text>
-              <Text
-                style={{
-                  color: "#000000",
-                  fontSize: 18,
-                  marginTop: 4,
-                  textShadowRadius: 2,
-                }}
-              >
-                {getDisplayName()}
-              </Text>
-            </View>
-          </View>
-          {/* Logo top-right */}
-          <View
-            pointerEvents="none"
-            style={{
-              position: "absolute",
-              top: insets.top + 8,
-              right: 16,
-              zIndex: 999,
-            }}
-          >
-            <Image
-              source={require("@/assets/images/agrisa.png")}
-              style={{ width: 48, height: 48, resizeMode: "contain" }}
-            />
-          </View>
+      {/* Background Image - Absolute positioning để tràn toàn màn hình */}
+      <ImageBackground
+        source={require("@/assets/images/Login/Agrisa-Auth.png")}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: "100%",
+          height: "100%",
+        }}
+        resizeMode="cover"
+      />
 
-          <SafeAreaView style={styles.safe} edges={["bottom"]}>
-            {/* Link to sign up */}
+      {/* Content overlay */}
+      <View className="flex-1">
+        {/* Greeting positioned absolute - Top Left */}
+        <View
+          pointerEvents="box-none"
+          className="absolute z-20 flex-row items-center"
+          style={{
+            top: insets.top + 8,
+            left: 16,
+            right: 0,
+          }}
+        >
+          <HStack className="flex-row items-center justify-center">
+            {/* Account Change Button */}
+            <Pressable
+              onPress={handleChangeAccount}
+              android_ripple={{
+                color: "rgba(255,255,255,0.2)",
+                borderless: false,
+              }}
+              className="w-11 h-11 rounded-lg overflow-hidden mr-2"
+            >
+              <BlurView
+                intensity={20}
+                className="flex-1 justify-center items-center rounded-lg bg-white/10"
+              >
+                <Users size={20} color={colors.primary800} />
+              </BlurView>
+            </Pressable>
+
+            {/* Greeting Text */}
+            <Text
+              style={{
+                fontFamily: "DancingScript_400Regular",
+              }}
+              className="text-primary-500 text-[22px] mr-2"
+            >
+              Xin chào,
+            </Text>
+            <Text className="text-black text-lg mt-1">{getDisplayName()}</Text>
+          </HStack>
+        </View>
+
+        {/* Logo Top-Right */}
+        <View
+          pointerEvents="none"
+          className="absolute z-[999]"
+          style={{
+            top: insets.top + 8,
+            right: 16,
+          }}
+        >
+          <Image
+            source={require("@/assets/images/agrisa.png")}
+            className="w-12 h-12"
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* Main Content */}
+        <SafeAreaView
+          className="flex-1 justify-center items-center"
+          edges={["bottom"]}
+        >
+          {/* Sign up link */}
+          {!enterPassword && (
+            <Pressable
+              onPress={() => router.push("/auth/sign-up")}
+              className="self-center mb-4"
+            >
+              <Text className="text-primary-500 text-sm underline">
+                Bạn không có tài khoản? Đăng ký ngay
+              </Text>
+            </Pressable>
+          )}
+
+          {/* Card Container */}
+          <VStack className="w-[90%] max-w-[360px]">
+            {/* Input Section */}
             {!enterPassword && (
-              <Pressable
-                onPress={() => router.push("/auth/sign-up")}
-                style={styles.signUpLink}
-              >
-                <Text style={styles.signUpText}>
-                  Bạn không có tài khoản? Đăng ký ngay
-                </Text>
-              </Pressable>
+              <Box className="h-14 mb-3">
+                <Controller
+                  control={control as any}
+                  name={"identifier" as any}
+                  render={({ field }) => (
+                    <Input
+                      size="lg"
+                      className="flex-1 bg-gray-200/90 rounded-lg"
+                    >
+                      <InputField
+                        value={field.value}
+                        onChangeText={field.onChange}
+                        placeholder="Email hoặc Số điện thoại"
+                        className="text-gray-900"
+                        placeholderTextColor="#666"
+                        autoCapitalize="none"
+                      />
+                    </Input>
+                  )}
+                />
+              </Box>
             )}
 
-            <View style={styles.card}>
-              {/* ---------- Input ---------- */}
-              {!enterPassword && (
-                <View style={styles.inputWrapper}>
+            {/* Password Section */}
+            {enterPassword && (
+              <VStack>
+                {/* Back Button */}
+                <Pressable
+                  onPress={() => setEnterPassword(false)}
+                  android_ripple={{
+                    color: "rgba(0,0,0,0.05)",
+                    borderless: false,
+                  }}
+                  className="flex-row items-center mb-2"
+                >
+                  <ChevronLeft color="#000000" size={15} />
+                  <Text className="text-black ml-1.5 text-[15px]">
+                    Quay lại
+                  </Text>
+                </Pressable>
+
+                {/* Password Input */}
+                <Box className="h-14 mb-4">
                   <Controller
                     control={control as any}
-                    name={"identifier" as any}
+                    name={"password" as any}
                     render={({ field }) => (
-                      <Input size="lg" style={styles.input}>
+                      <Input
+                        size="lg"
+                        className="flex-1 bg-gray-200/90 rounded-lg"
+                      >
                         <InputField
                           value={field.value}
                           onChangeText={field.onChange}
-                          placeholder="Email hoặc Số điện thoại"
-                          style={styles.inputField}
+                          placeholder="Mật khẩu"
+                          className="text-gray-900"
                           placeholderTextColor="#666"
-                          autoCapitalize="none"
+                          secureTextEntry={!showPassword}
                         />
+                        <InputSlot
+                          pr="$3"
+                          onPress={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff color="#666" size={20} />
+                          ) : (
+                            <Eye color="#666" size={20} />
+                          )}
+                        </InputSlot>
                       </Input>
                     )}
                   />
-                </View>
-              )}
+                </Box>
+              </VStack>
+            )}
 
-              {enterPassword && (
-                <>
-                  <Pressable
-                    onPress={() => setEnterPassword(false)}
-                    android_ripple={{
-                      color: "rgba(0,0,0,0.05)",
-                      borderless: false,
+            {/* Buttons Row */}
+            <HStack className="flex-row items-center">
+              {/* Login Button */}
+              <Pressable
+                android_ripple={{
+                  color: "rgba(255,255,255,0.3)",
+                  borderless: false,
+                }}
+                className="flex-1"
+              >
+                <LinearGradient
+                  colors={[colors.primary500, colors.primary700]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  className="h-14 rounded-lg justify-center items-center shadow-lg"
+                  style={{
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 6,
+                    elevation: 6,
+                  }}
+                >
+                  <Button
+                    className="w-full h-full bg-transparent"
+                    onPress={async () => {
+                      if (!enterPassword) {
+                        // validate identifier first
+                        const ok = await (trigger as any)("identifier");
+                        if (ok) setEnterPassword(true);
+                        return;
+                      }
+
+                      // submit form
+                      onSubmit();
                     }}
-                    style={styles.backRow}
+                    isDisabled={isLoading}
                   >
-                    <ChevronLeft color="#000000" size={15} />
-                    <Text style={styles.backText}>Quay lại</Text>
-                  </Pressable>
-                  <View style={[styles.inputWrapper, { marginBottom: 16 }]}>
-                    <Controller
-                      control={control as any}
-                      name={"password" as any}
-                      render={({ field }) => (
-                        <Input size="lg" style={styles.input}>
-                          <InputField
-                            value={field.value}
-                            onChangeText={field.onChange}
-                            placeholder="Mật khẩu"
-                            style={styles.inputField}
-                            placeholderTextColor="#666"
-                            secureTextEntry={!showPassword}
-                          />
-                          <InputSlot
-                            pr="$3"
-                            onPress={() => setShowPassword(!showPassword)}
-                          >
-                            {showPassword ? (
-                              <EyeOff color="#666" size={20} />
-                            ) : (
-                              <Eye color="#666" size={20} />
-                            )}
-                          </InputSlot>
-                        </Input>
-                      )}
-                    />
-                  </View>
-                </>
-              )}
+                    <ButtonText className="text-white text-base font-semibold">
+                      {enterPassword ? "Đăng nhập" : "Tiếp tục"}
+                    </ButtonText>
+                  </Button>
+                </LinearGradient>
+              </Pressable>
 
-              {/* ---------- Buttons ---------- */}
-              <View style={styles.btnRow}>
+              {/* Biometric Button */}
+              {biometric && isBiometricEnabled && (
                 <Pressable
+                  onPress={async () => {
+                    if (!cachedIdentifier) return;
+                    await handleBiometricSignIn(
+                      cachedIdentifier,
+                      biometricType,
+                      setAuth
+                    );
+                  }}
                   android_ripple={{
                     color: "rgba(255,255,255,0.3)",
                     borderless: false,
                   }}
-                  style={styles.loginPressable}
+                  className="w-14 h-14 ml-2.5 rounded-lg border border-primary-500 overflow-hidden"
                 >
-                  <LinearGradient
-                    colors={[colors.primary500, colors.primary700]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.gradientBtn}
+                  <BlurView
+                    intensity={20}
+                    className="flex-1 justify-center items-center rounded-lg bg-white/10"
                   >
-                    <Button
-                      style={styles.btn}
-                      onPress={async () => {
-                        if (!enterPassword) {
-                          // validate identifier first
-                          const ok = await (trigger as any)("identifier");
-                          if (ok) setEnterPassword(true);
-                          return;
-                        }
-
-                        // submit form
-                        onSubmit();
-                      }}
-                      isDisabled={isLoading}
-                    >
-                      <ButtonText style={styles.btnText}>
-                        {enterPassword ? "Đăng nhập" : "Tiếp tục"}
-                      </ButtonText>
-                    </Button>
-                  </LinearGradient>
+                    {Platform.OS === "ios" ? (
+                      <ScanFaceIcon color={colors.primary800} />
+                    ) : (
+                      <FingerprintIcon color={colors.primary800} />
+                    )}
+                  </BlurView>
                 </Pressable>
-
-                {biometric && isBiometricEnabled && (
-                  <Pressable
-                    onPress={async () => {
-                      if (!cachedIdentifier) return;
-                      await handleBiometricSignIn(
-                        cachedIdentifier,
-                        biometricType,
-                        setAuth
-                      );
-                    }}
-                    android_ripple={{
-                      color: "rgba(255,255,255,0.3)",
-                      borderless: false,
-                    }}
-                    style={styles.bioPressable}
-                  >
-                    <BlurView intensity={20} style={styles.bioBlur}>
-                      {Platform.OS === "ios" ? (
-                        <ScanFaceIcon color={colors.primary800} />
-                      ) : (
-                        <FingerprintIcon color={colors.primary800} />
-                      )}
-                    </BlurView>
-                  </Pressable>
-                )}
-              </View>
-            </View>
-          </SafeAreaView>
+              )}
+            </HStack>
+          </VStack>
+        </SafeAreaView>
       </View>
-    </VStack>
+    </View>
   );
 }
-
-/* ---------- styles ---------- */
-const styles = StyleSheet.create({
-  root: { flex: 1 },
-  safe: { flex: 1, justifyContent: "center", alignItems: "center" },
-  card: { width: "90%", maxWidth: 360 },
-  inputWrapper: { height: 56, marginBottom: 12 },
-  input: {
-    flex: 1,
-    backgroundColor: "rgba(222,222,222)",
-    borderRadius: 8,
-  },
-  inputField: { color: "#111827" },
-  btnRow: { flexDirection: "row", alignItems: "center" },
-  loginPressable: { flex: 1 },
-  gradientBtn: {
-    height: 56,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  btn: { width: "100%", height: "100%", backgroundColor: "transparent" },
-  btnText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  bioPressable: {
-    width: 56,
-    height: 56,
-    marginLeft: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.primary500,
-    overflow: "hidden",
-  },
-  bioBlur: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 8,
-    backgroundColor: "rgba(255,255,255,0.1)",
-  },
-  greeting: {
-    position: "absolute",
-    zIndex: 20,
-  },
-  backRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  backText: {
-    color: "#000000",
-    marginLeft: 6,
-    fontSize: 15,
-  },
-  cachedRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    padding: 8,
-    borderRadius: 8,
-  },
-  cachedIconBg: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 10,
-  },
-  cachedHello: { color: "#fff", fontSize: 12, opacity: 0.9 },
-  cachedName: { color: "#fff", fontSize: 16, fontWeight: "700" },
-  changeAccount: { color: colors.primary500, fontSize: 13 },
-  greetingContainer: {
-    position: "absolute",
-    flexDirection: "row",
-    alignItems: "center",
-    zIndex: 20,
-  },
-  greetingTextWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  accountPressable: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    overflow: "hidden",
-    marginRight: 8,
-  },
-  signUpLink: {
-    alignSelf: "center",
-    marginBottom: 16,
-  },
-  signUpText: {
-    color: colors.primary500,
-    fontSize: 14,
-    textDecorationLine: "underline",
-  },
-});

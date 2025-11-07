@@ -1,7 +1,6 @@
 import "@/global.css";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import {
@@ -47,6 +46,7 @@ export default function RootLayout() {
     NavigationBar.setBackgroundColorAsync(colors.background);
     NavigationBar.setButtonStyleAsync(isDark ? "light" : "dark");
   }, [colors.background, isDark]);
+
   // Hiển thị loading cho đến khi font được tải
   if (!loaded && !error) {
     return null;
@@ -54,11 +54,6 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        backgroundColor={colors.background}
-        style={isDark ? "light" : "dark"}
-      />
-
       <QueryProvider>
         <AuthProvider>
           <NetworkWrapper>

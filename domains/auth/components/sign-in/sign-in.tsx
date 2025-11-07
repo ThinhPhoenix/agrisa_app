@@ -601,7 +601,7 @@ const SignInComponentUI = () => {
                           <Text
                             fontSize="$md"
                             fontWeight="$semibold"
-                            color={colors.error}
+                            color={colors.primary}
                           >
                             Tài khoản khác
                           </Text>

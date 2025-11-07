@@ -91,7 +91,7 @@ export default function PublicBasePolicyScreen() {
         />
       }
     >
-      <VStack space="lg" px="$4" py="$5">
+      <VStack space="lg" py="$5">
         {/* Header */}
         <VStack space="xs">
           <Text fontSize="$2xl" fontWeight="$bold" color={colors.text}>

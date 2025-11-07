@@ -2,48 +2,50 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useToast } from "@/domains/shared/hooks/useToast";
 import {
-    Badge,
-    BadgeText,
-    Box,
-    Button,
-    ButtonText,
-    Divider,
-    HStack,
-    Pressable,
-    SafeAreaView,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Badge,
+  BadgeText,
+  Box,
+  Button,
+  ButtonText,
+  Divider,
+  HStack,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
+import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
 import {
-    AlertCircle,
-    AlertTriangle,
-    Calendar,
-    CheckCircle2,
-    ChevronDown,
-    ChevronUp,
-    Clock,
-    Database,
-    FileCheck,
-    HelpCircle,
-    Info,
-    Leaf,
-    Percent,
-    Shield,
-    TrendingUp,
-    XCircle,
+  AlertCircle,
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Database,
+  ExternalLink,
+  FileCheck,
+  FileText,
+  HelpCircle,
+  Info,
+  Leaf,
+  Percent,
+  Shield,
+  TrendingUp,
+  XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { RefreshControl } from "react-native";
 import { usePolicy } from "../hooks/use-policy";
 import type {
-    GrowthStage,
-    PolicyCondition,
-    PolicyDetailResponse,
-    PolicyTrigger,
-    PublicBasePolicyResponse,
+  GrowthStage,
+  PolicyDetailResponse,
+  PolicyDocument,
+  PublicBasePolicyResponse,
 } from "../models/policy.models";
 
 // ============= UTILITY FUNCTIONS =============
@@ -62,10 +64,12 @@ const formatCurrency = (value: number) =>
  */
 const formatDataCost = (usdCost: number) => {
   const vndCost = usdCost * 1000;
-  return new Intl.NumberFormat("vi-VN", {
-    style: "decimal",
-    maximumFractionDigits: 0,
-  }).format(vndCost) + " ₫";
+  return (
+    new Intl.NumberFormat("vi-VN", {
+      style: "decimal",
+      maximumFractionDigits: 0,
+    }).format(vndCost) + " ₫"
+  );
 };
 
 const formatDuration = (days: number) =>
@@ -201,13 +205,16 @@ export default function DetailBasePolicyScreen() {
     );
   }
 
-  const { base_policy, triggers, metadata } = policyDetail;
+  const { base_policy, triggers, metadata, document } = policyDetail;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <Box flex={1}>
         {/* Header - Fixed */}
-        <AgrisaHeader title="Chi tiết chương trình bảo hiểm" onBack={() => router.back()} />
+        <AgrisaHeader
+          title="Chi tiết chương trình bảo hiểm"
+          onBack={() => router.back()}
+        />
 
         {/* Scrollable Content */}
         <ScrollView
@@ -221,7 +228,7 @@ export default function DetailBasePolicyScreen() {
             />
           }
           contentContainerStyle={{
-            paddingBottom: 200, // Footer height + extra spacing
+            paddingBottom: 150,
           }}
         >
           <VStack space="lg" px="$4" py="$4">
@@ -233,7 +240,11 @@ export default function DetailBasePolicyScreen() {
                 icon={Shield}
                 colors={colors}
               />
-              <ProductInfoCard policy={base_policy} colors={colors} />
+              <ProductInfoCard
+                policy={base_policy}
+                document={document}
+                colors={colors}
+              />
             </VStack>
 
             {/* 2. CHI PHÍ & BỒI THƯỞNG */}
@@ -258,7 +269,7 @@ export default function DetailBasePolicyScreen() {
               <TimelineCard policy={base_policy} colors={colors} />
             </VStack>
 
-            {/* 4. ĐIỀU KIỆN KÍCH HOẠT */}
+            {/* 4. ĐIỀU KIỆN KÍCH HOẠT - ✅ ĐỔI THỨ TỰ */}
             <VStack space="md">
               <SectionTitle
                 number="4"
@@ -266,19 +277,18 @@ export default function DetailBasePolicyScreen() {
                 icon={AlertCircle}
                 colors={colors}
               />
-              
-              {/* Explanation Banner */}
-              <ExplanationBanner
-                isExpanded={showExplanation}
-                onToggle={() => setShowExplanation(!showExplanation)}
-                colors={colors}
-              />
 
-              <Text fontSize="$sm" color={colors.textSecondary} lineHeight="$lg">
-                Bảo hiểm sẽ tự động kích hoạt chi trả khi các điều kiện sau được đáp ứng.
-                Hệ thống sử dụng dữ liệu vệ tinh để giám sát liên tục.
+              {/* 📌 PHẦN 1: MÔ TẢ NGẮN GỌN */}
+              <Text
+                fontSize="$sm"
+                color={colors.textSecondary}
+                lineHeight="$lg"
+              >
+                Bảo hiểm sẽ tự động kích hoạt chi trả khi các điều kiện sau được
+                đáp ứng. Hệ thống sử dụng dữ liệu vệ tinh để giám sát liên tục.
               </Text>
 
+              {/* 📌 PHẦN 2: CÁC TRIGGER (HIỂN THỊ TRƯỚC) */}
               <VStack space="sm">
                 {triggers.map((trigger, index) => (
                   <TriggerCard
@@ -291,6 +301,11 @@ export default function DetailBasePolicyScreen() {
                   />
                 ))}
               </VStack>
+
+              {/* 📌 PHẦN 3: FAQ (HIỂN THỊ SAU - Ở DƯỚI CÙNG) */}
+              <Box mt="$4">
+                <FAQSection colors={colors} />
+              </Box>
             </VStack>
 
             {/* 5. THÔNG TIN KỸ THUẬT */}
@@ -301,7 +316,7 @@ export default function DetailBasePolicyScreen() {
                 icon={Database}
                 colors={colors}
               />
-              <TechnicalInfoCard metadata={metadata} colors={colors} />
+              <TechnicalInfoFAQ metadata={metadata} colors={colors} />
             </VStack>
 
             {/* 6. LƯU Ý QUAN TRỌNG */}
@@ -320,7 +335,11 @@ export default function DetailBasePolicyScreen() {
         </ScrollView>
 
         {/* Fixed Bottom CTA - Full Width Footer */}
-        <BottomCTA policy={base_policy} onEnroll={handleEnroll} colors={colors} />
+        <BottomCTA
+          policy={base_policy}
+          onEnroll={handleEnroll}
+          colors={colors}
+        />
       </Box>
     </SafeAreaView>
   );
@@ -362,12 +381,14 @@ const SectionTitle = ({
   </HStack>
 );
 
-// 1. Product Info Card
+// 1. Product Info Card - Cập nhật để thêm Document Section
 const ProductInfoCard = ({
   policy,
+  document,
   colors,
 }: {
   policy: PublicBasePolicyResponse;
+  document: PolicyDocument;
   colors: ColorSet;
 }) => (
   <Box
@@ -380,8 +401,12 @@ const ProductInfoCard = ({
     <VStack space="md" p="$4">
       {/* Product Name */}
       <VStack space="xs">
-        
-        <Text fontSize="$xl" fontWeight="$bold" color={colors.text} lineHeight="$xl">
+        <Text
+          fontSize="$xl"
+          fontWeight="$bold"
+          color={colors.text}
+          lineHeight="$xl"
+        >
           {policy.product_name}
         </Text>
       </VStack>
@@ -397,6 +422,11 @@ const ProductInfoCard = ({
           {policy.product_description}
         </Text>
       </VStack>
+
+      <Divider bg={colors.border} />
+
+      {/* 🆕 POLICY DOCUMENT SECTION */}
+      <PolicyDocumentSection document={document} colors={colors} />
 
       <Divider bg={colors.border} />
 
@@ -427,6 +457,178 @@ const ProductInfoCard = ({
   </Box>
 );
 
+// 🆕 POLICY DOCUMENT SECTION COMPONENT
+const PolicyDocumentSection = ({
+  document,
+  colors,
+}: {
+  document: PolicyDocument;
+  colors: ColorSet;
+}) => {
+  const handleOpenDocument = async () => {
+    try {
+      if (!document.presigned_url) {
+        Alert.alert("Lỗi", "Không tìm thấy đường dẫn tài liệu");
+        return;
+      }
+
+      // Kiểm tra xem URL có thể mở được không
+      const canOpen = await Linking.canOpenURL(document.presigned_url);
+
+      if (canOpen) {
+        await Linking.openURL(document.presigned_url);
+      } else {
+        Alert.alert(
+          "Không thể mở tài liệu",
+          "Vui lòng kiểm tra ứng dụng đọc PDF trên thiết bị của bạn"
+        );
+      }
+    } catch (error) {
+      console.error("Error opening document:", error);
+      Alert.alert("Lỗi", "Không thể mở tài liệu. Vui lòng thử lại sau.");
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  };
+
+  const formatExpiryDate = (expiryString: string) => {
+    try {
+      const date = new Date(expiryString);
+      return date.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return expiryString;
+    }
+  };
+
+  // Trường hợp KHÔNG CÓ tài liệu
+  if (!document.has_document) {
+    return (
+      <Box
+        bg={colors.warningSoft}
+        borderWidth={1}
+        borderColor={colors.warning}
+        borderRadius="$lg"
+        p="$3"
+      >
+        <HStack space="sm" alignItems="center">
+          <Box bg={colors.warning} borderRadius="$full" p="$2">
+            <FileText size={18} color="#fff" strokeWidth={2} />
+          </Box>
+          <VStack flex={1}>
+            <Text fontSize="$sm" fontWeight="$bold" color={colors.warning}>
+              Chưa có hợp đồng gốc
+            </Text>
+            <Text fontSize="$xs" color={colors.warning} mt="$0.5">
+              Tài liệu hợp đồng đang được cập nhật
+            </Text>
+          </VStack>
+        </HStack>
+      </Box>
+    );
+  }
+
+  // Trường hợp CÓ tài liệu
+  return (
+    <VStack space="xs">
+      <HStack space="xs" alignItems="center" mb="$1">
+        <Text fontSize="$xs" color={colors.textSecondary} fontWeight="$medium">
+          Hợp đồng bảo hiểm gốc
+        </Text>
+      </HStack>
+
+      <Pressable onPress={handleOpenDocument}>
+        <Box
+          bg={colors.primarySoft}
+          borderWidth={1}
+          borderColor={colors.success}
+          borderRadius="$lg"
+          p="$3"
+          sx={{
+            ":active": {
+              opacity: 0.7,
+            },
+          }}
+        >
+          <HStack space="sm" alignItems="center" justifyContent="space-between">
+            {/* Left: File Icon & Info */}
+            <HStack space="sm" alignItems="center" flex={1}>
+              <Box bg={colors.success} borderRadius="$md" p="$2">
+                <FileText size={20} color="#fff" strokeWidth={2.5} />
+              </Box>
+              <VStack flex={1}>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$bold"
+                  color={colors.text}
+                  numberOfLines={1}
+                >
+                  {document.object_name || "Hợp đồng bảo hiểm.pdf"}
+                </Text>
+                <HStack space="xs" alignItems="center" mt="$0.5">
+                  <Text fontSize="$2xs" color={colors.textMuted}>
+                    {formatFileSize(document.file_size_bytes)}
+                  </Text>
+                  <Text fontSize="$2xs" color={colors.textMuted}>
+                    • PDF
+                  </Text>
+                </HStack>
+              </VStack>
+            </HStack>
+
+            {/* Right: Action Button */}
+            <Box bg={colors.success} borderRadius="$full" p="$2">
+              <ExternalLink size={18} color="#fff" strokeWidth={2.5} />
+            </Box>
+          </HStack>
+
+          {/* Expiry Warning */}
+          {document.presigned_url_expiry && (
+            <HStack
+              space="xs"
+              alignItems="center"
+              mt="$2"
+              pt="$2"
+              borderTopWidth={1}
+              borderTopColor={colors.border}
+            >
+              <Clock size={12} color={colors.textMuted} strokeWidth={2} />
+              <Text fontSize="$2xs" color={colors.textMuted}>
+                Link hết hạn: {formatExpiryDate(document.presigned_url_expiry)}
+              </Text>
+            </HStack>
+          )}
+        </Box>
+      </Pressable>
+
+      {/* Helper Text */}
+      <HStack space="xs" alignItems="flex-start" mt="$1">
+        <Info size={12} color={colors.textMuted} strokeWidth={2} />
+        <Text
+          fontSize="$2xs"
+          color={colors.textMuted}
+          flex={1}
+          lineHeight="$sm"
+        >
+          Nhấn vào để xem hợp đồng chi tiết. Tài liệu sẽ được mở trong trình
+          duyệt hoặc ứng dụng đọc PDF.
+        </Text>
+      </HStack>
+    </VStack>
+  );
+};
+
 // 2. Cost & Payout Grid
 const CostPayoutGrid = ({
   policy,
@@ -441,7 +643,11 @@ const CostPayoutGrid = ({
       <InfoCard
         label="Phí bảo hiểm"
         value={formatCurrency(policy.fix_premium_amount)}
-        subtext={policy.is_per_hectare ? "Tính theo diện tích (mỗi hecta)" : "Phí cố định (không phụ thuộc diện tích)"}
+        subtext={
+          policy.is_per_hectare
+            ? "Tính theo diện tích (mỗi hecta)"
+            : "Phí cố định (không phụ thuộc diện tích)"
+        }
         icon={Shield}
         iconBg={colors.primarySoft}
         iconColor={colors.success}
@@ -451,7 +657,11 @@ const CostPayoutGrid = ({
       <InfoCard
         label="Bồi thường tối đa"
         value={formatCurrency(policy.payout_cap)}
-        subtext={policy.is_payout_per_hectare ? "Mỗi hecta thiệt hại" : "Tổng số tiền tối đa"}
+        subtext={
+          policy.is_payout_per_hectare
+            ? "Mỗi hecta thiệt hại"
+            : "Tổng số tiền tối đa"
+        }
         icon={CheckCircle2}
         iconBg={colors.successSoft}
         iconColor={colors.success}
@@ -644,107 +854,363 @@ const TimelineCard = ({
   </Box>
 );
 
-// Explanation Banner
-const ExplanationBanner = ({
-  isExpanded,
-  onToggle,
-  colors,
-}: {
-  isExpanded: boolean;
-  onToggle: () => void;
-  colors: ColorSet;
-}) => (
-  <Box
-    bg={colors.infoSoft}
-    borderWidth={1}
-    borderColor={colors.info}
-    borderRadius="$lg"
-    overflow="hidden"
-  >
-    <Pressable onPress={onToggle}>
-      <HStack
-        space="sm"
-        alignItems="center"
-        px="$3"
-        py="$2.5"
-        justifyContent="space-between"
-      >
-        <HStack space="sm" alignItems="center" flex={1}>
-          <HelpCircle size={18} color={colors.info} strokeWidth={2} />
-          <Text fontSize="$sm" fontWeight="$semibold" color={colors.info}>
-            Giải thích các thuật ngữ
+// 🆕 FAQ SECTION COMPONENT
+const FAQSection = ({ colors }: { colors: ColorSet }) => {
+  const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
+
+  const faqs = [
+    {
+      id: "trigger",
+      question: "Trigger (Bộ kích hoạt) là gì?",
+      answer:
+        "Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả. Mỗi gói bảo hiểm có thể có nhiều trigger áp dụng cho các giai đoạn khác nhau của cây trồng. Khi tất cả điều kiện trong trigger được đáp ứng, hệ thống sẽ tự động kích hoạt chi trả bồi thường.",
+      icon: Shield,
+      color: colors.success,
+    },
+    {
+      id: "condition",
+      question: "Điều kiện (Condition) hoạt động như thế nào?",
+      answer:
+        "Điều kiện là tiêu chí cụ thể cần đạt được để trigger kích hoạt. Ví dụ: 'Lượng mưa trung bình trong 7 ngày < 10mm'. Mỗi điều kiện sẽ được hệ thống giám sát liên tục thông qua dữ liệu vệ tinh và các cảm biến thời tiết.",
+      icon: FileCheck,
+      color: colors.info,
+    },
+    {
+      id: "logic-operator",
+      question: "AND và OR khác nhau thế nào?",
+      answer:
+        "AND: Tất cả các điều kiện phải đạt được cùng lúc. VD: Nhiệt độ > 35°C VÀ Độ ẩm < 40%.\n\nOR: Chỉ cần 1 trong các điều kiện đạt là đủ để kích hoạt. VD: Lượng mưa < 10mm HOẶC Không mưa trong 14 ngày liên tiếp.",
+      icon: HelpCircle,
+      color: colors.warning,
+    },
+    {
+      id: "growth-stage",
+      question: "Giai đoạn sinh trưởng ảnh hưởng gì đến bảo hiểm?",
+      answer:
+        "Mỗi giai đoạn phát triển của cây trồng (nảy mầm, cây con, sinh trưởng, ra hoa, đậu quả, chín, thu hoạch) có các rủi ro khác nhau. Bảo hiểm sẽ áp dụng các điều kiện kích hoạt phù hợp với từng giai đoạn để đảm bảo bảo vệ tối ưu.",
+      icon: Leaf,
+      color: colors.success,
+    },
+    {
+      id: "early-warning",
+      question: "Cảnh báo sớm giúp gì cho tôi?",
+      answer:
+        "Ngưỡng cảnh báo sớm được đặt trước ngưỡng kích hoạt chính. Khi đạt ngưỡng này, bạn sẽ nhận thông báo để có thời gian chuẩn bị biện pháp ứng phó, giảm thiểu thiệt hại trước khi tình huống trở nên nghiêm trọng.",
+      icon: AlertTriangle,
+      color: colors.warning,
+    },
+    {
+      id: "consecutive",
+      question: "Yêu cầu liên tiếp nghĩa là gì?",
+      answer:
+        "Một số điều kiện yêu cầu hiện tượng xấu phải xảy ra liên tục không gián đoạn. VD: 'Không mưa trong 14 ngày liên tiếp' - nếu có 1 ngày mưa ở giữa thì đếm lại từ đầu. Điều này đảm bảo chỉ chi trả cho thiệt hại thực sự nghiêm trọng.",
+      icon: TrendingUp,
+      color: colors.error,
+    },
+    {
+      id: "data-cost",
+      question: "Tại sao phải trả chi phí dữ liệu?",
+      answer:
+        "Chi phí dữ liệu bao gồm: (1) Truy cập dữ liệu vệ tinh độ phân giải cao, (2) Xử lý và phân tích dữ liệu bằng AI, (3) Giám sát liên tục 24/7. Chi phí này được tính vào phí bảo hiểm để đảm bảo bạn nhận được dịch vụ giám sát chính xác nhất.",
+      icon: Database,
+      color: colors.info,
+    },
+  ];
+
+  const toggleFAQ = (id: string) => {
+    setExpandedFAQ(expandedFAQ === id ? null : id);
+  };
+
+  return (
+    <VStack space="xs">
+      <HStack space="sm" alignItems="center" mb="$2">
+        <HelpCircle size={18} color={colors.info} strokeWidth={2} />
+        <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+          Câu hỏi thường gặp
+        </Text>
+      </HStack>
+
+      {faqs.map((faq) => {
+        const isExpanded = expandedFAQ === faq.id;
+        const IconComponent = faq.icon;
+
+        return (
+          <Box
+            key={faq.id}
+            bg={colors.card}
+            borderWidth={1}
+            borderColor={isExpanded ? faq.color : colors.border}
+            borderRadius="$lg"
+            overflow="hidden"
+          >
+            <Pressable onPress={() => toggleFAQ(faq.id)}>
+              <HStack
+                space="sm"
+                alignItems="center"
+                justifyContent="space-between"
+                px="$3"
+                py="$3"
+              >
+                <HStack space="sm" alignItems="center" flex={1}>
+                  <Box
+                    bg={isExpanded ? faq.color : colors.background}
+                    borderRadius="$md"
+                    p="$1.5"
+                  >
+                    <IconComponent
+                      size={16}
+                      color={isExpanded ? "#fff" : faq.color}
+                      strokeWidth={2}
+                    />
+                  </Box>
+                  <Text
+                    fontSize="$sm"
+                    fontWeight={isExpanded ? "$bold" : "$medium"}
+                    color={isExpanded ? faq.color : colors.text}
+                    flex={1}
+                    lineHeight="$md"
+                  >
+                    {faq.question}
+                  </Text>
+                </HStack>
+                <Box
+                  bg={isExpanded ? `${faq.color}15` : colors.background}
+                  borderRadius="$full"
+                  p="$1"
+                >
+                  {isExpanded ? (
+                    <ChevronUp size={16} color={faq.color} strokeWidth={2.5} />
+                  ) : (
+                    <ChevronDown
+                      size={16}
+                      color={colors.textSecondary}
+                      strokeWidth={2.5}
+                    />
+                  )}
+                </Box>
+              </HStack>
+            </Pressable>
+
+            {isExpanded && (
+              <Box
+                px="$3"
+                pb="$3"
+                pt="$2"
+                borderTopWidth={1}
+                borderTopColor={colors.border}
+                bg={`${faq.color}05`}
+              >
+                <Text
+                  fontSize="$xs"
+                  color={colors.text}
+                  lineHeight="$lg"
+                  style={{ whiteSpace: "pre-line" }}
+                >
+                  {faq.answer}
+                </Text>
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+
+      {/* Helper Text */}
+      <Box bg={colors.infoSoft} borderRadius="$md" px="$3" py="$2" mt="$2">
+        <HStack space="xs" alignItems="flex-start">
+          <Info size={14} color={colors.info} strokeWidth={2} />
+          <Text fontSize="$xs" color={colors.info} flex={1} lineHeight="$sm">
+            Bấm vào từng câu hỏi để xem giải thích chi tiết. Nếu còn thắc mắc,
+            vui lòng liên hệ bộ phận hỗ trợ.
           </Text>
         </HStack>
-        {isExpanded ? (
-          <ChevronUp size={18} color={colors.info} strokeWidth={2} />
-        ) : (
-          <ChevronDown size={18} color={colors.info} strokeWidth={2} />
-        )}
-      </HStack>
-    </Pressable>
+      </Box>
+    </VStack>
+  );
+};
 
-    {isExpanded && (
-      <VStack space="sm" px="$3" py="$3" borderTopWidth={1} borderTopColor={colors.info}>
-        <GlossaryItem
-          term="Trigger (Bộ kích hoạt)"
-          definition="Tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả. Mỗi gói bảo hiểm có thể có nhiều trigger áp dụng cho các giai đoạn khác nhau của cây trồng."
-          colors={colors}
-        />
-        <GlossaryItem
-          term="Điều kiện (Condition)"
-          definition="Tiêu chí cụ thể cần đạt được để trigger kích hoạt. Ví dụ: lượng mưa trung bình trong 7 ngày < 10mm."
-          colors={colors}
-        />
-        <GlossaryItem
-          term="AND / OR"
-          definition="AND: Tất cả điều kiện phải đạt. OR: Chỉ cần 1 trong các điều kiện đạt là đủ."
-          colors={colors}
-        />
-        <GlossaryItem
-          term="Giai đoạn sinh trưởng"
-          definition="Các giai đoạn phát triển của cây trồng: nảy mầm, cây con, sinh trưởng, ra hoa, đậu quả, chín, thu hoạch."
-          colors={colors}
-        />
-        <GlossaryItem
-          term="Cảnh báo sớm"
-          definition="Ngưỡng cảnh báo trước khi đạt ngưỡng kích hoạt, giúp nông dân chuẩn bị ứng phó."
-          colors={colors}
-        />
-        <GlossaryItem
-          term="Yêu cầu liên tiếp"
-          definition="Điều kiện phải xảy ra liên tục không gián đoạn trong khoảng thời gian quy định."
-          colors={colors}
-        />
-        <GlossaryItem
-          term="Chi phí dữ liệu"
-          definition="Chi phí để lấy và xử lý dữ liệu vệ tinh cho mỗi điều kiện giám sát."
-          colors={colors}
-        />
-      </VStack>
-    )}
-  </Box>
-);
-
-const GlossaryItem = ({
-  term,
-  definition,
+// Cập nhật phần Technical Info thành FAQ style
+const TechnicalInfoFAQ = ({
+  metadata,
   colors,
 }: {
-  term: string;
-  definition: string;
+  metadata: PolicyDetailResponse["metadata"];
   colors: ColorSet;
-}) => (
-  <VStack space="xs">
-    <Text fontSize="$xs" fontWeight="$bold" color={colors.info}>
-      • {term}
-    </Text>
-    <Text fontSize="$xs" color={colors.info} lineHeight="$sm" ml="$3">
-      {definition}
-    </Text>
-  </VStack>
-);
+}) => {
+  const [expandedTech, setExpandedTech] = useState<string | null>(null);
 
-// Trigger Card - Improved with better field labels
+  const technicalFAQs = [
+    {
+      id: "triggers-conditions",
+      question: `Sản phẩm có ${metadata.total_triggers} bộ kích hoạt và ${metadata.total_conditions} điều kiện?`,
+      answer: `Đúng vậy! Sản phẩm này được thiết kế với:\n\n• ${metadata.total_triggers} bộ kích hoạt (Triggers): Mỗi bộ áp dụng cho một giai đoạn sinh trưởng cụ thể hoặc toàn bộ chu kỳ\n\n• ${metadata.total_conditions} điều kiện giám sát: Các tiêu chí cụ thể như nhiệt độ, lượng mưa, độ ẩm đất được theo dõi liên tục\n\nCăn cứ vào số lượng này, bạn có thể thấy sản phẩm bảo hiểm được thiết kế rất chi tiết và toàn diện.`,
+      icon: Shield,
+      value: `${metadata.total_triggers} / ${metadata.total_conditions}`,
+      color: colors.success,
+    },
+    {
+      id: "data-sources",
+      question: `${metadata.data_source_count} nguồn dữ liệu được sử dụng là gì?`,
+      answer: `Hệ thống sử dụng ${metadata.data_source_count} nguồn dữ liệu khác nhau để đảm bảo độ chính xác:\n\n• Dữ liệu vệ tinh (Satellite Imagery): NDVI, nhiệt độ bề mặt, độ ẩm đất\n• Dữ liệu thời tiết: Lượng mưa, nhiệt độ không khí, độ ẩm\n• Dữ liệu địa hình: Độ cao, độ dốc, loại đất\n• Dữ liệu lịch sử: Xu hướng thời tiết và năng suất cây trồng\n\nNhiều nguồn dữ liệu = Độ chính xác cao hơn trong đánh giá thiệt hại.`,
+      icon: Database,
+      value: `${metadata.data_source_count} nguồn`,
+      color: colors.info,
+    },
+    {
+      id: "data-cost",
+      question: `Chi phí dữ liệu ${formatDataCost(metadata.total_data_cost)} được tính như thế nào?`,
+      answer: `Tổng chi phí dữ liệu ${formatDataCost(metadata.total_data_cost)} bao gồm:\n\n1️⃣ Chi phí truy cập dữ liệu vệ tinh:\n   • Dữ liệu độ phân giải cao (10m-30m)\n   • Tần suất cập nhật: Mỗi 3-5 ngày\n\n2️⃣ Chi phí xử lý và phân tích:\n   • Thuật toán AI phân tích ảnh vệ tinh\n   • Tính toán các chỉ số sức khỏe cây trồng\n\n3️⃣ Chi phí lưu trữ và giám sát:\n   • Lưu trữ dữ liệu lịch sử\n   • Giám sát liên tục 24/7\n\nChi phí này đã được tính vào phí bảo hiểm của bạn.`,
+      icon: TrendingUp,
+      value: formatDataCost(metadata.total_data_cost),
+      color: colors.warning,
+    },
+  ];
+
+  const toggleTech = (id: string) => {
+    setExpandedTech(expandedTech === id ? null : id);
+  };
+
+  return (
+    <VStack space="xs">
+      <HStack space="sm" alignItems="center" mb="$2">
+        <Info size={18} color={colors.info} strokeWidth={2} />
+        <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+          Thông tin chi tiết
+        </Text>
+      </HStack>
+
+      {technicalFAQs.map((faq) => {
+        const isExpanded = expandedTech === faq.id;
+        const IconComponent = faq.icon;
+
+        return (
+          <Box
+            key={faq.id}
+            bg={colors.card}
+            borderWidth={1}
+            borderColor={isExpanded ? faq.color : colors.border}
+            borderRadius="$lg"
+            overflow="hidden"
+          >
+            <Pressable onPress={() => toggleTech(faq.id)}>
+              <Box px="$3" py="$3">
+                <HStack
+                  space="sm"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <HStack space="sm" alignItems="center" flex={1}>
+                    <Box
+                      bg={isExpanded ? faq.color : colors.background}
+                      borderRadius="$md"
+                      p="$1.5"
+                    >
+                      <IconComponent
+                        size={16}
+                        color={isExpanded ? "#fff" : faq.color}
+                        strokeWidth={2}
+                      />
+                    </Box>
+                    <VStack flex={1}>
+                      <Text
+                        fontSize="$xs"
+                        fontWeight={isExpanded ? "$bold" : "$medium"}
+                        color={isExpanded ? faq.color : colors.text}
+                        lineHeight="$md"
+                      >
+                        {faq.question}
+                      </Text>
+                      {!isExpanded && (
+                        <Badge
+                          bg={`${faq.color}15`}
+                          borderRadius="$full"
+                          size="sm"
+                          alignSelf="flex-start"
+                          mt="$1"
+                        >
+                          <BadgeText
+                            color={faq.color}
+                            fontSize="$2xs"
+                            fontWeight="$bold"
+                          >
+                            {faq.value}
+                          </BadgeText>
+                        </Badge>
+                      )}
+                    </VStack>
+                  </HStack>
+                  <Box
+                    bg={isExpanded ? `${faq.color}15` : colors.background}
+                    borderRadius="$full"
+                    p="$1"
+                  >
+                    {isExpanded ? (
+                      <ChevronUp
+                        size={16}
+                        color={faq.color}
+                        strokeWidth={2.5}
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={16}
+                        color={colors.textSecondary}
+                        strokeWidth={2.5}
+                      />
+                    )}
+                  </Box>
+                </HStack>
+              </Box>
+            </Pressable>
+
+            {isExpanded && (
+              <Box
+                px="$3"
+                pb="$3"
+                pt="$2"
+                borderTopWidth={1}
+                borderTopColor={colors.border}
+                bg={`${faq.color}05`}
+              >
+                <VStack space="sm">
+                  <Badge
+                    bg={faq.color}
+                    borderRadius="$full"
+                    size="md"
+                    alignSelf="flex-start"
+                  >
+                    <BadgeText color="#fff" fontSize="$sm" fontWeight="$bold">
+                      {faq.value}
+                    </BadgeText>
+                  </Badge>
+                  <Text
+                    fontSize="$xs"
+                    color={colors.text}
+                    lineHeight="$lg"
+                    style={{ whiteSpace: "pre-line" }}
+                  >
+                    {faq.answer}
+                  </Text>
+                </VStack>
+              </Box>
+            )}
+          </Box>
+        );
+      })}
+
+      {/* Summary Card */}
+      <Box bg={colors.successSoft} borderRadius="$md" px="$3" py="$2" mt="$2">
+        <HStack space="xs" alignItems="flex-start">
+          <CheckCircle2 size={14} color={colors.success} strokeWidth={2} />
+          <Text fontSize="$xs" color={colors.success} flex={1} lineHeight="$sm">
+            Dữ liệu được lấy lúc:{" "}
+            {new Date(metadata.retrieved_at).toLocaleString("vi-VN")}
+          </Text>
+        </HStack>
+      </Box>
+    </VStack>
+  );
+};
+
+// 4. Trigger Card Component - Hiển thị chi tiết trigger và điều kiện
 const TriggerCard = ({
   trigger,
   index,
@@ -752,426 +1218,348 @@ const TriggerCard = ({
   onToggle,
   colors,
 }: {
-  trigger: PolicyTrigger;
+  trigger: PolicyDetailResponse["triggers"][0];
   index: number;
   isExpanded: boolean;
   onToggle: () => void;
   colors: ColorSet;
-}) => (
-  <Box
-    bg={colors.card}
-    borderWidth={1}
-    borderColor={isExpanded ? colors.success : colors.border}
-    borderRadius="$xl"
-    overflow="hidden"
-  >
-    {/* Trigger Header */}
-    <Pressable onPress={onToggle}>
-      <Box px="$4" py="$3">
-        <HStack justifyContent="space-between" alignItems="center">
-          <HStack space="sm" alignItems="center" flex={1}>
-            <Box
-              bg={isExpanded ? colors.success : colors.primarySoft}
-              borderRadius="$full"
-              w="$10"
-              h="$10"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text
-                fontSize="$md"
-                fontWeight="$bold"
-                color={isExpanded ? "#fff" : colors.success}
-              >
-                {index + 1}
-              </Text>
-            </Box>
-            <VStack flex={1}>
-              <Text fontSize="$md" fontWeight="$bold" color={colors.text}>
-                {trigger.growth_stage
-                  ? `Giai đoạn ${getGrowthStageLabel(trigger.growth_stage)}`
-                  : "Áp dụng cho mọi giai đoạn"}
-              </Text>
-              <HStack space="xs" alignItems="center" mt="$0.5" flexWrap="wrap">
-                <Badge bg={colors.primarySoft} borderRadius="$full" size="sm">
-                  <BadgeText color={colors.success} fontSize="$2xs">
-                    {trigger.conditions.length} điều kiện
-                  </BadgeText>
-                </Badge>
-                <Badge
-                  bg={
-                    trigger.logical_operator === "AND"
-                      ? colors.errorSoft
-                      : colors.warningSoft
-                  }
-                  borderRadius="$full"
-                  size="sm"
-                >
-                  <BadgeText
-                    color={
-                      trigger.logical_operator === "AND"
-                        ? colors.error
-                        : colors.warning
-                    }
-                    fontSize="$2xs"
-                  >
-                    {getOperatorLabel(trigger.logical_operator)}
-                  </BadgeText>
-                </Badge>
-              </HStack>
-            </VStack>
-          </HStack>
-          <Box
-            bg={isExpanded ? colors.primarySoft : colors.background}
-            borderRadius="$full"
-            p="$2"
-          >
-            {isExpanded ? (
-              <ChevronUp size={20} color={colors.success} strokeWidth={2.5} />
-            ) : (
-              <ChevronDown
-                size={20}
-                color={colors.textSecondary}
-                strokeWidth={2.5}
-              />
-            )}
-          </Box>
-        </HStack>
-      </Box>
-    </Pressable>
+}) => {
+  // Tính tổng chi phí dữ liệu của trigger
+  const totalDataCost = trigger.conditions.reduce(
+    (sum, condition) => sum + condition.calculated_cost,
+    0
+  );
 
-    {/* Trigger Details */}
-    {isExpanded && (
-      <VStack borderTopWidth={1} borderTopColor={colors.border}>
-        <Box bg={colors.background} px="$4" py="$3">
-          <VStack space="sm">
-            {/* Monitor Info */}
-            <HStack justifyContent="space-between" alignItems="center">
-              <VStack flex={1}>
-                <Text fontSize="$xs" color={colors.textSecondary}>
-                  Tần suất giám sát
+  // Lấy màu theo logical operator
+  const operatorColor =
+    trigger.logical_operator === "AND" ? colors.success : colors.info;
+
+  return (
+    <Box
+      bg={colors.card}
+      borderWidth={1}
+      borderColor={isExpanded ? operatorColor : colors.border}
+      borderRadius="$xl"
+      overflow="hidden"
+    >
+      {/* Header - Có thể bấm để expand/collapse */}
+      <Pressable onPress={onToggle}>
+        <Box
+          px="$4"
+          py="$3"
+          bg={isExpanded ? `${operatorColor}10` : "transparent"}
+        >
+          <HStack space="sm" alignItems="center" justifyContent="space-between">
+            {/* Left: Trigger Info */}
+            <HStack space="sm" alignItems="center" flex={1}>
+              <Box
+                bg={operatorColor}
+                borderRadius="$full"
+                w="$8"
+                h="$8"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Text fontSize="$sm" fontWeight="$bold" color="#fff">
+                  {index + 1}
                 </Text>
+              </Box>
+              <VStack flex={1}>
+                <HStack space="xs" alignItems="center">
+                  <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+                    {trigger.growth_stage
+                      ? `Giai đoạn: ${getGrowthStageLabel(trigger.growth_stage)}`
+                      : "Áp dụng toàn bộ chu kỳ"}
+                  </Text>
+                </HStack>
                 <HStack space="xs" alignItems="center" mt="$0.5">
-                  <Clock size={14} color={colors.text} strokeWidth={2} />
-                  <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                    Mỗi {trigger.monitor_interval}{" "}
-                    {getFrequencyLabel(trigger.monitor_frequency_unit)}
+                  <Badge bg={operatorColor} borderRadius="$full" size="sm">
+                    <BadgeText color="#fff" fontSize="$2xs" fontWeight="$bold">
+                      {trigger.logical_operator}
+                    </BadgeText>
+                  </Badge>
+                  <Text fontSize="$xs" color={colors.textMuted}>
+                    {trigger.conditions.length} điều kiện
+                  </Text>
+                  <Text fontSize="$xs" color={colors.textMuted}>
+                    • {formatDataCost(totalDataCost)}
                   </Text>
                 </HStack>
               </VStack>
             </HStack>
 
-            {/* Blackout Period */}
-            {trigger.blackout_periods && (
-              <Box
-                bg={colors.warningSoft}
-                borderRadius="$lg"
-                px="$3"
-                py="$2.5"
-                borderLeftWidth={3}
-                borderLeftColor={colors.warning}
-                mt="$2"
-              >
-                <HStack space="sm" alignItems="flex-start">
-                  <AlertTriangle size={18} color={colors.warning} strokeWidth={2} />
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" fontWeight="$bold" color={colors.warning}>
-                      Thời gian không kích hoạt
-                    </Text>
-                    <Text fontSize="$xs" color={colors.warning} mt="$0.5" lineHeight="$sm">
-                      Từ ngày {trigger.blackout_periods.start_day} đến ngày{" "}
-                      {trigger.blackout_periods.end_day}
-                    </Text>
-                    <Text fontSize="$xs" color={colors.warning} mt="$0.5" lineHeight="$sm">
-                      Lý do: {trigger.blackout_periods.reason}
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Box>
-            )}
-          </VStack>
+            {/* Right: Expand Icon */}
+            <Box
+              bg={isExpanded ? operatorColor : colors.background}
+              borderRadius="$full"
+              p="$1.5"
+            >
+              {isExpanded ? (
+                <ChevronUp size={18} color="#fff" strokeWidth={2.5} />
+              ) : (
+                <ChevronDown
+                  size={18}
+                  color={colors.textSecondary}
+                  strokeWidth={2.5}
+                />
+              )}
+            </Box>
+          </HStack>
+
+          {/* Monitor Info */}
+          {!isExpanded && (
+            <HStack space="xs" alignItems="center" mt="$2">
+              <Clock size={14} color={colors.textMuted} strokeWidth={2} />
+              <Text fontSize="$xs" color={colors.textMuted}>
+                Giám sát mỗi {trigger.monitor_interval}{" "}
+                {getFrequencyLabel(trigger.monitor_frequency_unit)}
+              </Text>
+            </HStack>
+          )}
         </Box>
+      </Pressable>
 
-        {/* Conditions */}
-        <VStack space="xs" px="$4" py="$3">
-          <Text fontSize="$sm" fontWeight="$bold" color={colors.text} mb="$1">
-            Các điều kiện cụ thể
-          </Text>
-          {trigger.conditions.map((condition, idx) => (
-            <ConditionCard
-              key={condition.id}
-              condition={condition}
-              index={idx}
-              colors={colors}
-            />
-          ))}
+      {/* Expanded Content */}
+      {isExpanded && (
+        <VStack space="sm" px="$4" pb="$4">
+          <Divider bg={colors.border} />
+
+          {/* Monitor Info Detail */}
+          <VStack space="xs">
+            <HStack space="sm" alignItems="center">
+              <Clock size={16} color={colors.info} strokeWidth={2} />
+              <Text fontSize="$xs" fontWeight="$semibold" color={colors.text}>
+                Tần suất giám sát
+              </Text>
+            </HStack>
+            <Text fontSize="$sm" color={colors.textSecondary} ml="$6">
+              Kiểm tra mỗi {trigger.monitor_interval}{" "}
+              {getFrequencyLabel(trigger.monitor_frequency_unit)} trong suốt
+              giai đoạn này
+            </Text>
+          </VStack>
+
+          {/* Blackout Periods */}
+          {trigger.blackout_periods && (
+            <>
+              <Divider bg={colors.border} />
+              <VStack space="xs">
+                <HStack space="sm" alignItems="center">
+                  <AlertTriangle
+                    size={16}
+                    color={colors.warning}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    fontSize="$xs"
+                    fontWeight="$semibold"
+                    color={colors.text}
+                  >
+                    Thời gian không kích hoạt
+                  </Text>
+                </HStack>
+                <Box bg={colors.warningSoft} borderRadius="$md" p="$2" ml="$6">
+                  <Text fontSize="$sm" color={colors.text}>
+                    Từ ngày {trigger.blackout_periods.start_day} đến ngày{" "}
+                    {trigger.blackout_periods.end_day}
+                  </Text>
+                  <Text fontSize="$xs" color={colors.textMuted} mt="$1">
+                    Lý do: {trigger.blackout_periods.reason}
+                  </Text>
+                </Box>
+              </VStack>
+            </>
+          )}
+
+          {/* Conditions List */}
+          <Divider bg={colors.border} />
+          <VStack space="xs">
+            <HStack space="sm" alignItems="center">
+              <FileCheck size={16} color={colors.success} strokeWidth={2} />
+              <Text fontSize="$xs" fontWeight="$semibold" color={colors.text}>
+                Các điều kiện kích hoạt
+              </Text>
+            </HStack>
+
+            <VStack space="xs" mt="$1">
+              {trigger.conditions.map((condition, condIdx) => (
+                <ConditionItem
+                  key={condition.id}
+                  condition={condition}
+                  index={condIdx}
+                  logicalOperator={trigger.logical_operator}
+                  isLast={condIdx === trigger.conditions.length - 1}
+                  colors={colors}
+                />
+              ))}
+            </VStack>
+          </VStack>
+
+          {/* Data Cost Summary */}
+          <Divider bg={colors.border} />
+          <HStack
+            space="sm"
+            alignItems="center"
+            justifyContent="space-between"
+            bg={colors.background}
+            borderRadius="$md"
+            p="$3"
+          >
+            <HStack space="xs" alignItems="center">
+              <Database size={16} color={colors.info} strokeWidth={2} />
+              <Text fontSize="$xs" color={colors.textSecondary}>
+                Tổng chi phí dữ liệu
+              </Text>
+            </HStack>
+            <Text fontSize="$sm" fontWeight="$bold" color={colors.success}>
+              {formatDataCost(totalDataCost)}
+            </Text>
+          </HStack>
         </VStack>
-      </VStack>
-    )}
-  </Box>
-);
+      )}
+    </Box>
+  );
+};
 
-// Condition Card - Detailed field explanation
-const ConditionCard = ({
+// 5. Condition Item Component - Hiển thị từng điều kiện
+const ConditionItem = ({
   condition,
   index,
+  logicalOperator,
+  isLast,
   colors,
 }: {
-  condition: PolicyCondition;
+  condition: PolicyDetailResponse["triggers"][0]["conditions"][0];
   index: number;
+  logicalOperator: "AND" | "OR";
+  isLast: boolean;
   colors: ColorSet;
-}) => (
-  <Box
-    bg={colors.background}
-    borderWidth={1}
-    borderColor={colors.border}
-    borderRadius="$lg"
-    p="$3"
-  >
-    {/* Header */}
-    <HStack justifyContent="space-between" alignItems="flex-start" mb="$3">
-      <HStack space="sm" alignItems="flex-start" flex={1}>
-        <Badge bg={colors.success} borderRadius="$full" size="sm">
-          <BadgeText color="#fff" fontSize="$2xs" fontWeight="$bold">
-            {index + 1}
-          </BadgeText>
-        </Badge>
-        <VStack flex={1}>
-          <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
-            Điều kiện #{index + 1}
-          </Text>
-         
-        </VStack>
-      </HStack>
-      <Badge bg={colors.infoSoft} borderRadius="$lg" px="$2.5" py="$1">
-        <BadgeText color={colors.info} fontSize="$xs" fontWeight="$semibold">
-          {formatDataCost(condition.calculated_cost)}
-        </BadgeText>
-      </Badge>
-    </HStack>
+}) => {
+  const operatorColor =
+    logicalOperator === "AND" ? colors.success : colors.info;
 
-    <Divider my="$2" bg={colors.border} />
-
-    {/* Fields */}
-    <VStack space="sm">
-      {/* Aggregation Method */}
-      <HStack justifyContent="space-between" alignItems="center">
-        <Text fontSize="$xs" color={colors.textSecondary}>
-          Phương pháp tính toán
-        </Text>
-        <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-          {getAggregationLabel(condition.aggregation_function)}
-        </Text>
-      </HStack>
-
-      {/* Time Window */}
-      <HStack justifyContent="space-between" alignItems="center">
-        <Text fontSize="$xs" color={colors.textSecondary}>
-          Khung thời gian tính toán
-        </Text>
-        <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-          {condition.aggregation_window_days} ngày
-          {condition.consecutive_required ? " liên tiếp" : ""}
-        </Text>
-      </HStack>
-
-      <Divider bg={colors.border} />
-
-      {/* Threshold */}
-      <HStack justifyContent="space-between" alignItems="center">
-        <Text fontSize="$xs" color={colors.textSecondary}>
-          Ngưỡng kích hoạt
-        </Text>
-        <Text fontSize="$md" fontWeight="$bold" color={colors.error}>
-          {getOperatorLabel(condition.threshold_operator)}{" "}
-          {condition.threshold_value}
-        </Text>
-      </HStack>
-
-      {/* Early Warning Threshold */}
-      {condition.early_warning_threshold !== null && (
-        <HStack
-          space="xs"
+  return (
+    <Box>
+      <HStack space="sm" alignItems="flex-start">
+        {/* Number Badge */}
+        <Box
+          bg={operatorColor}
+          borderRadius="$full"
+          w="$6"
+          h="$6"
           alignItems="center"
-          bg={colors.infoSoft}
-          borderRadius="$md"
-          px="$2"
-          py="$1.5"
+          justifyContent="center"
+          mt="$0.5"
         >
-          <Info size={14} color={colors.info} strokeWidth={2} />
-          <VStack flex={1}>
-            <Text fontSize="$2xs" color={colors.info}>
-              Ngưỡng cảnh báo sớm
-            </Text>
-            <Text fontSize="$xs" fontWeight="$semibold" color={colors.info}>
-              {condition.early_warning_threshold}
-            </Text>
-          </VStack>
-        </HStack>
-      )}
+          <Text fontSize="$2xs" fontWeight="$bold" color="#fff">
+            {index + 1}
+          </Text>
+        </Box>
 
-      {/* Baseline Window */}
-      {condition.baseline_window_days !== null && (
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Khung thời gian so sánh chuẩn
-          </Text>
-          <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-            {condition.baseline_window_days} ngày ({condition.baseline_function})
-          </Text>
-        </HStack>
-      )}
-
-      {/* Validation Window */}
-      {condition.validation_window_days !== null && (
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Thời gian xác thực
-          </Text>
-          <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-            {condition.validation_window_days} ngày
-          </Text>
-        </HStack>
-      )}
-
-      <Divider bg={colors.border} />
-
-      {/* Cost Breakdown */}
-      <VStack space="xs">
-        <Text fontSize="$xs" color={colors.textSecondary} fontWeight="$semibold">
-          Chi phí dữ liệu chi tiết
-        </Text>
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$2xs" color={colors.textMuted}>
-            Chi phí cơ bản
-          </Text>
-          <Text fontSize="$2xs" color={colors.textMuted}>
-            {formatDataCost(condition.base_cost)}
-          </Text>
-        </HStack>
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$2xs" color={colors.textMuted}>
-            Hệ số danh mục × Hệ số cấp độ
-          </Text>
-          <Text fontSize="$2xs" color={colors.textMuted}>
-            ×{condition.category_multiplier} × ×{condition.tier_multiplier}
-          </Text>
-        </HStack>
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$xs" fontWeight="$semibold" color={colors.text}>
-            Tổng chi phí
-          </Text>
-          <Text fontSize="$xs" fontWeight="$bold" color={colors.info}>
-            {formatDataCost(condition.calculated_cost)}
-          </Text>
-        </HStack>
-      </VStack>
-
-      {/* Additional Flags */}
-      <VStack space="xs">
-        {condition.consecutive_required && (
-          <HStack
-            space="xs"
-            alignItems="center"
-            bg={colors.warningSoft}
-            borderRadius="$md"
-            px="$2"
-            py="$1.5"
+        {/* Condition Content */}
+        <VStack flex={1} space="xs">
+          {/* Main Condition */}
+          <Box
+            bg={colors.background}
+            borderWidth={1}
+            borderColor={colors.border}
+            borderRadius="$lg"
+            p="$3"
           >
-            <TrendingUp size={14} color={colors.warning} strokeWidth={2} />
-            <Text fontSize="$xs" color={colors.warning} fontWeight="$medium">
-              Yêu cầu liên tiếp (không gián đoạn)
-            </Text>
-          </HStack>
-        )}
-        {condition.include_component && (
-          <HStack
-            space="xs"
-            alignItems="center"
-            bg={colors.successSoft}
-            borderRadius="$md"
-            px="$2"
-            py="$1.5"
-          >
-            <CheckCircle2 size={14} color={colors.success} strokeWidth={2} />
-            <Text fontSize="$xs" color={colors.success} fontWeight="$medium">
-              Bao gồm trong tính toán tổng
-            </Text>
-          </HStack>
-        )}
-      </VStack>
-    </VStack>
-  </Box>
-);
+            <VStack space="xs">
+              {/* Condition Summary */}
+              <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+                {getAggregationLabel(condition.aggregation_function)}{" "}
+                {getOperatorLabel(condition.threshold_operator)}{" "}
+                {condition.threshold_value}
+              </Text>
 
-// 5. Technical Info Card
-const TechnicalInfoCard = ({
-  metadata,
-  colors,
-}: {
-  metadata: PolicyDetailResponse["metadata"];
-  colors: ColorSet;
-}) => (
-  <Box
-    bg={colors.card}
-    borderWidth={1}
-    borderColor={colors.border}
-    borderRadius="$xl"
-    p="$4"
-  >
-    <VStack space="md">
-      <HStack justifyContent="space-between" alignItems="center">
-        <VStack>
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Tổng số bộ kích hoạt
-          </Text>
-          <Text fontSize="$xl" fontWeight="$bold" color={colors.text}>
-            {metadata.total_triggers}
-          </Text>
-        </VStack>
-        <VStack alignItems="flex-end">
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Tổng số điều kiện
-          </Text>
-          <Text fontSize="$xl" fontWeight="$bold" color={colors.text}>
-            {metadata.total_conditions}
-          </Text>
+              {/* Details Grid */}
+              <VStack space="xs" mt="$1">
+                <HStack space="xs" alignItems="center">
+                  <Text fontSize="$xs" color={colors.textMuted}>
+                    Thời gian tổng hợp:
+                  </Text>
+                  <Text
+                    fontSize="$xs"
+                    fontWeight="$semibold"
+                    color={colors.text}
+                  >
+                    {condition.aggregation_window_days} ngày
+                  </Text>
+                </HStack>
+
+                {condition.consecutive_required && (
+                  <HStack space="xs" alignItems="center">
+                    <TrendingUp
+                      size={12}
+                      color={colors.warning}
+                      strokeWidth={2}
+                    />
+                    <Text fontSize="$xs" color={colors.warning}>
+                      Yêu cầu liên tiếp không gián đoạn
+                    </Text>
+                  </HStack>
+                )}
+
+                {condition.early_warning_threshold && (
+                  <HStack space="xs" alignItems="center">
+                    <AlertTriangle
+                      size={12}
+                      color={colors.warning}
+                      strokeWidth={2}
+                    />
+                    <Text fontSize="$xs" color={colors.textSecondary}>
+                      Cảnh báo sớm tại: {condition.early_warning_threshold}
+                    </Text>
+                  </HStack>
+                )}
+              </VStack>
+
+              {/* Data Cost */}
+              <HStack
+                space="xs"
+                alignItems="center"
+                justifyContent="space-between"
+                mt="$1"
+                pt="$2"
+                borderTopWidth={1}
+                borderTopColor={colors.border}
+              >
+                <HStack space="xs" alignItems="center">
+                  <Database
+                    size={12}
+                    color={colors.textMuted}
+                    strokeWidth={2}
+                  />
+                  <Text fontSize="$2xs" color={colors.textMuted}>
+                    Chi phí dữ liệu
+                  </Text>
+                </HStack>
+                <Text fontSize="$xs" fontWeight="$bold" color={colors.success}>
+                  {formatDataCost(condition.calculated_cost)}
+                </Text>
+              </HStack>
+            </VStack>
+          </Box>
         </VStack>
       </HStack>
 
-      <Divider bg={colors.border} />
-
-      <HStack justifyContent="space-between" alignItems="center">
-        <VStack>
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Số nguồn dữ liệu
-          </Text>
-          <Text fontSize="$lg" fontWeight="$semibold" color={colors.text}>
-            {metadata.data_source_count} nguồn
-          </Text>
-        </VStack>
-        <VStack alignItems="flex-end">
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Tổng chi phí dữ liệu
-          </Text>
-          <Text fontSize="$lg" fontWeight="$bold" color={colors.success}>
-            {formatDataCost(metadata.total_data_cost)}
-          </Text>
-        </VStack>
-      </HStack>
-
-      <Box bg={colors.infoSoft} borderRadius="$md" px="$3" py="$2" mt="$2">
-        <HStack space="xs" alignItems="flex-start">
-          <Info size={14} color={colors.info} strokeWidth={2} />
-          <Text fontSize="$xs" color={colors.info} flex={1} lineHeight="$sm">
-            Chi phí dữ liệu được tính vào phí bảo hiểm để đảm bảo giám sát liên tục
-            và chính xác
-          </Text>
+      {/* Logical Operator Connector */}
+      {!isLast && (
+        <HStack space="xs" alignItems="center" ml="$10" my="$1">
+          <Box w="$0.5" h="$4" bg={operatorColor} />
+          <Badge bg={operatorColor} borderRadius="$full" size="sm">
+            <BadgeText color="#fff" fontSize="$2xs" fontWeight="$bold">
+              {logicalOperator}
+            </BadgeText>
+          </Badge>
+          <Box flex={1} h="$0.5" bg={operatorColor} />
         </HStack>
-      </Box>
-    </VStack>
-  </Box>
-);
+      )}
+    </Box>
+  );
+};
 
 // 6. Important Notes Card
 const ImportantNotesCard = ({

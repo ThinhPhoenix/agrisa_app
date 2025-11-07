@@ -166,6 +166,17 @@ export type PolicyTrigger = {
   conditions: PolicyCondition[];
 };
 
+export type PolicyDocument = {
+  has_document: boolean;
+  document_url: string;
+  presigned_url: string;
+  presigned_url_expiry: string;
+  bucket_name: string;
+  object_name: string;
+  content_type: string;
+  file_size_bytes: number;
+};
+
 /**
  * Metadata thống kê policy detail
  */
@@ -182,6 +193,7 @@ export type PolicyDetailMetadata = {
  */
 export type PolicyDetailResponse = {
   base_policy: PublicBasePolicyResponse;
+  document: PolicyDocument;
   triggers: PolicyTrigger[];
   metadata: PolicyDetailMetadata;
 };

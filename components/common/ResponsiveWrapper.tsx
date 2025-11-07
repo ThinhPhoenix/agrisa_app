@@ -28,7 +28,7 @@ const ResponsiveWrapper: React.FC<ResponsiveWrapperProps> = ({
     "/auth/sign-in",
     "/auth/sign-up",
     "/auth/forgot-password",
-
+    "/auth/username-sign-in",
   ];
 
   const isFullScreen = fullScreenRoutes.includes(pathname || "");

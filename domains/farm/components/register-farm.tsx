@@ -3,6 +3,7 @@ import { CustomForm } from '@/components/custom-form';
 import { useAgrisaColors } from '@/domains/agrisa_theme/hooks/useAgrisaColor';
 import { Farm, FormFarmDTO } from '@/domains/farm/models/farm.models';
 import { useToast } from '@/domains/shared/hooks/useToast';
+import OcrScanner from '@/components/ocr-scanner';
 import {
   Box,
   Button,
@@ -642,7 +643,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   </Box>
 
                   {/* CTA Button */}
-                  <Button
+                  {/* <Button
                     size="lg"
                     bg={colors.warning}
                     onPress={handlePickRedBookImage}
@@ -660,7 +661,21 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         Bắt đầu chụp ảnh sổ đỏ
                       </ButtonText>
                     </HStack>
-                  </Button>
+                  </Button> */}
+                    <OcrScanner
+                      buttonLabel="Bắt đầu chụp ảnh sổ đỏ"
+                      prompt={`
+                        Đưa ra các thông tin nhận diện từ sổ đỏ gửi tôi dưới dạng JSON với các trường:
+                        - land_certificate_number: Số sổ đỏ
+                        - address: Địa chỉ chi tiết
+                        - province: Tỉnh/Thành phố
+                        - district: Quận/Huyện
+                        - commune: Phường/Xã
+                        - area_sqm: Diện tích (m²)
+
+                        Lưu ý: Chỉ trả về JSON, không giải thích gì thêm!
+                        `}
+                    />
                 </VStack>
               )}
             </VStack>

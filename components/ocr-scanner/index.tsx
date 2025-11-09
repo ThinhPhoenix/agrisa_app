@@ -2,19 +2,20 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from "@/components/common/custom-button.tsx";
+import usePushNoti from "@/domains/shared/hooks/usePushNoti";
 import { Box, Text } from "@gluestack-ui/themed";
 import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
 import { ScanText } from "lucide-react-native";
 import React, { useRef, useState } from "react";
-import usePushNoti from "@/domains/shared/hooks/usePushNoti";
 import {
   // ActivityIndicator is used inside buttons; keep import for clarity (PrimaryButton uses it)
   Alert,
   Animated,
   Dimensions,
   Image,
+  Modal,
   ScrollView,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -118,7 +119,10 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
         onResult && onResult(text);
         // Send a push notification with a short snippet of the recognized text
         try {
-          await sendNotification({ title: "OCR thành công", body: "Đã nhận dạng văn bản từ ảnh" });
+          await sendNotification({
+            title: "OCR thành công",
+            body: "Đã nhận dạng văn bản từ ảnh",
+          });
         } catch (notifErr) {
           console.warn("Failed to send OCR notification", notifErr);
         }
@@ -256,7 +260,14 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
         </Box>
       </ScrollView>
 
-      {open && (
+      {/* Modal Drawer - Render at root level */}
+      <Modal
+        visible={open}
+        transparent={true}
+        animationType="none"
+        onRequestClose={closeDrawer}
+        statusBarTranslucent
+      >
         <TouchableWithoutFeedback onPress={closeDrawer}>
           <Animated.View
             style={[
@@ -265,29 +276,29 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
             ]}
           />
         </TouchableWithoutFeedback>
-      )}
 
-      <Animated.View
-        pointerEvents={open ? "auto" : "none"}
-        style={[
-          styles.drawer,
-          { height: DRAWER_HEIGHT, transform: [{ translateY }] },
-        ]}
-      >
-        <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
-          <View style={{ flex: 1 }}>
-            <SecondaryButton onPress={chooseFromLibrary}>
-              <Text>Chọn từ thư viện</Text>
-            </SecondaryButton>
-          </View>
+        <Animated.View
+          pointerEvents="box-none"
+          style={[
+            styles.drawer,
+            { height: DRAWER_HEIGHT, transform: [{ translateY }] },
+          ]}
+        >
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
+            <View style={{ flex: 1 }}>
+              <SecondaryButton onPress={chooseFromLibrary}>
+                <Text>Chọn từ thư viện</Text>
+              </SecondaryButton>
+            </View>
 
-          <View style={{ flex: 1 }}>
-            <PrimaryButton onPress={takePhoto}>
-              <Text color="$white">Chụp ảnh</Text>
-            </PrimaryButton>
+            <View style={{ flex: 1 }}>
+              <PrimaryButton onPress={takePhoto}>
+                <Text color="$white">Chụp ảnh</Text>
+              </PrimaryButton>
+            </View>
           </View>
-        </View>
-      </Animated.View>
+        </Animated.View>
+      </Modal>
     </View>
   );
 };

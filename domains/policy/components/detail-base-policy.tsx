@@ -912,11 +912,7 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
                 borderTopColor={colors.border}
                 bg={`${faq.color}05`}
               >
-                <Text
-                  fontSize="$xs"
-                  color={colors.text}
-                  lineHeight="$lg"
-                >
+                <Text fontSize="$xs" color={colors.text} lineHeight="$lg">
                   {faq.answer}
                 </Text>
               </Box>
@@ -924,8 +920,6 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
           </Box>
         );
       })}
-
-      
     </VStack>
   );
 };

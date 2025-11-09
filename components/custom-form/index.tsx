@@ -9,6 +9,7 @@ import {
   CheckIcon,
   ChevronDownIcon,
   CircleIcon,
+  CloseIcon,
   EyeIcon,
   EyeOffIcon,
   FormControl,
@@ -19,8 +20,15 @@ import {
   FormControlLabel,
   FormControlLabelText,
   HStack,
+  Icon,
   Input,
   InputField,
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
   Pressable,
   Radio,
   RadioGroup,
@@ -43,14 +51,16 @@ import {
   TextareaInput,
   VStack,
 } from "@gluestack-ui/themed";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
+import { Calendar, ChevronDown } from "lucide-react-native";
 import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
   useState,
 } from "react";
-import { Animated, View } from "react-native";
+import { Animated, Platform, ScrollView, View } from "react-native";
 
 export interface FormField {
   name: string;
@@ -66,7 +76,9 @@ export interface FormField {
     | "textarea"
     | "switch"
     | "checkbox"
-    | "radioGroup";
+    | "radioGroup"
+    | "datepicker"
+    | "combobox";
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -92,6 +104,10 @@ export interface FormField {
   endContent?: React.ReactNode;
   helperText?: string;
   errorText?: string;
+  minDate?: Date;
+  maxDate?: Date;
+  dateFormat?: string;
+  mode?: "date" | "time" | "datetime";
 }
 
 export interface CustomFormProps {
@@ -101,6 +117,8 @@ export interface CustomFormProps {
   onValuesChange?: (values: Record<string, any>) => void;
   formStyle?: any;
   gap?: number;
+  submitButtonText?: string;
+  isSubmitting?: boolean;
 }
 
 export const CustomForm = forwardRef(function CustomForm(
@@ -111,6 +129,8 @@ export const CustomForm = forwardRef(function CustomForm(
     onValuesChange,
     formStyle,
     gap = 16,
+    submitButtonText = "Submit",
+    isSubmitting = false,
   }: CustomFormProps,
   ref
 ) {
@@ -122,8 +142,21 @@ export const CustomForm = forwardRef(function CustomForm(
   const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>(
     {}
   );
-  // pressedFields removed: ripple now provides the visual feedback
   const [ripples, setRipples] = useState<Record<string, any>>({});
+
+  // ✅ DatePicker state
+  const [showDatePicker, setShowDatePicker] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [tempDate, setTempDate] = useState<Record<string, Date>>({});
+
+  // ✅ Combobox state
+  const [comboboxSearch, setComboboxSearch] = useState<Record<string, string>>(
+    {}
+  );
+  const [showComboboxModal, setShowComboboxModal] = useState<
+    Record<string, boolean>
+  >({});
 
   const createRipple = (name: string, nativeEvent: any) => {
     const anim = new Animated.Value(0);
@@ -151,7 +184,6 @@ export const CustomForm = forwardRef(function CustomForm(
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // cleanup after animation
       setRipples((p) => {
         const next = { ...p };
         delete next[name];
@@ -159,6 +191,7 @@ export const CustomForm = forwardRef(function CustomForm(
       });
     });
   };
+
   useImperativeHandle(ref, () => ({
     validateFields: () => {
       const validationErrors: Record<string, string> = {};
@@ -168,8 +201,15 @@ export const CustomForm = forwardRef(function CustomForm(
           field.required &&
           (formData[field.name] === undefined || formData[field.name] === "")
         ) {
-          validationErrors[field.name] =
-            `Vui lòng ${field.type === "select" || field.type === "multiselect" ? "chọn" : "nhập"} ${field.label.toLowerCase()}!`;
+          validationErrors[field.name] = `Vui lòng ${
+            field.type === "select" ||
+            field.type === "multiselect" ||
+            field.type === "combobox"
+              ? "chọn"
+              : field.type === "datepicker"
+                ? "chọn ngày"
+                : "nhập"
+          } ${field.label.toLowerCase()}!`;
         }
       });
 
@@ -180,6 +220,8 @@ export const CustomForm = forwardRef(function CustomForm(
     resetFields: () => {
       setFormData(initialValues || {});
       setErrors({});
+      setComboboxSearch({});
+      setTempDate({});
     },
     setFieldsValue: (values: Record<string, any>) => {
       setFormData((prev) => ({ ...prev, ...values }));
@@ -197,6 +239,11 @@ export const CustomForm = forwardRef(function CustomForm(
   const handleFieldChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    const field = fields.find((f) => f.name === name);
+    if (field?.onChange) {
+      field.onChange(value);
+    }
   };
 
   const handleSubmit = () => {
@@ -205,12 +252,53 @@ export const CustomForm = forwardRef(function CustomForm(
   };
 
   const inputContainerStyle = {
-    backgroundColor: "rgba(222,222,222,1)",
+    backgroundColor: "#fff",
     minHeight: 56,
     borderRadius: 8,
     justifyContent: "center",
     overflow: "hidden",
   } as const;
+
+  // ✅ Format date to DD/MM/YYYY
+  const formatDate = (date: Date, format: string = "DD/MM/YYYY"): string => {
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+
+    return format
+      .replace("DD", day)
+      .replace("MM", month)
+      .replace("YYYY", year.toString());
+  };
+
+  // ✅ Parse DD/MM/YYYY to Date - Xử lý an toàn hơn
+  const parseDate = (dateString: string | undefined | null): Date | null => {
+    // Kiểm tra dateString có tồn tại và là string không
+    if (!dateString || typeof dateString !== "string") return null;
+
+    const parts = dateString.split("/");
+    if (parts.length !== 3) return null;
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+
+    // Kiểm tra tính hợp lệ của ngày
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+
+    const date = new Date(year, month, day);
+
+    // Kiểm tra ngày có hợp lệ không (ví dụ: 31/02/2024 sẽ không hợp lệ)
+    if (
+      date.getDate() !== day ||
+      date.getMonth() !== month ||
+      date.getFullYear() !== year
+    ) {
+      return null;
+    }
+
+    return date;
+  };
 
   const renderField = (field: FormField) => {
     const commonLabel = (
@@ -243,7 +331,9 @@ export const CustomForm = forwardRef(function CustomForm(
               style={{
                 ...inputContainerStyle,
                 borderWidth: 2,
-                borderColor: focusedFields[field.name] ? "#60A5FA" : "#E5E7EB",
+                borderColor: focusedFields[field.name]
+                  ? colors.primary400
+                  : "#E5E7EB",
               }}
             >
               <InputField
@@ -307,7 +397,9 @@ export const CustomForm = forwardRef(function CustomForm(
                 ...inputContainerStyle,
                 position: "relative",
                 borderWidth: 2,
-                borderColor: focusedFields[field.name] ? "#60A5FA" : "#E5E7EB",
+                borderColor: focusedFields[field.name]
+                  ? colors.primary400
+                  : "#E5E7EB",
               }}
             >
               <InputField
@@ -379,6 +471,7 @@ export const CustomForm = forwardRef(function CustomForm(
             <Select
               selectedValue={formData[field.name]}
               onValueChange={(value) => handleFieldChange(field.name, value)}
+              isDisabled={field.disabled}
             >
               <SelectTrigger
                 className="bg-white border-2 border-gray-200 shadow-sm"
@@ -426,6 +519,405 @@ export const CustomForm = forwardRef(function CustomForm(
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
+          </FormControl>
+        );
+
+      // ✅ DatePicker - Sử dụng @react-native-community/datetimepicker
+      case "datepicker":
+        const currentDateValue = formData[field.name]
+          ? parseDate(formData[field.name]) || new Date()
+          : tempDate[field.name] || new Date();
+
+        return (
+          <FormControl
+            key={field.name}
+            isInvalid={!!errors[field.name]}
+            style={field.style}
+          >
+            {commonLabel}
+
+            {/* Date Input Display - Toàn bộ ô có thể bấm */}
+            <Pressable
+              onPress={() => {
+                if (!field.disabled) {
+                  setTempDate((prev) => ({
+                    ...prev,
+                    [field.name]: currentDateValue,
+                  }));
+                  setShowDatePicker((prev) => ({
+                    ...prev,
+                    [field.name]: true,
+                  }));
+                }
+              }}
+              disabled={field.disabled}
+              style={{ width: "100%" }}
+            >
+              <View
+                style={{
+                  ...inputContainerStyle,
+                  borderWidth: 2,
+                  borderColor: "#E5E7EB",
+                  opacity: field.disabled ? 0.5 : 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingHorizontal: 16,
+                }}
+                pointerEvents="none"
+              >
+                <Text
+                  style={{
+                    flex: 1,
+                    color: formData[field.name] ? "#111827" : "#666",
+                    fontSize: 14,
+                  }}
+                >
+                  {formData[field.name] || field.placeholder || "Chọn ngày"}
+                </Text>
+                <Calendar size={20} color="#6B7280" strokeWidth={2} />
+              </View>
+            </Pressable>
+
+            {field.helperText && (
+              <FormControlHelper>
+                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+                  {field.helperText}
+                </FormControlHelperText>
+              </FormControlHelper>
+            )}
+            <FormControlError>
+              <FormControlErrorText className="text-red-500 text-sm mt-1">
+                {errors[field.name]}
+              </FormControlErrorText>
+            </FormControlError>
+
+            {/* ✅ DateTimePicker - Native UI */}
+            {showDatePicker[field.name] && (
+              <>
+                {Platform.OS === "ios" ? (
+                  // iOS: Show in Modal
+                  <Modal
+                    isOpen={showDatePicker[field.name]}
+                    onClose={() =>
+                      setShowDatePicker((prev) => ({
+                        ...prev,
+                        [field.name]: false,
+                      }))
+                    }
+                  >
+                    <ModalBackdrop />
+                    <ModalContent
+                      style={{
+                        borderRadius: 16,
+                        backgroundColor: "#fff",
+                        padding: 20,
+                      }}
+                    >
+                      <ModalHeader>
+                        <Text fontSize="$lg" fontWeight="$bold">
+                          {field.label}
+                        </Text>
+                        <ModalCloseButton>
+                          <Icon as={CloseIcon} />
+                        </ModalCloseButton>
+                      </ModalHeader>
+                      <ModalBody>
+                        <VStack space="md" alignItems="center">
+                          <DateTimePicker
+                            value={tempDate[field.name] || new Date()}
+                            mode={field.mode || "date"}
+                            display="spinner"
+                            onChange={(event, selectedDate) => {
+                              if (selectedDate) {
+                                setTempDate((prev) => ({
+                                  ...prev,
+                                  [field.name]: selectedDate,
+                                }));
+                              }
+                            }}
+                            minimumDate={field.minDate}
+                            maximumDate={field.maxDate}
+                            locale="vi-VN"
+                            accentColor={colors.primary500}
+                            textColor="#000000"
+                          />
+
+                          <HStack space="sm" width="100%">
+                            <Button
+                              flex={1}
+                              variant="link"
+                              onPress={() =>
+                                setShowDatePicker((prev) => ({
+                                  ...prev,
+                                  [field.name]: false,
+                                }))
+                              }
+                            >
+                              <ButtonText>Hủy</ButtonText>
+                            </Button>
+                            <Button
+                              flex={1}
+                              onPress={() => {
+                                const formatted = formatDate(
+                                  tempDate[field.name],
+                                  field.dateFormat || "DD/MM/YYYY"
+                                );
+                                handleFieldChange(field.name, formatted);
+                                setShowDatePicker((prev) => ({
+                                  ...prev,
+                                  [field.name]: false,
+                                }));
+                              }}
+                            >
+                              <ButtonText>Xác nhận</ButtonText>
+                            </Button>
+                          </HStack>
+                        </VStack>
+                      </ModalBody>
+                    </ModalContent>
+                  </Modal>
+                ) : (
+                  // Android: Show directly
+                  <DateTimePicker
+                    value={tempDate[field.name] || new Date()}
+                    mode={field.mode || "date"}
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker((prev) => ({
+                        ...prev,
+                        [field.name]: false,
+                      }));
+
+                      if (event.type === "set" && selectedDate) {
+                        const formatted = formatDate(
+                          selectedDate,
+                          field.dateFormat || "DD/MM/YYYY"
+                        );
+                        handleFieldChange(field.name, formatted);
+                      }
+                    }}
+                    minimumDate={field.minDate}
+                    maximumDate={field.maxDate}
+                    textColor="#000000"
+                  />
+                )}
+              </>
+            )}
+          </FormControl>
+        );
+
+      // ✅ Combobox - Select với search
+      case "combobox":
+        const searchQuery = comboboxSearch[field.name] || "";
+        const filteredOptions =
+          field.options?.filter((option) =>
+            option.label.toLowerCase().includes(searchQuery.toLowerCase())
+          ) || [];
+        const selectedOption = field.options?.find(
+          (opt) => opt.value === formData[field.name]
+        );
+
+        return (
+          <FormControl
+            key={field.name}
+            isInvalid={!!errors[field.name]}
+            style={field.style}
+          >
+            {commonLabel}
+
+            {/* Combobox Display */}
+            <Pressable
+              onPress={() => {
+                if (!field.disabled) {
+                  setShowComboboxModal((prev) => ({
+                    ...prev,
+                    [field.name]: true,
+                  }));
+                }
+              }}
+              disabled={field.disabled}
+            >
+              <Input
+                style={{
+                  ...inputContainerStyle,
+                  borderWidth: 2,
+                  borderColor: "#E5E7EB",
+                  opacity: field.disabled ? 0.5 : 1,
+                }}
+                isReadOnly
+              >
+                <InputField
+                  placeholder={field.placeholder || "Chọn..."}
+                  value={selectedOption?.label || ""}
+                  editable={false}
+                  style={{
+                    paddingHorizontal: 16,
+                    color: "#111827",
+                    height: "100%",
+                  }}
+                  placeholderTextColor="#666"
+                />
+                <View
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    top: 0,
+                    bottom: 0,
+                    justifyContent: "center",
+                  }}
+                >
+                  <ChevronDown size={20} color="#6B7280" strokeWidth={2} />
+                </View>
+              </Input>
+            </Pressable>
+
+            {field.helperText && (
+              <FormControlHelper>
+                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+                  {field.helperText}
+                </FormControlHelperText>
+              </FormControlHelper>
+            )}
+            <FormControlError>
+              <FormControlErrorText className="text-red-500 text-sm mt-1">
+                {errors[field.name]}
+              </FormControlErrorText>
+            </FormControlError>
+
+            {/* Combobox Modal */}
+            <Modal
+              isOpen={showComboboxModal[field.name] || false}
+              onClose={() => {
+                setShowComboboxModal((prev) => ({
+                  ...prev,
+                  [field.name]: false,
+                }));
+                setComboboxSearch((prev) => ({ ...prev, [field.name]: "" }));
+              }}
+              size="lg"
+            >
+              <ModalBackdrop />
+              <ModalContent
+                style={{
+                  borderRadius: 16,
+                  maxWidth: 400,
+                  maxHeight: "80%",
+                  backgroundColor: "#fff",
+                }}
+              >
+                <ModalHeader
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#E5E7EB",
+                    paddingVertical: 16,
+                  }}
+                >
+                  <Text fontSize="$lg" fontWeight="$bold" color="#111827">
+                    {field.label}
+                  </Text>
+                  <ModalCloseButton>
+                    <Icon as={CloseIcon} />
+                  </ModalCloseButton>
+                </ModalHeader>
+                <ModalBody style={{ padding: 0 }}>
+                  <VStack>
+                    {/* Search Input */}
+                    {field.showSearch !== false && (
+                      <View
+                        style={{
+                          padding: 16,
+                          borderBottomWidth: 1,
+                          borderBottomColor: "#E5E7EB",
+                        }}
+                      >
+                        <Input style={{ borderRadius: 8 }}>
+                          <InputField
+                            placeholder="Tìm kiếm..."
+                            value={searchQuery}
+                            onChangeText={(text) =>
+                              setComboboxSearch((prev) => ({
+                                ...prev,
+                                [field.name]: text,
+                              }))
+                            }
+                            style={{
+                              paddingHorizontal: 16,
+                              color: "#111827",
+                            }}
+                            placeholderTextColor="#9CA3AF"
+                          />
+                        </Input>
+                      </View>
+                    )}
+
+                    {/* Options List */}
+                    <ScrollView
+                      style={{ maxHeight: 400 }}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {filteredOptions.length === 0 ? (
+                        <View style={{ padding: 32, alignItems: "center" }}>
+                          <Text fontSize="$sm" color="#6B7280">
+                            Không tìm thấy kết quả
+                          </Text>
+                        </View>
+                      ) : (
+                        filteredOptions.map((option) => {
+                          const isSelected =
+                            formData[field.name] === option.value;
+                          return (
+                            <Pressable
+                              key={option.value}
+                              onPress={() => {
+                                handleFieldChange(field.name, option.value);
+                                setShowComboboxModal((prev) => ({
+                                  ...prev,
+                                  [field.name]: false,
+                                }));
+                                setComboboxSearch((prev) => ({
+                                  ...prev,
+                                  [field.name]: "",
+                                }));
+                              }}
+                              style={{
+                                paddingVertical: 16,
+                                paddingHorizontal: 16,
+                                borderBottomWidth: 1,
+                                borderBottomColor: "#F3F4F6",
+                                backgroundColor: isSelected
+                                  ? "#EFF6FF"
+                                  : "transparent",
+                              }}
+                            >
+                              <HStack
+                                alignItems="center"
+                                justifyContent="space-between"
+                              >
+                                <Text
+                                  fontSize="$sm"
+                                  color={
+                                    isSelected ? colors.primary500 : "#111827"
+                                  }
+                                  fontWeight={isSelected ? "$bold" : "$normal"}
+                                >
+                                  {option.label}
+                                </Text>
+                                {isSelected && (
+                                  <CheckIcon
+                                    size="sm"
+                                    color={colors.primary500}
+                                  />
+                                )}
+                              </HStack>
+                            </Pressable>
+                          );
+                        })
+                      )}
+                    </ScrollView>
+                  </VStack>
+                </ModalBody>
+              </ModalContent>
+            </Modal>
           </FormControl>
         );
 
@@ -549,7 +1041,6 @@ export const CustomForm = forwardRef(function CustomForm(
       case "button":
         return (
           <FormControl key={field.name} style={field.style}>
-            {/* If this is a submit button, render it with a gradient like sign-in-v2 */}
             {field.isSubmit ? (
               <LinearGradient
                 colors={[colors.primary500, colors.primary700]}
@@ -566,6 +1057,7 @@ export const CustomForm = forwardRef(function CustomForm(
                   shadowRadius: 6,
                   elevation: 6,
                   overflow: "hidden",
+                  opacity: field.disabled || isSubmitting ? 0.5 : 1,
                 }}
               >
                 <Button
@@ -576,7 +1068,7 @@ export const CustomForm = forwardRef(function CustomForm(
                       e?.nativeEvent || { locationX: 0, locationY: 0 }
                     )
                   }
-                  isDisabled={field.disabled}
+                  isDisabled={field.disabled || isSubmitting}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -654,6 +1146,7 @@ export const CustomForm = forwardRef(function CustomForm(
         return null;
     }
   };
+
   const hasSubmitField = fields.some(
     (f) => (f.type === "button" || f.type === "action") && f.isSubmit
   );
@@ -669,8 +1162,6 @@ export const CustomForm = forwardRef(function CustomForm(
         </View>
       ))}
 
-      {/* render a default submit button when caller provided onSubmit but
-          didn't include an explicit submit field */}
       {!hasSubmitField && onSubmit && (
         <View style={{ marginTop: gap }}>
           <LinearGradient
@@ -688,6 +1179,7 @@ export const CustomForm = forwardRef(function CustomForm(
               shadowRadius: 6,
               elevation: 6,
               overflow: "hidden",
+              opacity: isSubmitting ? 0.5 : 1,
             }}
           >
             <Button
@@ -698,6 +1190,7 @@ export const CustomForm = forwardRef(function CustomForm(
                   e?.nativeEvent || { locationX: 0, locationY: 0 }
                 )
               }
+              isDisabled={isSubmitting}
               style={{
                 width: "100%",
                 height: "100%",
@@ -707,7 +1200,7 @@ export const CustomForm = forwardRef(function CustomForm(
               <ButtonText
                 style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
               >
-                Submit
+                {submitButtonText}
               </ButtonText>
             </Button>
           </LinearGradient>

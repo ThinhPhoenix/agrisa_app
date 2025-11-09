@@ -86,16 +86,6 @@ export type PublicBasePolicyResponse = {
   created_by: string; // ID người tạo
 };
 
-//==Detail Policy Models ============
-export type GrowthStage =
-  | "germination"
-  | "seedling"
-  | "vegetative"
-  | "flowering"
-  | "fruiting"
-  | "ripening"
-  | "harvesting";
-
 /**
  * Đơn vị tần suất theo dõi
  */
@@ -157,13 +147,24 @@ export type PolicyTrigger = {
   id: string;
   base_policy_id: string;
   logical_operator: LogicalOperator;
-  growth_stage: GrowthStage | null;
+  growth_stage: string;
   monitor_interval: number;
   monitor_frequency_unit: MonitorFrequencyUnit;
   blackout_periods: BlackoutPeriod | null;
   created_at: string;
   updated_at: string;
   conditions: PolicyCondition[];
+};
+
+export type PolicyDocument = {
+  has_document: boolean;
+  document_url: string;
+  presigned_url: string;
+  presigned_url_expiry: string;
+  bucket_name: string;
+  object_name: string;
+  content_type: string;
+  file_size_bytes: number;
 };
 
 /**
@@ -182,6 +183,7 @@ export type PolicyDetailMetadata = {
  */
 export type PolicyDetailResponse = {
   base_policy: PublicBasePolicyResponse;
+  document: PolicyDocument;
   triggers: PolicyTrigger[];
   metadata: PolicyDetailMetadata;
 };

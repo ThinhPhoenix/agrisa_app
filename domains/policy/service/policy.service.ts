@@ -15,7 +15,7 @@ export const policyServices = {
     },
     detail_policy: async (base_policy_id: string): Promise<ApiResponse<PolicyDetailResponse>> => {
       return useAxios.get(
-        `/policy/protected/api/v2/base-policies/detail?id=${base_policy_id}&include_pdf=false`
+        `/policy/protected/api/v2/base-policies/detail?id=${base_policy_id}&include_pdf=true`
       );
     },
 

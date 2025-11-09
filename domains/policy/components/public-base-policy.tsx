@@ -1,57 +1,31 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useToast } from "@/domains/shared/hooks/useToast";
+import { Utils } from "@/libs/utils/utils"; // ✅ THÊM IMPORT
 import {
-    Badge,
-    BadgeText,
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Badge,
+  BadgeText,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import {
-    Calendar,
-    CheckCircle2,
-    ChevronRight,
-    Clock,
-    Leaf,
-    Shield,
-    XCircle,
+  Calendar,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Leaf,
+  Shield,
+  XCircle,
 } from "lucide-react-native";
 import React, { useEffect, useMemo } from "react";
 import { RefreshControl } from "react-native";
 import { usePolicy } from "../hooks/use-policy";
 import type { PublicBasePolicyResponse } from "../models/policy.models";
-
-// ============= UTILITY FUNCTIONS =============
-
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "decimal",
-    maximumFractionDigits: 0,
-  }).format(value) + " ₫";
-
-const formatDuration = (days: number) =>
-  days >= 30 ? `${Math.floor(days / 30)} tháng` : `${days} ngày`;
-
-const getCropLabel = (cropType: string) => {
-  const labels: Record<string, string> = {
-    rice: "Lúa",
-    coffee: "Cà phê",
-  };
-  return labels[cropType] || cropType;
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
 
 // ============= MAIN COMPONENT =============
 
@@ -91,7 +65,7 @@ export default function PublicBasePolicyScreen() {
         />
       }
     >
-      <VStack space="lg" px="$4" py="$5">
+      <VStack space="lg" p="$4">
         {/* Header */}
         <VStack space="xs">
           <Text fontSize="$2xl" fontWeight="$bold" color={colors.text}>
@@ -198,7 +172,6 @@ const PolicyCard = ({
                 >
                   {policy.product_name}
                 </Text>
-                
               </VStack>
               <HStack space="xs" alignItems="center">
                 <StatusBadge status={policy.status} colors={colors} />
@@ -218,7 +191,11 @@ const PolicyCard = ({
                 <VStack flex={1}>
                   <HStack space="xs" alignItems="center" mb="$1">
                     <Shield size={16} color={colors.success} strokeWidth={2} />
-                    <Text fontSize="$xs" color={colors.success} fontWeight="$semibold">
+                    <Text
+                      fontSize="$xs"
+                      color={colors.success}
+                      fontWeight="$semibold"
+                    >
                       Phí bảo hiểm
                     </Text>
                   </HStack>
@@ -228,7 +205,7 @@ const PolicyCard = ({
                     color={colors.success}
                     numberOfLines={1}
                   >
-                    {formatCurrency(policy.fix_premium_amount)}
+                    {Utils.formatCurrency(policy.fix_premium_amount)}
                   </Text>
                   <Text fontSize="$xs" color={colors.textSecondary} mt="$0.5">
                     {policy.is_per_hectare ? "/ hecta" : "Phí cố định"}
@@ -254,8 +231,12 @@ const PolicyCard = ({
                   <Text fontSize="$2xs" color={colors.textMuted}>
                     Thời hạn
                   </Text>
-                  <Text fontSize="$xs" color={colors.text} fontWeight="$semibold">
-                    {formatDuration(policy.coverage_duration_days)}
+                  <Text
+                    fontSize="$xs"
+                    color={colors.text}
+                    fontWeight="$semibold"
+                  >
+                    {Utils.formatDuration(policy.coverage_duration_days)}
                   </Text>
                 </VStack>
               </HStack>
@@ -270,13 +251,22 @@ const PolicyCard = ({
                 borderWidth={1}
                 borderColor={colors.border}
               >
-                <Calendar size={14} color={colors.textSecondary} strokeWidth={2} />
+                <Calendar
+                  size={14}
+                  color={colors.textSecondary}
+                  strokeWidth={2}
+                />
                 <VStack flex={1}>
                   <Text fontSize="$2xs" color={colors.textMuted}>
                     Đăng ký
                   </Text>
-                  <Text fontSize="$xs" color={colors.text} fontWeight="$semibold" numberOfLines={1}>
-                    Ngày {policy.enrollment_start_day}-{policy.enrollment_end_day}
+                  <Text
+                    fontSize="$xs"
+                    color={colors.text}
+                    fontWeight="$semibold"
+                    numberOfLines={1}
+                  >
+                    Ngày {Utils.formatDateForMS(policy.enrollment_start_day)}
                   </Text>
                 </VStack>
               </HStack>
@@ -292,12 +282,17 @@ const PolicyCard = ({
             >
               <HStack space="xs" alignItems="center">
                 <Leaf size={14} color={colors.success} strokeWidth={2} />
-                <Text fontSize="$xs" color={colors.success} fontWeight="$semibold">
-                  {getCropLabel(policy.crop_type)}
+                <Text
+                  fontSize="$xs"
+                  color={colors.success}
+                  fontWeight="$semibold"
+                >
+                  {Utils.getCropLabel(policy.crop_type)}
                 </Text>
               </HStack>
               <Text fontSize="$2xs" color={colors.textMuted}>
-                Cập nhật: {formatDate(policy.updated_at)}
+                Cập nhật:{" "}
+                {Utils.formatDateForMS(new Date(policy.updated_at).getTime())}
               </Text>
             </HStack>
           </VStack>

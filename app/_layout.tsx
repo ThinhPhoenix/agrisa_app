@@ -1,7 +1,6 @@
 import "@/global.css";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 
 import {
@@ -9,6 +8,7 @@ import {
   BricolageGrotesque_500Medium,
   BricolageGrotesque_600SemiBold,
 } from "@expo-google-fonts/bricolage-grotesque";
+import { DancingScript_400Regular } from "@expo-google-fonts/dancing-script";
 
 import { useEffect } from "react";
 
@@ -22,6 +22,7 @@ import NotificationInitializer from "@/domains/shared/components/NotificationIni
 import { ToastProvider } from "@/domains/shared/hooks/useToast";
 import { QueryProvider } from "@/libs/query/QueryClientProvider";
 import * as NavigationBar from "expo-navigation-bar";
+import { StatusBar } from "expo-status-bar"; // ✅ THÊM import này
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function RootLayout() {
@@ -31,6 +32,7 @@ export default function RootLayout() {
     "BricolageGrotesque-Regular": BricolageGrotesque_400Regular,
     "BricolageGrotesque-Medium": BricolageGrotesque_500Medium,
     "BricolageGrotesque-SemiBold": BricolageGrotesque_600SemiBold,
+    "DancingScript-Regular": DancingScript_400Regular,
   });
 
   // Khởi tạo theme khi app start
@@ -48,6 +50,7 @@ export default function RootLayout() {
     NavigationBar.setBackgroundColorAsync(colors.background);
     NavigationBar.setButtonStyleAsync(isDark ? "light" : "dark");
   }, [colors.background, isDark]);
+
   // Hiển thị loading cho đến khi font được tải
   if (!loaded && !error) {
     return null;
@@ -55,11 +58,6 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar
-        backgroundColor={colors.background}
-        style={isDark ? "light" : "dark"}
-      />
-
       <QueryProvider>
         <AuthProvider>
           <NetworkWrapper>
@@ -67,6 +65,13 @@ export default function RootLayout() {
               <ResponsiveWrapper>
                 <ToastProvider>
                   <NotificationInitializer />
+                  {/* ✅ THÊM StatusBar component - Tự động đổi màu theo theme */}
+                  <StatusBar
+                    style={isDark ? "light" : "dark"}
+                    backgroundColor={colors.background}
+                    translucent={false}
+                  />
+
                   <Stack
                     screenOptions={{
                       headerShown: false,

@@ -4,7 +4,9 @@ export default ({ config }) => {
     ...config,
     extra: {
       apiUrl:
-        process.env.EXPO_PUBLIC_API_URL
+        process.env.EXPO_PUBLIC_API_URL,
+      geminiApiKey:
+        process.env.EXPO_PUBLIC_GEMINI_KEY,
     },
   };
 };

@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-APP_NAME="Agrisa"
+PROJECT_NAME="Agrisa"
+APP_NAME="agrisa_dev_$(date +%Y%m%d_%H%M%S)"
 
 rm -rf ios/build build *.ipa
 
@@ -12,11 +13,11 @@ cd ios
 pod install --repo-update
 
 xcodebuild \
-  -workspace "${APP_NAME}.xcworkspace" \
-  -scheme "${APP_NAME}" \
+  -workspace "${PROJECT_NAME}.xcworkspace" \
+  -scheme "${PROJECT_NAME}" \
   -configuration Release \
   -sdk iphoneos \
-  -archivePath "./build/${APP_NAME}.xcarchive" \
+  -archivePath "./build/${PROJECT_NAME}.xcarchive" \
   archive \
   CODE_SIGN_IDENTITY="" \
   CODE_SIGNING_REQUIRED=NO \
@@ -25,7 +26,7 @@ xcodebuild \
 cd ..
 
 mkdir -p Payload
-cp -R "ios/build/${APP_NAME}.xcarchive/Products/Applications/${APP_NAME}.app" Payload/
+cp -R "ios/build/${PROJECT_NAME}.xcarchive/Products/Applications/${PROJECT_NAME}.app" Payload/
 zip -r "${APP_NAME}.ipa" Payload
 rm -rf Payload ios/build
 

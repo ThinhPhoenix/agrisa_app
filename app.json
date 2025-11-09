@@ -75,7 +75,7 @@
       [
         "react-native-vision-camera",
         {
-          "cameraPermissionText": "Agrisa cần quyền truy cập camera",
+          "cameraPermissionText": "Agrisa cần quyền truy cập camera"
         }
       ],
       "expo-font",
@@ -99,6 +99,7 @@
     },
     "extra": {
       "apiUrl": "process.env.EXPO_PUBLIC_API_URL",
+      "geminiApiKey": "process.env.EXPO_PUBLIC_GEMINI_KEY",
       "router": {},
       "eas": {
         "projectId": "947c952c-e2b2-4317-9d0c-cf656fbc0287"

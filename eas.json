@@ -8,19 +8,22 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL"  // Lấy từ secrets
+        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
+        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL"  // Lấy từ secrets
+        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
+        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL"  // Lấy từ secrets
+        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
+        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY"
       }
     }
   },

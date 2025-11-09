@@ -86,16 +86,6 @@ export type PublicBasePolicyResponse = {
   created_by: string; // ID người tạo
 };
 
-//==Detail Policy Models ============
-export type GrowthStage =
-  | "germination"
-  | "seedling"
-  | "vegetative"
-  | "flowering"
-  | "fruiting"
-  | "ripening"
-  | "harvesting";
-
 /**
  * Đơn vị tần suất theo dõi
  */
@@ -157,7 +147,7 @@ export type PolicyTrigger = {
   id: string;
   base_policy_id: string;
   logical_operator: LogicalOperator;
-  growth_stage: GrowthStage | null;
+  growth_stage: string;
   monitor_interval: number;
   monitor_frequency_unit: MonitorFrequencyUnit;
   blackout_periods: BlackoutPeriod | null;

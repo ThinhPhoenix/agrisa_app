@@ -1,6 +1,7 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useToast } from "@/domains/shared/hooks/useToast";
+import { Utils } from "@/libs/utils/utils"; // ✅ THÊM IMPORT
 import {
   Badge,
   BadgeText,
@@ -39,97 +40,13 @@ import {
   XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import { RefreshControl } from "react-native";
+import { Alert, RefreshControl } from "react-native";
 import { usePolicy } from "../hooks/use-policy";
 import type {
-  GrowthStage,
   PolicyDetailResponse,
   PolicyDocument,
   PublicBasePolicyResponse,
 } from "../models/policy.models";
-
-// ============= UTILITY FUNCTIONS =============
-
-/**
- * Format số tiền VND
- */
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("vi-VN", {
-    style: "decimal",
-    maximumFractionDigits: 0,
-  }).format(value) + " ₫";
-
-/**
- * Format chi phí data (USD -> VND, giả định 1 unit = 1.000 VND)
- */
-const formatDataCost = (usdCost: number) => {
-  const vndCost = usdCost * 1000;
-  return (
-    new Intl.NumberFormat("vi-VN", {
-      style: "decimal",
-      maximumFractionDigits: 0,
-    }).format(vndCost) + " ₫"
-  );
-};
-
-const formatDuration = (days: number) =>
-  days >= 30 ? `${Math.floor(days / 30)} tháng` : `${days} ngày`;
-
-const getCropLabel = (cropType: string) => {
-  const labels: Record<string, string> = {
-    rice: "Lúa",
-    coffee: "Cà phê",
-  };
-  return labels[cropType] || cropType;
-};
-
-const getGrowthStageLabel = (stage: GrowthStage) => {
-  const labels: Record<GrowthStage, string> = {
-    germination: "Nảy mầm",
-    seedling: "Cây con",
-    vegetative: "Sinh trưởng",
-    flowering: "Ra hoa",
-    fruiting: "Đậu quả",
-    ripening: "Chín",
-    harvesting: "Thu hoạch",
-  };
-  return labels[stage];
-};
-
-const getOperatorLabel = (operator: string) => {
-  const labels: Record<string, string> = {
-    "<": "nhỏ hơn",
-    "<=": "nhỏ hơn hoặc bằng",
-    ">": "lớn hơn",
-    ">=": "lớn hơn hoặc bằng",
-    "==": "bằng",
-    "!=": "khác",
-    AND: "VÀ",
-    OR: "HOẶC",
-  };
-  return labels[operator] || operator;
-};
-
-const getAggregationLabel = (func: string) => {
-  const labels: Record<string, string> = {
-    avg: "Trung bình",
-    min: "Tối thiểu",
-    max: "Tối đa",
-    sum: "Tổng",
-    median: "Trung vị",
-  };
-  return labels[func] || func;
-};
-
-const getFrequencyLabel = (unit: string) => {
-  const labels: Record<string, string> = {
-    hour: "giờ",
-    day: "ngày",
-    week: "tuần",
-    month: "tháng",
-  };
-  return labels[unit] || unit;
-};
 
 // ============= MAIN COMPONENT =============
 
@@ -146,7 +63,6 @@ export default function DetailBasePolicyScreen() {
   const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(
     new Set()
   );
-  const [showExplanation, setShowExplanation] = useState(false);
 
   const policyDetail = data?.data as PolicyDetailResponse | undefined;
   const isRefreshing = isFetching && !isLoading;
@@ -269,7 +185,7 @@ export default function DetailBasePolicyScreen() {
               <TimelineCard policy={base_policy} colors={colors} />
             </VStack>
 
-            {/* 4. ĐIỀU KIỆN KÍCH HOẠT - ✅ ĐỔI THỨ TỰ */}
+            {/* 4. ĐIỀU KIỆN KÍCH HOẠT */}
             <VStack space="md">
               <SectionTitle
                 number="4"
@@ -278,7 +194,6 @@ export default function DetailBasePolicyScreen() {
                 colors={colors}
               />
 
-              {/* 📌 PHẦN 1: MÔ TẢ NGẮN GỌN */}
               <Text
                 fontSize="$sm"
                 color={colors.textSecondary}
@@ -288,7 +203,6 @@ export default function DetailBasePolicyScreen() {
                 đáp ứng. Hệ thống sử dụng dữ liệu vệ tinh để giám sát liên tục.
               </Text>
 
-              {/* 📌 PHẦN 2: CÁC TRIGGER (HIỂN THỊ TRƯỚC) */}
               <VStack space="sm">
                 {triggers.map((trigger, index) => (
                   <TriggerCard
@@ -302,7 +216,6 @@ export default function DetailBasePolicyScreen() {
                 ))}
               </VStack>
 
-              {/* 📌 PHẦN 3: FAQ (HIỂN THỊ SAU - Ở DƯỚI CÙNG) */}
               <Box mt="$4">
                 <FAQSection colors={colors} />
               </Box>
@@ -334,7 +247,6 @@ export default function DetailBasePolicyScreen() {
           </VStack>
         </ScrollView>
 
-        {/* Fixed Bottom CTA - Full Width Footer */}
         <BottomCTA
           policy={base_policy}
           onEnroll={handleEnroll}
@@ -441,7 +353,7 @@ const ProductInfoCard = ({
               <Leaf size={16} color={colors.success} strokeWidth={2} />
             </Box>
             <Text fontSize="$sm" fontWeight="$bold" color={colors.success}>
-              {getCropLabel(policy.crop_type)}
+              {Utils.getCropLabel(policy.crop_type)}
             </Text>
           </HStack>
         </VStack>
@@ -642,7 +554,7 @@ const CostPayoutGrid = ({
     <HStack space="sm">
       <InfoCard
         label="Phí bảo hiểm"
-        value={formatCurrency(policy.fix_premium_amount)}
+        value={Utils.formatCurrency(policy.fix_premium_amount)}
         subtext={
           policy.is_per_hectare
             ? "Tính theo diện tích (mỗi hecta)"
@@ -656,7 +568,7 @@ const CostPayoutGrid = ({
       />
       <InfoCard
         label="Bồi thường tối đa"
-        value={formatCurrency(policy.payout_cap)}
+        value={Utils.formatCurrency(policy.payout_cap)}
         subtext={
           policy.is_payout_per_hectare
             ? "Mỗi hecta thiệt hại"
@@ -747,7 +659,7 @@ const TimelineCard = ({
               Thời hạn bảo hiểm
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-              {formatDuration(policy.coverage_duration_days)}
+              {Utils.formatDuration(policy.coverage_duration_days)}
             </Text>
           </VStack>
         </HStack>
@@ -774,7 +686,7 @@ const TimelineCard = ({
               Bắt đầu
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-              Ngày {policy.enrollment_start_day}
+              Ngày {Utils.formatDateForMS(policy.enrollment_start_day)}
             </Text>
           </VStack>
           <Text fontSize="$lg" color={colors.textMuted}>
@@ -785,7 +697,7 @@ const TimelineCard = ({
               Kết thúc
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-              Ngày {policy.enrollment_end_day}
+              Ngày {Utils.formatDateForMS(policy.enrollment_end_day)}
             </Text>
           </VStack>
         </HStack>
@@ -812,7 +724,7 @@ const TimelineCard = ({
               Có hiệu lực từ
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
-              Ngày {policy.insurance_valid_from_day}
+              Ngày {Utils.formatDateForMS(policy.insurance_valid_from_day)}
             </Text>
           </VStack>
           <Text fontSize="$lg" color={colors.textMuted}>
@@ -823,7 +735,7 @@ const TimelineCard = ({
               Hết hiệu lực
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
-              Ngày {policy.insurance_valid_to_day}
+              Ngày {Utils.formatDateForMS(policy.insurance_valid_to_day)}
             </Text>
           </VStack>
         </HStack>
@@ -845,7 +757,7 @@ const TimelineCard = ({
               Thời gian gia hạn thanh toán tối đa
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-              {Math.floor(policy.max_premium_payment_prolong / 86400)} ngày
+              {policy.max_premium_payment_prolong} ngày
             </Text>
           </VStack>
         </HStack>
@@ -1004,7 +916,6 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
                   fontSize="$xs"
                   color={colors.text}
                   lineHeight="$lg"
-                  style={{ whiteSpace: "pre-line" }}
                 >
                   {faq.answer}
                 </Text>
@@ -1014,16 +925,7 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
         );
       })}
 
-      {/* Helper Text */}
-      <Box bg={colors.infoSoft} borderRadius="$md" px="$3" py="$2" mt="$2">
-        <HStack space="xs" alignItems="flex-start">
-          <Info size={14} color={colors.info} strokeWidth={2} />
-          <Text fontSize="$xs" color={colors.info} flex={1} lineHeight="$sm">
-            Bấm vào từng câu hỏi để xem giải thích chi tiết. Nếu còn thắc mắc,
-            vui lòng liên hệ bộ phận hỗ trợ.
-          </Text>
-        </HStack>
-      </Box>
+      
     </VStack>
   );
 };
@@ -1057,10 +959,14 @@ const TechnicalInfoFAQ = ({
     },
     {
       id: "data-cost",
-      question: `Chi phí dữ liệu ${formatDataCost(metadata.total_data_cost)} được tính như thế nào?`,
-      answer: `Tổng chi phí dữ liệu ${formatDataCost(metadata.total_data_cost)} bao gồm:\n\n1️⃣ Chi phí truy cập dữ liệu vệ tinh:\n   • Dữ liệu độ phân giải cao (10m-30m)\n   • Tần suất cập nhật: Mỗi 3-5 ngày\n\n2️⃣ Chi phí xử lý và phân tích:\n   • Thuật toán AI phân tích ảnh vệ tinh\n   • Tính toán các chỉ số sức khỏe cây trồng\n\n3️⃣ Chi phí lưu trữ và giám sát:\n   • Lưu trữ dữ liệu lịch sử\n   • Giám sát liên tục 24/7\n\nChi phí này đã được tính vào phí bảo hiểm của bạn.`,
+      question: `Chi phí dữ liệu ${Utils.formatDataCost(
+        metadata.total_data_cost
+      )} được tính như thế nào?`,
+      answer: `Tổng chi phí dữ liệu ${Utils.formatDataCost(
+        metadata.total_data_cost
+      )} bao gồm:\n\n1️⃣ Chi phí truy cập dữ liệu vệ tinh:\n   • Dữ liệu độ phân giải cao (10m-30m)\n   • Tần suất cập nhật: Mỗi 3-5 ngày\n\n2️⃣ Chi phí xử lý và phân tích:\n   • Thuật toán AI phân tích ảnh vệ tinh\n   • Tính toán các chỉ số sức khỏe cây trồng\n\n3️⃣ Chi phí lưu trữ và giám sát:\n   • Lưu trữ dữ liệu lịch sử\n   • Giám sát liên tục 24/7\n\nChi phí này đã được tính vào phí bảo hiểm của bạn.`,
       icon: TrendingUp,
-      value: formatDataCost(metadata.total_data_cost),
+      value: Utils.formatDataCost(metadata.total_data_cost),
       color: colors.warning,
     },
   ];
@@ -1197,11 +1103,10 @@ const TechnicalInfoFAQ = ({
       })}
 
       {/* Summary Card */}
-      <Box bg={colors.successSoft} borderRadius="$md" px="$3" py="$2" mt="$2">
-        <HStack space="xs" alignItems="flex-start">
-          <CheckCircle2 size={14} color={colors.success} strokeWidth={2} />
-          <Text fontSize="$xs" color={colors.success} flex={1} lineHeight="$sm">
-            Dữ liệu được lấy lúc:{" "}
+      <Box px="$3" mt="$2">
+        <HStack space="xs" alignItems="flex-end">
+          <Text className="text-gray-200" fontSize="$xs" flex={1}>
+            Cập nhật lần cuối vào:{" "}
             {new Date(metadata.retrieved_at).toLocaleString("vi-VN")}
           </Text>
         </HStack>
@@ -1267,9 +1172,7 @@ const TriggerCard = ({
               <VStack flex={1}>
                 <HStack space="xs" alignItems="center">
                   <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
-                    {trigger.growth_stage
-                      ? `Giai đoạn: ${getGrowthStageLabel(trigger.growth_stage)}`
-                      : "Áp dụng toàn bộ chu kỳ"}
+                    Giai đoạn: {trigger.growth_stage}
                   </Text>
                 </HStack>
                 <HStack space="xs" alignItems="center" mt="$0.5">
@@ -1282,7 +1185,7 @@ const TriggerCard = ({
                     {trigger.conditions.length} điều kiện
                   </Text>
                   <Text fontSize="$xs" color={colors.textMuted}>
-                    • {formatDataCost(totalDataCost)}
+                    • {Utils.formatDataCost(totalDataCost)}
                   </Text>
                 </HStack>
               </VStack>
@@ -1312,7 +1215,7 @@ const TriggerCard = ({
               <Clock size={14} color={colors.textMuted} strokeWidth={2} />
               <Text fontSize="$xs" color={colors.textMuted}>
                 Giám sát mỗi {trigger.monitor_interval}{" "}
-                {getFrequencyLabel(trigger.monitor_frequency_unit)}
+                {Utils.getFrequencyLabel(trigger.monitor_frequency_unit)}
               </Text>
             </HStack>
           )}
@@ -1334,8 +1237,8 @@ const TriggerCard = ({
             </HStack>
             <Text fontSize="$sm" color={colors.textSecondary} ml="$6">
               Kiểm tra mỗi {trigger.monitor_interval}{" "}
-              {getFrequencyLabel(trigger.monitor_frequency_unit)} trong suốt
-              giai đoạn này
+              {Utils.getFrequencyLabel(trigger.monitor_frequency_unit)} trong
+              suốt giai đoạn này
             </Text>
           </VStack>
 
@@ -1412,7 +1315,7 @@ const TriggerCard = ({
               </Text>
             </HStack>
             <Text fontSize="$sm" fontWeight="$bold" color={colors.success}>
-              {formatDataCost(totalDataCost)}
+              {Utils.formatDataCost(totalDataCost)}
             </Text>
           </HStack>
         </VStack>
@@ -1469,8 +1372,8 @@ const ConditionItem = ({
             <VStack space="xs">
               {/* Condition Summary */}
               <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
-                {getAggregationLabel(condition.aggregation_function)}{" "}
-                {getOperatorLabel(condition.threshold_operator)}{" "}
+                {Utils.getAggregationLabel(condition.aggregation_function)}{" "}
+                {Utils.getOperatorLabel(condition.threshold_operator)}{" "}
                 {condition.threshold_value}
               </Text>
 
@@ -1510,7 +1413,7 @@ const ConditionItem = ({
                       strokeWidth={2}
                     />
                     <Text fontSize="$xs" color={colors.textSecondary}>
-                      Cảnh báo sớm tại: {condition.early_warning_threshold}
+                      Cảnh báo sớm tại: {condition.early_warning_threshold}%
                     </Text>
                   </HStack>
                 )}
@@ -1537,7 +1440,7 @@ const ConditionItem = ({
                   </Text>
                 </HStack>
                 <Text fontSize="$xs" fontWeight="$bold" color={colors.success}>
-                  {formatDataCost(condition.calculated_cost)}
+                  {Utils.formatDataCost(condition.calculated_cost)}
                 </Text>
               </HStack>
             </VStack>
@@ -1571,13 +1474,14 @@ const ImportantNotesCard = ({
 }) => {
   // Kiểm tra và extract data an toàn
   const additionalInfo = policy.important_additional_information;
-  
+
   // Log để debug
-  console.log('Additional Info:', JSON.stringify(additionalInfo, null, 2));
-  
+  console.log("Additional Info:", JSON.stringify(additionalInfo, null, 2));
+
   const notes = additionalInfo?.notes || "";
-  const specialConditions = (additionalInfo?.special_conditions as string[]) || [];
-  
+  const specialConditions =
+    (additionalInfo?.special_conditions as string[]) || [];
+
   // Fallback: Kiểm tra cả exclusions và requirements (nếu có)
   const exclusions = (additionalInfo?.exclusions as string[]) || [];
   const requirements = (additionalInfo?.requirements as string[]) || [];
@@ -1621,11 +1525,24 @@ const ImportantNotesCard = ({
                 Điều kiện đặc biệt
               </Text>
               {specialConditions.map((condition: string, idx: number) => (
-                <HStack key={`special-${idx}`} space="xs" alignItems="flex-start">
+                <HStack
+                  key={`special-${idx}`}
+                  space="xs"
+                  alignItems="flex-start"
+                >
                   <Box mt="$0.5">
-                    <AlertCircle size={14} color={colors.warning} strokeWidth={2} />
+                    <AlertCircle
+                      size={14}
+                      color={colors.warning}
+                      strokeWidth={2}
+                    />
                   </Box>
-                  <Text fontSize="$sm" color={colors.text} flex={1} lineHeight="$md">
+                  <Text
+                    fontSize="$sm"
+                    color={colors.text}
+                    flex={1}
+                    lineHeight="$md"
+                  >
                     {condition}
                   </Text>
                 </HStack>
@@ -1643,11 +1560,20 @@ const ImportantNotesCard = ({
                 Các trường hợp loại trừ
               </Text>
               {exclusions.map((exclusion: string, idx: number) => (
-                <HStack key={`exclusion-${idx}`} space="xs" alignItems="flex-start">
+                <HStack
+                  key={`exclusion-${idx}`}
+                  space="xs"
+                  alignItems="flex-start"
+                >
                   <Text fontSize="$sm" color={colors.error}>
                     ✕
                   </Text>
-                  <Text fontSize="$sm" color={colors.textSecondary} flex={1} lineHeight="$md">
+                  <Text
+                    fontSize="$sm"
+                    color={colors.textSecondary}
+                    flex={1}
+                    lineHeight="$md"
+                  >
                     {exclusion}
                   </Text>
                 </HStack>
@@ -1665,9 +1591,22 @@ const ImportantNotesCard = ({
                 Yêu cầu bắt buộc
               </Text>
               {requirements.map((requirement: string, idx: number) => (
-                <HStack key={`requirement-${idx}`} space="xs" alignItems="flex-start">
-                  <CheckCircle2 size={14} color={colors.success} strokeWidth={2} />
-                  <Text fontSize="$sm" color={colors.text} flex={1} lineHeight="$md">
+                <HStack
+                  key={`requirement-${idx}`}
+                  space="xs"
+                  alignItems="flex-start"
+                >
+                  <CheckCircle2
+                    size={14}
+                    color={colors.success}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    fontSize="$sm"
+                    color={colors.text}
+                    flex={1}
+                    lineHeight="$md"
+                  >
                     {requirement}
                   </Text>
                 </HStack>
@@ -1677,17 +1616,22 @@ const ImportantNotesCard = ({
         )}
 
         {/* Empty State - Nếu không có thông tin gì */}
-        {!notes && 
-         specialConditions.length === 0 && 
-         exclusions.length === 0 && 
-         requirements.length === 0 && (
-          <HStack space="xs" alignItems="center" justifyContent="center" py="$2">
-            <Info size={16} color={colors.textMuted} strokeWidth={2} />
-            <Text fontSize="$sm" color={colors.textMuted}>
-              Không có thông tin bổ sung
-            </Text>
-          </HStack>
-        )}
+        {!notes &&
+          specialConditions.length === 0 &&
+          exclusions.length === 0 &&
+          requirements.length === 0 && (
+            <HStack
+              space="xs"
+              alignItems="center"
+              justifyContent="center"
+              py="$2"
+            >
+              <Info size={16} color={colors.textMuted} strokeWidth={2} />
+              <Text fontSize="$sm" color={colors.textMuted}>
+                Không có thông tin bổ sung
+              </Text>
+            </HStack>
+          )}
       </VStack>
     </Box>
   );
@@ -1725,11 +1669,21 @@ const InfoCard = ({
       <Box bg={iconBg} borderRadius="$md" p="$1.5">
         <Icon size={16} color={iconColor} strokeWidth={2} />
       </Box>
-      <Text fontSize="$2xs" color={colors.textSecondary} flex={1} numberOfLines={2}>
+      <Text
+        fontSize="$2xs"
+        color={colors.textSecondary}
+        flex={1}
+        numberOfLines={2}
+      >
         {label}
       </Text>
     </HStack>
-    <Text fontSize="$lg" fontWeight="$bold" color={colors.text} numberOfLines={1}>
+    <Text
+      fontSize="$lg"
+      fontWeight="$bold"
+      color={colors.text}
+      numberOfLines={1}
+    >
       {value}
     </Text>
     <Text fontSize="$2xs" color={colors.textMuted} mt="$1" lineHeight="$xs">
@@ -1775,7 +1729,7 @@ const BottomCTA = ({
           </Text>
           <HStack space="xs" alignItems="baseline">
             <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
-              {formatCurrency(policy.fix_premium_amount)}
+              {Utils.formatCurrency(policy.fix_premium_amount)}
             </Text>
             <Text fontSize="$xs" color={colors.textMuted}>
               {policy.is_per_hectare ? "/ hecta" : ""}
@@ -1788,7 +1742,7 @@ const BottomCTA = ({
             Bồi thường tối đa
           </Text>
           <Text fontSize="$lg" fontWeight="$bold" color={colors.success}>
-            {formatCurrency(policy.payout_cap)}
+            {Utils.formatCurrency(policy.payout_cap)}
           </Text>
         </VStack>
       </HStack>

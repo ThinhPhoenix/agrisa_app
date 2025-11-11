@@ -27,14 +27,14 @@ export type DocumentValidationStatus =
  */
 export type CurrencyCode = "VND" | "USD";
 
-/**
- * Thông tin bổ sung quan trọng của sản phẩm
- */
-export type ImportantAdditionalInformation = {
-  notes?: string; // Ghi chú đặc biệt
-  special_conditions?: string[]; // Các điều kiện đặc biệt
-  [key: string]: any; // Cho phép thêm các trường tùy chỉnh
-};
+// /**
+//  * Thông tin bổ sung quan trọng của sản phẩm
+//  */
+// export type ImportantAdditionalInformation = {
+//   notes?: string; // Ghi chú đặc biệt
+//   special_conditions?: string[]; // Các điều kiện đặc biệt
+//   [key: string]: any; // Cho phép thêm các trường tùy chỉnh
+// };
 
 /**
  * Model chính cho Sản phẩm Bảo hiểm Nông nghiệp
@@ -78,7 +78,7 @@ export type PublicBasePolicyResponse = {
   document_validation_status: DocumentValidationStatus; // Trạng thái xác thực tài liệu
 
   // Thông tin bổ sung
-  important_additional_information: ImportantAdditionalInformation | null;
+  important_additional_information: string;
 
   // Metadata
   created_at: string; // ISO timestamp

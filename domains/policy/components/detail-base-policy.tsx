@@ -215,10 +215,6 @@ export default function DetailBasePolicyScreen() {
                   />
                 ))}
               </VStack>
-
-              <Box mt="$4">
-                <FAQSection colors={colors} />
-              </Box>
             </VStack>
 
             {/* 5. THÔNG TIN KỸ THUẬT */}
@@ -233,7 +229,7 @@ export default function DetailBasePolicyScreen() {
             </VStack>
 
             {/* 6. LƯU Ý QUAN TRỌNG */}
-            {base_policy.important_additional_information?.notes && (
+            {base_policy.important_additional_information && (
               <VStack space="md">
                 <SectionTitle
                   number="6"
@@ -244,6 +240,10 @@ export default function DetailBasePolicyScreen() {
                 <ImportantNotesCard policy={base_policy} colors={colors} />
               </VStack>
             )}
+
+            <Box mt="$4">
+              <FAQSection policy={base_policy} colors={colors} />{" "}
+            </Box>
           </VStack>
         </ScrollView>
 
@@ -541,7 +541,7 @@ const PolicyDocumentSection = ({
   );
 };
 
-// 2. Cost & Payout Grid
+// 2. Cost & Payout Grid - CẬP NHẬT ĐƠN GIẢN HÓA
 const CostPayoutGrid = ({
   policy,
   colors,
@@ -550,44 +550,27 @@ const CostPayoutGrid = ({
   colors: ColorSet;
 }) => (
   <VStack space="sm">
-    {/* Row 1: Premium & Payout */}
-    <HStack space="sm">
-      <InfoCard
-        label="Phí bảo hiểm"
-        value={Utils.formatCurrency(policy.fix_premium_amount)}
-        subtext={
-          policy.is_per_hectare
-            ? "Tính theo diện tích (mỗi hecta)"
-            : "Phí cố định (không phụ thuộc diện tích)"
-        }
-        icon={Shield}
-        iconBg={colors.primarySoft}
-        iconColor={colors.success}
-        colors={colors}
-        flex={1}
-      />
-      <InfoCard
-        label="Bồi thường tối đa"
-        value={Utils.formatCurrency(policy.payout_cap)}
-        subtext={
-          policy.is_payout_per_hectare
-            ? "Mỗi hecta thiệt hại"
-            : "Tổng số tiền tối đa"
-        }
-        icon={CheckCircle2}
-        iconBg={colors.successSoft}
-        iconColor={colors.success}
-        colors={colors}
-        flex={1}
-      />
-    </HStack>
+    {/* Row 1: Premium */}
+    <InfoCard
+      label="Phí bảo hiểm"
+      value={Utils.formatCurrency(policy.fix_premium_amount)}
+      subtext={
+        policy.is_per_hectare
+          ? "Tính theo diện tích (mỗi hecta)"
+          : "Phí cố định (không phụ thuộc diện tích)"
+      }
+      icon={Shield}
+      iconBg={colors.primarySoft}
+      iconColor={colors.success}
+      colors={colors}
+    />
 
-    {/* Row 2: Rates */}
+    {/* Row 2: Rates - ĐƠN GIẢN HÓA */}
     <HStack space="sm">
       <InfoCard
         label="Tỷ lệ bồi thường cơ bản"
         value={`${(policy.payout_base_rate * 100).toFixed(0)}%`}
-        subtext="Tỷ lệ % giá trị cây trồng được bồi thường"
+        subtext="% giá trị cây trồng được bồi thường"
         icon={Percent}
         iconBg={colors.background}
         iconColor={colors.textSecondary}
@@ -597,10 +580,10 @@ const CostPayoutGrid = ({
       <InfoCard
         label="Hệ số vượt ngưỡng"
         value={`×${policy.over_threshold_multiplier}`}
-        subtext="Nhân thêm khi thiệt hại vượt mức nghiêm trọng"
+        subtext="Nhân thêm khi thiệt hại nghiêm trọng"
         icon={TrendingUp}
-        iconBg={colors.background}
-        iconColor={colors.textSecondary}
+        iconBg={colors.warningSoft}
+        iconColor={colors.warning}
         colors={colors}
         flex={1}
       />
@@ -766,11 +749,25 @@ const TimelineCard = ({
   </Box>
 );
 
-// 🆕 FAQ SECTION COMPONENT
-const FAQSection = ({ colors }: { colors: ColorSet }) => {
+// 🆕 FAQ SECTION COMPONENT - THÊM CÂU HỎI VỀ BỒI THƯỜNG
+const FAQSection = ({
+  policy,
+  colors,
+}: {
+  policy: PublicBasePolicyResponse; // ✅ THÊM policy prop
+  colors: ColorSet;
+}) => {
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
 
   const faqs = [
+    // 🆕 THÊM CÂU HỎI VỀ BỒI THƯỜNG Ở ĐẦU
+    {
+      id: "payout-calculation",
+      question: "Tôi sẽ nhận được bao nhiêu tiền bồi thường?",
+      answer: `Số tiền bồi thường phụ thuộc vào mức độ thiệt hại:\n\n📌 MỨC CƠ BẢN (Điều kiện thường):\n${Utils.formatCurrency(policy.fix_payout_amount)}${policy.is_payout_per_hectare ? " / hecta thiệt hại" : " (tổng số tiền)"}\n• Áp dụng khi đạt điều kiện kích hoạt bình thường\n• Đây là mức bồi thường tiêu chuẩn\n\n🔥 MỨC TỐI ĐA (Vượt ngưỡng nghiêm trọng):\n${Utils.formatCurrency(policy.payout_cap)}${policy.is_payout_per_hectare ? " / hecta thiệt hại" : " (tổng số tiền)"}\n• Áp dụng khi thiệt hại VỰA đạt điều kiện bình thường VỪA vượt ngưỡng nghiêm trọng\n• Công thức: ${Utils.formatCurrency(policy.fix_payout_amount)} × ${policy.over_threshold_multiplier} = ${Utils.formatCurrency(policy.payout_cap)}\n\n💡 Ví dụ thực tế:\n• Nếu ruộng lúa của bạn ${policy.is_payout_per_hectare ? "5 hecta" : ""} bị hạn hán nhẹ → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.fix_payout_amount * 5) : Utils.formatCurrency(policy.fix_payout_amount)}\n• Nếu ${policy.is_payout_per_hectare ? "cùng diện tích" : "ruộng"} bị hạn hán nặng (vượt ngưỡng) → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.payout_cap * 5) : Utils.formatCurrency(policy.payout_cap)}\n\n⚡ Lưu ý:\n${policy.is_payout_per_hectare ? "• Số tiền cuối cùng = Mức bồi thường × Diện tích thiệt hại thực tế\n" : ""}• Bồi thường được chi trả TỰ ĐỘNG khi hệ thống phát hiện thiệt hại qua vệ tinh\n• Không cần nộp đơn yêu cầu hay chờ thẩm định`,
+      icon: TrendingUp,
+      color: colors.success,
+    },
     {
       id: "trigger",
       question: "Trigger (Bộ kích hoạt) là gì?",
@@ -1081,12 +1078,7 @@ const TechnicalInfoFAQ = ({
                       {faq.value}
                     </BadgeText>
                   </Badge>
-                  <Text
-                    fontSize="$xs"
-                    color={colors.text}
-                    lineHeight="$lg"
-                    style={{ whiteSpace: "pre-line" }}
-                  >
+                  <Text fontSize="$xs" color={colors.text} lineHeight="$lg">
                     {faq.answer}
                   </Text>
                 </VStack>
@@ -1095,16 +1087,6 @@ const TechnicalInfoFAQ = ({
           </Box>
         );
       })}
-
-      {/* Summary Card */}
-      <Box px="$3" mt="$2">
-        <HStack space="xs" alignItems="flex-end">
-          <Text className="text-gray-200" fontSize="$xs" flex={1}>
-            Cập nhật lần cuối vào:{" "}
-            {new Date(metadata.retrieved_at).toLocaleString("vi-VN")}
-          </Text>
-        </HStack>
-      </Box>
     </VStack>
   );
 };
@@ -1458,7 +1440,7 @@ const ConditionItem = ({
   );
 };
 
-// 6. Important Notes Card
+// 6. Important Notes Card - ĐƠN GIẢN HÓA
 const ImportantNotesCard = ({
   policy,
   colors,
@@ -1466,20 +1448,29 @@ const ImportantNotesCard = ({
   policy: PublicBasePolicyResponse;
   colors: ColorSet;
 }) => {
-  // Kiểm tra và extract data an toàn
   const additionalInfo = policy.important_additional_information;
 
-  // Log để debug
-  console.log("Additional Info:", JSON.stringify(additionalInfo, null, 2));
+  // Nếu không có thông tin
+  if (!additionalInfo || additionalInfo.trim() === "") {
+    return (
+      <Box
+        bg={colors.card}
+        borderWidth={1}
+        borderColor={colors.border}
+        borderRadius="$xl"
+        p="$4"
+      >
+        <HStack space="xs" alignItems="center" justifyContent="center">
+          <Info size={16} color={colors.textMuted} strokeWidth={2} />
+          <Text fontSize="$sm" color={colors.textMuted}>
+            Không có thông tin bổ sung
+          </Text>
+        </HStack>
+      </Box>
+    );
+  }
 
-  const notes = additionalInfo?.notes || "";
-  const specialConditions =
-    (additionalInfo?.special_conditions as string[]) || [];
-
-  // Fallback: Kiểm tra cả exclusions và requirements (nếu có)
-  const exclusions = (additionalInfo?.exclusions as string[]) || [];
-  const requirements = (additionalInfo?.requirements as string[]) || [];
-
+  // Có thông tin - hiển thị trực tiếp
   return (
     <Box
       bg={colors.card}
@@ -1488,6 +1479,7 @@ const ImportantNotesCard = ({
       borderRadius="$xl"
       overflow="hidden"
     >
+      {/* Header */}
       <Box bg={colors.warningSoft} px="$4" py="$3">
         <HStack space="sm" alignItems="center">
           <AlertCircle size={20} color={colors.warning} strokeWidth={2} />
@@ -1497,136 +1489,17 @@ const ImportantNotesCard = ({
         </HStack>
       </Box>
 
-      <VStack space="sm" p="$4">
-        {/* Main Notes */}
-        {notes && (
-          <VStack space="xs">
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-              Lưu ý chung
-            </Text>
-            <Text fontSize="$sm" color={colors.text} lineHeight="$lg">
-              {notes}
-            </Text>
-          </VStack>
-        )}
-
-        {/* Special Conditions Section */}
-        {specialConditions.length > 0 && (
-          <>
-            {notes && <Divider bg={colors.border} my="$2" />}
-            <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                Điều kiện đặc biệt
-              </Text>
-              {specialConditions.map((condition: string, idx: number) => (
-                <HStack
-                  key={`special-${idx}`}
-                  space="xs"
-                  alignItems="flex-start"
-                >
-                  <Box mt="$0.5">
-                    <AlertCircle
-                      size={14}
-                      color={colors.warning}
-                      strokeWidth={2}
-                    />
-                  </Box>
-                  <Text
-                    fontSize="$sm"
-                    color={colors.text}
-                    flex={1}
-                    lineHeight="$md"
-                  >
-                    {condition}
-                  </Text>
-                </HStack>
-              ))}
-            </VStack>
-          </>
-        )}
-
-        {/* Exclusions Section (Fallback - nếu có) */}
-        {exclusions.length > 0 && (
-          <>
-            <Divider bg={colors.border} my="$2" />
-            <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                Các trường hợp loại trừ
-              </Text>
-              {exclusions.map((exclusion: string, idx: number) => (
-                <HStack
-                  key={`exclusion-${idx}`}
-                  space="xs"
-                  alignItems="flex-start"
-                >
-                  <Text fontSize="$sm" color={colors.error}>
-                    ✕
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    color={colors.textSecondary}
-                    flex={1}
-                    lineHeight="$md"
-                  >
-                    {exclusion}
-                  </Text>
-                </HStack>
-              ))}
-            </VStack>
-          </>
-        )}
-
-        {/* Requirements Section (Fallback - nếu có) */}
-        {requirements.length > 0 && (
-          <>
-            <Divider bg={colors.border} my="$2" />
-            <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                Yêu cầu bắt buộc
-              </Text>
-              {requirements.map((requirement: string, idx: number) => (
-                <HStack
-                  key={`requirement-${idx}`}
-                  space="xs"
-                  alignItems="flex-start"
-                >
-                  <CheckCircle2
-                    size={14}
-                    color={colors.success}
-                    strokeWidth={2}
-                  />
-                  <Text
-                    fontSize="$sm"
-                    color={colors.text}
-                    flex={1}
-                    lineHeight="$md"
-                  >
-                    {requirement}
-                  </Text>
-                </HStack>
-              ))}
-            </VStack>
-          </>
-        )}
-
-        {/* Empty State - Nếu không có thông tin gì */}
-        {!notes &&
-          specialConditions.length === 0 &&
-          exclusions.length === 0 &&
-          requirements.length === 0 && (
-            <HStack
-              space="xs"
-              alignItems="center"
-              justifyContent="center"
-              py="$2"
-            >
-              <Info size={16} color={colors.textMuted} strokeWidth={2} />
-              <Text fontSize="$sm" color={colors.textMuted}>
-                Không có thông tin bổ sung
-              </Text>
-            </HStack>
-          )}
-      </VStack>
+      {/* Content */}
+      <Box p="$4">
+        <Text
+          fontSize="$sm"
+          color={colors.text}
+          lineHeight="$lg"
+          style={{ whiteSpace: "pre-line" }}
+        >
+          {additionalInfo}
+        </Text>
+      </Box>
     </Box>
   );
 };
@@ -1686,7 +1559,7 @@ const InfoCard = ({
   </Box>
 );
 
-// Bottom CTA
+// Bottom CTA - CẬP NHẬT
 const BottomCTA = ({
   policy,
   onEnroll,
@@ -1715,7 +1588,7 @@ const BottomCTA = ({
     }}
   >
     <VStack space="sm">
-      {/* Premium Display */}
+      {/* Premium & Payout Display - CẬP NHẬT */}
       <HStack justifyContent="space-between" alignItems="center">
         <VStack>
           <Text fontSize="$xs" color={colors.textSecondary}>
@@ -1733,11 +1606,21 @@ const BottomCTA = ({
 
         <VStack alignItems="flex-end">
           <Text fontSize="$xs" color={colors.textSecondary}>
-            Bồi thường tối đa
+            Bồi thường
           </Text>
-          <Text fontSize="$lg" fontWeight="$bold" color={colors.success}>
-            {Utils.formatCurrency(policy.payout_cap)}
-          </Text>
+          <VStack alignItems="flex-end" space="2xs">
+            <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
+              {Utils.formatCurrency(policy.fix_payout_amount)}
+            </Text>
+            <HStack space="xs" alignItems="center">
+              <Text fontSize="$2xs" color={colors.textMuted}>
+                tối đa
+              </Text>
+              <Text fontSize="$md" fontWeight="$bold" color={colors.warning}>
+                {Utils.formatCurrency(policy.payout_cap)}
+              </Text>
+            </HStack>
+          </VStack>
         </VStack>
       </HStack>
 

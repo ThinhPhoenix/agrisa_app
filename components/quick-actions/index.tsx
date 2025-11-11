@@ -18,6 +18,8 @@ export default function QuickActions({ items }: QuickActionsProps) {
   const handlePress = (item: QuickActionItem) => {
     if (item.key === "farm") {
       router.push("/(farmer)/farm");
+    } else if (item.key === "policy") {
+      router.push("/(farmer)/policy");
     } else {
       router.push(item.href || `/${item.key}`);
     }

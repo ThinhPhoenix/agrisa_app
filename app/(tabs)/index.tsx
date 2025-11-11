@@ -28,21 +28,21 @@ const quickActionItems = [
     color: "#059669",
   },
   {
+    key: "policy",
+    name: "Hợp đồng bảo hiểm",
+    icon: ReceiptText,
+    color: "#476EAE",
+  },
+  {
     key: "add",
     name: "Thêm mới",
     icon: MapPinPlus,
-    color: "#476EAE",
+    color: "#EF7722",
   },
   {
     key: "ocr",
     name: "Vệ tinh",
     icon: Satellite,
-    color: "#EF7722",
-  },
-  {
-    key: "registered-policies",
-    name: "Hợp đồng của tôi",
-    icon: ReceiptText,
     color: "#59AC77",
   },
   {

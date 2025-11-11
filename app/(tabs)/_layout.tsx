@@ -140,6 +140,34 @@ function NotificationIcon(props: any) {
   );
 }
 
+function TransactionIcon(props: any) {
+  return (
+    <Svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="injected-svg"
+      data-src="https://cdn.hugeicons.com/icons/invoice-01-bulk-rounded.svg?v=3.0"
+      color="#000"
+      {...props}
+    >
+      <Path
+        opacity={0.4}
+        d="M3.25 10c0-3.771 0-5.657 1.172-6.828C5.593 2 7.48 2 11.25 2h1.5c3.771 0 5.657 0 6.828 1.172C20.75 4.343 20.75 6.229 20.75 10v4c0 3.771 0 5.657-1.172 6.828-1.171 1.172-3.057 1.172-6.828 1.172h-1.5c-3.771 0-5.657 0-6.828-1.172C3.25 19.657 3.25 17.771 3.25 14v-4z"
+        fill="#000"
+      />
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.25 7a.75.75 0 01.75-.75h8a.75.75 0 010 1.5H8A.75.75 0 017.25 7zm0 4a.75.75 0 01.75-.75h8a.75.75 0 010 1.5H8a.75.75 0 01-.75-.75zm0 4a.75.75 0 01.75-.75h5a.75.75 0 010 1.5H8a.75.75 0 01-.75-.75z"
+        fill="#000"
+      />
+    </Svg>
+  );
+}
+
 function AnimatedTabButton({
   route,
   index,
@@ -321,11 +349,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="policy/index"
+        name="transaction-history/index"
         options={{
-          title: "Hợp đồng",
+          title: "Lịch sử giao dịch",
           tabBarIcon: ({ color, size }) => (
-            <ContractIcon width={size} height={size} color={color} />
+            <TransactionIcon width={size} height={size} color={color} />
           ),
         }}
       />

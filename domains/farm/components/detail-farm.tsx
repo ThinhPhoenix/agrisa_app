@@ -1,39 +1,40 @@
-import { useAgrisaColors } from '@/domains/agrisa_theme/hooks/useAgrisaColor';
-import { Farm } from '@/domains/farm/models/farm.models';
+import { Farm } from "@/domains/farm/models/farm.models";
+import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
+import { Utils } from "@/libs/utils/utils";
 import {
-    Box,
-    Button,
-    ButtonText,
-    HStack,
-    ScrollView,
-    Text,
-    VStack
-} from '@gluestack-ui/themed';
+  Box,
+  Button,
+  ButtonText,
+  HStack,
+  ScrollView,
+  Text,
+  VStack,
+} from "@gluestack-ui/themed";
 import {
-    AlertCircle,
-    Calendar,
-    CheckCircle2,
-    Coffee,
-    Droplets,
-    Edit3,
-    FileText,
-    MapPin,
-    Mountain,
-    Wheat,
-} from 'lucide-react-native';
-import React from 'react';
+  Calendar,
+  CheckCircle2,
+  Coffee,
+  Edit3,
+  FileCheck,
+  MapPin,
+  Shield,
+  Sprout,
+  Wheat,
+  XCircle,
+} from "lucide-react-native";
+import React from "react";
 
 interface DetailFarmProps {
   /**
    * Thông tin farm cần hiển thị
    */
   farm: Farm;
-  
+
   /**
    * Callback khi click nút Edit
    */
   onEdit?: () => void;
-  
+
   /**
    * Loading state khi đang fetch data
    */
@@ -42,7 +43,7 @@ interface DetailFarmProps {
 
 /**
  * Component hiển thị chi tiết nông trại
- * 
+ *
  * Features:
  * - Thông tin đầy đủ về farm
  * - Verification badges
@@ -54,33 +55,31 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
   onEdit,
   isLoading = false,
 }) => {
-  const { colors } = useAgrisaColors();
-
   /**
    * Get crop icon và config theo loại cây
    */
   const getCropConfig = (cropType: string) => {
     switch (cropType) {
-      case 'rice':
+      case "rice":
         return {
           icon: Wheat,
-          color: '#F59E0B',
-          label: 'Lúa',
-          bg: '#FEF3C7',
+          color: AgrisaColors.light.success,
+          label: "Lúa",
+          bg: AgrisaColors.light.successSoft,
         };
-      case 'coffee':
+      case "coffee":
         return {
           icon: Coffee,
-          color: '#78350F',
-          label: 'Cà phê',
-          bg: '#FDE68A',
+          color: "#8B4513",
+          label: "Cà phê",
+          bg: "#FFF8DC",
         };
       default:
         return {
-          icon: Wheat,
-          color: colors.success,
-          label: 'Cây trồng khác',
-          bg: colors.primarySoft,
+          icon: Sprout,
+          color: "#8B4513",
+          label: "Cây trồng khác",
+          bg: "#FFF8DC",
         };
     }
   };
@@ -88,332 +87,426 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
   const cropConfig = getCropConfig(farm.crop_type);
   const CropIcon = cropConfig.icon;
 
-  /**
-   * Format Unix timestamp to DD/MM/YYYY
-   */
-  const formatDate = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  /**
-   * Format area từ m² sang hecta
-   */
-  const formatArea = (areaSqm: number): string => {
-    const hectares = areaSqm / 10000;
-    return `${hectares.toFixed(2)} ha (${areaSqm.toLocaleString('vi-VN')} m²)`;
-  };
-
-  /**
-   * Get irrigation type label
-   */
-  const getIrrigationLabel = (type: string): string => {
-    const labels: Record<string, string> = {
-      canal: 'Kênh mương',
-      drip: 'Nhỏ giọt',
-      sprinkler: 'Phun mưa',
-      pump: 'Máy bơm',
-      rain_fed: 'Nước mưa',
-      none: 'Không có',
-    };
-    return labels[type] || type;
-  };
-
-  /**
-   * Get soil type label
-   */
-  const getSoilTypeLabel = (type: string): string => {
-    const labels: Record<string, string> = {
-      alluvial: 'Đất phù sa',
-      clay: 'Đất sét',
-      sandy: 'Đất cát',
-      loam: 'Đất thịt',
-      peat: 'Đất than bùn',
-      other: 'Khác',
-    };
-    return labels[type] || type;
-  };
-
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 100 }}
+      bg={AgrisaColors.light.background}
     >
-      <VStack space="lg" px="$4" py="$4">
+      <VStack space="md" p="$4" pb="$24">
         {/* ===== HEADER CARD ===== */}
         <Box
           bg={cropConfig.bg}
-          borderRadius="$xl"
-          p="$4"
+          borderRadius={20}
           borderWidth={1}
-          borderColor={cropConfig.color}
-          sx={{
-            shadowColor: cropConfig.color,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
-            elevation: 4,
-          }}
+          borderColor={AgrisaColors.light.frame_border}
+          overflow="hidden"
         >
-          <VStack space="md">
-            {/* Crop Type Badge */}
-            <HStack alignItems="center" justifyContent="space-between">
-              <HStack alignItems="center" space="sm">
-                <Box bg={cropConfig.color} borderRadius="$full" p="$2">
-                  <CropIcon size={20} color="#fff" strokeWidth={2.5} />
-                </Box>
-                <VStack>
-                  <Text fontSize="$xs" color={colors.textSecondary} fontWeight="$medium">
-                    {cropConfig.label}
-                  </Text>
-                  <Text fontSize="$md" color={cropConfig.color} fontWeight="$bold">
-                    {farm.farm_code}
-                  </Text>
-                </VStack>
-              </HStack>
-
-              {/* Status Badge */}
-              <Box
-                bg={farm.status === 'active' ? colors.success : colors.textSecondary}
-                borderRadius="$full"
-                px="$3"
-                py="$1"
-              >
-                <Text fontSize="$xs" color="#fff" fontWeight="$bold">
-                  {farm.status === 'active' ? '✓ Hoạt động' : 'Không hoạt động'}
+          {/* Header Section */}
+          <Box p="$4" pb="$3">
+            <HStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              mb="$2"
+            >
+              <VStack flex={1} mr="$3">
+                <Text
+                  color={AgrisaColors.light.primary_text}
+                  fontSize={22}
+                  fontWeight="700"
+                  numberOfLines={2}
+                  mb="$2"
+                >
+                  {farm.farm_name}
                 </Text>
+                <HStack space="xs" alignItems="center">
+                  <MapPin
+                    size={16}
+                    color={AgrisaColors.light.secondary_text}
+                    strokeWidth={2}
+                  />
+                  <Text color={AgrisaColors.light.secondary_text} fontSize={13}>
+                    {farm.district}, {farm.province}
+                  </Text>
+                </HStack>
+              </VStack>
+
+              {/* Crop Icon */}
+              <Box
+                bg={cropConfig.color}
+                borderRadius="$full"
+                p="$3"
+                shadowColor={cropConfig.color}
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.3}
+                shadowRadius={4}
+              >
+                <CropIcon
+                  size={28}
+                  color={AgrisaColors.light.white_button_text}
+                  strokeWidth={2.5}
+                />
               </Box>
             </HStack>
+          </Box>
 
-            {/* Farm Name */}
-            <Text fontSize="$2xl" fontWeight="$bold" color={colors.text}>
-              {farm.farm_name}
-            </Text>
+          {/* Stats Grid */}
+          <Box bg={AgrisaColors.light.background} p="$4">
+            <HStack space="md">
+              <VStack flex={1}>
+                <Text
+                  color={AgrisaColors.light.muted_text}
+                  fontSize={11}
+                  mb="$1"
+                  fontWeight="500"
+                >
+                  Diện tích
+                </Text>
+                <Text
+                  color={AgrisaColors.light.primary_text}
+                  fontSize={18}
+                  fontWeight="700"
+                >
+                  {Utils.formatArea(farm.area_sqm)}
+                </Text>
+                <Text
+                  color={AgrisaColors.light.secondary_text}
+                  fontSize={10}
+                  mt="$0.5"
+                >
+                  {farm.area_sqm.toLocaleString("vi-VN")} m²
+                </Text>
+              </VStack>
 
-            {/* Quick Stats */}
-            <HStack space="md" flexWrap="wrap">
-              <HStack alignItems="center" space="xs" flex={1} minWidth="45%">
-                <Mountain size={16} color={cropConfig.color} strokeWidth={2} />
-                <VStack>
-                  <Text fontSize="$xs" color={colors.textSecondary}>
-                    Diện tích
-                  </Text>
-                  <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
-                    {formatArea(farm.area_sqm)}
-                  </Text>
-                </VStack>
-              </HStack>
+              <Box width={1} bg={AgrisaColors.light.frame_border} />
 
-              <HStack alignItems="center" space="xs" flex={1} minWidth="45%">
-                <Calendar size={16} color={cropConfig.color} strokeWidth={2} />
-                <VStack>
-                  <Text fontSize="$xs" color={colors.textSecondary}>
-                    Ngày gieo
-                  </Text>
-                  <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
-                    {formatDate(farm.planting_date)}
-                  </Text>
-                </VStack>
-              </HStack>
+              <VStack flex={1} alignItems="center">
+                <Text
+                  color={AgrisaColors.light.muted_text}
+                  fontSize={11}
+                  mb="$1"
+                  fontWeight="500"
+                >
+                  Cây trồng
+                </Text>
+                <Text color={cropConfig.color} fontSize={18} fontWeight="700">
+                  {cropConfig.label}
+                </Text>
+              </VStack>
+
+              <Box width={1} bg={AgrisaColors.light.frame_border} />
+
+              <VStack flex={1} alignItems="flex-end">
+                <Text
+                  color={AgrisaColors.light.muted_text}
+                  fontSize={11}
+                  mb="$1"
+                  fontWeight="500"
+                >
+                  Loại đất
+                </Text>
+                <Text
+                  color={AgrisaColors.light.primary_text}
+                  fontSize={16}
+                  fontWeight="700"
+                >
+                  {farm.soil_type === "alluvial" ? "Phù sa" : farm.soil_type}
+                </Text>
+              </VStack>
             </HStack>
-          </VStack>
+          </Box>
         </Box>
 
-        {/* ===== THÔNG TIN ĐỊA CHỈ ===== */}
+        {/* ===== ĐỊA CHỈ CHI TIẾT ===== */}
         <Box
-          bg={colors.card}
-          borderRadius="$xl"
-          p="$4"
+          bg={AgrisaColors.light.background}
+          borderRadius={16}
           borderWidth={1}
-          borderColor={colors.border}
+          borderColor={AgrisaColors.light.frame_border}
+          p="$4"
         >
-          <VStack space="md">
-            <HStack alignItems="center" space="xs">
-              <MapPin size={18} color={colors.success} strokeWidth={2} />
-              <Text fontSize="$md" fontWeight="$bold" color={colors.text}>
-                Địa chỉ
-              </Text>
-            </HStack>
+          <HStack alignItems="center" space="xs" mb="$3">
+            <MapPin
+              size={18}
+              color={AgrisaColors.light.secondary_text}
+              strokeWidth={2}
+            />
+            <Text
+              fontSize={16}
+              fontWeight="700"
+              color={AgrisaColors.light.primary_text}
+            >
+              Địa chỉ
+            </Text>
+          </HStack>
 
-            <VStack space="sm">
-              <InfoRow label="Tỉnh/Thành phố" value={farm.province} />
-              <InfoRow label="Quận/Huyện" value={farm.district} />
-              <InfoRow label="Phường/Xã" value={farm.commune} />
-              <Box
-                bg={colors.primarySoft}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.success}
+          <VStack space="sm">
+            <InfoRow label="Tỉnh/Thành" value={farm.province} />
+            <InfoRow label="Quận/Huyện" value={farm.district} />
+            <InfoRow label="Phường/Xã" value={farm.commune} />
+
+            <Box
+              bg={AgrisaColors.light.card_surface}
+              borderRadius={12}
+              p="$3"
+              mt="$2"
+            >
+              <Text
+                fontSize={13}
+                color={AgrisaColors.light.primary_text}
+                lineHeight={20}
               >
-                <Text fontSize="$sm" color={colors.text} lineHeight="$md">
-                  {farm.address}
-                </Text>
-              </Box>
-            </VStack>
+                {farm.address}
+              </Text>
+            </Box>
           </VStack>
         </Box>
 
         {/* ===== THÔNG TIN CANH TÁC ===== */}
         <Box
-          bg={colors.card}
-          borderRadius="$xl"
-          p="$4"
+          bg={AgrisaColors.light.background}
+          borderRadius={16}
           borderWidth={1}
-          borderColor={colors.border}
+          borderColor={AgrisaColors.light.frame_border}
+          p="$4"
         >
-          <VStack space="md">
-            <HStack alignItems="center" space="xs">
-              <Wheat size={18} color={colors.success} strokeWidth={2} />
-              <Text fontSize="$md" fontWeight="$bold" color={colors.text}>
-                Thông tin canh tác
-              </Text>
-            </HStack>
+          <HStack alignItems="center" space="xs" mb="$3">
+            <Calendar
+              size={18}
+              color={AgrisaColors.light.secondary_text}
+              strokeWidth={2}
+            />
+            <Text
+              fontSize={16}
+              fontWeight="700"
+              color={AgrisaColors.light.primary_text}
+            >
+              Thông tin canh tác
+            </Text>
+          </HStack>
 
-            <VStack space="sm">
-              <InfoRow
-                label="Ngày gieo trồng"
-                value={formatDate(farm.planting_date)}
-                icon={<Calendar size={14} color={colors.textSecondary} />}
-              />
-              <InfoRow
-                label="Ngày thu hoạch dự kiến"
-                value={formatDate(farm.expected_harvest_date)}
-                icon={<Calendar size={14} color={colors.textSecondary} />}
-              />
-              <InfoRow
-                label="Loại đất"
-                value={getSoilTypeLabel(farm.soil_type)}
-                icon={<Mountain size={14} color={colors.textSecondary} />}
-              />
-
-              {/* Tưới tiêu */}
-              <Box
-                bg={farm.has_irrigation ? colors.primarySoft : colors.background}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={farm.has_irrigation ? colors.success : colors.border}
-              >
-                <HStack alignItems="center" space="xs">
-                  <Droplets
-                    size={16}
-                    color={farm.has_irrigation ? colors.success : colors.textSecondary}
-                    strokeWidth={2}
-                  />
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.textSecondary}>
-                      Hệ thống tưới tiêu
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={farm.has_irrigation ? colors.success : colors.text}
-                    >
-                      {farm.has_irrigation
-                        ? getIrrigationLabel(farm.irrigation_type || 'none')
-                        : 'Không có hệ thống tưới'}
-                    </Text>
-                  </VStack>
-                  {farm.has_irrigation && (
-                    <CheckCircle2 size={16} color={colors.success} strokeWidth={2} />
-                  )}
-                </HStack>
-              </Box>
-            </VStack>
+          <VStack space="sm">
+            <InfoRow
+              label="Ngày gieo trồng"
+              value={Utils.formatDateForMS(farm.planting_date)}
+            />
+            <InfoRow
+              label="Ngày thu hoạch dự kiến"
+              value={Utils.formatDateForMS(farm.expected_harvest_date)}
+            />
+            <InfoRow
+              label="Loại đất canh tác"
+              value={`Đất ${farm.soil_type === "alluvial" ? "phù sa" : farm.soil_type}`}
+            />
           </VStack>
         </Box>
 
-        {/* ===== THÔNG TIN SỔ ĐỎ ===== */}
+        {/* ===== GIẤY TỜ PHÁP LÝ ===== */}
         <Box
-          bg={colors.card}
-          borderRadius="$xl"
-          p="$4"
+          bg={AgrisaColors.light.background}
+          borderRadius={16}
           borderWidth={1}
-          borderColor={colors.border}
+          borderColor={AgrisaColors.light.frame_border}
+          p="$4"
         >
-          <VStack space="md">
-            <HStack alignItems="center" space="xs">
-              <FileText size={18} color={colors.success} strokeWidth={2} />
-              <Text fontSize="$md" fontWeight="$bold" color={colors.text}>
-                Thông tin sổ đỏ
-              </Text>
-            </HStack>
+          <HStack alignItems="center" space="xs" mb="$3">
+            <FileCheck
+              size={18}
+              color={AgrisaColors.light.secondary_text}
+              strokeWidth={2}
+            />
+            <Text
+              fontSize={16}
+              fontWeight="700"
+              color={AgrisaColors.light.primary_text}
+            >
+              Giấy tờ pháp lý
+            </Text>
+          </HStack>
 
-            <VStack space="sm">
-              <Box
-                bg={colors.primarySoft}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.success}
-              >
-                <Text fontSize="$xs" color={colors.textSecondary} mb="$1">
+          <VStack space="sm">
+            {/* Certificate Number */}
+            <HStack justifyContent="space-between" alignItems="center" py="$2">
+              <VStack flex={1}>
+                <Text
+                  fontSize={12}
+                  color={AgrisaColors.light.muted_text}
+                  fontWeight="500"
+                  mb="$1"
+                >
                   Số giấy chứng nhận
                 </Text>
-                <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
+                <Text
+                  fontSize={16}
+                  fontWeight="700"
+                  color={AgrisaColors.light.primary_text}
+                >
                   {farm.land_certificate_number}
                 </Text>
-              </Box>
+              </VStack>
+              {farm.land_ownership_verified && (
+                <Shield
+                  size={24}
+                  color={AgrisaColors.light.success}
+                  strokeWidth={2.5}
+                />
+              )}
+            </HStack>
 
-              {/* Verification Status */}
-              <HStack space="sm">
-                <VerificationBadge
-                  label="Quyền sử dụng đất"
-                  isVerified={farm.land_ownership_verified}
-                />
-                <VerificationBadge
-                  label="Loại cây trồng"
-                  isVerified={farm.crop_type_verified}
-                />
+            <Box height={1} bg={AgrisaColors.light.frame_border} my="$2" />
+
+            {/* Verification Status */}
+            <VStack space="xs">
+              <HStack
+                justifyContent="space-between"
+                alignItems="center"
+                py="$1"
+              >
+                <Text fontSize={13} color={AgrisaColors.light.muted_text}>
+                  Quyền sử dụng đất
+                </Text>
+                <HStack space="xs" alignItems="center">
+                  {farm.land_ownership_verified ? (
+                    <>
+                      <CheckCircle2
+                        size={16}
+                        color={AgrisaColors.light.success}
+                        strokeWidth={2}
+                      />
+                      <Text
+                        fontSize={13}
+                        fontWeight="600"
+                        color={AgrisaColors.light.success}
+                      >
+                        Đã xác minh
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle
+                        size={16}
+                        color={AgrisaColors.light.error}
+                        strokeWidth={2}
+                      />
+                      <Text
+                        fontSize={13}
+                        fontWeight="600"
+                        color={AgrisaColors.light.error}
+                      >
+                        Chờ xác minh
+                      </Text>
+                    </>
+                  )}
+                </HStack>
+              </HStack>
+
+              <HStack
+                justifyContent="space-between"
+                alignItems="center"
+                py="$1"
+              >
+                <Text fontSize={13} color={AgrisaColors.light.muted_text}>
+                  Loại cây trồng
+                </Text>
+                <HStack space="xs" alignItems="center">
+                  {farm.crop_type_verified ? (
+                    <>
+                      <CheckCircle2
+                        size={16}
+                        color={AgrisaColors.light.success}
+                        strokeWidth={2}
+                      />
+                      <Text
+                        fontSize={13}
+                        fontWeight="600"
+                        color={AgrisaColors.light.success}
+                      >
+                        Đã xác minh
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle
+                        size={16}
+                        color={AgrisaColors.light.error}
+                        strokeWidth={2}
+                      />
+                      <Text
+                        fontSize={13}
+                        fontWeight="600"
+                        color={AgrisaColors.light.error}
+                      >
+                        Chờ xác minh
+                      </Text>
+                    </>
+                  )}
+                </HStack>
               </HStack>
             </VStack>
           </VStack>
         </Box>
 
-        {/* ===== THỜI GIAN TẠO/CẬP NHẬT ===== */}
+        {/* ===== THỜI GIAN ===== */}
         <Box
-          bg={colors.background}
-          borderRadius="$lg"
+          bg={AgrisaColors.light.card_surface}
+          borderRadius={12}
           p="$3"
           borderWidth={1}
-          borderColor={colors.border}
+          borderColor={AgrisaColors.light.frame_border}
         >
           <VStack space="xs">
-            <Text fontSize="$xs" color={colors.textSecondary}>
-              Ngày tạo: {new Date(farm.created_at).toLocaleString('vi-VN')}
-            </Text>
-            <Text fontSize="$xs" color={colors.textSecondary}>
-              Cập nhật gần nhất: {new Date(farm.updated_at).toLocaleString('vi-VN')}
-            </Text>
+            <HStack justifyContent="space-between">
+              <Text fontSize={11} color={AgrisaColors.light.muted_text}>
+                Ngày tạo:
+              </Text>
+              <Text
+                fontSize={11}
+                color={AgrisaColors.light.secondary_text}
+                fontWeight="600"
+              >
+                {new Date(farm.created_at).toLocaleDateString("vi-VN")}
+              </Text>
+            </HStack>
+            <HStack justifyContent="space-between">
+              <Text fontSize={11} color={AgrisaColors.light.muted_text}>
+                Cập nhật gần nhất:
+              </Text>
+              <Text
+                fontSize={11}
+                color={AgrisaColors.light.secondary_text}
+                fontWeight="600"
+              >
+                {new Date(farm.updated_at).toLocaleDateString("vi-VN")}
+              </Text>
+            </HStack>
           </VStack>
         </Box>
 
-        {/* ===== ACTION BUTTONS ===== */}
-        <HStack space="sm">
-          <Button
-            flex={1}
-            bg={colors.success}
-            onPress={onEdit}
-            sx={{
-              shadowColor: colors.success,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 6,
-            }}
-          >
-            <HStack space="xs" alignItems="center">
-              <Edit3 size={18} color="#fff" strokeWidth={2} />
-              <ButtonText color="#fff" fontWeight="$bold" fontSize="$md">
-                Chỉnh sửa thông tin
-              </ButtonText>
-            </HStack>
-          </Button>
-        </HStack>
+        {/* ===== ACTION BUTTON ===== */}
+        <Button
+          bg={AgrisaColors.light.primary}
+          borderRadius={16}
+          size="lg"
+          onPress={onEdit}
+          shadowColor={AgrisaColors.light.primary}
+          shadowOffset={{ width: 0, height: 4 }}
+          shadowOpacity={0.3}
+          shadowRadius={8}
+        >
+          <HStack space="sm" alignItems="center">
+            <Edit3
+              size={20}
+              color={AgrisaColors.light.white_button_text}
+              strokeWidth={2.5}
+            />
+            <ButtonText
+              color={AgrisaColors.light.white_button_text}
+              fontWeight="700"
+              fontSize={16}
+            >
+              Chỉnh sửa thông tin
+            </ButtonText>
+          </HStack>
+        </Button>
       </VStack>
     </ScrollView>
   );
@@ -425,67 +518,26 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
 const InfoRow: React.FC<{
   label: string;
   value: string;
-  icon?: React.ReactNode;
-}> = ({ label, value, icon }) => {
-  const { colors } = useAgrisaColors();
-
+}> = ({ label, value }) => {
   return (
-    <HStack justifyContent="space-between" alignItems="center">
-      <HStack alignItems="center" space="xs">
-        {icon}
-        <Text fontSize="$sm" color={colors.textSecondary}>
-          {label}
-        </Text>
-      </HStack>
-      <Text fontSize="$sm" fontWeight="$semibold" color={colors.text} textAlign="right" flex={1} ml="$2">
+    <HStack justifyContent="space-between" alignItems="center" py="$1">
+      <Text
+        fontSize={12}
+        color={AgrisaColors.light.muted_text}
+        fontWeight="500"
+      >
+        {label}
+      </Text>
+      <Text
+        fontSize={13}
+        fontWeight="600"
+        color={AgrisaColors.light.primary_text}
+        textAlign="right"
+        flex={1}
+        ml="$3"
+      >
         {value}
       </Text>
     </HStack>
-  );
-};
-
-/**
- * Helper Component - Verification Badge
- */
-const VerificationBadge: React.FC<{
-  label: string;
-  isVerified: boolean;
-}> = ({ label, isVerified }) => {
-  const { colors } = useAgrisaColors();
-
-  return (
-    <Box
-      flex={1}
-      bg={isVerified ? colors.success + '20' : colors.warning + '20'}
-      borderRadius="$lg"
-      p="$2"
-      borderWidth={1}
-      borderColor={isVerified ? colors.success : colors.warning}
-    >
-      <HStack alignItems="center" space="xs" justifyContent="center">
-        {isVerified ? (
-          <CheckCircle2 size={14} color={colors.success} strokeWidth={2} />
-        ) : (
-          <AlertCircle size={14} color={colors.warning} strokeWidth={2} />
-        )}
-        <VStack flex={1}>
-          <Text
-            fontSize="$xs"
-            fontWeight="$bold"
-            color={isVerified ? colors.success : colors.warning}
-            numberOfLines={1}
-          >
-            {label}
-          </Text>
-          <Text
-            fontSize="$xs"
-            color={isVerified ? colors.success : colors.warning}
-            numberOfLines={1}
-          >
-            {isVerified ? '✓ Đã xác minh' : '⏳ Chờ xác minh'}
-          </Text>
-        </VStack>
-      </HStack>
-    </Box>
   );
 };

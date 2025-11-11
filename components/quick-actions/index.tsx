@@ -15,6 +15,14 @@ interface QuickActionsProps {
 }
 
 export default function QuickActions({ items }: QuickActionsProps) {
+  const handlePress = (item: QuickActionItem) => {
+    if (item.key === "farm") {
+      router.push("/(farmer)/farm");
+    } else {
+      router.push(item.href || `/${item.key}`);
+    }
+  };
+
   return (
     <View
       style={{
@@ -28,7 +36,7 @@ export default function QuickActions({ items }: QuickActionsProps) {
       {items.map((item) => (
         <Pressable
           key={item.key}
-          onPress={() => router.push(item.href || `/${item.key}`)}
+          onPress={() => handlePress(item)}
           style={{
             flexBasis: "25%",
             alignItems: "center",

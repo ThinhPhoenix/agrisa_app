@@ -9,18 +9,24 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  Headset,
   MapPinPlus,
   ReceiptText,
   Satellite,
   Scroll,
   TriangleAlert,
+  Wheat,
 } from "lucide-react-native";
 import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import QuickActions from "../../components/quick-actions";
 
 const quickActionItems = [
+  {
+    key: "farm",
+    name: "Trang trại",
+    icon: Wheat,
+    color: "#059669",
+  },
   {
     key: "add",
     name: "Thêm mới",
@@ -44,12 +50,6 @@ const quickActionItems = [
     name: "Quản lý giấy tờ",
     icon: Scroll,
     color: "#C1856D",
-  },
-  {
-    key: "support",
-    name: "Yêu cầu hỗ trợ",
-    icon: Headset,
-    color: "#E45A92",
   },
 ];
 

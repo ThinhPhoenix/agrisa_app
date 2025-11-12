@@ -37,7 +37,6 @@
         "android.permission.ACCESS_NETWORK_STATE"
       ],
       "package": "com.tnhaan.agrisa"
-
     },
     "web": {
       "bundler": "metro",

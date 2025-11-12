@@ -1,17 +1,17 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
+import { router } from "expo-router";
 import { CheckCircle2, Clock, Info, XCircle } from "lucide-react-native";
 import { useState } from "react";
 import { RefreshControl } from "react-native";
-import { router } from "expo-router";
 
 type HistoryStatus = "rejected" | "pending" | "approved";
 
@@ -67,13 +67,17 @@ export default function PolicyHistoryScreen() {
   return (
     <VStack flex={1} bg={colors.background}>
       {/* Header */}
-      <AgrisaHeader title="Lịch sử đăng ký" showBackButton={true} onBack={() => router.back()}  />
+      <AgrisaHeader
+        title="Lịch sử đăng ký"
+        showBackButton={true}
+        onBack={() => router.back()}
+      />
 
       {/* Info Description */}
       <Box
         bg={colors.infoSoft}
-        borderLeftWidth={3}
-        borderLeftColor={colors.info}
+        borderWidth={1}
+        borderColor={colors.info}
         p="$3"
         mx="$4"
         mt="$4"
@@ -81,19 +85,25 @@ export default function PolicyHistoryScreen() {
       >
         <VStack space="xs">
           <HStack alignItems="center" mb="$1">
-            <Info size={18} color={colors.info} strokeWidth={2} />
-            <Text
-              fontSize="$sm"
-              fontWeight="$bold"
-              color={colors.info}
-              ml="$2"
+            <Box
+              bg={colors.info}
+              p="$1"
+              borderRadius="$sm"
+              alignItems="center"
+              justifyContent="center"
             >
+              <Info
+                size={14}
+                color={colors.white_button_text}
+                strokeWidth={2.5}
+              />
+            </Box>
+            <Text fontSize="$sm" fontWeight="$bold" color={colors.info} ml="$2">
               Lịch sử đăng ký
             </Text>
           </HStack>
           <Text fontSize="$xs" color={colors.primary_text} lineHeight="$md">
-            Theo dõi trạng thái các đơn đăng ký bảo hiểm của bạn theo từng giai
-            đoạn xử lý.
+            Theo dõi trạng thái xử lý của các đơn đăng ký bảo hiểm đã gửi.
           </Text>
         </VStack>
       </Box>

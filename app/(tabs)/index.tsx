@@ -34,12 +34,6 @@ const quickActionItems = [
     color: "#476EAE",
   },
   {
-    key: "add",
-    name: "Thêm mới",
-    icon: MapPinPlus,
-    color: "#EF7722",
-  },
-  {
     key: "ocr",
     name: "Vệ tinh",
     icon: Satellite,

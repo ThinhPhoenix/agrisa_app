@@ -106,6 +106,7 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
           boundary: values.boundary || formValues.boundary,
           center_location: values.center_location || formValues.center_location,
           land_certificate_photos: values.land_certificate_photos || formValues.land_certificate_photos,
+          status: "active",
           ...(mode === "edit" && values.status ? { status: values.status as string } : {}),
         };
 

@@ -7,10 +7,9 @@ import { Box, Text } from "@gluestack-ui/themed";
 import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import { ScanText } from "lucide-react-native";
+import { ScanText, X, Upload } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
-  // ActivityIndicator is used inside buttons; keep import for clarity (PrimaryButton uses it)
   Alert,
   Animated,
   Dimensions,
@@ -18,6 +17,7 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -28,22 +28,24 @@ const WINDOW_HEIGHT = Dimensions.get("window").height;
 const DRAWER_HEIGHT = 100;
 
 export interface OcrScannerProps {
-  onResult?: (text: string) => void;
+  onResult?: (result: { text: string; uris: string[] }) => void;
   buttonLabel?: string;
   prompt?: string;
+  multiple?: boolean; // Tính năng mới
 }
 
 const OcrScanner: React.FC<OcrScannerProps> = ({
   onResult,
   buttonLabel,
   prompt,
+  multiple = false,
 }) => {
   const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey;
 
   const [open, setOpen] = useState(false);
   const anim = useRef(new Animated.Value(0)).current;
 
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUris, setImageUris] = useState<string[]>([]);
   const [ocrText, setOcrText] = useState<string>("");
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -67,17 +69,42 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
     }).start(() => setOpen(false));
   };
 
-  const performOCR = async (uri: string) => {
+  const performOCR = async (uris: string[]) => {
     try {
       setLoading(true);
       setOcrText("");
 
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: "base64",
-      });
+      // Convert all images to base64
+      const base64Images = await Promise.all(
+        uris.map((uri) =>
+          FileSystem.readAsStringAsync(uri, { encoding: "base64" })
+        )
+      );
 
       if (!GEMINI_API_KEY)
         console.warn("No API key provided to OcrScanner component");
+
+      // Build parts array with text prompt and all images
+      const parts: any[] = [
+        {
+          text: `Vui lòng trích xuất và chỉ trả về nội dung văn bản từ ${
+            uris.length > 1 ? "các" : ""
+          } hình ảnh này. ${
+            uris.length > 1
+              ? "Nếu có nhiều ảnh, hãy ghép nội dung theo thứ tự."
+              : ""
+          } Không thêm bất kỳ lời giải thích hoặc bình luận nào. ${
+            prompt ? `Thông tin bổ sung: ${prompt}` : ""
+          }`,
+        },
+      ];
+
+      // Add all images
+      base64Images.forEach((base64) => {
+        parts.push({
+          inline_data: { mime_type: "image/jpeg", data: base64 },
+        });
+      });
 
       const geminiResp = await fetch(
         `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
@@ -85,18 +112,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Vui lòng trích xuất và chỉ trả về nội dung văn bản từ hình ảnh này. Không thêm bất kỳ lời giải thích hoặc bình luận nào. ${
-                      prompt ? `Thông tin bổ sung: ${prompt}` : ""
-                    }`,
-                  },
-                  { inline_data: { mime_type: "image/jpeg", data: base64 } },
-                ],
-              },
-            ],
+            contents: [{ parts }],
           }),
         }
       );
@@ -109,19 +125,18 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       }
 
       const gdata = await geminiResp.json();
-      // keep a copy of raw response for debugging UI when DEBUGGING=true
       setRawResponse(gdata);
       console.log("Gemini response:", gdata);
 
       if (gdata.candidates && gdata.candidates[0]?.content?.parts) {
         const text = gdata.candidates[0].content.parts[0].text;
         setOcrText(text);
-        onResult && onResult(text);
-        // Send a push notification with a short snippet of the recognized text
+        onResult && onResult({ text, uris });
+
         try {
           await sendNotification({
             title: "OCR thành công",
-            body: "Đã nhận dạng văn bản từ ảnh",
+            body: `Đã nhận dạng văn bản từ ${uris.length} ảnh`,
           });
         } catch (notifErr) {
           console.warn("Failed to send OCR notification", notifErr);
@@ -151,14 +166,28 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         quality: 0.8,
+        allowsMultipleSelection: multiple,
       });
+
       const cancelled = (result as any).canceled ?? (result as any).cancelled;
-      const uri = (result as any).assets?.[0]?.uri ?? (result as any).uri;
-      if (!cancelled && uri) {
-        setImageUri(uri);
-        // close drawer immediately so the user sees the sheet hide, then run OCR
-        closeDrawer();
-        await performOCR(uri);
+
+      if (!cancelled) {
+        // Handle multiple selection
+        const assets = (result as any).assets;
+        const uris = assets
+          ? assets.map((a: any) => a.uri)
+          : [(result as any).uri];
+
+        if (multiple) {
+          // Add to existing images
+          setImageUris((prev) => [...prev, ...uris]);
+          closeDrawer();
+        } else {
+          // Single mode - process immediately
+          setImageUris(uris);
+          closeDrawer();
+          await performOCR(uris);
+        }
       } else {
         closeDrawer();
       }
@@ -182,13 +211,21 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
         mediaTypes: ["images"],
         quality: 0.8,
       });
+
       const cancelled = (result as any).canceled ?? (result as any).cancelled;
       const uri = (result as any).assets?.[0]?.uri ?? (result as any).uri;
+
       if (!cancelled && uri) {
-        setImageUri(uri);
-        // hide drawer immediately before processing
-        closeDrawer();
-        await performOCR(uri);
+        if (multiple) {
+          // Add to collection
+          setImageUris((prev) => [...prev, uri]);
+          closeDrawer();
+        } else {
+          // Single mode - process immediately
+          setImageUris([uri]);
+          closeDrawer();
+          await performOCR([uri]);
+        }
       } else {
         closeDrawer();
       }
@@ -199,9 +236,26 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
     }
   };
 
+  const removeImage = (index: number) => {
+    setImageUris((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const processImages = async () => {
+    if (imageUris.length === 0) {
+      Alert.alert("Lỗi", "Vui lòng chọn ít nhất một ảnh");
+      return;
+    }
+    await performOCR(imageUris);
+  };
+
+  const clearImages = () => {
+    setImageUris([]);
+    setOcrText("");
+    setRawResponse(null);
+  };
+
   const translateY = anim.interpolate({
     inputRange: [0, 1],
-    // move the drawer fully off-screen when closed (use window height)
     outputRange: [WINDOW_HEIGHT, 0],
   });
   const backdropOpacity = anim.interpolate({
@@ -217,23 +271,80 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
             onPress={openDrawer}
             style={{ width: "100%" }}
             loading={loading}
+            disabled={loading}
           >
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
               <ScanText color="#fff" size={18} />
               <Text style={{ color: "#fff", fontWeight: "600" }}>
-                {buttonLabel ?? "Chọn ảnh"}
+                {buttonLabel ?? (multiple ? "Chọn ảnh" : "Chọn ảnh")}
               </Text>
             </View>
           </PrimaryButton>
 
-          {DEBUGGING && (imageUri || ocrText || rawResponse) ? (
+          {/* Preview selected images in multiple mode */}
+          {multiple && imageUris.length > 0 && (
+            <View style={styles.previewContainer}>
+              <View style={styles.previewHeader}>
+                <Text style={styles.previewTitle}>
+                  Đã chọn {imageUris.length} ảnh
+                </Text>
+                <TouchableOpacity onPress={clearImages}>
+                  <Text style={styles.clearText}>Xóa tất cả</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.imageList}>
+                  {imageUris.map((uri, index) => (
+                    <View key={index} style={styles.imageWrapper}>
+                      <Image source={{ uri }} style={styles.previewImage} />
+                      <TouchableOpacity
+                        style={styles.removeButton}
+                        onPress={() => removeImage(index)}
+                      >
+                        <X color="#fff" size={16} />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
+
+              <PrimaryButton
+                onPress={processImages}
+                style={{ width: "100%", marginTop: 12 }}
+                loading={loading}
+                disabled={loading}
+              >
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Upload color="#fff" size={18} />
+                  <Text style={{ color: "#fff", fontWeight: "600" }}>
+                    Gửi {imageUris.length} ảnh để OCR
+                  </Text>
+                </View>
+              </PrimaryButton>
+            </View>
+          )}
+
+          {DEBUGGING && (imageUris.length > 0 || ocrText || rawResponse) ? (
             <View style={styles.debugBox}>
               <Text style={styles.debugTitle}>Debug OCR</Text>
 
-              {imageUri ? (
-                <Image source={{ uri: imageUri }} style={styles.debugImage} />
+              {imageUris.length > 0 ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    {imageUris.map((uri, idx) => (
+                      <Image
+                        key={idx}
+                        source={{ uri }}
+                        style={styles.debugImage}
+                      />
+                    ))}
+                  </View>
+                </ScrollView>
               ) : null}
 
               {loading ? (
@@ -260,7 +371,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
         </Box>
       </ScrollView>
 
-      {/* Modal Drawer - Render at root level */}
+      {/* Modal Drawer */}
       <Modal
         visible={open}
         transparent={true}
@@ -287,7 +398,9 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
               <SecondaryButton onPress={chooseFromLibrary}>
-                <Text>Chọn từ thư viện</Text>
+                <Text>
+                  {multiple ? "Chọn từ thư viện" : "Chọn từ thư viện"}
+                </Text>
               </SecondaryButton>
             </View>
 
@@ -317,6 +430,50 @@ const styles = StyleSheet.create({
     elevation: 12,
     backgroundColor: "#fff",
   },
+  previewContainer: {
+    marginTop: 16,
+    width: "100%",
+  },
+  previewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  previewTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  clearText: {
+    fontSize: 14,
+    color: "#EF4444",
+    fontWeight: "500",
+  },
+  imageList: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  imageWrapper: {
+    position: "relative",
+  },
+  previewImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 8,
+    resizeMode: "cover",
+  },
+  removeButton: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    backgroundColor: "#EF4444",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   resultBox: {
     marginTop: 20,
     padding: 16,
@@ -326,7 +483,6 @@ const styles = StyleSheet.create({
   },
   resultTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 8 },
   resultText: { fontSize: 14, lineHeight: 20 },
-  // debug styles
   debugBox: {
     marginTop: 20,
     padding: 14,
@@ -338,15 +494,15 @@ const styles = StyleSheet.create({
   },
   debugTitle: { fontSize: 14, fontWeight: "700", marginBottom: 8 },
   debugImage: {
-    width: "100%",
+    width: 120,
     height: 180,
     borderRadius: 8,
     marginBottom: 10,
-    resizeMode: "cover" as any,
+    resizeMode: "cover",
   },
   debugStatus: { fontSize: 13, color: "#374151", marginBottom: 8 },
-  rawBox: { marginTop: 8, maxHeight: 160, overflow: "hidden" as any },
-  rawText: { fontSize: 12, fontFamily: "monospace" as any, color: "#111827" },
+  rawBox: { marginTop: 8, maxHeight: 160, overflow: "hidden" },
+  rawText: { fontSize: 12, fontFamily: "monospace", color: "#111827" },
 });
 
 export default OcrScanner;

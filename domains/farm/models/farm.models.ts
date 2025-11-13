@@ -27,6 +27,16 @@ export interface PolygonGeometry {
 
 // ============= ENUMS =============
 
+
+interface FarmPhoto {
+  id: string;
+  farm_id: string;
+  photo_url: string;
+  photo_type: string;
+  taken_at?: number;
+  created_at: string;
+}
+
 /**
  * Loại cây trồng được hỗ trợ bảo hiểm
  */
@@ -73,6 +83,8 @@ export enum SoilType {
   PEAT = "peat",
   OTHER = "other",
 }
+
+
 
 // ============= MAIN INTERFACE =============
 
@@ -208,6 +220,8 @@ export interface Farm {
    * @example "2025-11-06T13:20:58.742857846+07:00"
    */
   updated_at: string;
+
+  farm_photos: FarmPhoto[];
 }
 
 // ============= DTO (Data Transfer Objects) =============

@@ -2,28 +2,28 @@ import { useToast } from "@/domains/shared/hooks/useToast";
 import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { policyServices } from "../service/farm.service";
+import { farmServices } from "../service/farm.service";
 
-export const usePolicy = () => {
+export const useFarm = () => {
 
-  const getPublicBasePolicy = () => {
+  const getListFarm = () => {
     return useQuery({
-      queryKey: [QueryKey.EKYC.STATUS],
-      queryFn: () => policyServices.get.base_policy(),
+      queryKey: [QueryKey.FARM.LIST],
+      queryFn: () => farmServices.get.listFarm(),
     });
   }
 
-  const getDetailBasePolicy = (base_policy_id: string) => {
+  const getDetailFarm = (farm_id: string) => {
     return useQuery({
-      queryKey: [QueryKey.POLICY.DETAIL, base_policy_id],
-      queryFn: () => policyServices.get.detail_policy(base_policy_id),
-      enabled: !!base_policy_id,
+      queryKey: [QueryKey.FARM.DETAIL, farm_id],
+      queryFn: () => farmServices.get.detailFarm(farm_id),
+      enabled: !!farm_id,
     });
   };
   
 
   return {
-    getPublicBasePolicy,
-    getDetailBasePolicy,
+    getListFarm,
+    getDetailFarm,
   };
 };

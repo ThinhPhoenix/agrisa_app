@@ -107,8 +107,6 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       type: "input",
       required: true,
     },
-
-    // Section 2: Địa chỉ (auto-fill từ OCR trong Create mode)
     {
       name: "province",
       label: "Tỉnh/Thành phố",

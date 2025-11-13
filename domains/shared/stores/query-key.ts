@@ -17,6 +17,13 @@ export const QueryKey = {
     DETAIL: "policy-detail",
   },
 
+  FARM: {
+    LIST: "farm-list",
+    DETAIL: "farm-detail",
+    CREATE: "farm-create",
+    UPDATE: "farm-update",
+  },
+
   TEST: "test",
   
 };

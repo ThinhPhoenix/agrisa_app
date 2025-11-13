@@ -1,9 +1,9 @@
-import type { FormField } from '@/components/custom-form';
-import { CustomForm } from '@/components/custom-form';
-import { useAgrisaColors } from '@/domains/agrisa_theme/hooks/useAgrisaColor';
-import { Farm, FormFarmDTO } from '@/domains/farm/models/farm.models';
-import { useToast } from '@/domains/shared/hooks/useToast';
-import OcrScanner from '@/components/ocr-scanner';
+import type { FormField } from "@/components/custom-form";
+import { CustomForm } from "@/components/custom-form";
+import OcrScanner from "@/components/ocr-scanner";
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { Farm, FormFarmDTO } from "@/domains/farm/models/farm.models";
+import { useToast } from "@/domains/shared/hooks/useToast";
 import {
   Box,
   Button,
@@ -12,35 +12,37 @@ import {
   ScrollView,
   Spinner,
   Text,
-  VStack
-} from '@gluestack-ui/themed';
-import * as ImagePicker from 'expo-image-picker';
+  VStack,
+} from "@gluestack-ui/themed";
+import Constants from "expo-constants";
+import * as FileSystem from "expo-file-system/legacy";
+import * as ImagePicker from "expo-image-picker";
 import {
   AlertCircle,
   Camera,
   CheckCircle2,
   FileText,
   XCircle,
-} from 'lucide-react-native';
-import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Image } from 'react-native';
+} from "lucide-react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, Image } from "react-native";
 
 interface RegisterFarmFormProps {
   /**
    * Mode: create (tạo mới) hoặc edit (cập nhật)
    */
-  mode?: 'create' | 'edit';
-  
+  mode?: "create" | "edit";
+
   /**
    * Farm data để edit (chỉ có khi mode = 'edit')
    */
   initialData?: Farm | null;
-  
+
   /**
    * Callback khi submit thành công
    */
   onSubmitSuccess?: (farm: FormFarmDTO) => void;
-  
+
   /**
    * Loading state từ parent (khi đang call API)
    */
@@ -49,14 +51,14 @@ interface RegisterFarmFormProps {
 
 /**
  * Component đăng ký nông trại mới
- * 
+ *
  * Features:
  * - ✅ OCR sổ đỏ BẮT BUỘC để nhận diện thông tin (chỉ Create mode)
  * - ✅ Validation đầy đủ
  * - ✅ UX đơn giản cho nông dân
  */
 export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
-  mode = 'create',
+  mode = "create",
   initialData = null,
   onSubmitSuccess,
   isSubmitting = false,
@@ -72,7 +74,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
   // ===== INITIALIZE FORM VALUES (Edit Mode) =====
   useEffect(() => {
-    if (mode === 'edit' && initialData) {
+    if (mode === "edit" && initialData) {
       const initialFormData: Partial<FormFarmDTO> = {
         farm_name: initialData.farm_name,
         province: initialData.province,
@@ -252,23 +254,107 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   // ===== HANDLERS =====
 
   /**
+   * Xử lý OCR sổ đỏ
+   */
+  const processOCR = useCallback(
+    async (imageUri: string) => {
+      try {
+        setIsOCRProcessing(true);
+        toast.info("Đang nhận diện thông tin sổ đỏ...");
+
+        const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey;
+
+        if (!GEMINI_API_KEY) {
+          throw new Error("No API key provided");
+        }
+
+        // Convert image to base64
+        const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: "base64" });
+
+        // Build parts array
+        const parts: any[] = [
+          {
+            text: `
+              Đưa ra các thông tin nhận diện từ sổ đỏ gửi tôi dưới dạng JSON với các trường:
+              - land_certificate_number: Số sổ đỏ
+              - address: Địa chỉ chi tiết
+              - province: Tỉnh/Thành phố
+              - district: Quận/Huyện
+              - commune: Phường/Xã
+              - area_sqm: Diện tích (m²)
+              - boundary: Thông tin ranh giới đất đai dưới dạng GeoJSON Polygon (tọa độ GPS)
+              - center_location: Tọa độ trung tâm của khu đất dưới dạng GeoJSON Point
+
+              Lưu ý: Chỉ trả về JSON, không giải thích gì thêm!
+            `,
+          },
+          {
+            inline_data: { mime_type: "image/jpeg", data: base64 },
+          },
+        ];
+
+        const geminiResp = await fetch(
+          `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts }],
+            }),
+          }
+        );
+
+        if (!geminiResp.ok) {
+          throw new Error(`Gemini API error: ${geminiResp.status}`);
+        }
+
+        const gdata = await geminiResp.json();
+
+        if (gdata.candidates && gdata.candidates[0]?.content?.parts) {
+          const text = gdata.candidates[0].content.parts[0].text;
+          const ocrData = JSON.parse(text.trim());
+
+          // Validate required fields
+          if (!ocrData.land_certificate_number || !ocrData.address) {
+            throw new Error("Không thể nhận diện đầy đủ thông tin từ ảnh");
+          }
+
+          setOcrResult(ocrData);
+          setFormValues((prev) => ({ ...prev, ...ocrData }));
+
+          toast.success("✅ Đã nhận diện thành công!");
+        } else {
+          throw new Error("Không thể trích xuất text từ ảnh");
+        }
+      } catch (error) {
+        console.error("OCR error:", error);
+        toast.error("❌ Không thể nhận diện. Vui lòng chụp lại ảnh rõ hơn.");
+      } finally {
+        setIsOCRProcessing(false);
+      }
+    },
+    [toast]
+  );
+
+  /**
    * Chụp/Chọn ảnh sổ đỏ
    */
   const handlePickRedBookImage = useCallback(async () => {
     try {
-      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-      
+      const permissionResult =
+        await ImagePicker.requestCameraPermissionsAsync();
+
       if (!permissionResult.granted) {
-        toast.error('Cần cấp quyền truy cập camera để chụp ảnh');
+        toast.error("Cần cấp quyền truy cập camera để chụp ảnh");
         return;
       }
 
       Alert.alert(
-        'Chụp ảnh sổ đỏ',
-        'Hãy chụp rõ các thông tin: Số sổ, địa chỉ, diện tích',
+        "Chụp ảnh sổ đỏ",
+        "Hãy chụp rõ các thông tin: Số sổ, địa chỉ, diện tích",
         [
           {
-            text: 'Chụp ảnh',
+            text: "Chụp ảnh",
             onPress: async () => {
               const result = await ImagePicker.launchCameraAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -284,7 +370,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
             },
           },
           {
-            text: 'Chọn từ thư viện',
+            text: "Chọn từ thư viện",
             onPress: async () => {
               const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -300,69 +386,34 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
             },
           },
           {
-            text: 'Hủy',
-            style: 'cancel',
+            text: "Hủy",
+            style: "cancel",
           },
         ]
       );
     } catch (error) {
-      console.error('Pick image error:', error);
-      toast.error('Không thể chọn ảnh');
+      console.error("Pick image error:", error);
+      toast.error("Không thể chọn ảnh");
     }
-  }, [toast]);
-
-  /**
-   * Xử lý OCR sổ đỏ
-   */
-  const processOCR = useCallback(async (imageUri: string) => {
-    try {
-      setIsOCRProcessing(true);
-      toast.info('Đang nhận diện thông tin sổ đỏ...');
-
-      // TODO: Call OCR API
-      // const response = await ocrAPI.processRedBook(imageUri);
-      
-      // Mock OCR result
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      const mockOCRResult: Partial<FormFarmDTO> = {
-        land_certificate_number: 'SH-2024-001234',
-        address: 'Ấp Tân Tiến, xã Mỹ Hội, huyện Cao Lãnh',
-        province: 'Đồng Tháp',
-        district: 'Cao Lãnh',
-        commune: 'Mỹ Hội',
-        area_sqm: 50000,
-      };
-
-      setOcrResult(mockOCRResult);
-      setFormValues(prev => ({ ...prev, ...mockOCRResult }));
-      
-      toast.success('✅ Đã nhận diện thành công!');
-    } catch (error) {
-      console.error('OCR error:', error);
-      toast.error('❌ Không thể nhận diện. Vui lòng chụp lại ảnh rõ hơn.');
-    } finally {
-      setIsOCRProcessing(false);
-    }
-  }, [toast]);
+  }, [toast, processOCR]);
 
   /**
    * Remove ảnh sổ đỏ
    */
   const handleRemoveRedBookImage = useCallback(() => {
     Alert.alert(
-      'Xác nhận xóa',
-      'Bạn có chắc muốn xóa ảnh sổ đỏ? Thông tin đã nhận diện sẽ bị xóa.',
+      "Xác nhận xóa",
+      "Bạn có chắc muốn xóa ảnh sổ đỏ? Thông tin đã nhận diện sẽ bị xóa.",
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: "Hủy", style: "cancel" },
         {
-          text: 'Xóa',
-          style: 'destructive',
+          text: "Xóa",
+          style: "destructive",
           onPress: () => {
             setRedBookImage(null);
             setOcrResult(null);
             setFormValues({});
-            toast.info('Đã xóa ảnh sổ đỏ');
+            toast.info("Đã xóa ảnh sổ đỏ");
           },
         },
       ]
@@ -372,40 +423,47 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   /**
    * Submit form
    */
-  const handleSubmit = useCallback(async (values: Record<string, any>) => {
-    try {
-      // ✅ Validate OCR trong Create Mode
-      if (mode === 'create' && !ocrResult) {
-        toast.error('Vui lòng chụp ảnh sổ đỏ để nhận diện thông tin');
-        return;
+  const handleSubmit = useCallback(
+    async (values: Record<string, any>) => {
+      try {
+        // ✅ Validate OCR trong Create Mode
+        if (mode === "create" && !ocrResult) {
+          toast.error("Vui lòng chụp ảnh sổ đỏ để nhận diện thông tin");
+          return;
+        }
+
+        const farmData: FormFarmDTO = {
+          farm_name: values.farm_name as string,
+          province: values.province as string,
+          district: values.district as string,
+          commune: values.commune as string,
+          address: values.address as string,
+          crop_type: values.crop_type as string,
+          area_sqm: Number(values.area_sqm),
+          planting_date: Math.floor(
+            new Date(
+              values.planting_date.split("/").reverse().join("-")
+            ).getTime() / 1000
+          ),
+          expected_harvest_date: Math.floor(
+            new Date(
+              values.expected_harvest_date.split("/").reverse().join("-")
+            ).getTime() / 1000
+          ),
+          land_certificate_number: values.land_certificate_number as string,
+          soil_type: values.soil_type as string,
+          has_irrigation: Boolean(values.has_irrigation),
+          irrigation_type: (values.irrigation_type as string) || "none",
+        };
+
+        onSubmitSuccess?.(farmData);
+      } catch (error) {
+        console.error("Submit error:", error);
+        toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
       }
-
-      const farmData: FormFarmDTO = {
-        farm_name: values.farm_name as string,
-        province: values.province as string,
-        district: values.district as string,
-        commune: values.commune as string,
-        address: values.address as string,
-        crop_type: values.crop_type as string,
-        area_sqm: Number(values.area_sqm),
-        planting_date: Math.floor(
-          new Date(values.planting_date.split('/').reverse().join('-')).getTime() / 1000
-        ),
-        expected_harvest_date: Math.floor(
-          new Date(values.expected_harvest_date.split('/').reverse().join('-')).getTime() / 1000
-        ),
-        land_certificate_number: values.land_certificate_number as string,
-        soil_type: values.soil_type as string,
-        has_irrigation: Boolean(values.has_irrigation),
-        irrigation_type: values.irrigation_type as string || 'none',
-      };
-
-      onSubmitSuccess?.(farmData);
-    } catch (error) {
-      console.error('Submit error:', error);
-      toast.error('Có lỗi xảy ra. Vui lòng thử lại.');
-    }
-  }, [mode, ocrResult, onSubmitSuccess, toast]);
+    },
+    [mode, ocrResult, onSubmitSuccess, toast]
+  );
 
   // ===== RENDER =====
 
@@ -418,18 +476,17 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         {/* Header */}
         <VStack space="xs">
           <Text fontSize="$2xl" fontWeight="$bold" color={colors.text}>
-            {mode === 'edit' ? 'Cập nhật nông trại' : 'Đăng ký nông trại mới'}
+            {mode === "edit" ? "Cập nhật nông trại" : "Đăng ký nông trại mới"}
           </Text>
           <Text fontSize="$sm" color={colors.textSecondary} lineHeight="$md">
-            {mode === 'edit' 
-              ? 'Cập nhật thông tin nông trại của bạn'
-              : 'Chụp ảnh sổ đỏ để hệ thống tự động nhận diện thông tin đất đai'
-            }
+            {mode === "edit"
+              ? "Cập nhật thông tin nông trại của bạn"
+              : "Chụp ảnh sổ đỏ để hệ thống tự động nhận diện thông tin đất đai"}
           </Text>
         </VStack>
 
         {/* ===== BƯỚC 1: OCR SỔ ĐỎ (BẮT BUỘC - CHỈ CREATE MODE) ===== */}
-        {mode === 'create' && (
+        {mode === "create" && (
           <Box
             bg={ocrResult ? colors.primarySoft : colors.card}
             borderRadius="$xl"
@@ -466,12 +523,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 </HStack>
 
                 {ocrResult && (
-                  <Box
-                    bg={colors.success}
-                    borderRadius="$full"
-                    px="$3"
-                    py="$1"
-                  >
+                  <Box bg={colors.success} borderRadius="$full" px="$3" py="$1">
                     <Text fontSize="$xs" color="#fff" fontWeight="$bold">
                       ✓ Hoàn thành
                     </Text>
@@ -492,10 +544,10 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   >
                     <Image
                       source={{ uri: redBookImage }}
-                      style={{ width: '100%', height: 240 }}
+                      style={{ width: "100%", height: 240 }}
                       resizeMode="cover"
                     />
-                    
+
                     {/* OCR Processing Overlay */}
                     {isOCRProcessing && (
                       <Box
@@ -509,7 +561,12 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         justifyContent="center"
                       >
                         <Spinner size="large" color={colors.success} />
-                        <Text color="#fff" mt="$3" fontSize="$md" fontWeight="$semibold">
+                        <Text
+                          color="#fff"
+                          mt="$3"
+                          fontSize="$md"
+                          fontWeight="$semibold"
+                        >
                           Đang xử lý ảnh...
                         </Text>
                         <Text color="#fff" mt="$1" fontSize="$xs">
@@ -521,9 +578,9 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
                   {/* OCR Result Summary */}
                   {ocrResult && (
-                    <Box 
-                      bg={colors.success} 
-                      borderRadius="$lg" 
+                    <Box
+                      bg={colors.success}
+                      borderRadius="$lg"
                       p="$4"
                       sx={{
                         shadowColor: colors.success,
@@ -534,12 +591,16 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       }}
                     >
                       <HStack alignItems="center" space="xs" mb="$3">
-                        <CheckCircle2 size={20} color="#fff" strokeWidth={2.5} />
+                        <CheckCircle2
+                          size={20}
+                          color="#fff"
+                          strokeWidth={2.5}
+                        />
                         <Text fontSize="$sm" fontWeight="$bold" color="#fff">
                           Thông tin đã nhận diện
                         </Text>
                       </HStack>
-                      
+
                       <VStack space="sm">
                         <HStack justifyContent="space-between">
                           <Text fontSize="$xs" color="#fff" opacity={0.9}>
@@ -549,22 +610,29 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                             {ocrResult.land_certificate_number}
                           </Text>
                         </HStack>
-                        
+
                         <HStack justifyContent="space-between">
                           <Text fontSize="$xs" color="#fff" opacity={0.9}>
                             Địa chỉ:
                           </Text>
-                          <Text fontSize="$xs" fontWeight="$bold" color="#fff" textAlign="right" flex={1} ml="$2">
+                          <Text
+                            fontSize="$xs"
+                            fontWeight="$bold"
+                            color="#fff"
+                            textAlign="right"
+                            flex={1}
+                            ml="$2"
+                          >
                             {ocrResult.address}
                           </Text>
                         </HStack>
-                        
+
                         <HStack justifyContent="space-between">
                           <Text fontSize="$xs" color="#fff" opacity={0.9}>
                             Diện tích:
                           </Text>
                           <Text fontSize="$xs" fontWeight="$bold" color="#fff">
-                            {ocrResult.area_sqm?.toLocaleString('vi-VN')} m²
+                            {ocrResult.area_sqm?.toLocaleString("vi-VN")} m²
                           </Text>
                         </HStack>
                       </VStack>
@@ -580,13 +648,21 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       onPress={handleRemoveRedBookImage}
                     >
                       <HStack space="xs" alignItems="center">
-                        <XCircle size={16} color={colors.error} strokeWidth={2} />
-                        <ButtonText color={colors.error} fontSize="$sm" fontWeight="$semibold">
+                        <XCircle
+                          size={16}
+                          color={colors.error}
+                          strokeWidth={2}
+                        />
+                        <ButtonText
+                          color={colors.error}
+                          fontSize="$sm"
+                          fontWeight="$semibold"
+                        >
                           Xóa ảnh
                         </ButtonText>
                       </HStack>
                     </Button>
-                    
+
                     <Button
                       flex={1}
                       bg={colors.success}
@@ -594,7 +670,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     >
                       <HStack space="xs" alignItems="center">
                         <Camera size={16} color="#fff" strokeWidth={2} />
-                        <ButtonText color="#fff" fontSize="$sm" fontWeight="$semibold">
+                        <ButtonText
+                          color="#fff"
+                          fontSize="$sm"
+                          fontWeight="$semibold"
+                        >
                           Chụp lại
                         </ButtonText>
                       </HStack>
@@ -612,33 +692,62 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       p="$6"
                       mb="$4"
                     >
-                      <Camera size={64} color={colors.success} strokeWidth={1.5} />
+                      <Camera
+                        size={64}
+                        color={colors.success}
+                        strokeWidth={1.5}
+                      />
                     </Box>
-                    
-                    <Text fontSize="$md" fontWeight="$bold" color={colors.text} textAlign="center">
+
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.text}
+                      textAlign="center"
+                    >
                       Chụp ảnh sổ đỏ của bạn
                     </Text>
-                    <Text fontSize="$sm" color={colors.textSecondary} textAlign="center" mt="$2" lineHeight="$md">
-                      Hệ thống sẽ tự động nhận diện thông tin như: số sổ, địa chỉ, diện tích
+                    <Text
+                      fontSize="$sm"
+                      color={colors.textSecondary}
+                      textAlign="center"
+                      mt="$2"
+                      lineHeight="$md"
+                    >
+                      Hệ thống sẽ tự động nhận diện thông tin như: số sổ, địa
+                      chỉ, diện tích
                     </Text>
                   </Box>
 
                   {/* Tips */}
                   <Box
-                    bg={colors.warning + '20'}
+                    bg={colors.warning + "20"}
                     borderRadius="$lg"
                     p="$3"
                     borderWidth={1}
                     borderColor={colors.warning}
                   >
-                    <Text fontSize="$xs" fontWeight="$bold" color={colors.warning} mb="$2">
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$bold"
+                      color={colors.warning}
+                      mb="$2"
+                    >
                       💡 Mẹo chụp ảnh tốt:
                     </Text>
                     <VStack space="xs">
-                      <Text fontSize="$xs" color={colors.text}>• Đảm bảo đủ ánh sáng, không bị tối</Text>
-                      <Text fontSize="$xs" color={colors.text}>• Chụp rõ các số và chữ trên sổ đỏ</Text>
-                      <Text fontSize="$xs" color={colors.text}>• Chụp toàn bộ trang có thông tin</Text>
-                      <Text fontSize="$xs" color={colors.text}>• Không bị mờ, méo hoặc che khuất</Text>
+                      <Text fontSize="$xs" color={colors.text}>
+                        • Đảm bảo đủ ánh sáng, không bị tối
+                      </Text>
+                      <Text fontSize="$xs" color={colors.text}>
+                        • Chụp rõ các số và chữ trên sổ đỏ
+                      </Text>
+                      <Text fontSize="$xs" color={colors.text}>
+                        • Chụp toàn bộ trang có thông tin
+                      </Text>
+                      <Text fontSize="$xs" color={colors.text}>
+                        • Không bị mờ, méo hoặc che khuất
+                      </Text>
                     </VStack>
                   </Box>
 
@@ -662,9 +771,10 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       </ButtonText>
                     </HStack>
                   </Button> */}
-                    <OcrScanner
-                      buttonLabel="Bắt đầu chụp ảnh sổ đỏ"
-                      prompt={`
+                  <OcrScanner
+                    multiple
+                    buttonLabel="Bắt đầu chụp ảnh sổ đỏ"
+                    prompt={`
                         Đưa ra các thông tin nhận diện từ sổ đỏ gửi tôi dưới dạng JSON với các trường:
                         - land_certificate_number: Số sổ đỏ
                         - address: Địa chỉ chi tiết
@@ -672,10 +782,55 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         - district: Quận/Huyện
                         - commune: Phường/Xã
                         - area_sqm: Diện tích (m²)
+                        - boundary: Thông tin ranh giới đất đai dưới dạng GeoJSON Polygon (tọa độ GPS)
+                        - center_location: Tọa độ trung tâm của khu đất dưới dạng GeoJSON Point
 
                         Lưu ý: Chỉ trả về JSON, không giải thích gì thêm!
                         `}
-                    />
+                    onResult={async ({ text, uris }: { text: string; uris: string[] }) => {
+                      try {
+                        console.log("OCR raw text:", text);
+
+                        // Parse JSON từ OCR result - handle cases where text contains JSON
+                        let ocrData;
+                        const trimmedText = text.trim();
+
+                        // Try to extract JSON if wrapped in code blocks
+                        const jsonMatch = trimmedText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+                        const jsonText = jsonMatch ? jsonMatch[1] : trimmedText;
+
+                        try {
+                          ocrData = JSON.parse(jsonText);
+                        } catch (parseError) {
+                          console.error("JSON parse error:", parseError);
+                          // Try parsing the whole text as JSON
+                          ocrData = JSON.parse(trimmedText);
+                        }
+
+                        console.log("Parsed OCR data:", ocrData);
+
+                        // Validate required fields
+                        if (!ocrData.land_certificate_number || !ocrData.address) {
+                          toast.error("Không thể nhận diện đầy đủ thông tin từ ảnh. Vui lòng chụp lại.");
+                          return;
+                        }
+
+                        // Set OCR result và form values
+                        setOcrResult(ocrData);
+                        setFormValues((prev) => ({ ...prev, ...ocrData }));
+
+                        // Set red book image từ URI đầu tiên
+                        if (uris.length > 0) {
+                          setRedBookImage(uris[0]);
+                        }
+
+                        toast.success("✅ Đã nhận diện thành công thông tin từ sổ đỏ!");
+                      } catch (error) {
+                        console.error("Parse OCR result error:", error);
+                        toast.error("Không thể xử lý kết quả OCR. Vui lòng thử lại.");
+                      }
+                    }}
+                  />
                 </VStack>
               )}
             </VStack>
@@ -683,22 +838,33 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         )}
 
         {/* ===== WARNING: Phải OCR trước khi điền form (CHỈ CREATE MODE) ===== */}
-        {mode === 'create' && !ocrResult && (
+        {mode === "create" && !ocrResult && (
           <Box
-            bg={colors.error + '15'}
+            bg={colors.error + "15"}
             borderRadius="$lg"
             p="$4"
             borderWidth={1}
             borderColor={colors.error}
           >
             <HStack space="sm" alignItems="flex-start">
-              <AlertCircle size={20} color={colors.error} strokeWidth={2} style={{ marginTop: 2 }} />
+              <AlertCircle
+                size={20}
+                color={colors.error}
+                strokeWidth={2}
+                style={{ marginTop: 2 }}
+              />
               <VStack flex={1}>
                 <Text fontSize="$sm" fontWeight="$bold" color={colors.error}>
                   Chưa thể điền thông tin
                 </Text>
-                <Text fontSize="$xs" color={colors.error} lineHeight="$sm" mt="$1">
-                  Vui lòng chụp ảnh sổ đỏ trước để hệ thống tự động nhận diện và điền thông tin. Điều này đảm bảo tính chính xác và minh bạch.
+                <Text
+                  fontSize="$xs"
+                  color={colors.error}
+                  lineHeight="$sm"
+                  mt="$1"
+                >
+                  Vui lòng chụp ảnh sổ đỏ trước để hệ thống tự động nhận diện và
+                  điền thông tin. Điều này đảm bảo tính chính xác và minh bạch.
                 </Text>
               </VStack>
             </HStack>
@@ -706,24 +872,22 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         )}
 
         {/* ===== FORM: Điền thông tin ===== */}
-        {(mode === 'edit' || ocrResult) && (
+        {(mode === "edit" || ocrResult) && (
           <>
             {/* Section Header */}
             <HStack alignItems="center" space="sm" mt="$2">
-              <Box
-                bg={colors.success}
-                borderRadius="$full"
-                p="$2"
-              >
+              <Box bg={colors.success} borderRadius="$full" p="$2">
                 <FileText size={16} color="#fff" strokeWidth={2.5} />
               </Box>
               <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
-                {mode === 'edit' ? 'Thông tin nông trại' : 'Bước 2: Điền thông tin bổ sung'}
+                {mode === "edit"
+                  ? "Thông tin nông trại"
+                  : "Bước 2: Điền thông tin bổ sung"}
               </Text>
             </HStack>
 
             {/* Info Notice */}
-            {mode === 'create' && (
+            {mode === "create" && (
               <Box
                 bg="#E0F2FE"
                 borderRadius="$lg"
@@ -732,13 +896,24 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 borderColor="#38BDF8"
               >
                 <HStack space="xs" alignItems="flex-start">
-                  <AlertCircle size={16} color="#0284C7" strokeWidth={2} style={{ marginTop: 2 }} />
+                  <AlertCircle
+                    size={16}
+                    color="#0284C7"
+                    strokeWidth={2}
+                    style={{ marginTop: 2 }}
+                  />
                   <VStack flex={1}>
                     <Text fontSize="$xs" fontWeight="$semibold" color="#0284C7">
                       Thông tin tự động
                     </Text>
-                    <Text fontSize="$xs" color="#0284C7" lineHeight="$sm" mt="$1">
-                      Các trường đã được điền tự động từ sổ đỏ. Bạn có thể chỉnh sửa nếu cần thiết.
+                    <Text
+                      fontSize="$xs"
+                      color="#0284C7"
+                      lineHeight="$sm"
+                      mt="$1"
+                    >
+                      Các trường đã được điền tự động từ sổ đỏ. Bạn có thể chỉnh
+                      sửa nếu cần thiết.
                     </Text>
                   </VStack>
                 </HStack>
@@ -751,11 +926,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
               initialValues={formValues}
               onSubmit={handleSubmit}
               submitButtonText={
-                isSubmitting 
-                  ? 'Đang xử lý...' 
-                  : mode === 'edit' 
-                    ? 'Cập nhật nông trại' 
-                    : 'Hoàn tất đăng ký'
+                isSubmitting
+                  ? "Đang xử lý..."
+                  : mode === "edit"
+                    ? "Cập nhật nông trại"
+                    : "Hoàn tất đăng ký"
               }
               isSubmitting={isSubmitting}
               gap={24}

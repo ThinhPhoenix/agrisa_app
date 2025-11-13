@@ -247,8 +247,35 @@ export const CustomForm = forwardRef(function CustomForm(
   };
 
   const handleSubmit = () => {
-    const validationResult = (ref as any).current?.validateFields();
-    if (validationResult) onSubmit && onSubmit(formData);
+    // Validate tất cả fields
+    const validationErrors: Record<string, string> = {};
+
+    fields.forEach((field) => {
+      if (
+        field.required &&
+        (formData[field.name] === undefined || formData[field.name] === "" || formData[field.name] === null)
+      ) {
+        validationErrors[field.name] = `Vui lòng ${
+          field.type === "select" ||
+          field.type === "multiselect" ||
+          field.type === "combobox"
+            ? "chọn"
+            : field.type === "datepicker"
+              ? "chọn ngày"
+              : "nhập"
+        } ${field.label.toLowerCase()}!`;
+      }
+    });
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    // Submit nếu không có lỗi
+    if (onSubmit) {
+      onSubmit(formData);
+    }
   };
 
   const inputContainerStyle = {

@@ -1,12 +1,13 @@
-import { useToast } from "@/domains/shared/hooks/useToast";
 import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { FormFarmDTO } from "../models/farm.models";
 import { farmServices } from "../service/farm.service";
+import { useNotificationModal } from "@/components/modal";
 
 export const useFarm = () => {
-  const { toast } = useToast();
+  const notification = useNotificationModal();
+  
   const queryClient = useQueryClient();
 
   const getListFarm = () => {
@@ -31,7 +32,7 @@ export const useFarm = () => {
     mutationFn: (payload: FormFarmDTO) => farmServices.post.createFarm(payload),
     onSuccess: (response) => {
       if (response.success) {
-        toast.success("✅ Đăng ký nông trại thành công!");
+        notification.success("✅ Đăng ký nông trại thành công!");
 
         // Invalidate queries để refresh danh sách farm
         queryClient.invalidateQueries({ queryKey: [QueryKey.FARM.LIST] });
@@ -42,7 +43,7 @@ export const useFarm = () => {
     },
     onError: (error: any) => {
       console.error("❌ Create farm error:", error);
-      toast.error(
+      notification.error(
         error?.message || "Không thể đăng ký nông trại. Vui lòng thử lại."
       );
     },
@@ -61,7 +62,7 @@ export const useFarm = () => {
     }) => farmServices.post.createFarm(payload), // TODO: Cần thêm API update
     onSuccess: (response, variables) => {
       if (response.success) {
-        toast.success("✅ Cập nhật nông trại thành công!");
+        notification.success("✅ Cập nhật nông trại thành công!");
 
         // Invalidate queries
         queryClient.invalidateQueries({ queryKey: [QueryKey.FARM.LIST] });
@@ -75,7 +76,7 @@ export const useFarm = () => {
     },
     onError: (error: any) => {
       console.error("❌ Update farm error:", error);
-      toast.error(
+      notification.error(
         error?.message || "Không thể cập nhật nông trại. Vui lòng thử lại."
       );
     },

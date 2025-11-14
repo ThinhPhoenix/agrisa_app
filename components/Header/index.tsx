@@ -41,7 +41,7 @@ export const AgrisaHeader: React.FC<AgrisaHeaderProps> = ({
             borderRadius="$md"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ChevronLeft size={24} color={colors.text} />
+            <ChevronLeft size={24} color={colors.primary_text} />
           </Pressable>
         ) : (
           <Box width="$8" /> // Placeholder để giữ title ở giữa
@@ -51,7 +51,7 @@ export const AgrisaHeader: React.FC<AgrisaHeaderProps> = ({
         <Text
           fontSize="$lg"
           fontWeight="$semibold"
-          color={colors.text}
+          color={colors.primary_text}
           flex={1}
           textAlign="center"
           numberOfLines={1}

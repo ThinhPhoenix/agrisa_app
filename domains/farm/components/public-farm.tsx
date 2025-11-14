@@ -1,5 +1,7 @@
-import { useAgrisaColors } from '@/domains/agrisa_theme/hooks/useAgrisaColor';
-import { Farm } from '@/domains/farm/models/farm.models';
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { Farm } from "@/domains/farm/models/farm.models";
+import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
+import { Utils } from "@/libs/utils/utils";
 import {
   Box,
   Button,
@@ -9,48 +11,27 @@ import {
   Spinner,
   Text,
   VStack,
-} from '@gluestack-ui/themed';
-import { router } from 'expo-router';
-import { Leaf, MapPin, Plus, Sprout } from 'lucide-react-native';
-import React from 'react';
-import { FlatList, RefreshControl, StyleSheet } from 'react-native';
+} from "@gluestack-ui/themed";
+import { router } from "expo-router";
+import {
+  Calendar,
+  FileCheck,
+  Leaf,
+  MapPin,
+  Shield,
+  Wheat,
+} from "lucide-react-native";
+import React from "react";
+import { FlatList, Image, RefreshControl, StyleSheet } from "react-native";
 
 interface PublicFarmListProps {
-  /**
-   * Danh sách farms của user
-   */
   farms: Farm[];
-  
-  /**
-   * Loading state khi fetch data
-   */
   isLoading?: boolean;
-  
-  /**
-   * Refreshing state khi pull-to-refresh
-   */
   isRefreshing?: boolean;
-  
-  /**
-   * Callback khi pull-to-refresh
-   */
   onRefresh?: () => void;
-  
-  /**
-   * Callback khi click vào farm card
-   */
   onFarmPress?: (farm: Farm) => void;
 }
 
-/**
- * Component hiển thị danh sách nông trại của nông dân
- * 
- * Features:
- * - Pull-to-refresh để cập nhật danh sách
- * - Empty state với nút đăng ký farm mới
- * - Hiển thị thông tin: tên, địa chỉ, diện tích, loại cây
- * - Support rice và coffee crops
- */
 export const PublicFarmList: React.FC<PublicFarmListProps> = ({
   farms,
   isLoading = false,
@@ -60,338 +41,290 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
 }) => {
   const { colors } = useAgrisaColors();
 
-  /**
-   * Format diện tích: m² sang ha
-   */
-  const formatArea = (areaSqm: number) => {
-    const areaHa = (areaSqm / 10000).toFixed(2);
-    return `${areaSqm.toLocaleString('vi-VN')} m² / ${areaHa} ha`;
-  };
-
-  /**
-   * Get crop label tiếng Việt
-   */
-  const getCropLabel = (cropType: string) => {
-    const cropLabels: Record<string, string> = {
-      rice: 'Lúa',
-      coffee: 'Cà phê',
-    };
-    return cropLabels[cropType] || cropType;
-  };
-
-  /**
-   * Get crop icon và color
-   */
   const getCropIcon = (cropType: string) => {
-    if (cropType === 'rice') {
+    if (cropType === "rice") {
       return {
-        icon: Leaf,
-        color: colors.success,
-        bgColor: colors.primarySoft,
+        icon: Wheat,
+        color: AgrisaColors.light.success,
+        bgColor: AgrisaColors.light.successSoft,
+        isImage: false,
       };
     }
-    if (cropType === 'coffee') {
-      return {
-        icon: Sprout,
-        color: '#8B4513', // Brown color for coffee
-        bgColor: '#FFF8DC', // Cornsilk color
-      };
-    }
-    // Default
-    return {
-      icon: Leaf,
-      color: colors.success,
-      bgColor: colors.primarySoft,
+    return { 
+      icon: require("@/assets/images/Icon/Coffea-Icon.png"), 
+      color: colors.primary, // Coffee brown
+      bgColor: "#FFF5E6", // Light cream
+      isImage: true,
     };
   };
 
-  /**
-   * Get status indicator color
-   */
-  const getStatusColor = (status: string) => {
-    const statusColors: Record<string, string> = {
-      active: colors.success,
-      inactive: colors.textMuted,
-      pending_verification: colors.warning,
-      archived: colors.error,
-    };
-    return statusColors[status] || colors.textMuted;
-  };
-
-  /**
-   * Render từng farm card
-   */
   const renderFarmCard = ({ item: farm }: { item: Farm }) => {
-    const cropConfig = getCropIcon(farm.crop_type);
-    const CropIcon = cropConfig.icon;
+    const { icon: CropIcon, color, bgColor, isImage } = getCropIcon(farm.crop_type);
 
     return (
       <Pressable
-        onPress={() => {
-          // ✅ Navigate to edit screen với farm ID thật
+        onPress={() =>
           router.push({
-            pathname: '/(farmer)/form-farm/[id]?mode=view',
-            params: { id: farm.id } // ID thật của farm
-          });
-        }}
-        mb="$4"
+            pathname: "/(farmer)/form-farm/[id]",
+            params: { id: farm.id },
+          })
+        }
+        mb="$3"
       >
         <Box
-          bg={colors.card}
+          bg={AgrisaColors.light.background}
+          borderRadius={20}
           borderWidth={1}
-          borderColor={colors.border}
-          borderRadius="$xl"
+          borderColor={AgrisaColors.light.frame_border}
           overflow="hidden"
-          sx={{
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-            elevation: 2,
-          }}
         >
-          <VStack space="md" p="$4">
-            {/* Header: Farm Name + Status Indicator */}
-            <HStack alignItems="center" space="sm">
-              {/* Status Indicator */}
-              <Box
-                w={10}
-                h={10}
-                borderRadius="$full"
-                bg={getStatusColor(farm.status)}
-              />
-              
-              {/* Farm Name */}
-              <Text 
-                flex={1}
-                fontSize="$lg" 
-                fontWeight="$bold" 
-                color={colors.text}
-                numberOfLines={2}
-              >
-                {farm.farm_name}
-              </Text>
-            </HStack>
-
-            {/* Address */}
-            <HStack space="xs" alignItems="flex-start">
-              <MapPin 
-                size={16} 
-                color={colors.textSecondary} 
-                strokeWidth={2}
-                style={{ marginTop: 2 }}
-              />
-              <Text 
-                flex={1}
-                fontSize="$sm" 
-                color={colors.textSecondary}
-                lineHeight="$md"
-                numberOfLines={2}
-              >
-                {farm.address}
-              </Text>
-            </HStack>
-
-            {/* Footer: Area + Crop Type */}
-            <HStack 
-              justifyContent="space-between" 
-              alignItems="center"
-              pt="$2"
-              borderTopWidth={1}
-              borderTopColor={colors.border}
+          <Box bg={bgColor} p="$4" pb="$3">
+            <HStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              mb="$2"
             >
-              {/* Area */}
-              <VStack flex={1}>
-                <Text fontSize="$xs" color={colors.textSecondary}>
-                  Diện tích
-                </Text>
-                <Text 
-                  fontSize="$sm" 
-                  fontWeight="$semibold" 
-                  color={colors.text}
-                  numberOfLines={1}
+              <VStack flex={1} mr="$3">
+                <Text
+                  color={AgrisaColors.light.primary_text}
+                  fontSize={18}
+                  fontWeight="700"
+                  numberOfLines={2}
+                  mb="$1"
                 >
-                  {formatArea(farm.area_sqm)}
+                  {farm.farm_name}
                 </Text>
-              </VStack>
-
-              {/* Crop Type */}
-              <VStack alignItems="flex-end">
-                <Text fontSize="$xs" color={colors.textSecondary}>
-                  Cây trồng
-                </Text>
-                <HStack space="xs" alignItems="center" mt="$1">
-                  <Box 
-                    bg={cropConfig.bgColor} 
-                    borderRadius="$md" 
-                    p="$1.5"
+                <HStack space="xs" alignItems="center">
+                  <MapPin
+                    size={14}
+                    color={AgrisaColors.light.secondary_text}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    color={AgrisaColors.light.secondary_text}
+                    fontSize={13}
+                    numberOfLines={1}
+                    flex={1}
                   >
-                    <CropIcon 
-                      size={14} 
-                      color={cropConfig.color} 
-                      strokeWidth={2} 
-                    />
-                  </Box>
-                  <Text 
-                    fontSize="$sm" 
-                    fontWeight="$bold" 
-                    color={cropConfig.color}
-                  >
-                    {getCropLabel(farm.crop_type)}
+                    {farm.district}, {farm.province}
                   </Text>
                 </HStack>
               </VStack>
+              <Box
+                bg={color}
+                borderRadius="$full"
+                p="$2.5"
+                shadowColor={color}
+                shadowOffset={{ width: 0, height: 2 }}
+                shadowOpacity={0.3}
+                shadowRadius={4}
+              >
+                {isImage ? (
+                  <Image 
+                    source={CropIcon} 
+                    style={{ width: 24, height: 24 }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <CropIcon
+                    size={24}
+                    color={AgrisaColors.light.primary_white_text}
+                    strokeWidth={2.5}
+                  />
+                )}
+              </Box>
             </HStack>
-          </VStack>
+          </Box>
+          <Box p="$4" pt="$3">
+            {/* Main Info Row */}
+            <HStack space="md" justifyContent="space-between" mb="$3">
+              <VStack flex={1}>
+                <Text
+                  color={AgrisaColors.light.muted_text}
+                  fontSize={11}
+                  mb="$1"
+                  fontWeight="500"
+                >
+                  Diện tích
+                </Text>
+                <Text
+                  color={AgrisaColors.light.primary_text}
+                  fontSize={16}
+                  fontWeight="700"
+                >
+                  {Utils.formatArea(farm.area_sqm)}
+                </Text>
+              </VStack>
+              <VStack flex={1} alignItems="center">
+                <Text
+                  color={AgrisaColors.light.muted_text}
+                  fontSize={11}
+                  mb="$1"
+                  fontWeight="500"
+                >
+                  Cây trồng
+                </Text>
+                <Text color={color} fontSize={16} fontWeight="700">
+                  {Utils.getCropLabel(farm.crop_type)}
+                </Text>
+              </VStack>
+              <VStack flex={1} alignItems="flex-end">
+                <Text
+                  color={AgrisaColors.light.muted_text}
+                  fontSize={11}
+                  mb="$1"
+                  fontWeight="500"
+                >
+                  Loại đất
+                </Text>
+                <Text
+                  color={AgrisaColors.light.primary_text}
+                  fontSize={14}
+                  fontWeight="600"
+                >
+                  {farm.soil_type === "alluvial" ? "Phù sa" : farm.soil_type}
+                </Text>
+              </VStack>
+            </HStack>
+
+            {/* Additional Info */}
+            <VStack
+              space="xs"
+              pt="$2"
+              borderTopWidth={1}
+              borderTopColor={AgrisaColors.light.frame_border}
+            >
+              {farm.planting_date && (
+                <HStack space="xs" alignItems="center" py="$1">
+                  <Calendar
+                    size={14}
+                    color={AgrisaColors.light.muted_text}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    color={AgrisaColors.light.secondary_text}
+                    fontSize={12}
+                    flex={1}
+                  >
+                    Ngày trồng:{" "}
+                    <Text fontWeight="600">
+                      {Utils.formatDateForMS(farm.planting_date)}
+                    </Text>
+                  </Text>
+                </HStack>
+              )}
+              {farm.land_certificate_number && (
+                <HStack space="xs" alignItems="center" py="$1">
+                  <FileCheck
+                    size={14}
+                    color={AgrisaColors.light.muted_text}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    color={AgrisaColors.light.secondary_text}
+                    fontSize={12}
+                    numberOfLines={1}
+                    flex={1}
+                  >
+                    Sổ đỏ:{" "}
+                    <Text fontWeight="600">{farm.land_certificate_number}</Text>
+                  </Text>
+                  {farm.land_ownership_verified && (
+                    <Shield
+                      size={12}
+                      color={AgrisaColors.light.success}
+                      strokeWidth={2.5}
+                    />
+                  )}
+                </HStack>
+              )}
+            </VStack>
+          </Box>
         </Box>
       </Pressable>
     );
   };
 
-  /**
-   * Empty state - Chưa có farm nào
-   */
   const renderEmptyState = () => (
-    <Box flex={1} alignItems="center" justifyContent="center" px="$6" py="$12">
-      <VStack space="md" alignItems="center">
-        {/* Icon */}
-        <Box
-          bg={colors.primarySoft}
-          borderRadius="$full"
-          p="$6"
-        >
-          <Leaf size={48} color={colors.success} strokeWidth={1.5} />
+    <Box flex={1} alignItems="center" justifyContent="center" px="$6" py="$20">
+      <VStack space="lg" alignItems="center">
+        <Box bg={AgrisaColors.light.successSoft} borderRadius="$full" p="$8">
+          <Leaf size={64} color={AgrisaColors.light.success} />
         </Box>
-
-        {/* Title */}
-        <Text 
-          fontSize="$xl" 
-          fontWeight="$bold" 
-          color={colors.text}
-          textAlign="center"
-        >
-          Chưa có nông trại nào
-        </Text>
-
-        {/* Description */}
-        <Text 
-          fontSize="$sm" 
-          color={colors.textSecondary}
-          textAlign="center"
-          lineHeight="$md"
-        >
-          Đăng ký nông trại để bắt đầu sử dụng dịch vụ bảo hiểm nông nghiệp
-        </Text>
-
-        {/* CTA Button */}
+        <VStack space="sm" alignItems="center">
+          <Text
+            fontSize={20}
+            fontWeight="700"
+            color={AgrisaColors.light.primary_text}
+            textAlign="center"
+          >
+            Chưa có trang trại nào
+          </Text>
+          <Text
+            fontSize={14}
+            color={AgrisaColors.light.secondary_text}
+            textAlign="center"
+            px="$4"
+          >
+            Đăng ký trang trại để bắt đầu sử dụng dịch vụ bảo hiểm nông nghiệp
+          </Text>
+        </VStack>
         <Button
-          bg={colors.success}
+          bg={AgrisaColors.light.primary}
+          borderRadius={16}
           size="lg"
-          mt="$4"
-          onPress={() => {
-            // ✅ Navigate with "new" param
+          mt="$2"
+          px="$6"
+          onPress={() =>
             router.push({
-              pathname: '/(farmer)/form-farm/[id]',
-              params: { id: 'new' } // Keyword "new" để create
-            });
-          }}
+              pathname: "/(farmer)/form-farm/[id]",
+              params: { id: "new" },
+            })
+          }
         >
-          <HStack space="sm" alignItems="center">
-            <Plus size={20} color={colors.textWhiteButton} strokeWidth={2.5} />
-            <ButtonText 
-              color={colors.textWhiteButton}
-              fontWeight="$bold"
-              fontSize="$md"
-            >
-              Đăng ký nông trại đầu tiên
-            </ButtonText>
-          </HStack>
+          <ButtonText
+            color={colors.primary_white_text}
+            fontWeight="700"
+          >
+            Đăng ký trang trại đầu tiên
+          </ButtonText>
         </Button>
       </VStack>
     </Box>
   );
 
-  /**
-   * Loading state - Lần đầu tiên
-   */
   if (isLoading && farms.length === 0) {
     return (
       <Box flex={1} alignItems="center" justifyContent="center">
-        <Spinner size="large" color={colors.success} />
-        <Text color={colors.textSecondary} mt="$3" fontSize="$sm">
-          Đang tải danh sách nông trại...
+        <Spinner size="large" color={AgrisaColors.light.primary} />
+        <Text color={AgrisaColors.light.secondary_text} mt="$3">
+          Đang tải...
         </Text>
       </Box>
     );
   }
 
-  /**
-   * Main list
-   */
   return (
-    <Box flex={1} bg={colors.background}>
+    <Box flex={1} bg={AgrisaColors.light.background}>
       <FlatList
         data={farms}
         renderItem={renderFarmCard}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={[
-          styles.listContent,
-          farms.length === 0 && styles.emptyContainer,
-        ]}
+        contentContainerStyle={styles.list}
         ListEmptyComponent={renderEmptyState()}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            colors={[colors.success]}
-            tintColor={colors.success}
-            title="Đang làm mới..."
-            titleColor={colors.textSecondary}
+            colors={[AgrisaColors.light.primary]}
           />
         }
       />
-
-      {/* Floating Add Button - Hiện khi đã có farms */}
-      {farms.length > 0 && (
-        <Box position="absolute" bottom={20} right={20}>
-          <Pressable
-            onPress={() => {
-              router.push({
-                pathname: '/(farmer)/form-farm/[id]',
-                params: { id: 'new' }
-              });
-            }}
-          >
-            <Box
-              bg={colors.success}
-              borderRadius="$full"
-              w={60}
-              h={60}
-              alignItems="center"
-              justifyContent="center"
-              sx={{
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
-              <Plus size={28} color={colors.textWhiteButton} strokeWidth={2.5} />
-            </Box>
-          </Pressable>
-        </Box>
-      )}
     </Box>
   );
 };
 
 const styles = StyleSheet.create({
-  listContent: {
-    padding: 16,
-  },
-  emptyContainer: {
-    flexGrow: 1,
-  },
+  list: { padding: 16 },
 });

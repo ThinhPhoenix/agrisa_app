@@ -1,8 +1,8 @@
 import useAxios from "@/config/useAxios.config";
-import { FarmModel, FormFarmDTO } from "../models/farm.models";
+import { Farm, FarmModel, FormFarmDTO } from "../models/farm.models";
 
 
-export const policyServices = {
+export const farmServices = {
   post: {
     createFarm: async (
       payload: FormFarmDTO
@@ -11,5 +11,13 @@ export const policyServices = {
     },
   },
 
-  get: {},
+  get: {
+    listFarm: async(): Promise<ApiResponse<Farm[]>> => {
+      return useAxios.get("/policy/protected/api/v2/farms/me");
+    },
+    detailFarm: async (farm_id: string): Promise<ApiResponse<Farm>> => {
+      return useAxios.get(`/policy/protected/api/v2/farms/${farm_id}`);
+    }
+
+  },
 };

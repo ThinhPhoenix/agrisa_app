@@ -27,6 +27,16 @@ export interface PolygonGeometry {
 
 // ============= ENUMS =============
 
+
+interface FarmPhoto {
+  id: string;
+  farm_id: string;
+  photo_url: string;
+  photo_type: string;
+  taken_at?: number;
+  created_at: string;
+}
+
 /**
  * Loại cây trồng được hỗ trợ bảo hiểm
  */
@@ -74,6 +84,8 @@ export enum SoilType {
   OTHER = "other",
 }
 
+
+
 // ============= MAIN INTERFACE =============
 
 /**
@@ -89,7 +101,7 @@ export interface Farm {
   id: string;
 
   /**
-   * Tên nông trại
+   * Tên nông trại  
    * @example "Trang trại lúa Đồng Tháp"
    */
   farm_name: string;
@@ -208,9 +220,20 @@ export interface Farm {
    * @example "2025-11-06T13:20:58.742857846+07:00"
    */
   updated_at: string;
+
+  farm_photos: FarmPhoto[];
 }
 
 // ============= DTO (Data Transfer Objects) =============
+
+/**
+ * Land Certificate Photos - Ảnh sổ đỏ dạng base64
+ */
+export interface LandCertiPhotos {
+  file_name: string;
+  field_name: string; // Luôn là "land_certificate_photos"
+  data: string; // Base64 encoded image
+}
 
 /**
  * DTO để tạo farm mới
@@ -231,6 +254,8 @@ export interface FarmModel {
   has_irrigation: boolean;
   irrigation_type: string;
   soil_type: string;
+  owner_national_id?: string;
+  land_certificate_photos?: LandCertiPhotos[];
 }
 
 /**
@@ -253,5 +278,7 @@ export interface FormFarmDTO {
   irrigation_type?: string;
   soil_type?: string;
   status?: string;
+  owner_national_id?: string;
+  land_certificate_photos?: LandCertiPhotos[];
 }
 

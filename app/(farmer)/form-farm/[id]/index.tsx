@@ -2,11 +2,11 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { DetailFarm } from "@/domains/farm/components/detail-farm";
 import { RegisterFarmForm } from "@/domains/farm/components/register-farm";
+import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { Farm, FormFarmDTO } from "@/domains/farm/models/farm.models";
-import { useToast } from "@/domains/shared/hooks/useToast";
 import { Box, Spinner, Text, VStack } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback } from "react";
 
 /**
  * 🌾 Farm Form Screen - Màn hình quản lý nông trại Agrisa
@@ -24,13 +24,11 @@ import React, { useEffect, useState } from "react";
  */
 export default function FarmFormScreen() {
   const { colors } = useAgrisaColors();
-  const { toast } = useToast();
   const params = useLocalSearchParams();
+  const { getDetailFarm } = useFarm();
 
   // ===== STATE MANAGEMENT =====
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoadingFarm, setIsLoadingFarm] = useState(false);
-  const [farmData, setFarmData] = useState<Farm | null>(null);
+  // Không cần state isSubmitting nữa vì đã handle trong useFarmForm
 
   // ===== MODE DETECTION =====
   const farmId = params.id as string;
@@ -52,121 +50,31 @@ export default function FarmFormScreen() {
   );
 
   // ===== FETCH FARM DATA (Detail/Edit Mode) =====
-  useEffect(() => {
-    if (!isCreateMode) {
-      fetchFarmData(farmId);
-    }
-  }, [farmId, isCreateMode]);
+  // Chỉ fetch khi không phải create mode
+  const {
+    data: farmResponse,
+    isLoading: isLoadingFarm,
+    error: farmError,
+  } = getDetailFarm(isCreateMode ? "" : farmId);
 
-  /**
-   * Fetch farm data
-   */
-  const fetchFarmData = async (id: string) => {
-    try {
-      setIsLoadingFarm(true);
-      console.log("📥 [FarmForm] Fetching farm:", id);
+  // Lấy dữ liệu farm từ response
+  const farmData: Farm | null = farmResponse?.success
+    ? farmResponse.data
+    : null;
 
-      // TODO: Call API to get farm by ID
-      // const response = await getFarmByIdAPI(id);
-      // setFarmData(response.data);
-
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock farm data
-      const mockFarm: Farm = {
-        id: id,
-        farm_name: "Trang trại lúa Đồng Tháp",
-        farm_code: "dEA671o57D",
-        boundary: {
-          type: "Polygon",
-          coordinates: [
-            [
-              [105.6252, 10.4583],
-              [105.6352, 10.4583],
-              [105.6352, 10.4483],
-              [105.6252, 10.4483],
-              [105.6252, 10.4583],
-            ],
-          ],
-        },
-        center_location: {
-          type: "Point",
-          coordinates: [105.6302, 10.4533],
-        },
-        area_sqm: 50000,
-        province: "Đồng Tháp",
-        district: "Cao Lãnh",
-        commune: "Mỹ Hội",
-        address: "Ấp Tân Tiến, xã Mỹ Hội, huyện Cao Lãnh, tỉnh Đồng Tháp",
-        crop_type: "rice",
-        planting_date: 1704067200,
-        expected_harvest_date: 1714521600,
-        crop_type_verified: false,
-        land_certificate_number: "SH-2024-001234",
-        land_ownership_verified: true,
-        has_irrigation: true,
-        irrigation_type: "canal",
-        soil_type: "alluvial",
-        status: "active",
-        created_at: "2025-11-06T13:20:58.742857687+07:00",
-        updated_at: "2025-11-06T13:20:58.742857846+07:00",
-      };
-
-      setFarmData(mockFarm);
-      console.log("✅ [FarmForm] Farm data loaded");
-    } catch (error) {
-      console.error("❌ [FarmForm] Fetch farm error:", error);
-      toast.error("Không thể tải thông tin nông trại");
-      router.back();
-    } finally {
-      setIsLoadingFarm(false);
-    }
-  };
+  // Handle error từ API
+  if (!isCreateMode && farmError) {
+    console.error("❌ [FarmForm] Fetch farm error:", farmError);
+  }
 
   /**
    * Handle submit form (Create hoặc Update)
+   * NOTE: Logic này không còn cần thiết vì đã được handle trong RegisterFarmForm
    */
-  const handleSubmit = async (formData: FormFarmDTO) => {
-    try {
-      setIsSubmitting(true);
-
-      if (isEditMode) {
-        // ===== UPDATE MODE =====
-        console.log("📝 [FarmForm] Updating farm:", farmId);
-        console.log("Data:", formData);
-
-        // TODO: Call API
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        toast.success("✅ Cập nhật nông trại thành công!");
-
-        // Quay về Detail Mode sau khi update
-        router.replace(`/(farmer)/form-farm/${farmId}?mode=detail`);
-      } else {
-        // ===== CREATE MODE =====
-        console.log("📝 [FarmForm] Creating new farm");
-        console.log("Data:", formData);
-
-        // TODO: Call API
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        toast.success("✅ Đăng ký nông trại thành công!");
-
-        // Quay về danh sách
-        router.replace("/(farmer)/farm");
-      }
-    } catch (error) {
-      console.error("❌ [FarmForm] Submit error:", error);
-      toast.error(
-        isEditMode
-          ? "Không thể cập nhật nông trại"
-          : "Không thể đăng ký nông trại"
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleSubmit = useCallback(async (formData: FormFarmDTO) => {
+    // Logic cũ đã được chuyển sang useFarmForm hook
+    // Giữ lại function này để tránh lỗi nếu có reference
+  }, []);
 
   /**
    * Handle Edit button click từ Detail view
@@ -183,7 +91,7 @@ export default function FarmFormScreen() {
         <AgrisaHeader title="Đang tải..." onBack={() => router.back()} />
         <VStack flex={1} alignItems="center" justifyContent="center" space="md">
           <Spinner size="large" color={colors.success} />
-          <Text fontSize="$sm" color={colors.textSecondary}>
+          <Text fontSize="$sm" color={colors.secondary_text}>
             Đang tải thông tin nông trại...
           </Text>
         </VStack>
@@ -206,12 +114,12 @@ export default function FarmFormScreen() {
           <Text
             fontSize="$lg"
             fontWeight="$bold"
-            color={colors.text}
+            color={colors.primary_text}
             textAlign="center"
           >
             Không tìm thấy nông trại
           </Text>
-          <Text fontSize="$sm" color={colors.textSecondary} textAlign="center">
+          <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
             Nông trại này không tồn tại hoặc đã bị xóa
           </Text>
         </VStack>
@@ -245,8 +153,7 @@ export default function FarmFormScreen() {
         <RegisterFarmForm
           mode={isCreateMode ? "create" : "edit"}
           initialData={farmData}
-          onSubmitSuccess={handleSubmit}
-          isSubmitting={isSubmitting}
+          farmId={farmId}
         />
       )}
     </Box>

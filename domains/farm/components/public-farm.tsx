@@ -19,7 +19,6 @@ import {
   Leaf,
   MapPin,
   Shield,
-  Sprout,
   Wheat,
 } from "lucide-react-native";
 import React from "react";

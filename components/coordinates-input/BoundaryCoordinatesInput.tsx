@@ -139,10 +139,7 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
       {/* Helper Text */}
       {helperText && (
         <FormControlHelper mb="$2">
-          <FormControlHelperText
-            fontSize="$xs"
-            color={colors.secondary_text}
-          >
+          <FormControlHelperText fontSize="$xs" color={colors.secondary_text}>
             {helperText}
           </FormControlHelperText>
         </FormControlHelper>
@@ -162,26 +159,26 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
             <HStack space="md" alignItems="center">
               {/* Số thứ tự */}
               <Box
-                bg={colors.primarySoft}
+                bg={colors.primary}
                 borderRadius="$md"
                 px="$2.5"
                 py="$1.5"
                 minWidth={36}
                 alignItems="center"
               >
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$bold"
-                  color={colors.primary}
-                >
+                <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_white_text}>
                   {index + 1}
                 </Text>
               </Box>
 
               {/* Kinh độ */}
               <VStack flex={1} space="xs">
-                <Text fontSize="$2xs" color={colors.secondary_text} fontWeight="$medium">
-                  Kinh độ (Lng)
+                <Text
+                  fontSize="$2xs"
+                  color={colors.secondary_text}
+                  fontWeight="$medium"
+                >
+                  Kinh độ
                 </Text>
                 <Input
                   size="sm"
@@ -201,8 +198,12 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
 
               {/* Vĩ độ */}
               <VStack flex={1} space="xs">
-                <Text fontSize="$2xs" color={colors.secondary_text} fontWeight="$medium">
-                  Vĩ độ (Lat)
+                <Text
+                  fontSize="$2xs"
+                  color={colors.secondary_text}
+                  fontWeight="$medium"
+                >
+                  Vĩ độ
                 </Text>
                 <Input
                   size="sm"
@@ -228,11 +229,7 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
                 isDisabled={disabled || points.length <= 3}
                 opacity={points.length <= 3 ? 0.3 : 1}
               >
-                <ButtonIcon
-                  as={Trash2}
-                  size="sm"
-                  color={colors.error}
-                />
+                <ButtonIcon as={Trash2} size="sm" color={colors.error} />
               </Button>
             </HStack>
           </Box>

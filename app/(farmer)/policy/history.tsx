@@ -94,7 +94,7 @@ export default function PolicyHistoryScreen() {
             >
               <Info
                 size={14}
-                color={colors.white_button_text}
+                color={colors.primary_white_text}
                 strokeWidth={2.5}
               />
             </Box>
@@ -139,13 +139,13 @@ export default function PolicyHistoryScreen() {
                 >
                   <TabIcon
                     size={20}
-                    color={isActive ? colors.white_button_text : tabColor}
+                    color={isActive ? colors.primary_white_text : tabColor}
                     strokeWidth={2}
                   />
                   <Text
                     fontSize="$xs"
                     fontWeight="$semibold"
-                    color={isActive ? colors.white_button_text : tabColor}
+                    color={isActive ? colors.primary_white_text : tabColor}
                     mt="$1"
                   >
                     {tab.label}

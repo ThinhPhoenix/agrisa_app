@@ -51,7 +51,7 @@ export default function MyPoliciesScreen() {
                 >
                   <Info
                     size={14}
-                    color={colors.white_button_text}
+                    color={colors.primary_white_text}
                     strokeWidth={2.5}
                   />
                 </Box>

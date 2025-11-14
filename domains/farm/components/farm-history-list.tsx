@@ -166,11 +166,7 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
     const { icon: CropIcon, color: cropColor } = getCropIcon(item.crop_type);
 
     return (
-      <Pressable
-        key={item.id}
-        onPress={() => onItemPress?.(item)}
-        mb="$3"
-      >
+      <Pressable key={item.id} onPress={() => onItemPress?.(item)} mb="$3">
         <Box
           bg={AgrisaColors.light.background}
           borderRadius={20}
@@ -180,7 +176,11 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
         >
           {/* Header với màu theo status */}
           <Box bg={statusConfig.bgColor} p="$4" pb="$3">
-            <HStack justifyContent="space-between" alignItems="flex-start" mb="$2">
+            <HStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              mb="$2"
+            >
               <VStack flex={1} mr="$3">
                 <Text
                   color={AgrisaColors.light.primary_text}
@@ -218,7 +218,7 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
               >
                 <CropIcon
                   size={24}
-                  color={AgrisaColors.light.white_button_text}
+                  color={AgrisaColors.light.primary_white_text}
                   strokeWidth={2.5}
                 />
               </Box>
@@ -280,7 +280,7 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
             </HStack>
 
             {/* Rejection reason nếu có */}
-            {item.status === 'rejected' && item.rejection_reason && (
+            {item.status === "rejected" && item.rejection_reason && (
               <VStack
                 space="xs"
                 pt="$2"
@@ -365,7 +365,9 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
                 flex={1}
               >
                 <Box
-                  backgroundColor={isActive ? tab.color : AgrisaColors.light.card_surface}
+                  backgroundColor={
+                    isActive ? tab.color : AgrisaColors.light.card_surface
+                  }
                   borderRadius={12}
                   py="$3"
                   px="$2"
@@ -375,12 +377,18 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
                 >
                   <Icon
                     size={20}
-                    color={isActive ? AgrisaColors.light.white_button_text : tab.color}
+                    color={
+                      isActive
+                        ? AgrisaColors.light.primary_white_text
+                        : tab.color
+                    }
                     strokeWidth={2}
                   />
                   <Text
                     color={
-                      isActive ? AgrisaColors.light.white_button_text : AgrisaColors.light.primary_text
+                      isActive
+                        ? AgrisaColors.light.primary_white_text
+                        : AgrisaColors.light.primary_text
                     }
                     fontSize={13}
                     fontWeight="600"
@@ -390,7 +398,9 @@ export const FarmHistoryList: React.FC<FarmHistoryListProps> = ({
                   </Text>
                   <Text
                     color={
-                      isActive ? AgrisaColors.light.white_button_text : AgrisaColors.light.secondary_text
+                      isActive
+                        ? AgrisaColors.light.primary_white_text
+                        : AgrisaColors.light.secondary_text
                     }
                     fontSize={12}
                     fontWeight="500"

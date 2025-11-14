@@ -13,7 +13,7 @@ export const AgrisaColors = {
     primary_text: "#1a1a1a", // Text chính đen
     secondary_text: "#4a5568", // Text phụ xám
     muted_text: "#718096", // Text mờ
-    white_button_text: "#f7fafc",
+    primary_white_text: "#f7fafc",
 
     // Brand colors Agrisa
     success: "#059669",
@@ -50,7 +50,7 @@ export const AgrisaColors = {
     primary_text: "#1a1a1a", // Text chính đen
     secondary_text: "#4a5568", // Text phụ xám
     muted_text: "#718096", // Text mờ
-    white_button_text: "#f7fafc",
+    primary_white_text: "#f7fafc",
 
     // Brand colors Agrisa
     success: "#059669",

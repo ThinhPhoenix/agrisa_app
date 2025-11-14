@@ -58,14 +58,14 @@ export default function PolicyHomeScreen() {
               >
                 <Info
                   size={14}
-                  color={colors.white_button_text}
+                  color={colors.primary_white_text}
                   strokeWidth={2.5}
                 />
               </Box>
               <Text
                 fontSize="$sm"
                 fontWeight="$bold"
-                color={colors.white_button_text}
+                color={colors.primary_white_text}
                 ml="$2"
               >
                 Chương trình bảo hiểm
@@ -73,7 +73,7 @@ export default function PolicyHomeScreen() {
             </Box>
             <Text
               fontSize="$xs"
-              color={colors.white_button_text}
+              color={colors.primary_white_text}
               lineHeight="$md"
             >
               Khám phá và đăng ký các chương trình bảo hiểm nông nghiệp phù hợp

@@ -53,9 +53,9 @@ export default function FarmsListScreen() {
 
       {/* Mô tả trang */}
       <Box px="$4" pt="$4" pb="$3">
-        <HStack 
-          space="sm" 
-          alignItems="flex-start" 
+        <HStack
+          space="sm"
+          alignItems="flex-start"
           bg={AgrisaColors.light.infoSoft}
           borderRadius={12}
           p="$3"
@@ -66,19 +66,20 @@ export default function FarmsListScreen() {
             <Info size={18} color={AgrisaColors.light.info} strokeWidth={2.5} />
           </Box>
           <VStack flex={1} space="xs">
-            <Text 
-              color={AgrisaColors.light.primary_text} 
-              fontSize={14} 
+            <Text
+              color={AgrisaColors.light.primary_text}
+              fontSize={14}
               fontWeight="700"
             >
               Quản lý thông tin trang trại
             </Text>
-            <Text 
-              color={AgrisaColors.light.secondary_text} 
-              fontSize={12} 
+            <Text
+              color={AgrisaColors.light.secondary_text}
+              fontSize={12}
               lineHeight={18}
             >
-              Đăng ký và quản lý thông tin các trang trại của bạn. Thông tin này sẽ được dùng để đăng ký bảo hiểm và theo dõi tình trạng cây trồng.
+              Đăng ký và quản lý thông tin các trang trại của bạn. Thông tin này
+              sẽ được dùng để đăng ký bảo hiểm và theo dõi tình trạng cây trồng.
             </Text>
           </VStack>
         </HStack>
@@ -95,9 +96,9 @@ export default function FarmsListScreen() {
           }}
         >
           <HStack space="sm" alignItems="center">
-            <Plus size={20} color={AgrisaColors.light.white_button_text} />
+            <Plus size={20} color={AgrisaColors.light.primary_white_text} />
             <ButtonText
-              color={AgrisaColors.light.white_button_text}
+              color={AgrisaColors.light.primary_white_text}
               fontSize={16}
               fontWeight="600"
             >

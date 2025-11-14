@@ -20,9 +20,10 @@ import {
   MapPin,
   Shield,
   Sprout,
+  Wheat,
 } from "lucide-react-native";
 import React from "react";
-import { FlatList, RefreshControl, StyleSheet } from "react-native";
+import { FlatList, Image, RefreshControl, StyleSheet } from "react-native";
 
 interface PublicFarmListProps {
   farms: Farm[];
@@ -44,16 +45,22 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
   const getCropIcon = (cropType: string) => {
     if (cropType === "rice") {
       return {
-        icon: Leaf,
+        icon: Wheat,
         color: AgrisaColors.light.success,
         bgColor: AgrisaColors.light.successSoft,
+        isImage: false,
       };
     }
-    return { icon: Sprout, color: "#8B4513", bgColor: "#FFF8DC" };
+    return { 
+      icon: require("@/assets/images/Icon/Coffea-Icon.png"), 
+      color: colors.primary, // Coffee brown
+      bgColor: "#FFF5E6", // Light cream
+      isImage: true,
+    };
   };
 
   const renderFarmCard = ({ item: farm }: { item: Farm }) => {
-    const { icon: CropIcon, color, bgColor } = getCropIcon(farm.crop_type);
+    const { icon: CropIcon, color, bgColor, isImage } = getCropIcon(farm.crop_type);
 
     return (
       <Pressable
@@ -113,11 +120,19 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                 shadowOpacity={0.3}
                 shadowRadius={4}
               >
-                <CropIcon
-                  size={24}
-                  color={AgrisaColors.light.white_button_text}
-                  strokeWidth={2.5}
-                />
+                {isImage ? (
+                  <Image 
+                    source={CropIcon} 
+                    style={{ width: 24, height: 24 }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <CropIcon
+                    size={24}
+                    color={AgrisaColors.light.primary_white_text}
+                    strokeWidth={2.5}
+                  />
+                )}
               </Box>
             </HStack>
           </Box>
@@ -269,7 +284,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
           }
         >
           <ButtonText
-            color={AgrisaColors.light.white_button_text}
+            color={colors.primary_white_text}
             fontWeight="700"
           >
             Đăng ký trang trại đầu tiên

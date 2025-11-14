@@ -120,7 +120,7 @@ export default function DetailBasePolicyScreen() {
           Không tìm thấy sản phẩm
         </Text>
         <Button bg={colors.primary} mt="$4" onPress={() => router.back()}>
-          <ButtonText color={colors.white_button_text}>Quay lại</ButtonText>
+          <ButtonText color={colors.primary_white_text}>Quay lại</ButtonText>
         </Button>
       </Box>
     );
@@ -287,7 +287,7 @@ const SectionTitle = ({
       alignItems="center"
       justifyContent="center"
     >
-      <Text fontSize="$sm" fontWeight="$bold" color={colors.white_button_text}>
+      <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_white_text}>
         {number}
       </Text>
     </Box>
@@ -450,7 +450,7 @@ const PolicyDocumentSection = ({
           <Box bg={colors.warning} borderRadius="$full" p="$2">
             <FileText
               size={18}
-              color={colors.white_button_text}
+              color={colors.primary_white_text}
               strokeWidth={2.5}
             />
           </Box>
@@ -495,7 +495,7 @@ const PolicyDocumentSection = ({
               <Box bg={colors.primary} borderRadius="$md" p="$2">
                 <FileText
                   size={20}
-                  color={colors.white_button_text}
+                  color={colors.primary_white_text}
                   strokeWidth={2.5}
                 />
               </Box>
@@ -523,7 +523,7 @@ const PolicyDocumentSection = ({
             <Box bg={colors.primary} borderRadius="$full" p="$2">
               <ExternalLink
                 size={18}
-                color={colors.white_button_text}
+                color={colors.primary_white_text}
                 strokeWidth={2.5}
               />
             </Box>
@@ -1192,7 +1192,7 @@ const TriggerCard = ({
                 <Text
                   fontSize="$sm"
                   fontWeight="$bold"
-                  color={colors.white_button_text}
+                  color={colors.primary_white_text}
                 >
                   {index + 1}
                 </Text>
@@ -1397,7 +1397,7 @@ const ConditionItem = ({
           <Text
             fontSize="$2xs"
             fontWeight="$bold"
-            color={colors.white_button_text}
+            color={colors.primary_white_text}
           >
             {index + 1}
           </Text>
@@ -1706,11 +1706,11 @@ const BottomCTA = ({
         <HStack space="sm" alignItems="center">
           <FileCheck
             size={22}
-            color={colors.white_button_text}
+            color={colors.primary_white_text}
             strokeWidth={2}
           />
           <ButtonText
-            color={colors.white_button_text}
+            color={colors.primary_white_text}
             fontWeight="$bold"
             fontSize="$md"
           >

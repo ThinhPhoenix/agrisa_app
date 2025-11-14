@@ -54,7 +54,12 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         boundary_coords: boundaryCoords,
       } as any;
     }
-    return {};
+    
+    // Create mode - set giá trị mặc định
+    return {
+      has_irrigation: false, // Mặc định là không có hệ thống tưới tiêu
+      irrigation_type: "none", // Mặc định là không có
+    };
   });
 
   /**
@@ -109,10 +114,6 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
           status: "active",
           ...(mode === "edit" && values.status ? { status: values.status as string } : {}),
         };
-
-        console.log("\n📦 ===== Final Farm Data (TO API) =====");
-        console.log(JSON.stringify(farmData, null, 2));
-        console.log("========================================\n");
 
         if (mode === "edit" && farmId) {
           // Update farm

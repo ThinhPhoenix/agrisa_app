@@ -80,4 +80,95 @@ export const Utils = {
     };
     return labels[unit] || unit;
   },
+
+  convertImageToBase64: async (uri: string): Promise<string> => {
+    try {
+      // Sử dụng fetch API để convert image sang base64
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64data = reader.result as string;
+          // Remove data URL prefix (data:image/jpeg;base64,)
+          const base64 = base64data.split(",")[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("❌ Error converting image to base64:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Parse boundary coordinates từ string format
+   * @param coordString - String format: "lng,lat; lng,lat; lng,lat"
+   * @returns GeoJSON Polygon object hoặc null nếu invalid
+   */
+  parseBoundaryCoordinates: (coordString: string): any | null => {
+    if (!coordString || typeof coordString !== "string") return null;
+
+    try {
+      const coords = coordString.split(";").map((pair: string) => {
+        const [lng, lat] = pair.trim().split(",").map(Number);
+        if (isNaN(lng) || isNaN(lat)) throw new Error("Invalid coordinates");
+        return [lng, lat];
+      });
+
+      if (coords.length < 3) return null; // Polygon cần ít nhất 3 điểm
+
+      // Đảm bảo polygon đóng (điểm đầu = điểm cuối)
+      if (
+        coords[0][0] !== coords[coords.length - 1][0] ||
+        coords[0][1] !== coords[coords.length - 1][1]
+      ) {
+        coords.push([...coords[0]]);
+      }
+
+      return {
+        type: "Polygon",
+        coordinates: [coords],
+      };
+    } catch (error) {
+      console.error("❌ Error parsing boundary coordinates:", error);
+      return null;
+    }
+  },
+
+  /**
+   * Parse center location từ lng/lat strings
+   * @param lng - Longitude string
+   * @param lat - Latitude string
+   * @returns GeoJSON Point object hoặc null nếu invalid
+   */
+  parseCenterLocation: (lng: string, lat: string): any | null => {
+    if (!lng || !lat) return null;
+
+    const lngNum = Number(lng);
+    const latNum = Number(lat);
+
+    if (isNaN(lngNum) || isNaN(latNum)) return null;
+
+    return {
+      type: "Point",
+      coordinates: [lngNum, latNum],
+    };
+  },
+
+  /**
+   * Convert GeoJSON boundary coordinates sang string format
+   * @param boundary - GeoJSON Polygon object
+   * @returns String format: "lng,lat; lng,lat; lng,lat"
+   */
+  boundaryToString: (boundary: any): string => {
+    if (!boundary?.coordinates?.[0]) return "";
+
+    return boundary.coordinates[0]
+      .map((coord: number[]) => `${coord[0]},${coord[1]}`)
+      .join("; ");
+  },
 };

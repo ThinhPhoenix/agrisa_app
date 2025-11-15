@@ -385,7 +385,6 @@ const SignInComponentUI = () => {
                 style={{ width: 100, height: 100 }}
                 resizeMode="contain"
               />
-             
             </HStack>
 
             {/* Spacer để đẩy content xuống */}
@@ -435,7 +434,7 @@ const SignInComponentUI = () => {
                             <Text
                               fontSize="$xl"
                               fontWeight="$bold"
-                              color={colors.text}
+                              color={colors.primary_text}
                               numberOfLines={1}
                             >
                               {getDisplayName()}
@@ -445,7 +444,12 @@ const SignInComponentUI = () => {
                       </VStack>
                     )}
 
-                    <Box h={1} bg={colors.border} mb="$5" borderRadius={999} />
+                    <Box
+                      h={1}
+                      bg={colors.primary_text}
+                      mb="$5"
+                      borderRadius={999}
+                    />
 
                     <VStack space="md">
                       <Controller
@@ -464,7 +468,7 @@ const SignInComponentUI = () => {
                                     borderColor={
                                       fieldState.error
                                         ? colors.error
-                                        : colors.border
+                                        : colors.frame_border
                                     }
                                     bg="rgba(255,255,255,0.96)"
                                     h="$12"
@@ -484,7 +488,7 @@ const SignInComponentUI = () => {
                                         color={
                                           fieldState.error
                                             ? colors.error
-                                            : colors.textMuted
+                                            : colors.muted_text
                                         }
                                         strokeWidth={2.5}
                                       />
@@ -493,14 +497,14 @@ const SignInComponentUI = () => {
                                       value={field.value}
                                       onChangeText={field.onChange}
                                       placeholder="Mật khẩu"
-                                      placeholderTextColor={colors.textMuted}
+                                      placeholderTextColor={colors.muted_text}
                                       secureTextEntry={!showPassword}
                                       autoCapitalize="none"
                                       autoCorrect={false}
                                       pr="$10"
                                       fontSize="$sm"
                                       fontWeight="$medium"
-                                      color={colors.text}
+                                      color={colors.primary_text}
                                     />
                                     <InputSlot pr="$4">
                                       <Pressable
@@ -517,13 +521,13 @@ const SignInComponentUI = () => {
                                         {showPassword ? (
                                           <EyeOff
                                             size={18}
-                                            color={colors.textMuted}
+                                            color={colors.muted_text}
                                             strokeWidth={2.5}
                                           />
                                         ) : (
                                           <Eye
                                             size={18}
-                                            color={colors.textMuted}
+                                            color={colors.muted_text}
                                             strokeWidth={2.5}
                                           />
                                         )}
@@ -622,7 +626,7 @@ const SignInComponentUI = () => {
                       </HStack>
 
                       <Button
-                        onPress={handleLoginPress}  // ✅ FIX: Dùng custom handler
+                        onPress={handleLoginPress} // ✅ FIX: Dùng custom handler
                         isDisabled={isLoading || isLoadingBiometric}
                         size="lg"
                         bg={colors.primary}
@@ -677,7 +681,7 @@ const SignInComponentUI = () => {
                         alignItems="center"
                         justifyContent="center"
                         borderWidth={1}
-                        borderColor={colors.border}
+                        borderColor={colors.frame_border}
                         shadowColor={colors.shadow}
                         shadowOffset={{ width: 0, height: 4 }}
                         shadowOpacity={0.12}
@@ -693,7 +697,7 @@ const SignInComponentUI = () => {
                       <Text
                         fontSize="$sm"
                         fontWeight="$semibold"
-                        color={colors.textWhiteButton}
+                        color={colors.primary_white_text}
                         numberOfLines={2}
                         textAlign="center"
                         style={{

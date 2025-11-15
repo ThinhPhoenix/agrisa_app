@@ -67,7 +67,7 @@ export default function HomeScreen() {
           top: 0,
           left: 0,
           right: 0,
-          height: 250, // Kéo dài xuống để phủ cả phần Quick Actions
+          height: 300, // Kéo dài xuống để phủ cả phần Quick Actions
           width: "100%",
           resizeMode: "cover",
           opacity: 0.25,

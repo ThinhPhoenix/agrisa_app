@@ -230,7 +230,7 @@ const UsernameSignInComponent = () => {
                       >
                         <ShieldCheck
                           size={22}
-                          color={colors.primary}
+                          color={colors.primary_white_text}
                           strokeWidth={2.6}
                         />
                       </Box>
@@ -249,7 +249,7 @@ const UsernameSignInComponent = () => {
                           fontWeight="$bold"
                           color={colors.primary_text}
                         >
-                          Nông dân Agrisa
+                          Người dùng Agrisa
                         </Text>
                       </VStack>
                     </HStack>

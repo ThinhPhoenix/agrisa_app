@@ -137,7 +137,7 @@ export default function EKYCStatusResultScreen() {
     return (
       <Center flex={1} bg={colors.background}>
         <Spinner size="large" color={colors.primary} />
-        <Text mt="$4" color={colors.textSecondary}>
+        <Text mt="$4" color={colors.secondary_text}>
           Đang kiểm tra trạng thái xác thực...
         </Text>
       </Center>
@@ -149,10 +149,10 @@ export default function EKYCStatusResultScreen() {
       <Center flex={1} bg={colors.background} px="$6">
         <VStack space="lg" alignItems="center">
           <XCircle size={80} color={colors.error} />
-          <Heading size="xl" color={colors.text} textAlign="center">
+          <Heading size="xl" color={colors.primary_text} textAlign="center">
             Lỗi kết nối
           </Heading>
-          <Text color={colors.textSecondary} textAlign="center">
+          <Text color={colors.secondary_text} textAlign="center">
             Không thể tải trạng thái xác thực. Vui lòng thử lại.
           </Text>
 
@@ -164,8 +164,8 @@ export default function EKYCStatusResultScreen() {
             isDisabled={isRefetching}
           >
             <Box flexDirection="row" alignItems="center" gap="$2">
-              <RefreshCw size={16} color="white" />
-              <ButtonText color="white">
+              <RefreshCw size={16} color={colors.primary_white_text} />
+              <ButtonText color={colors.primary_white_text}>
                 {isRefetching ? "Đang tải..." : "Thử lại"}
               </ButtonText>
             </Box>
@@ -188,12 +188,12 @@ export default function EKYCStatusResultScreen() {
         )}
 
         {/* Title */}
-        <Heading size="2xl" color={colors.text} textAlign="center">
+        <Heading size="2xl" color={colors.primary_text} textAlign="center">
           {isFullyVerified ? "Xác thực thành công!" : "Đang xác thực"}
         </Heading>
 
         {/* Description */}
-        <Text color={colors.textSecondary} textAlign="center" size="md">
+        <Text color={colors.secondary_text} textAlign="center" size="md">
           {isFullyVerified
             ? "Tài khoản của bạn đã được xác thực hoàn tất"
             : "Vui lòng hoàn tất tất cả các bước xác thực"}
@@ -201,9 +201,9 @@ export default function EKYCStatusResultScreen() {
 
         {/* 🔥 NEW: Progress indicator */}
         {!isFullyVerified && (
-          <Box width="100%" bg={colors.card} p="$3" borderRadius="$lg">
+          <Box width="100%" bg={colors.card_surface} p="$3" borderRadius="$lg">
             <Text
-              color={colors.text}
+              color={colors.primary_text}
               fontWeight="$semibold"
               mb="$2"
               textAlign="center"
@@ -214,13 +214,13 @@ export default function EKYCStatusResultScreen() {
               <Box
                 flex={1}
                 height="$1"
-                bg={isOCRDone ? colors.success : colors.border}
+                bg={isOCRDone ? colors.success : colors.frame_border}
                 borderRadius="$full"
               />
               <Box
                 flex={1}
                 height="$1"
-                bg={isFaceVerified ? colors.success : colors.border}
+                bg={isFaceVerified ? colors.success : colors.frame_border}
                 borderRadius="$full"
               />
             </Box>
@@ -231,23 +231,23 @@ export default function EKYCStatusResultScreen() {
         <VStack space="md" width="100%">
           {/* OCR Status */}
           <Box
-            bg={colors.card}
+            bg={colors.card_surface}
             p="$4"
             borderRadius="$lg"
             borderWidth={1}
-            borderColor={isOCRDone ? colors.success : colors.border}
+            borderColor={isOCRDone ? colors.success : colors.frame_border}
           >
             <Box flexDirection="row" alignItems="center">
               {isOCRDone ? (
                 <CheckCircle2 size={24} color={colors.success} />
               ) : (
-                <XCircle size={24} color={colors.textSecondary} />
+                <XCircle size={24} color={colors.secondary_text} />
               )}
-              <Text color={colors.text} fontWeight="$bold" ml="$3" flex={1}>
+              <Text color={colors.primary_text} fontWeight="$bold" ml="$3" flex={1}>
                 Xác thực CCCD
               </Text>
               <Text
-                color={isOCRDone ? colors.success : colors.textSecondary}
+                color={isOCRDone ? colors.success : colors.secondary_text}
                 fontWeight="$semibold"
                 size="sm"
               >
@@ -255,7 +255,7 @@ export default function EKYCStatusResultScreen() {
               </Text>
             </Box>
 
-            <Text color={colors.textSecondary} size="sm" mt="$2">
+            <Text color={colors.secondary_text} size="sm" mt="$2">
               Quét và xác thực thông tin trên Căn cước công dân
             </Text>
 
@@ -267,7 +267,7 @@ export default function EKYCStatusResultScreen() {
                 p="$2"
                 borderRadius="$md"
               >
-                <Text color={colors.text} size="xs">
+                <Text color={colors.primary_text} size="xs">
                   ✓ Hoàn tất lúc:{" "}
                   {new Date(ekycData.ocr_done_at).toLocaleString("vi-VN")}
                 </Text>
@@ -282,31 +282,31 @@ export default function EKYCStatusResultScreen() {
                 bg={colors.primary}
                 onPress={() => router.push("/settings/verify/id-scan")}
               >
-                <ButtonText color="white">Bắt đầu quét CCCD →</ButtonText>
+                <ButtonText color={colors.primary_white_text}>Bắt đầu quét CCCD →</ButtonText>
               </Button>
             )}
           </Box>
 
           {/* Face Verification Status */}
           <Box
-            bg={colors.card}
+            bg={colors.card_surface}
             p="$4"
             borderRadius="$lg"
             borderWidth={1}
-            borderColor={isFaceVerified ? colors.success : colors.border}
+            borderColor={isFaceVerified ? colors.success : colors.frame_border}
             opacity={isOCRDone ? 1 : 0.5} // Làm mờ nếu chưa làm OCR
           >
             <Box flexDirection="row" alignItems="center">
               {isFaceVerified ? (
                 <CheckCircle2 size={24} color={colors.success} />
               ) : (
-                <XCircle size={24} color={colors.textSecondary} />
+                <XCircle size={24} color={colors.secondary_text} />
               )}
-              <Text color={colors.text} fontWeight="$bold" ml="$3" flex={1}>
+              <Text color={colors.primary_text} fontWeight="$bold" ml="$3" flex={1}>
                 Xác thực khuôn mặt
               </Text>
               <Text
-                color={isFaceVerified ? colors.success : colors.textSecondary}
+                color={isFaceVerified ? colors.success : colors.secondary_text}
                 fontWeight="$semibold"
                 size="sm"
               >
@@ -314,7 +314,7 @@ export default function EKYCStatusResultScreen() {
               </Text>
             </Box>
 
-            <Text color={colors.textSecondary} size="sm" mt="$2">
+            <Text color={colors.secondary_text} size="sm" mt="$2">
               So sánh khuôn mặt với ảnh trên CCCD để xác minh danh tính
             </Text>
 
@@ -326,7 +326,7 @@ export default function EKYCStatusResultScreen() {
                 p="$2"
                 borderRadius="$md"
               >
-                <Text color={colors.text} size="xs">
+                <Text color={colors.primary_text} size="xs">
                   ✓ Hoàn tất lúc:{" "}
                   {new Date(ekycData.face_verified_at).toLocaleString("vi-VN")}
                 </Text>
@@ -341,7 +341,7 @@ export default function EKYCStatusResultScreen() {
                 bg={colors.primary}
                 onPress={() => router.push("/settings/verify/face-scan")}
               >
-                <ButtonText color="white">Bắt đầu quét khuôn mặt →</ButtonText>
+                <ButtonText color={colors.primary_white_text}>Bắt đầu quét khuôn mặt →</ButtonText>
               </Button>
             )}
 
@@ -353,7 +353,7 @@ export default function EKYCStatusResultScreen() {
                 p="$2"
                 borderRadius="$md"
               >
-                <Text color={colors.text} size="xs">
+                <Text color={colors.primary_text} size="xs">
                   ⚠️ Vui lòng hoàn tất quét CCCD trước
                 </Text>
               </Box>
@@ -379,10 +379,10 @@ export default function EKYCStatusResultScreen() {
 
         {/* CCCD Number */}
         {ekycData?.cic_no && (
-          <Box mt="$4" bg={colors.card} p="$3" borderRadius="$md" width="100%">
-            <Text color={colors.textSecondary} size="sm" textAlign="center">
+          <Box mt="$4" bg={colors.card_surface} p="$3" borderRadius="$md" width="100%">
+            <Text color={colors.secondary_text} size="sm" textAlign="center">
               Số CCCD:{" "}
-              <Text fontWeight="$semibold" color={colors.text}>
+              <Text fontWeight="$semibold" color={colors.primary_text}>
                 {ekycData.cic_no}
               </Text>
             </Text>
@@ -391,7 +391,7 @@ export default function EKYCStatusResultScreen() {
 
         {dataUpdatedAt && (
           <Box mt="$2" opacity={0.5}>
-            <Text color={colors.textSecondary} size="xs" textAlign="center">
+            <Text color={colors.muted_text} size="xs" textAlign="center">
               Cập nhật lúc: {new Date(dataUpdatedAt).toLocaleString("vi-VN")}
             </Text>
           </Box>

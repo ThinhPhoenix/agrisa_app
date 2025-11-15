@@ -6,19 +6,20 @@ import { SignInApiResponse, SignInPayload, SignUpPayload } from "../models/auth.
 import { AuthServices } from "../service/auth.service";
 import { useAuthStore } from "../stores/auth.store";
 import { Alert } from "react-native";
+import { useNotificationModal } from "@/components/modal";
 
 export const useAuth = () => {
   const { toast } = useToast();
   const { setAuth } = useAuthStore();
-
+  const notification = useNotificationModal();
   const signUpMutation = useMutation({
     mutationKey: [QueryKey.AUTH.SIGN_UP],
     mutationFn: async (payload: SignUpPayload) => {
       return await AuthServices.signup(payload);
     },
     onSuccess: () => {
-      router.push("/auth/signin");
-      toast.success("Đăng ký thành công");
+      notification.success("Đăng ký thành công");
+      router.push("/auth/sign-in");
     },
     onError: (error) => {
       toast.error("Đăng ký thất bại");

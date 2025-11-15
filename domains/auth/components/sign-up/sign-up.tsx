@@ -25,14 +25,9 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
-  IdCard,
-  Mail,
-  MapPin,
-  Phone,
-  User,
-  UserPlus,
+  UserPlus
 } from "lucide-react-native";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import {
   Alert,
@@ -45,8 +40,8 @@ import {
 import { useAuthForm } from "../../hooks/use-auth-form";
 import { SignUpPayloadSchema } from "../../schemas/auth.schema";
 // Import cho date picker
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -199,7 +194,7 @@ const SignUpComponentUI = () => {
             <Box
               style={{
                 width: "100%",
-                backgroundColor: colors.card,
+                backgroundColor: colors.card_surface,
                 borderRadius: 20,
                 padding: 28,
                 shadowColor: colors.shadow,
@@ -209,7 +204,7 @@ const SignUpComponentUI = () => {
                 elevation: 8,
                 alignItems: "center",
                 borderWidth: 1,
-                borderColor: colors.border,
+                borderColor: colors.frame_border,
               }}
             >
               {/* Header Agrisa (giữ nguyên) */}
@@ -228,14 +223,14 @@ const SignUpComponentUI = () => {
                     marginBottom: 16,
                   }}
                 >
-                  <UserPlus size={32} color="white" />
+                  <UserPlus size={32} color={colors.primary_white_text} />
                 </Box>
 
                 <Text
                   style={{
                     fontSize: 26,
                     fontWeight: "bold",
-                    color: colors.text,
+                    color: colors.primary_text,
                     textAlign: "center",
                     marginBottom: 8,
                   }}
@@ -245,7 +240,7 @@ const SignUpComponentUI = () => {
                 <Text
                   style={{
                     fontSize: 14,
-                    color: colors.textSecondary,
+                    color: colors.secondary_text,
                     textAlign: "center",
                     lineHeight: 20,
                   }}
@@ -271,7 +266,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -286,21 +281,21 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                         }}
                       >
                         <InputField
                           value={field.value}
                           onChangeText={field.onChange}
                           placeholder="Nguyễn Văn A"
-                          placeholderTextColor={colors.textMuted}
+                          placeholderTextColor={colors.muted_text}
                           autoCapitalize="words"
                           style={{
                             fontSize: 16,
-                            color: colors.text,
+                            color: colors.primary_text,
                             paddingHorizontal: 16,
                           }}
                         />
@@ -334,7 +329,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -349,10 +344,10 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                         }}
                       >
                         <InputField
@@ -362,11 +357,11 @@ const SignUpComponentUI = () => {
                             field.onChange(formatted);
                           }}
                           placeholder="+84987654321"
-                          placeholderTextColor={colors.textMuted}
+                          placeholderTextColor={colors.muted_text}
                           keyboardType="phone-pad"
                           style={{
                             fontSize: 16,
-                            color: colors.text,
+                            color: colors.primary_text,
                             paddingHorizontal: 16,
                           }}
                         />
@@ -401,7 +396,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -416,22 +411,22 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                         }}
                       >
                         <InputField
                           value={field.value}
                           onChangeText={field.onChange}
                           placeholder="nguyen.van.a@email.com"
-                          placeholderTextColor={colors.textMuted}
+                          placeholderTextColor={colors.muted_text}
                           keyboardType="email-address"
                           autoCapitalize="none"
                           style={{
                             fontSize: 16,
-                            color: colors.text,
+                            color: colors.primary_text,
                             paddingHorizontal: 16,
                           }}
                         />
@@ -465,7 +460,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -480,10 +475,10 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                         }}
                       >
                         <InputField
@@ -493,12 +488,12 @@ const SignUpComponentUI = () => {
                             field.onChange(formatted);
                           }}
                           placeholder="012345678901"
-                          placeholderTextColor={colors.textMuted}
+                          placeholderTextColor={colors.muted_text}
                           keyboardType="numeric"
                           maxLength={12}
                           style={{
                             fontSize: 16,
-                            color: colors.text,
+                            color: colors.primary_text,
                             paddingHorizontal: 16,
                           }}
                         />
@@ -532,7 +527,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -564,10 +559,10 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                           minHeight: 40,
                           justifyContent: "center",
                           paddingHorizontal: 16,
@@ -577,7 +572,7 @@ const SignUpComponentUI = () => {
                         <Text
                           style={{
                             fontSize: 16,
-                            color: field.value ? colors.text : colors.textMuted,
+                            color: field.value ? colors.primary_text : colors.muted_text,
                           }}
                         >
                           {field.value
@@ -594,7 +589,7 @@ const SignUpComponentUI = () => {
                             transform: [{ translateY: -10 }],
                           }}
                         >
-                          <Calendar size={20} color={colors.textMuted} />
+                          <Calendar size={20} color={colors.muted_text} />
                         </Box>
                       </TouchableOpacity>
 
@@ -648,7 +643,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -663,10 +658,10 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                           minHeight: 40,
                           justifyContent: "center",
                           paddingHorizontal: 16,
@@ -676,7 +671,7 @@ const SignUpComponentUI = () => {
                         <Text
                           style={{
                             fontSize: 16,
-                            color: field.value ? colors.text : colors.textMuted,
+                            color: field.value ? colors.primary_text : colors.muted_text,
                           }}
                         >
                           {getGenderLabel(field.value)}
@@ -691,7 +686,7 @@ const SignUpComponentUI = () => {
                             transform: [{ translateY: -10 }],
                           }}
                         >
-                          <ChevronDown size={20} color={colors.textMuted} />
+                          <ChevronDown size={20} color={colors.muted_text} />
                         </Box>
                       </TouchableOpacity>
 
@@ -726,7 +721,7 @@ const SignUpComponentUI = () => {
                               style={{
                                 fontSize: 18,
                                 fontWeight: "600",
-                                color: colors.text,
+                                color: colors.primary_text,
                               }}
                             >
                               Chọn giới tính
@@ -754,7 +749,7 @@ const SignUpComponentUI = () => {
                                   color:
                                     field.value === option.value
                                       ? colors.success
-                                      : colors.text,
+                                      : colors.primary_text,
                                   fontWeight:
                                     field.value === option.value
                                       ? "600"
@@ -783,7 +778,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -798,10 +793,10 @@ const SignUpComponentUI = () => {
                         style={{
                           borderColor: fieldState.error
                             ? colors.error
-                            : colors.border,
+                            : colors.frame_border,
                           borderRadius: 12,
                           borderWidth: 2,
-                          backgroundColor: colors.surface,
+                          backgroundColor: colors.card_surface,
                           minHeight: 80,
                         }}
                       >
@@ -809,13 +804,13 @@ const SignUpComponentUI = () => {
                           value={field.value}
                           onChangeText={field.onChange}
                           placeholder="Địa chỉ hiện tại của bạn"
-                          placeholderTextColor={colors.textMuted}
+                          placeholderTextColor={colors.muted_text}
                           multiline
                           numberOfLines={3}
                           textAlignVertical="top"
                           style={{
                             fontSize: 16,
-                            color: colors.text,
+                            color: colors.primary_text,
                             paddingHorizontal: 16,
                             paddingVertical: 12,
                           }}
@@ -850,7 +845,7 @@ const SignUpComponentUI = () => {
                       <FormControlLabel>
                         <FormControlLabelText
                           style={{
-                            color: colors.text,
+                            color: colors.primary_text,
                             fontWeight: "600",
                             fontSize: 15,
                             marginBottom: 6,
@@ -866,21 +861,21 @@ const SignUpComponentUI = () => {
                           style={{
                             borderColor: fieldState.error
                               ? colors.error
-                              : colors.border,
+                              : colors.frame_border,
                             borderRadius: 12,
                             borderWidth: 2,
-                            backgroundColor: colors.surface,
+                            backgroundColor: colors.card_surface,
                           }}
                         >
                           <InputField
                             value={field.value}
                             onChangeText={field.onChange}
                             placeholder="••••••••"
-                            placeholderTextColor={colors.textMuted}
+                            placeholderTextColor={colors.muted_text}
                             secureTextEntry={!showPassword}
                             style={{
                               fontSize: 16,
-                              color: colors.text,
+                              color: colors.primary_text,
                               paddingHorizontal: 16,
                               paddingRight: 50,
                             }}
@@ -897,16 +892,16 @@ const SignUpComponentUI = () => {
                           }}
                         >
                           {showPassword ? (
-                            <EyeOff size={20} color={colors.textMuted} />
+                            <EyeOff size={20} color={colors.muted_text} />
                           ) : (
-                            <Eye size={20} color={colors.textMuted} />
+                            <Eye size={20} color={colors.muted_text} />
                           )}
                         </TouchableOpacity>
                       </Box>
                       <Text
                         style={{
                           fontSize: 12,
-                          color: colors.textMuted,
+                          color: colors.muted_text,
                           marginTop: 4,
                           fontStyle: "italic",
                         }}
@@ -950,7 +945,7 @@ const SignUpComponentUI = () => {
                 >
                   <ButtonText
                     style={{
-                      color: "white",
+                      color: colors.primary_white_text,
                       fontWeight: "700",
                       fontSize: 17,
                     }}
@@ -972,7 +967,7 @@ const SignUpComponentUI = () => {
               >
                 <Text
                   style={{
-                    color: colors.textSecondary,
+                    color: colors.secondary_text,
                     fontSize: 14,
                     textAlign: "center",
                   }}
@@ -990,7 +985,7 @@ const SignUpComponentUI = () => {
 
                 <Text
                   style={{
-                    color: colors.textMuted,
+                    color: colors.muted_text,
                     fontSize: 12,
                     textAlign: "center",
                     marginTop: 12,

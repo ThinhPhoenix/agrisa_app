@@ -7,13 +7,22 @@ import {
   ButtonText,
   Center,
   Heading,
+  HStack,
   Spinner,
   Text,
   VStack,
 } from "@gluestack-ui/themed";
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import { CheckCircle2, Clock, RefreshCw, XCircle } from "lucide-react-native";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  IdCard,
+  RefreshCw,
+  ScanFace,
+  XCircle,
+} from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 
 export default function EKYCStatusResultScreen() {
@@ -176,187 +185,277 @@ export default function EKYCStatusResultScreen() {
   }
 
   return (
-    <Center flex={1} bg={colors.background} px="$6">
-      <VStack space="lg" alignItems="center" width="100%">
-        
-
-        {/* Status Icon */}
-        {isFullyVerified ? (
-          <CheckCircle2 size={100} color={colors.success} />
-        ) : (
-          <Clock size={100} color={colors.warning} />
-        )}
-
-        {/* Title */}
-        <Heading size="2xl" color={colors.primary_text} textAlign="center">
-          {isFullyVerified ? "Xác thực thành công!" : "Đang xác thực"}
-        </Heading>
-
-        {/* Description */}
-        <Text color={colors.secondary_text} textAlign="center" size="md">
-          {isFullyVerified
-            ? "Tài khoản của bạn đã được xác thực hoàn tất"
-            : "Vui lòng hoàn tất tất cả các bước xác thực"}
-        </Text>
-
-        {/* 🔥 NEW: Progress indicator */}
-        {!isFullyVerified && (
-          <Box width="100%" bg={colors.card_surface} p="$3" borderRadius="$lg">
-            <Text
-              color={colors.primary_text}
-              fontWeight="$semibold"
-              mb="$2"
-              textAlign="center"
+    <Box flex={1} bg={colors.background}>
+      <VStack space="xl" p="$6" pb="$8">
+        {/* Header - Simple & Friendly */}
+        <VStack space="md" alignItems="center">
+          {/* Icon */}
+          {isFullyVerified ? (
+            <Box
+              bg={colors.success}
+              borderRadius="$full"
+              p="$4"
+              w={80}
+              h={80}
+              alignItems="center"
+              justifyContent="center"
+              shadowColor={colors.shadow}
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.15}
+              shadowRadius={8}
+              elevation={4}
             >
-              Tiến độ: {(isOCRDone ? 1 : 0) + (isFaceVerified ? 1 : 0)}/2 bước
-            </Text>
-            <Box flexDirection="row" gap="$2">
-              <Box
-                flex={1}
-                height="$1"
-                bg={isOCRDone ? colors.success : colors.frame_border}
-                borderRadius="$full"
-              />
-              <Box
-                flex={1}
-                height="$1"
-                bg={isFaceVerified ? colors.success : colors.frame_border}
-                borderRadius="$full"
+              <CheckCircle2
+                size={44}
+                color={colors.primary_white_text}
+                strokeWidth={2.5}
               />
             </Box>
-          </Box>
-        )}
+          ) : (
+            <Box
+              bg={colors.warning}
+              borderRadius="$full"
+              p="$4"
+              w={80}
+              h={80}
+              alignItems="center"
+              justifyContent="center"
+              shadowColor={colors.shadow}
+              shadowOffset={{ width: 0, height: 4 }}
+              shadowOpacity={0.15}
+              shadowRadius={8}
+              elevation={4}
+            >
+              <Clock
+                size={44}
+                color={colors.primary_white_text}
+                strokeWidth={2.5}
+              />
+            </Box>
+          )}
 
-        {/* Status Details */}
-        <VStack space="md" width="100%">
-          {/* OCR Status */}
+          {/* Title */}
+          <Text
+            fontSize="$2xl"
+            fontWeight="$bold"
+            color={colors.primary_text}
+            textAlign="center"
+          >
+            {isFullyVerified ? "Hoàn tất xác thực!" : "Tiếp tục xác thực"}
+          </Text>
+
+          {/* Description */}
+          <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
+            {isFullyVerified
+              ? "Bạn đã hoàn tất cả 2 bước xác thực"
+              : `Bạn đã hoàn tất ${(isOCRDone ? 1 : 0) + (isFaceVerified ? 1 : 0)}/2 bước`}
+          </Text>
+
+          {/* Progress Dots */}
+          <HStack space="sm" mt="$2">
+            <Box
+              w={10}
+              h={10}
+              borderRadius="$full"
+              bg={isOCRDone ? colors.success : colors.frame_border}
+            />
+            <Box
+              w={10}
+              h={10}
+              borderRadius="$full"
+              bg={isFaceVerified ? colors.success : colors.frame_border}
+            />
+          </HStack>
+        </VStack>
+
+        {/* Step Cards - Simple */}
+        <VStack space="md" mt="$4">
+          {/* Step 1: CCCD */}
           <Box
             bg={colors.card_surface}
+            borderRadius="$xl"
             p="$4"
-            borderRadius="$lg"
             borderWidth={1}
             borderColor={isOCRDone ? colors.success : colors.frame_border}
           >
-            <Box flexDirection="row" alignItems="center">
-              {isOCRDone ? (
-                <CheckCircle2 size={24} color={colors.success} />
-              ) : (
-                <XCircle size={24} color={colors.secondary_text} />
-              )}
-              <Text color={colors.primary_text} fontWeight="$bold" ml="$3" flex={1}>
-                Xác thực CCCD
-              </Text>
-              <Text
-                color={isOCRDone ? colors.success : colors.secondary_text}
-                fontWeight="$semibold"
-                size="sm"
+            <HStack space="md" alignItems="center" mb="$3">
+              <Box
+                bg={isOCRDone ? colors.success : colors.primary}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
               >
-                {isOCRDone ? "Hoàn tất ✓" : "Chưa hoàn tất"}
-              </Text>
-            </Box>
+                <IdCard
+                  size={20}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+              </Box>
 
-            <Text color={colors.secondary_text} size="sm" mt="$2">
-              Quét và xác thực thông tin trên Căn cước công dân
-            </Text>
+              <VStack flex={1}>
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Chụp CCCD
+                </Text>
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  Chụp 2 mặt căn cước
+                </Text>
+              </VStack>
+
+              {isOCRDone && (
+                <Box
+                  w={24}
+                  h={24}
+                  borderRadius="$full"
+                  bg={colors.successSoft}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <CheckCircle2
+                    size={16}
+                    color={colors.success}
+                    strokeWidth={3}
+                  />
+                </Box>
+              )}
+            </HStack>
 
             {ekycData?.ocr_done_at && (
-              <Box
-                mt="$2"
-                bg={colors.success}
-                opacity={0.1}
-                p="$2"
-                borderRadius="$md"
-              >
-                <Text color={colors.primary_text} size="xs">
-                  ✓ Hoàn tất lúc:{" "}
-                  {new Date(ekycData.ocr_done_at).toLocaleString("vi-VN")}
-                </Text>
-              </Box>
+              <Text fontSize="$xs" color={colors.muted_text} mt="$1">
+                ✓ Hoàn tất lúc{" "}
+                {new Date(ekycData.ocr_done_at).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
             )}
 
-            {/* 🔥 NEW: Nút tiếp tục nếu chưa làm */}
             {!isOCRDone && (
               <Button
                 mt="$3"
-                size="sm"
                 bg={colors.primary}
+                borderRadius="$lg"
                 onPress={() => router.push("/settings/verify/id-scan")}
+                h="$11"
               >
-                <ButtonText color={colors.primary_white_text}>Bắt đầu quét CCCD →</ButtonText>
+                <ButtonText
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_white_text}
+                >
+                  Bắt đầu chụp
+                </ButtonText>
               </Button>
             )}
           </Box>
 
-          {/* Face Verification Status */}
+          {/* Step 2: Face */}
           <Box
             bg={colors.card_surface}
+            borderRadius="$xl"
             p="$4"
-            borderRadius="$lg"
             borderWidth={1}
             borderColor={isFaceVerified ? colors.success : colors.frame_border}
-            opacity={isOCRDone ? 1 : 0.5} // Làm mờ nếu chưa làm OCR
+            opacity={isOCRDone ? 1 : 0.6}
           >
-            <Box flexDirection="row" alignItems="center">
-              {isFaceVerified ? (
-                <CheckCircle2 size={24} color={colors.success} />
-              ) : (
-                <XCircle size={24} color={colors.secondary_text} />
-              )}
-              <Text color={colors.primary_text} fontWeight="$bold" ml="$3" flex={1}>
-                Xác thực khuôn mặt
-              </Text>
-              <Text
-                color={isFaceVerified ? colors.success : colors.secondary_text}
-                fontWeight="$semibold"
-                size="sm"
+            <HStack space="md" alignItems="center" mb="$3">
+              <Box
+                bg={isFaceVerified ? colors.success : colors.primary}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
               >
-                {isFaceVerified ? "Hoàn tất ✓" : "Chưa hoàn tất"}
-              </Text>
-            </Box>
+                <ScanFace
+                  size={20}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+              </Box>
 
-            <Text color={colors.secondary_text} size="sm" mt="$2">
-              So sánh khuôn mặt với ảnh trên CCCD để xác minh danh tính
-            </Text>
+              <VStack flex={1}>
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Quét khuôn mặt
+                </Text>
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  So khớp với ảnh CCCD
+                </Text>
+              </VStack>
+
+              {isFaceVerified && (
+                <Box
+                  w={24}
+                  h={24}
+                  borderRadius="$full"
+                  bg={colors.successSoft}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <CheckCircle2
+                    size={16}
+                    color={colors.success}
+                    strokeWidth={3}
+                  />
+                </Box>
+              )}
+            </HStack>
 
             {ekycData?.face_verified_at && (
-              <Box
-                mt="$2"
-                bg={colors.success}
-                opacity={0.1}
-                p="$2"
-                borderRadius="$md"
-              >
-                <Text color={colors.primary_text} size="xs">
-                  ✓ Hoàn tất lúc:{" "}
-                  {new Date(ekycData.face_verified_at).toLocaleString("vi-VN")}
-                </Text>
-              </Box>
-            )}
-
-            {/* 🔥 NEW: Nút tiếp tục nếu đã làm OCR nhưng chưa làm Face */}
-            {!isFaceVerified && isOCRDone && (
-              <Button
-                mt="$3"
-                size="sm"
-                bg={colors.primary}
-                onPress={() => router.push("/settings/verify/face-scan")}
-              >
-                <ButtonText color={colors.primary_white_text}>Bắt đầu quét khuôn mặt →</ButtonText>
-              </Button>
+              <Text fontSize="$xs" color={colors.muted_text} mt="$1">
+                ✓ Hoàn tất lúc{" "}
+                {new Date(ekycData.face_verified_at).toLocaleTimeString(
+                  "vi-VN",
+                  { hour: "2-digit", minute: "2-digit" }
+                )}
+              </Text>
             )}
 
             {!isFaceVerified && !isOCRDone && (
               <Box
-                mt="$2"
-                bg={colors.warning}
-                opacity={0.1}
-                p="$2"
-                borderRadius="$md"
+                bg={colors.warningSoft}
+                borderRadius="$lg"
+                p="$2.5"
+                mt="$3"
+                borderWidth={1}
+                borderColor={colors.warning}
               >
-                <Text color={colors.primary_text} size="xs">
-                  ⚠️ Vui lòng hoàn tất quét CCCD trước
-                </Text>
+                <HStack space="xs" alignItems="center">
+                  <AlertCircle size={14} color={colors.warning} />
+                  <Text fontSize="$xs" color={colors.warning}>
+                    Vui lòng chụp CCCD trước
+                  </Text>
+                </HStack>
               </Box>
+            )}
+
+            {!isFaceVerified && isOCRDone && (
+              <Button
+                mt="$3"
+                bg={colors.primary}
+                borderRadius="$lg"
+                onPress={() => router.push("/settings/verify/face-scan")}
+                h="$11"
+              >
+                <ButtonText
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_white_text}
+                >
+                  Bắt đầu quét
+                </ButtonText>
+              </Button>
             )}
           </Box>
         </VStack>
@@ -364,31 +463,50 @@ export default function EKYCStatusResultScreen() {
         {/* Countdown */}
         {isFullyVerified && (
           <Box
-            mt="$6"
-            bg={colors.success}
-            opacity={0.1}
+            bg={colors.successSoft}
+            borderRadius="$xl"
             p="$4"
-            borderRadius="$lg"
-            width="100%"
+            mt="$4"
+            borderWidth={1}
+            borderColor={colors.success}
           >
-            <Text color={colors.success} textAlign="center" fontWeight="$bold">
-              Chuyển về trang chủ trong {countdown} giây...
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.success}
+              textAlign="center"
+            >
+              Về trang chủ sau {countdown}s
             </Text>
           </Box>
         )}
 
-        {/* CCCD Number */}
+        {/* CCCD Number - Simple */}
         {ekycData?.cic_no && (
-          <Box mt="$4" bg={colors.card_surface} p="$3" borderRadius="$md" width="100%">
-            <Text color={colors.secondary_text} size="sm" textAlign="center">
-              Số CCCD:{" "}
-              <Text fontWeight="$semibold" color={colors.primary_text}>
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$xl"
+            p="$3"
+            mt="$2"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+          >
+            <HStack space="xs" alignItems="center" justifyContent="center">
+              <Text fontSize="$xs" color={colors.secondary_text}>
+                Số CCCD:
+              </Text>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 {ekycData.cic_no}
               </Text>
-            </Text>
+            </HStack>
           </Box>
         )}
 
+        {/* Last Updated */}
         {dataUpdatedAt && (
           <Box mt="$2" opacity={0.5}>
             <Text color={colors.muted_text} size="xs" textAlign="center">
@@ -397,6 +515,6 @@ export default function EKYCStatusResultScreen() {
           </Box>
         )}
       </VStack>
-    </Center>
+    </Box>
   );
 }

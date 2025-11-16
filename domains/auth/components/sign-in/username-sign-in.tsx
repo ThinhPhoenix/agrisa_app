@@ -223,11 +223,7 @@ const UsernameSignInComponent = () => {
                 >
                   <Box px="$6" py="$7">
                     <HStack alignItems="center" space="md" mb="$5">
-                      <Box
-                        bg={colors.primary}
-                        borderRadius="$full"
-                        p="$2.5"
-                      >
+                      <Box bg={colors.primary} borderRadius="$full" p="$2.5">
                         <ShieldCheck
                           size={22}
                           color={colors.primary_white_text}
@@ -256,7 +252,7 @@ const UsernameSignInComponent = () => {
 
                     <Box
                       h={1}
-                      bg={colors.frame_border}
+                      bg={colors.primary_text}
                       mb="$5"
                       borderRadius={999}
                     />
@@ -269,15 +265,6 @@ const UsernameSignInComponent = () => {
                         render={({ field, fieldState }) => (
                           <FormControl isInvalid={!!fieldState.error}>
                             <VStack space="xs">
-                              <Text
-                                fontSize="$sm"
-                                fontWeight="$semibold"
-                                color={colors.primary_text}
-                                pb={10}
-                              >
-                                Email hoặc Số điện thoại
-                              </Text>
-
                               <Input
                                 variant="outline"
                                 size="lg"
@@ -339,7 +326,7 @@ const UsernameSignInComponent = () => {
                                       field.onChange(text);
                                     }
                                   }}
-                                  placeholder="0987654321 hoặc email@agrisa.vn"
+                                  placeholder="Email hoặc Số điện thoại"
                                   placeholderTextColor={colors.muted_text}
                                   autoCapitalize="none"
                                   autoCorrect={false}

@@ -2,14 +2,20 @@ import { AgrisaHeader } from '@/components/Header';
 import { useAgrisaColors } from '@/domains/agrisa_theme/hooks/useAgrisaColor';
 import { Utils } from '@/libs/utils/utils';
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Text,
-    VStack
-} from '@gluestack-ui/themed';
-import { AlertCircle, Bell, CheckCircle2, Info, XCircle, Shield } from 'lucide-react-native';
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Text,
+  VStack,
+} from "@gluestack-ui/themed";
+import {
+  AlertCircle,
+  Bell,
+  CheckCircle2,
+  Shield,
+  XCircle,
+} from "lucide-react-native";
 import React, { useState } from 'react';
 import { RefreshControl } from 'react-native';
 

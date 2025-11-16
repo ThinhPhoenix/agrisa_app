@@ -2,19 +2,19 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Utils } from "@/libs/utils/utils";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
-import { 
-  ArrowDownLeft, 
-  ArrowUpRight, 
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
   CreditCard,
   TrendingUp,
-  Wallet
+  Wallet,
 } from "lucide-react-native";
 import { useState } from "react";
 import { RefreshControl } from "react-native";

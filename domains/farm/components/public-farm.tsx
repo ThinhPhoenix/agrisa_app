@@ -269,26 +269,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
             Đăng ký trang trại để bắt đầu sử dụng dịch vụ bảo hiểm nông nghiệp
           </Text>
         </VStack>
-        <Button
-          bg={AgrisaColors.light.primary}
-          borderRadius={16}
-          size="lg"
-          mt="$2"
-          px="$6"
-          onPress={() =>
-            router.push({
-              pathname: "/(farmer)/form-farm/[id]",
-              params: { id: "new" },
-            })
-          }
-        >
-          <ButtonText
-            color={colors.primary_white_text}
-            fontWeight="700"
-          >
-            Đăng ký trang trại đầu tiên
-          </ButtonText>
-        </Button>
+       
       </VStack>
     </Box>
   );

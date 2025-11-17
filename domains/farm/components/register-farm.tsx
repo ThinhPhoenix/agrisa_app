@@ -319,7 +319,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                                   color={colors.primary_white_text}
                                   opacity={0.85}
                                 >
-                                  Số sổ đỏ
+                                  Số hiệu giấy chứng nhận
                                 </Text>
                               </HStack>
                               <Text
@@ -414,7 +414,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         color={colors.primary_text}
                         textAlign="center"
                       >
-                        Chụp ảnh sổ đỏ
+                        Chụp ảnh giấy chứng nhận quyền sử dụng đất
                       </Text>
                       <Text
                         fontSize="$xs"
@@ -465,7 +465,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     {/* OCR Scanner */}
                     <OcrScanner
                       multiple
-                      buttonLabel="Chụp ảnh sổ đỏ"
+                      buttonLabel="Chụp ảnh giấy chứng nhận quyền sử dụng đất"
                       prompt={RED_BOOK_OCR_PROMPT}
                       onResult={async ({
                         text,
@@ -643,7 +643,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       strokeWidth={2}
                     />
                     <Text fontSize="$xs" color={colors.success} flex={1}>
-                      Thông tin đã tự động điền từ sổ đỏ
+                      Thông tin đã tự động điền từ giấy chứng nhận
                     </Text>
                   </HStack>
                 </Box>

@@ -189,306 +189,279 @@ export default function ProfileDetailScreen() {
 
         {/* Personal Information */}
         <VStack space="md">
+          {/* Section Header */}
           <HStack space="sm" alignItems="center">
             <Box
               bg={colors.primary}
-              borderRadius="$full"
+              borderRadius="$lg"
               p="$2"
-              w={32}
-              h={32}
-              alignItems="center"
-              justifyContent="center"
             >
-              <User size={16} color={colors.primary_white_text} />
+              <User size={20} color={colors.primary_white_text} strokeWidth={2.5} />
             </Box>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
               Thông tin cá nhân
             </Text>
           </HStack>
 
-          <VStack space="sm">
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            overflow="hidden"
+          >
+            <VStack>
+
             {/* Full Name */}
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$xl"
-              p="$4"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <HStack space="md" alignItems="center">
-                <Box
-                  bg={colors.primary}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <User size={20} color={colors.primary_white_text} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Họ và tên
-                  </Text>
-                  <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-                    {user.full_name || "Chưa cập nhật"}
-                  </Text>
-                </VStack>
-              </HStack>
-            </Box>
+            <HStack space="md" alignItems="center" p="$5">
+              <Box
+                bg={colors.primarySoft}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <User size={20} color={colors.primary} />
+              </Box>
+              <VStack flex={1}>
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  Họ và tên
+                </Text>
+                <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                  {(user as any).full_name || "Chưa cập nhật"}
+                </Text>
+              </VStack>
+            </HStack>
+
+            <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
 
             {/* Email */}
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$xl"
-              p="$4"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <HStack space="md" alignItems="center">
-                <Box
-                  bg={colors.primary}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Mail size={20} color={colors.primary_white_text} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Email
-                  </Text>
-                  <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-                    {user.email}
-                  </Text>
-                </VStack>
-                <Box w={10} h={10} borderRadius="$full" bg={colors.success} />
-              </HStack>
-            </Box>
+            <HStack space="md" alignItems="center" p="$5">
+              <Box
+                bg={colors.primarySoft}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Mail size={20} color={colors.primary} />
+              </Box>
+              <VStack flex={1}>
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  Email
+                </Text>
+                <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                  {user.email}
+                </Text>
+              </VStack>
+              <Box w={10} h={10} borderRadius="$full" bg={colors.success} />
+            </HStack>
+
+            <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
 
             {/* Phone */}
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$xl"
-              p="$4"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <HStack space="md" alignItems="center">
-                <Box
-                  bg={colors.primary}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
+            <HStack space="md" alignItems="center" p="$5">
+              <Box
+                bg={colors.primarySoft}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Phone size={20} color={colors.primary} />
+              </Box>
+              <VStack flex={1}>
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  Số điện thoại
+                </Text>
+                <Text 
+                  fontSize="$sm" 
+                  fontWeight="$semibold" 
+                  color={user.phone_number ? colors.primary_text : colors.muted_text}
                 >
-                  <Phone size={20} color={colors.primary_white_text} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Số điện thoại
-                  </Text>
-                  <Text 
-                    fontSize="$sm" 
-                    fontWeight="$semibold" 
-                    color={user.phone_number ? colors.primary_text : colors.muted_text}
-                  >
-                    {user.phone_number || "Chưa cập nhật"}
-                  </Text>
-                </VStack>
-                <Box 
-                  w={10} 
-                  h={10} 
-                  borderRadius="$full" 
-                  bg={user.phone_verified ? colors.success : colors.muted_text} 
-                />
-              </HStack>
-            </Box>
+                  {user.phone_number || "Chưa cập nhật"}
+                </Text>
+              </VStack>
+              <Box 
+                w={10} 
+                h={10} 
+                borderRadius="$full" 
+                bg={user.phone_verified ? colors.success : colors.muted_text} 
+              />
+            </HStack>
+
+            <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
 
             {/* Address */}
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$xl"
-              p="$4"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <HStack space="md" alignItems="center">
-                <Box
-                  bg={colors.primary}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
+            <HStack space="md" alignItems="center" p="$5">
+              <Box
+                bg={colors.primarySoft}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <MapPin size={20} color={colors.primary} />
+              </Box>
+              <VStack flex={1}>
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  Địa chỉ
+                </Text>
+                <Text 
+                  fontSize="$sm" 
+                  fontWeight="$semibold" 
+                  color={(user as any).address ? colors.primary_text : colors.muted_text}
                 >
-                  <MapPin size={20} color={colors.primary_white_text} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Địa chỉ
-                  </Text>
-                  <Text 
-                    fontSize="$sm" 
-                    fontWeight="$semibold" 
-                    color={user.address ? colors.primary_text : colors.muted_text}
-                  >
-                    {user.address || "Chưa cập nhật"}
-                  </Text>
-                </VStack>
-              </HStack>
-            </Box>
+                  {(user as any).address || "Chưa cập nhật"}
+                </Text>
+              </VStack>
+            </HStack>
           </VStack>
+        </Box>
         </VStack>
 
         {/* eKYC Information */}
         {ekycStatus && (
           <VStack space="md">
+            {/* Section Header */}
             <HStack space="sm" alignItems="center">
               <Box
                 bg={colors.info}
-                borderRadius="$full"
+                borderRadius="$lg"
                 p="$2"
-                w={32}
-                h={32}
-                alignItems="center"
-                justifyContent="center"
               >
-                <Shield size={16} color={colors.primary_white_text} />
+                <Shield size={20} color={colors.primary_white_text} strokeWidth={2.5} />
               </Box>
               <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
                 Xác thực danh tính
               </Text>
             </HStack>
 
-            <VStack space="sm">
+            <Box
+              bg={colors.card_surface}
+              borderRadius="$2xl"
+              borderWidth={1}
+              borderColor={colors.frame_border}
+              overflow="hidden"
+            >
+              <VStack>
+
               {/* CCCD Status */}
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$xl"
-                p="$4"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-              >
-                <HStack space="md" alignItems="center">
-                  <Box
-                    bg={ekycStatus.is_ocr_done ? colors.success : colors.muted_text}
-                    borderRadius="$full"
-                    p="$2.5"
-                    w={40}
-                    h={40}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <IdCard size={20} color={colors.primary_white_text} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      Căn cước công dân
-                    </Text>
-                    <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-                      {ekycStatus.cic_no || "Chưa cập nhật"}
-                    </Text>
-                  </VStack>
-                  <Box 
-                    w={10} 
-                    h={10} 
-                    borderRadius="$full" 
-                    bg={ekycStatus.is_ocr_done ? colors.success : colors.error} 
+              <HStack space="md" alignItems="center" p="$5">
+                <Box
+                  bg={ekycStatus.is_ocr_done ? colors.successSoft : colors.errorSoft}
+                  borderRadius="$full"
+                  p="$2.5"
+                  w={40}
+                  h={40}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <IdCard 
+                    size={20} 
+                    color={ekycStatus.is_ocr_done ? colors.success : colors.error} 
                   />
-                </HStack>
-              </Box>
+                </Box>
+                <VStack flex={1}>
+                  <Text fontSize="$xs" color={colors.muted_text}>
+                    Căn cước công dân
+                  </Text>
+                  <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                    {ekycStatus.cic_no || "Chưa cập nhật"}
+                  </Text>
+                </VStack>
+                <Box 
+                  w={10} 
+                  h={10} 
+                  borderRadius="$full" 
+                  bg={ekycStatus.is_ocr_done ? colors.success : colors.error} 
+                />
+              </HStack>
+
+              <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
 
               {/* Face Verification Status */}
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$xl"
-                p="$4"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-              >
-                <HStack space="md" alignItems="center">
-                  <Box
-                    bg={ekycStatus.is_face_verified ? colors.success : colors.muted_text}
-                    borderRadius="$full"
-                    p="$2.5"
-                    w={40}
-                    h={40}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Shield size={20} color={colors.primary_white_text} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      Xác thực khuôn mặt
-                    </Text>
-                    <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-                      {ekycStatus.is_face_verified ? "Đã xác thực" : "Chưa xác thực"}
-                    </Text>
-                  </VStack>
-                  <Box 
-                    w={10} 
-                    h={10} 
-                    borderRadius="$full" 
-                    bg={ekycStatus.is_face_verified ? colors.success : colors.error} 
+              <HStack space="md" alignItems="center" p="$5">
+                <Box
+                  bg={ekycStatus.is_face_verified ? colors.successSoft : colors.errorSoft}
+                  borderRadius="$full"
+                  p="$2.5"
+                  w={40}
+                  h={40}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Shield 
+                    size={20} 
+                    color={ekycStatus.is_face_verified ? colors.success : colors.error} 
                   />
-                </HStack>
-              </Box>
+                </Box>
+                <VStack flex={1}>
+                  <Text fontSize="$xs" color={colors.muted_text}>
+                    Xác thực khuôn mặt
+                  </Text>
+                  <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                    {ekycStatus.is_face_verified ? "Đã xác thực" : "Chưa xác thực"}
+                  </Text>
+                </VStack>
+                <Box 
+                  w={10} 
+                  h={10} 
+                  borderRadius="$full" 
+                  bg={ekycStatus.is_face_verified ? colors.success : colors.error} 
+                />
+              </HStack>
 
               {/* Timestamps */}
               {(ekycStatus.ocr_done_at || ekycStatus.face_verified_at) && (
-                <Box
-                  bg={colors.successSoft}
-                  borderRadius="$xl"
-                  p="$4"
-                  borderWidth={1}
-                  borderColor={colors.success}
-                >
-                  <VStack space="xs">
-                    <HStack space="xs" alignItems="center">
-                      <Calendar size={14} color={colors.success} />
-                      <Text fontSize="$xs" fontWeight="$semibold" color={colors.success}>
-                        Thời gian xác thực
-                      </Text>
-                    </HStack>
-                    {ekycStatus.ocr_done_at && (
-                      <Text fontSize="$xs" color={colors.secondary_text}>
-                        • CCCD: {new Date(ekycStatus.ocr_done_at).toLocaleString("vi-VN")}
-                      </Text>
-                    )}
-                    {ekycStatus.face_verified_at && (
-                      <Text fontSize="$xs" color={colors.secondary_text}>
-                        • Khuôn mặt: {new Date(ekycStatus.face_verified_at).toLocaleString("vi-VN")}
-                      </Text>
-                    )}
-                  </VStack>
-                </Box>
+                <>
+                  <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
+                  
+                  <Box p="$5">
+                    <VStack space="xs">
+                      <HStack space="xs" alignItems="center" mb="$2">
+                        <Calendar size={14} color={colors.secondary_text} />
+                        <Text fontSize="$xs" fontWeight="$semibold" color={colors.secondary_text}>
+                          Thời gian xác thực
+                        </Text>
+                      </HStack>
+                      {ekycStatus.ocr_done_at && (
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          • CCCD: {new Date(ekycStatus.ocr_done_at).toLocaleString("vi-VN")}
+                        </Text>
+                      )}
+                      {ekycStatus.face_verified_at && (
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          • Khuôn mặt: {new Date(ekycStatus.face_verified_at).toLocaleString("vi-VN")}
+                        </Text>
+                      )}
+                    </VStack>
+                  </Box>
+                </>
               )}
             </VStack>
+          </Box>
           </VStack>
         )}
 
         {/* Account Information */}
         <VStack space="md">
+          {/* Section Header */}
           <HStack space="sm" alignItems="center">
             <Box
               bg={colors.success}
-              borderRadius="$full"
+              borderRadius="$lg"
               p="$2"
-              w={32}
-              h={32}
-              alignItems="center"
-              justifyContent="center"
             >
-              <Calendar size={16} color={colors.primary_white_text} />
+              <Calendar size={20} color={colors.primary_white_text} strokeWidth={2.5} />
             </Box>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
               Thông tin tài khoản
@@ -497,40 +470,50 @@ export default function ProfileDetailScreen() {
 
           <Box
             bg={colors.card_surface}
-            borderRadius="$xl"
-            p="$4"
+            borderRadius="$2xl"
             borderWidth={1}
             borderColor={colors.frame_border}
+            overflow="hidden"
           >
-            <VStack space="sm">
+            <VStack>
+
+            {/* Account Details */}
+            <VStack p="$5" space="sm">
               <HStack justifyContent="space-between">
-                <Text fontSize="$xs" color={colors.muted_text}>
+                <Text fontSize="$sm" color={colors.muted_text}>
                   Trạng thái tài khoản
                 </Text>
-                <Text fontSize="$xs" fontWeight="$semibold" color={colors.success}>
+                <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
                   Đang hoạt động
                 </Text>
               </HStack>
+
+              <Box height={1} bg={colors.frame_border} width="100%" my="$1" />
+
               <HStack justifyContent="space-between">
-                <Text fontSize="$xs" color={colors.muted_text}>
+                <Text fontSize="$sm" color={colors.muted_text}>
                   Loại tài khoản
                 </Text>
-                <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary_text}>
+                <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
                   Nông dân
                 </Text>
               </HStack>
+
+              <Box height={1} bg={colors.frame_border} width="100%" my="$1" />
+
               <HStack justifyContent="space-between">
-                <Text fontSize="$xs" color={colors.muted_text}>
+                <Text fontSize="$sm" color={colors.muted_text}>
                   Ngày tạo
                 </Text>
-                <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary_text}>
-                  {user.created_at 
-                    ? new Date(user.created_at).toLocaleDateString("vi-VN")
+                <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                  {(user as any).created_at 
+                    ? new Date((user as any).created_at).toLocaleDateString("vi-VN")
                     : "Không xác định"}
                 </Text>
               </HStack>
             </VStack>
-          </Box>
+          </VStack>
+        </Box>
         </VStack>
 
         {/* Footer Note */}

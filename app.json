@@ -35,7 +35,8 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
-      "package": "com.tnhaan.agrisa"
+      "package": "com.tnhaan.agrisa",
+      
     },
     "web": {
       "bundler": "metro",
@@ -98,6 +99,7 @@
     "extra": {
       "apiUrl": "process.env.EXPO_PUBLIC_API_URL",
       "geminiApiKey": "process.env.EXPO_PUBLIC_GEMINI_KEY",
+      "EXPO_PUBLIC_OPENMAPVN_KEY": "process.env.EXPO_PUBLIC_OPENMAPVN_KEY",
       "router": {},
       "eas": {
         "projectId": "947c952c-e2b2-4317-9d0c-cf656fbc0287"

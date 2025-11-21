@@ -1,11 +1,22 @@
 import { BoundaryCoordinatesInput } from "@/components/coordinates-input/BoundaryCoordinatesInput";
 import { CustomForm } from "@/components/custom-form";
+import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 import { NotificationModal, useNotificationModal } from "@/components/modal";
 import OcrScanner from "@/components/ocr-scanner";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Farm, FormFarmDTO } from "@/domains/farm/models/farm.models";
+import { BoundaryPolygon } from "@/libs/utils/coordinate-converter";
 import { Utils } from "@/libs/utils/utils";
-import { Box, Button, ButtonText, Divider, HStack, ScrollView, Text, VStack } from "@gluestack-ui/themed";
+import {
+  Box,
+  Button,
+  ButtonText,
+  Divider,
+  HStack,
+  ScrollView,
+  Text,
+  VStack,
+} from "@gluestack-ui/themed";
 import * as ImagePicker from "expo-image-picker";
 import {
   AlertCircle,
@@ -14,10 +25,16 @@ import {
   MapPin,
   Sprout,
   Trash2,
-  Wheat
+  Wheat,
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { Dimensions, Image, Modal, Pressable, TouchableOpacity } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import { RED_BOOK_OCR_PROMPT } from "../constants/ocr-prompts";
 import { useFarmForm } from "../hooks/use-farm-form";
 import { createFarmFormFields } from "./form-fields";
@@ -46,8 +63,9 @@ const ImagePickerButton: React.FC<ImagePickerButtonProps> = ({
   const pickImages = async () => {
     try {
       setIsUploading(true);
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (status !== "granted") {
         alert("Cần cấp quyền truy cập thư viện ảnh");
         return;
@@ -117,19 +135,28 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   // ===== STATE =====
   const [redBookImages, setRedBookImages] = useState<string[]>([]);
   const [ocrResult, setOcrResult] = useState<Partial<FormFarmDTO> | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null
+  );
   const [showImageViewer, setShowImageViewer] = useState(false);
+  const [isVn2000, setIsVn2000] = useState(false); // Flag để biết OCR trả về VN2000 hay WGS84
 
   const MAX_IMAGES = 4;
 
   // Helper field cho boundary coordinates input (không gửi lên server)
   const [boundaryCoords, setBoundaryCoords] = useState<string>("");
 
+  // Boundary polygon để hiển thị map
+  const [boundaryPolygon, setBoundaryPolygon] =
+    useState<BoundaryPolygon | null>(null);
+
   // Sync boundary from initialData (edit mode)
   useEffect(() => {
     if (initialData?.boundary) {
       const coordString = Utils.boundaryToString(initialData.boundary);
       setBoundaryCoords(coordString);
+      setBoundaryPolygon(initialData.boundary);
+      setIsVn2000(false); // Từ server về là WGS84
     }
   }, [initialData]);
 
@@ -160,9 +187,15 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
             notification.error("Tọa độ ranh giới không hợp lệ!");
             return;
           }
+
+          // GỬI NGUYÊN VN2000 VỀ BE - KHÔNG CONVERT!
+          // Convert chỉ dùng để hiển thị map, không dùng để gửi về server
           boundary = parsedBoundary;
+
           console.log(
-            "✅ Parsed boundary from input:",
+            isVn2000
+              ? "✅ Sending VN2000 boundary to BE (no conversion)"
+              : "✅ Sending WGS84 boundary to BE",
             JSON.stringify(boundary, null, 2)
           );
         }
@@ -184,7 +217,17 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         notification.error("Có lỗi xảy ra. Vui lòng thử lại.");
       }
     },
-    [mode, farmId, ocrResult, formValues, submitForm, notification]
+    [
+      mode,
+      farmId,
+      ocrResult,
+      formValues,
+      submitForm,
+      notification,
+      boundaryCoords,
+      redBookImages,
+      isVn2000,
+    ]
   );
 
   // ===== IMAGE HANDLERS =====
@@ -466,6 +509,21 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                             ocrData.boundary
                           );
                           setBoundaryCoords(coordString);
+                          setBoundaryPolygon(ocrData.boundary);
+
+                          // Kiểm tra xem boundary có phải VN2000 không
+                          // VN2000: tọa độ thường > 100,000 (easting/northing)
+                          // WGS84: kinh độ 102-110, vĩ độ 8-24
+                          const firstCoord = ocrData.boundary.coordinates[0][0];
+                          const isVn =
+                            firstCoord[0] > 100000 || firstCoord[1] > 100000;
+                          setIsVn2000(isVn);
+
+                          if (isVn) {
+                            console.log("⚠️ OCR detected VN2000 coordinates");
+                          } else {
+                            console.log("✅ OCR detected WGS84 coordinates");
+                          }
                         }
 
                         // Convert images to base64 using Utils
@@ -540,11 +598,10 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
             </VStack>
           )}
 
-
           {/* ===== FORM: THÔNG TIN NÔNG TRẠI ===== */}
           {(mode === "edit" || redBookImages.length > 0) && (
             <>
-            <Divider />
+              <Divider />
               {/* Section Header */}
               <Box>
                 <HStack space="sm" alignItems="center">
@@ -566,19 +623,133 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   </VStack>
                 </HStack>
               </Box>
-                        <Divider />
+              <Divider />
               {/* Boundary Coordinates */}
-              <BoundaryCoordinatesInput
-                value={boundaryCoords}
-                onChange={(value) => setBoundaryCoords(value)}
-                label="Tọa độ ranh giới"
-                helperText={
-                  ocrResult
-                    ? "Thông tin được nhập tự động từ sổ đỏ nên có thể không chính xác hoàn toàn. Vui lòng kiểm tra kỹ."
-                    : "Nhập các điểm tọa độ ranh giới nông trại (Polygon geometry)"
-                }
-                disabled={mode === "create" && !ocrResult}
-              />
+              <VStack space="sm">
+                <BoundaryCoordinatesInput
+                  value={boundaryCoords}
+                  onChange={(value) => {
+                    setBoundaryCoords(value);
+                  }}
+                  label="Tọa độ ranh giới"
+                  helperText={
+                    ocrResult
+                      ? "Thông tin được nhập tự động từ sổ đỏ nên có thể không chính xác hoàn toàn. Vui lòng kiểm tra kỹ."
+                      : "Nhập các điểm tọa độ ranh giới nông trại (Polygon geometry)"
+                  }
+                  disabled={mode === "create" && !ocrResult}
+                />
+
+                {/* Nút cập nhật bản đồ */}
+                {boundaryCoords && (
+                  <Button
+                    onPress={() => {
+                      const parsed =
+                        Utils.parseBoundaryCoordinates(boundaryCoords);
+                      if (parsed) {
+                        // Kiểm tra xem có phải VN2000 không
+                        const firstCoord = parsed.coordinates[0][0];
+                        const isVn =
+                          firstCoord[0] > 100000 || firstCoord[1] > 100000;
+                        setIsVn2000(isVn);
+
+                        // Update polygon (giữ nguyên format gốc - VN2000 hoặc WGS84)
+                        setBoundaryPolygon(parsed);
+
+                        notification.success("Đã cập nhật bản đồ");
+                        console.log(
+                          isVn
+                            ? "🗺️ Updated map with VN2000 coordinates"
+                            : "🗺️ Updated map with WGS84 coordinates"
+                        );
+                      } else {
+                        notification.error("Tọa độ không hợp lệ");
+                      }
+                    }}
+                    variant="outline"
+                    borderColor={colors.primary}
+                    bg={colors.primary}
+                    size="sm"
+                  >
+                    <HStack space="xs" alignItems="center">
+                      <MapPin
+                        size={16}
+                        color={colors.primary_white_text}
+                        strokeWidth={2}
+                      />
+                      <ButtonText
+                        color={colors.primary_white_text}
+                      >
+                        Cập nhật bản đồ
+                      </ButtonText>
+                    </HStack>
+                  </Button>
+                )}
+              </VStack>
+
+              {/* Map Viewer */}
+              {boundaryPolygon && (
+                <VStack space="sm">
+                  <HStack alignItems="center" space="xs">
+                    <MapPin size={16} color={colors.primary} strokeWidth={2} />
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      Bản đồ nông trại
+                    </Text>
+                    {isVn2000 && (
+                      <Box
+                        bg={colors.warning + "20"}
+                        borderRadius="$sm"
+                        px="$2"
+                        py="$1"
+                      >
+                        <Text
+                          fontSize="$xs"
+                          color={colors.warning}
+                          fontWeight="$semibold"
+                        >
+                          VN2000
+                        </Text>
+                      </Box>
+                    )}
+                  </HStack>
+
+                  <FarmBoundaryMap
+                    boundary={boundaryPolygon}
+                    isVn2000={isVn2000}
+                    province={ocrResult?.province || formValues.province}
+                    height={350}
+                    showControls={true}
+                  />
+
+                  <Box
+                    bg={colors.background}
+                    borderRadius="$md"
+                    p="$3"
+                    borderWidth={1}
+                    borderColor={colors.frame_border}
+                  >
+                    <HStack alignItems="flex-start" space="xs">
+                      <AlertCircle
+                        size={16}
+                        color={colors.secondary_text}
+                        strokeWidth={2}
+                        style={{ marginTop: 2 }}
+                      />
+                      <VStack flex={1}>
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          {isVn2000
+                            ? "Tọa độ VN2000 được tự động chuyển sang WGS84 để hiển thị bản đồ. Dữ liệu gốc (VN2000) sẽ được gửi về hệ thống."
+                            : "Bản đồ hiển thị ranh giới nông trại của bạn. Có thể zoom và di chuyển để xem chi tiết."}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </Box>
+                </VStack>
+              )}
               <Divider />
 
               <Box>

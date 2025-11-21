@@ -114,12 +114,30 @@ export const Utils = {
 
     try {
       const coords = coordString.split(";").map((pair: string) => {
-        const [lng, lat] = pair.trim().split(",").map(Number);
-        if (isNaN(lng) || isNaN(lat)) throw new Error("Invalid coordinates");
-        return [lng, lat];
+        const trimmed = pair.trim();
+        if (!trimmed) throw new Error("Empty coordinate pair");
+
+        const parts = trimmed.split(",");
+        if (parts.length !== 2) throw new Error("Invalid coordinate format");
+
+        const [x, y] = parts.map((s) => Number(s.trim()));
+
+        if (isNaN(x) || isNaN(y)) {
+          console.error(
+            `❌ Invalid coordinate values: x=${x}, y=${y} from "${pair}"`
+          );
+          throw new Error(`Invalid coordinates: x=${x}, y=${y}`);
+        }
+
+        return [x, y];
       });
 
-      if (coords.length < 3) return null; // Polygon cần ít nhất 3 điểm
+      if (coords.length < 3) {
+        console.error(
+          `❌ Polygon needs at least 3 points, got ${coords.length}`
+        );
+        return null;
+      }
 
       // Đảm bảo polygon đóng (điểm đầu = điểm cuối)
       if (
@@ -129,6 +147,7 @@ export const Utils = {
         coords.push([...coords[0]]);
       }
 
+      console.log(`✅ Parsed ${coords.length} boundary coordinates`);
       return {
         type: "Polygon",
         coordinates: [coords],
@@ -182,5 +201,51 @@ export const Utils = {
     return boundary.coordinates[0]
       .map((coord: number[]) => `${coord[0]},${coord[1]}`)
       .join("; ");
+  },
+
+  /**
+   * Validate GeoJSON Polygon format
+   */
+  isValidPolygon: (boundary: any): boolean => {
+    if (!boundary?.type || boundary.type !== "Polygon") return false;
+    if (!boundary?.coordinates?.[0]) return false;
+    if (boundary.coordinates[0].length < 3) return false;
+
+    // Check if coordinates are valid numbers
+    return boundary.coordinates[0].every(
+      (coord: any) =>
+        Array.isArray(coord) &&
+        coord.length === 2 &&
+        typeof coord[0] === "number" &&
+        typeof coord[1] === "number" &&
+        !isNaN(coord[0]) &&
+        !isNaN(coord[1])
+    );
+  },
+
+  /**
+   * Calculate polygon area in square meters (WGS84)
+   * Uses spherical Earth approximation
+   */
+  calculatePolygonArea: (boundary: any): number => {
+    if (!Utils.isValidPolygon(boundary)) return 0;
+
+    const coords = boundary.coordinates[0];
+    const R = 6371000; // Earth radius in meters
+
+    let area = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const [lng1, lat1] = coords[i];
+      const [lng2, lat2] = coords[i + 1];
+
+      const dLng = ((lng2 - lng1) * Math.PI) / 180;
+      const lat1Rad = (lat1 * Math.PI) / 180;
+      const lat2Rad = (lat2 * Math.PI) / 180;
+
+      area += dLng * (2 + Math.sin(lat1Rad) + Math.sin(lat2Rad));
+    }
+
+    area = (area * R * R) / 2;
+    return Math.abs(area);
   },
 };

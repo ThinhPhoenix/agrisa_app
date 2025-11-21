@@ -182,6 +182,12 @@ export interface Farm {
   land_certificate_number: string;
 
   /**
+   * URL ảnh giấy chứng nhận (ngăn cách bởi dấu |)
+   * @example "evolblob.phrimp.io.vn/policy-documents/farm_cert_01.webp|evolblob.phrimp.io.vn/policy-documents/farm_cert_02.jpg"
+   */
+  land_certificate_url: string;
+
+  /**
    * Quyền sở hữu đất đai đã được xác minh chưa
    */
   land_ownership_verified: boolean;

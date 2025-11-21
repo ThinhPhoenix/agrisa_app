@@ -17,7 +17,7 @@ import {
   Text,
   VStack,
 } from "@gluestack-ui/themed";
-import { MapPin, Plus, Trash2 } from "lucide-react-native";
+import { Plus, Trash2 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 
 interface CoordinatePoint {
@@ -27,7 +27,7 @@ interface CoordinatePoint {
 }
 
 interface BoundaryCoordinatesInputProps {
-  value?: string; // Format: "lng,lat; lng,lat; lng,lat"
+  value?: string; // Format: "x,y; x,y; x,y" (VN2000 coordinates)
   onChange?: (value: string) => void;
   label?: string;
   helperText?: string;
@@ -37,13 +37,13 @@ interface BoundaryCoordinatesInputProps {
 }
 
 /**
- * Component nhập tọa độ boundary với giao diện 2 cột
- * Mỗi điểm có số thứ tự và 2 ô input: Kinh độ và Vĩ độ
+ * Component nhập tọa độ boundary với hệ quy chiếu VN2000
+ * Mỗi điểm có số thứ tự và 2 ô input: X và Y
  */
 export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> = ({
   value = "",
   onChange,
-  label = "Tọa độ ranh giới (Boundary)",
+  label = "Tọa độ ranh giới (VN2000)",
   helperText,
   error,
   required = false,
@@ -145,18 +145,27 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
         </FormControlHelper>
       )}
 
-      {/* Points List */}
-      <VStack space="sm" mb="$3">
+      {/* Points List - Gộp chung 1 khung */}
+      <Box
+        bg={colors.card_surface}
+        borderRadius="$lg"
+        borderWidth={1}
+        borderColor={colors.frame_border}
+        mb="$3"
+        overflow="hidden"
+      >
         {points.map((point, index) => (
-          <Box
-            key={point.id}
-            bg={colors.card_surface}
-            borderRadius="$lg"
-            p="$3"
-            borderWidth={1}
-            borderColor={colors.frame_border}
-          >
-            <HStack space="md" alignItems="center">
+          <React.Fragment key={point.id}>
+            {/* Divider giữa các điểm */}
+            {index > 0 && (
+              <Box
+                h={1}
+                bg={colors.frame_border}
+                width="100%"
+              />
+            )}
+
+            <HStack space="md" alignItems="center" p="$3">
               {/* Số thứ tự */}
               <Box
                 bg={colors.primary}
@@ -171,14 +180,14 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
                 </Text>
               </Box>
 
-              {/* Kinh độ */}
+              {/* Tọa độ X (VN2000) */}
               <VStack flex={1} space="xs">
                 <Text
                   fontSize="$2xs"
                   color={colors.secondary_text}
                   fontWeight="$medium"
                 >
-                  Kinh độ
+                  Điểm X
                 </Text>
                 <Input
                   size="sm"
@@ -189,21 +198,21 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
                   <InputField
                     value={point.lng}
                     onChangeText={(v) => updatePoint(point.id, "lng", v)}
-                    placeholder="105.6302"
+                    placeholder="650000"
                     keyboardType="numeric"
                     fontSize="$sm"
                   />
                 </Input>
               </VStack>
 
-              {/* Vĩ độ */}
+              {/* Tọa độ Y (VN2000) */}
               <VStack flex={1} space="xs">
                 <Text
                   fontSize="$2xs"
                   color={colors.secondary_text}
                   fontWeight="$medium"
                 >
-                  Vĩ độ
+                  Điểm Y
                 </Text>
                 <Input
                   size="sm"
@@ -214,7 +223,7 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
                   <InputField
                     value={point.lat}
                     onChangeText={(v) => updatePoint(point.id, "lat", v)}
-                    placeholder="10.4533"
+                    placeholder="1150000"
                     keyboardType="numeric"
                     fontSize="$sm"
                   />
@@ -232,9 +241,9 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
                 <ButtonIcon as={Trash2} size="sm" color={colors.error} />
               </Button>
             </HStack>
-          </Box>
+          </React.Fragment>
         ))}
-      </VStack>
+      </Box>
 
       {/* Nút thêm điểm */}
       <Button
@@ -252,22 +261,7 @@ export const BoundaryCoordinatesInput: React.FC<BoundaryCoordinatesInputProps> =
         </ButtonText>
       </Button>
 
-      {/* Ghi chú */}
-      <Box
-        bg={colors.infoSoft}
-        borderRadius="$md"
-        p="$2.5"
-        mt="$3"
-        borderWidth={1}
-        borderColor={colors.info + "30"}
-      >
-        <HStack space="xs" alignItems="center">
-          <MapPin size={14} color={colors.info} />
-          <Text fontSize="$2xs" color={colors.info} flex={1}>
-            Polygon tối thiểu cần 3 điểm. Điểm cuối sẽ tự động nối với điểm đầu.
-          </Text>
-        </HStack>
-      </Box>
+      
 
       {/* Error Message */}
       {error && (

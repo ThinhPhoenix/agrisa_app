@@ -87,7 +87,7 @@ export default function ProfileDetailScreen() {
     if (ekycStatus.is_face_verified && ekycStatus.is_ocr_done) {
       return {
         icon: CheckCircle2,
-        text: "Đã xác thực đầy đủ",
+        text: "Đã xác thực",
         color: colors.success,
         bgColor: colors.successSoft,
       };

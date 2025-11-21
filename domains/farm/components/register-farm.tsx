@@ -5,20 +5,19 @@ import OcrScanner from "@/components/ocr-scanner";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Farm, FormFarmDTO } from "@/domains/farm/models/farm.models";
 import { Utils } from "@/libs/utils/utils";
-import { Box, HStack, ScrollView, Text, VStack } from "@gluestack-ui/themed";
+import { Box, Button, ButtonText, Divider, HStack, ScrollView, Text, VStack } from "@gluestack-ui/themed";
+import * as ImagePicker from "expo-image-picker";
 import {
   AlertCircle,
-  Camera,
   CheckCircle2,
-  FileText,
-  Leaf,
+  Eye,
   MapPin,
-  Mountain,
   Sprout,
-  Wheat,
+  Trash2,
+  Wheat
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { Image } from "react-native";
+import { Dimensions, Image, Modal, Pressable, TouchableOpacity } from "react-native";
 import { RED_BOOK_OCR_PROMPT } from "../constants/ocr-prompts";
 import { useFarmForm } from "../hooks/use-farm-form";
 import { createFarmFormFields } from "./form-fields";
@@ -28,6 +27,67 @@ interface RegisterFarmFormProps {
   initialData?: Farm | null;
   farmId?: string;
 }
+
+/**
+ * Component nhỏ để upload thêm ảnh (không OCR)
+ */
+interface ImagePickerButtonProps {
+  onImagesSelected: (uris: string[]) => void;
+  maxImages: number;
+}
+
+const ImagePickerButton: React.FC<ImagePickerButtonProps> = ({
+  onImagesSelected,
+  maxImages,
+}) => {
+  const { colors } = useAgrisaColors();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const pickImages = async () => {
+    try {
+      setIsUploading(true);
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== "granted") {
+        alert("Cần cấp quyền truy cập thư viện ảnh");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 0.8,
+        allowsMultipleSelection: true,
+      });
+
+      if (!result.canceled && result.assets) {
+        const uris = result.assets.map((a) => a.uri);
+        onImagesSelected(uris);
+      }
+    } catch (error) {
+      console.error("Image pick error:", error);
+      alert("Không thể mở thư viện ảnh");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <Button
+      onPress={pickImages}
+      isDisabled={isUploading || maxImages <= 0}
+      variant="outline"
+      borderColor={colors.frame_border}
+      borderWidth={1}
+      bg={colors.background}
+      borderRadius="$md"
+      h="$12"
+    >
+      <ButtonText color={colors.primary_text} fontSize="$sm">
+        + Thêm ảnh ({maxImages} còn lại)
+      </ButtonText>
+    </Button>
+  );
+};
 
 /**
  * Component đăng ký nông trại - Giao diện mới trực quan
@@ -57,6 +117,10 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   // ===== STATE =====
   const [redBookImages, setRedBookImages] = useState<string[]>([]);
   const [ocrResult, setOcrResult] = useState<Partial<FormFarmDTO> | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+
+  const MAX_IMAGES = 4;
 
   // Helper field cho boundary coordinates input (không gửi lên server)
   const [boundaryCoords, setBoundaryCoords] = useState<string>("");
@@ -76,10 +140,14 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   const handleSubmit = useCallback(
     async (values: Record<string, any>) => {
       try {
-        // Validate OCR trong Create Mode
-        if (mode === "create" && !ocrResult) {
-          notification.error("Vui lòng chụp ảnh sổ đỏ trước!");
-          console.log("❌ Validation failed: Thiếu OCR result");
+        // Validate ảnh sổ đỏ trong Create Mode
+        if (mode === "create" && redBookImages.length === 0) {
+          notification.error("Vui lòng tải lên ít nhất 1 ảnh sổ đỏ!");
+          return;
+        }
+
+        if (mode === "create" && redBookImages.length > MAX_IMAGES) {
+          notification.error(`Chỉ được tải tối đa ${MAX_IMAGES} ảnh!`);
           return;
         }
 
@@ -118,6 +186,22 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
     },
     [mode, farmId, ocrResult, formValues, submitForm, notification]
   );
+
+  // ===== IMAGE HANDLERS =====
+  const handleViewImage = (index: number) => {
+    setSelectedImageIndex(index);
+    setShowImageViewer(true);
+  };
+
+  const handleDeleteImage = (index: number) => {
+    setRedBookImages((prev) => prev.filter((_, i) => i !== index));
+    notification.success(`Đã xoá ảnh ${index + 1}`);
+  };
+
+  const handleCloseViewer = () => {
+    setShowImageViewer(false);
+    setSelectedImageIndex(null);
+  };
 
   // ===== RENDER =====
   return (
@@ -167,401 +251,306 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
           {/* ===== BƯỚC 1: OCR (CHỈ CREATE MODE) ===== */}
           {mode === "create" && (
-            <Box
-              bg={ocrResult ? colors.successSoft : colors.card_surface}
-              borderRadius="$xl"
-              p="$4"
-              borderWidth={1}
-              borderColor={ocrResult ? colors.success : colors.frame_border}
-            >
-              <VStack space="md">
-                {/* Header */}
-                <HStack alignItems="center" justifyContent="space-between">
-                  <HStack space="sm" alignItems="center" flex={1}>
-                    <Camera
-                      size={20}
-                      color={ocrResult ? colors.success : colors.secondary_text}
+            <VStack space="md">
+              {/* Header đơn giản */}
+              <HStack alignItems="center" justifyContent="space-between">
+                <VStack flex={1}>
+                  <Text
+                    fontSize="$lg"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
+                    Bước 1: Chụp sổ đỏ
+                  </Text>
+                  <Text fontSize="$sm" color={colors.secondary_text} mt="$1">
+                    {redBookImages.length > 0
+                      ? `Đã tải lên ${redBookImages.length} ảnh`
+                      : "Tải lên giấy chứng nhận quyền sử dụng đất"}
+                  </Text>
+                </VStack>
+
+                {ocrResult && (
+                  <HStack alignItems="center" space="xs">
+                    <CheckCircle2
+                      size={16}
+                      color={colors.success}
                       strokeWidth={2}
                     />
-
-                    <VStack flex={1}>
-                      <Text
-                        fontSize="$md"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        Bước 1: Chụp sổ đỏ
-                      </Text>
-                      <Text
-                        fontSize="$xs"
-                        color={colors.secondary_text}
-                        mt="$0.5"
-                      >
-                        {redBookImages.length > 0
-                          ? `Đã tải ${redBookImages.length} ảnh`
-                          : "Bắt buộc để lấy thông tin"}
-                      </Text>
-                    </VStack>
-                  </HStack>
-
-                  {ocrResult && (
-                    <Box bg={colors.success} borderRadius="$md" px="$3" py="$1">
-                      <HStack alignItems="center" space="xs">
-                        <CheckCircle2
-                          size={14}
-                          color={colors.primary_white_text}
-                          strokeWidth={2}
-                        />
-                        <Text
-                          fontSize="$xs"
-                          color={colors.primary_white_text}
-                          fontWeight="$semibold"
-                        >
-                          Hoàn tất
-                        </Text>
-                      </HStack>
-                    </Box>
-                  )}
-                </HStack>
-
-                {/* Image Gallery hoặc Upload Button */}
-                {redBookImages.length > 0 ? (
-                  <VStack space="sm">
-                    {/* Preview ảnh */}
-                    <Box
-                      borderRadius="$lg"
-                      overflow="hidden"
-                      borderWidth={1}
-                      borderColor={colors.success}
+                    <Text
+                      fontSize="$sm"
+                      color={colors.success}
+                      fontWeight="$semibold"
                     >
-                      <Image
-                        source={{ uri: redBookImages[0] }}
-                        style={{ width: "100%", height: 200 }}
-                        resizeMode="cover"
-                      />
-                    </Box>
+                      Hoàn tất
+                    </Text>
+                  </HStack>
+                )}
+              </HStack>
 
-                    {/* OCR Result Card */}
-                    {ocrResult && (
-                      <Box bg={colors.success} borderRadius="$lg" p="$3">
-                        <HStack alignItems="center" space="xs" mb="$2">
-                          <CheckCircle2
-                            size={16}
-                            color={colors.primary_white_text}
-                            strokeWidth={2}
-                          />
-                          <Text
-                            fontSize="$sm"
-                            fontWeight="$semibold"
-                            color={colors.primary_white_text}
+              {/* Gallery ảnh - ra ngoài khung */}
+              {redBookImages.length > 0 && (
+                <Box>
+                  <HStack flexWrap="wrap" gap="$2">
+                    {redBookImages.map((uri, index) => (
+                      <Box
+                        key={index}
+                        borderRadius="$md"
+                        overflow="hidden"
+                        borderWidth={1}
+                        borderColor={colors.frame_border}
+                        position="relative"
+                        style={{ width: "48%", aspectRatio: 1 }}
+                      >
+                        <Image
+                          source={{ uri }}
+                          style={{ width: "100%", height: "100%" }}
+                          resizeMode="cover"
+                        />
+
+                        {/* Action buttons overlay */}
+                        <HStack
+                          position="absolute"
+                          top="$2"
+                          right="$2"
+                          space="xs"
+                        >
+                          {/* View button */}
+                          <TouchableOpacity
+                            onPress={() => handleViewImage(index)}
+                            style={{
+                              backgroundColor: "rgba(0,0,0,0.6)",
+                              borderRadius: 6,
+                              padding: 6,
+                            }}
                           >
-                            Thông tin đã nhận diện
-                          </Text>
+                            <Eye size={16} color={"#fff"} strokeWidth={2} />
+                          </TouchableOpacity>
+
+                          {/* Delete button */}
+                          <TouchableOpacity
+                            onPress={() => handleDeleteImage(index)}
+                            style={{
+                              backgroundColor: "rgba(239,68,68,0.9)",
+                              borderRadius: 6,
+                              padding: 6,
+                            }}
+                          >
+                            <Trash2 size={16} color={"#fff"} strokeWidth={2} />
+                          </TouchableOpacity>
                         </HStack>
 
-                        <VStack space="xs">
-                          {ocrResult.land_certificate_number && (
-                            <HStack
-                              justifyContent="space-between"
-                              alignItems="center"
-                            >
-                              <HStack space="xs" alignItems="center">
-                                <FileText
-                                  size={14}
-                                  color={colors.primary_white_text}
-                                  opacity={0.85}
-                                />
-                                <Text
-                                  fontSize="$xs"
-                                  color={colors.primary_white_text}
-                                  opacity={0.85}
-                                >
-                                  Số hiệu giấy chứng nhận
-                                </Text>
-                              </HStack>
-                              <Text
-                                fontSize="$xs"
-                                fontWeight="$semibold"
-                                color={colors.primary_white_text}
-                              >
-                                {ocrResult.land_certificate_number}
-                              </Text>
-                            </HStack>
-                          )}
-
-                          {ocrResult.area_sqm && (
-                            <HStack
-                              justifyContent="space-between"
-                              alignItems="center"
-                            >
-                              <HStack space="xs" alignItems="center">
-                                <Mountain
-                                  size={14}
-                                  color={colors.primary_white_text}
-                                  opacity={0.85}
-                                />
-                                <Text
-                                  fontSize="$xs"
-                                  color={colors.primary_white_text}
-                                  opacity={0.85}
-                                >
-                                  Diện tích
-                                </Text>
-                              </HStack>
-                              <Text
-                                fontSize="$xs"
-                                fontWeight="$semibold"
-                                color={colors.primary_white_text}
-                              >
-                                {(ocrResult.area_sqm / 10000).toFixed(2)} ha (
-                                {ocrResult.area_sqm.toLocaleString("vi-VN")} m²)
-                              </Text>
-                            </HStack>
-                          )}
-
-                          {ocrResult.address && (
-                            <VStack space="xs">
-                              <HStack space="xs" alignItems="center">
-                                <MapPin
-                                  size={14}
-                                  color={colors.primary_white_text}
-                                  opacity={0.85}
-                                />
-                                <Text
-                                  fontSize="$xs"
-                                  color={colors.primary_white_text}
-                                  opacity={0.85}
-                                >
-                                  Địa chỉ
-                                </Text>
-                              </HStack>
-                              <Text
-                                fontSize="$xs"
-                                fontWeight="$medium"
-                                color={colors.primary_white_text}
-                                ml="$4"
-                              >
-                                {ocrResult.address}
-                              </Text>
-                            </VStack>
-                          )}
-                        </VStack>
-                      </Box>
-                    )}
-                  </VStack>
-                ) : (
-                  // Upload Area
-                  <VStack space="md">
-                    <Box alignItems="center" py="$6">
-                      <Box
-                        bg={colors.warningSoft}
-                        borderRadius="$lg"
-                        p="$6"
-                        mb="$3"
-                      >
-                        <FileText
-                          size={48}
-                          color={colors.warning}
-                          strokeWidth={1.5}
-                        />
-                      </Box>
-
-                      <Text
-                        fontSize="$md"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                        textAlign="center"
-                      >
-                        Chụp ảnh giấy chứng nhận quyền sử dụng đất
-                      </Text>
-                      <Text
-                        fontSize="$xs"
-                        color={colors.secondary_text}
-                        textAlign="center"
-                        mt="$2"
-                        px="$4"
-                      >
-                        Hệ thống AI sẽ tự động nhận diện thông tin
-                      </Text>
-                    </Box>
-
-                    {/* Tips Card */}
-                    <Box
-                      bg={colors.infoSoft}
-                      borderRadius="$lg"
-                      p="$3"
-                      borderWidth={1}
-                      borderColor={colors.info}
-                    >
-                      <HStack alignItems="center" space="xs" mb="$2">
-                        <AlertCircle
-                          size={14}
-                          color={colors.info}
-                          strokeWidth={2}
-                        />
-                        <Text
-                          fontSize="$xs"
-                          fontWeight="$semibold"
-                          color={colors.info}
+                        {/* Image number badge */}
+                        <Box
+                          position="absolute"
+                          bottom="$2"
+                          left="$2"
+                          bg="rgba(0,0,0,0.6)"
+                          borderRadius="$sm"
+                          px="$2"
+                          py="$1"
                         >
-                          Hình ảnh phải đảm bảo:
+                          <Text
+                            fontSize="$xs"
+                            fontWeight="$semibold"
+                            color={"#fff"}
+                          >
+                            {index + 1}/{redBookImages.length}
+                          </Text>
+                        </Box>
+                      </Box>
+                    ))}
+                  </HStack>
+                </Box>
+              )}
+
+              {/* Nút upload - hiện khi chưa có ảnh HOẶC chưa đủ MAX_IMAGES */}
+              {redBookImages.length === 0 ? (
+                <VStack space="md">
+                  {/* Tips đơn giản */}
+                  <Box
+                    bg={colors.background}
+                    borderRadius="$md"
+                    p="$3"
+                    borderWidth={1}
+                    borderColor={colors.frame_border}
+                  >
+                    <HStack alignItems="flex-start" space="xs">
+                      <AlertCircle
+                        size={16}
+                        color={colors.secondary_text}
+                        strokeWidth={2}
+                        style={{ marginTop: 2 }}
+                      />
+                      <VStack flex={1} space="xs">
+                        <Text fontSize="$sm" color={colors.secondary_text}>
+                          Chụp rõ giấy chứng nhận (tối đa {MAX_IMAGES} ảnh)
                         </Text>
-                      </HStack>
-                      <VStack space="xs" ml="$4">
-                        <Text fontSize="$xs" color={colors.primary_text}>
-                          Đủ ánh sáng, rõ nét
-                        </Text>
-                        <Text fontSize="$xs" color={colors.primary_text}>
-                          Chụp toàn bộ trang
-                        </Text>
-                        <Text fontSize="$xs" color={colors.primary_text}>
-                          Không bị che khuất
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          Đủ ánh sáng, không bị mờ{"\n"}Chụp toàn bộ trang
+                          {"\n"}Không che khuất thông tin
                         </Text>
                       </VStack>
-                    </Box>
+                    </HStack>
+                  </Box>
 
-                    {/* OCR Scanner */}
-                    <OcrScanner
-                      multiple
-                      buttonLabel="Chụp ảnh giấy chứng nhận quyền sử dụng đất"
-                      prompt={RED_BOOK_OCR_PROMPT}
-                      onResult={async ({
-                        text,
-                        uris,
-                      }: {
-                        text: string;
-                        uris: string[];
-                      }) => {
-                        try {
-                          console.log("\n📸 ===== OCR RESULT =====");
-                          console.log("Raw text:", text);
-                          console.log("Images:", uris);
+                  {/* OCR Scanner */}
+                  <OcrScanner
+                    multiple
+                    buttonLabel="Chụp sổ đỏ & Nhận diện"
+                    prompt={RED_BOOK_OCR_PROMPT}
+                    onResult={async ({
+                      text,
+                      uris,
+                    }: {
+                      text: string;
+                      uris: string[];
+                    }) => {
+                      try {
+                        // Giới hạn số lượng ảnh
+                        const limitedUris = uris.slice(0, MAX_IMAGES);
 
-                          // Parse JSON từ response
-                          let ocrData;
-                          const trimmedText = text.trim();
-
-                          // Remove markdown code blocks nếu có
-                          const jsonMatch = trimmedText.match(
-                            /```(?:json)?\s*(\{[\s\S]*?\})\s*```/
-                          );
-                          const jsonText = jsonMatch
-                            ? jsonMatch[1]
-                            : trimmedText;
-
-                          try {
-                            ocrData = JSON.parse(jsonText);
-                          } catch (e) {
-                            ocrData = JSON.parse(trimmedText);
-                          }
-
-                          console.log(
-                            "✅ Parsed OCR data:",
-                            JSON.stringify(ocrData, null, 2)
-                          );
-
-                          // Validate required fields
-                          if (
-                            !ocrData.land_certificate_number ||
-                            !ocrData.address
-                          ) {
-                            notification.error(
-                              "Không đọc được thông tin. Vui lòng chụp lại!"
-                            );
-                            console.log(
-                              "❌ Validation failed: Thiếu land_certificate_number hoặc address"
-                            );
-                            return;
-                          }
-
-                          // Validate boundary
-                          if (!ocrData.boundary) {
-                            console.log("⚠️ Warning: Thiếu thông tin boundary");
-                            notification.info(
-                              "Thiếu thông tin tọa độ ranh giới. Vui lòng bổ sung sau!"
-                            );
-                          }
-
-                          // Convert boundary to string format using Utils
-                          if (ocrData.boundary) {
-                            const coordString = Utils.boundaryToString(
-                              ocrData.boundary
-                            );
-                            setBoundaryCoords(coordString);
-                          }
-
-                          // Convert images to base64 using Utils
-                          console.log("🔄 Converting images to base64...");
-                          const base64Images = await Promise.all(
-                            uris.map(async (uri, index) => {
-                              const base64Data =
-                                await Utils.convertImageToBase64(uri);
-                              return {
-                                file_name: `land_certificate_${Date.now()}_${index + 1}.jpg`,
-                                field_name: "land_certificate_photos",
-                                data: base64Data,
-                              };
-                            })
-                          );
-                          console.log(
-                            `✅ Converted ${base64Images.length} images to base64`
-                          );
-
-                          // Convert area_sqm từ m² sang ha trước khi set form
-                          const areaInHectares = ocrData.area_sqm
-                            ? ocrData.area_sqm / 10000
-                            : undefined;
-
-                          setOcrResult(ocrData);
-
-                          // Update form values với area đã convert sang ha
-                          updateFormValues({
-                            ...ocrData,
-                            area_sqm: areaInHectares, // Convert m² → ha cho form input
-                            land_certificate_photos: base64Images,
-                          });
-                          setRedBookImages(uris);
-
-                          console.log(
-                            "✅ OCR thành công! Form đã được cập nhật."
-                          );
-                          console.log("==========================\n");
-
-                          notification.success(
-                            "Cập nhật thông tin từ sổ đỏ thành công"
-                          );
-                        } catch (error) {
-                          console.error("\n❌ ===== OCR PARSE ERROR =====");
-                          console.error("Error:", error);
-                          console.error("==============================\n");
-                          notification.error(
-                            "Không thể xử lý kết quả. Vui lòng thử lại!"
+                        if (uris.length > MAX_IMAGES) {
+                          notification.info(
+                            `Chỉ chọn được tối đa ${MAX_IMAGES} ảnh. Đã bỏ qua ${uris.length - MAX_IMAGES} ảnh.`
                           );
                         }
-                      }}
-                    />
-                  </VStack>
-                )}
-              </VStack>
-            </Box>
+
+                        console.log("\n📸 ===== OCR RESULT =====");
+                        console.log("Raw text:", text);
+                        console.log("Images:", limitedUris); // Parse JSON từ response
+                        let ocrData;
+                        const trimmedText = text.trim();
+
+                        // Remove markdown code blocks nếu có
+                        const jsonMatch = trimmedText.match(
+                          /```(?:json)?\s*(\{[\s\S]*?\})\s*```/
+                        );
+                        const jsonText = jsonMatch ? jsonMatch[1] : trimmedText;
+
+                        try {
+                          ocrData = JSON.parse(jsonText);
+                        } catch (e) {
+                          ocrData = JSON.parse(trimmedText);
+                        }
+
+                        console.log(
+                          "✅ Parsed OCR data:",
+                          JSON.stringify(ocrData, null, 2)
+                        );
+
+                        // Validate required fields
+                        if (
+                          !ocrData.land_certificate_number ||
+                          !ocrData.address
+                        ) {
+                          notification.error(
+                            "Không đọc được thông tin. Vui lòng chụp lại!"
+                          );
+                          console.log(
+                            "❌ Validation failed: Thiếu land_certificate_number hoặc address"
+                          );
+                          return;
+                        }
+
+                        // Validate boundary
+                        if (!ocrData.boundary) {
+                          console.log("⚠️ Warning: Thiếu thông tin boundary");
+                          notification.info(
+                            "Thiếu thông tin tọa độ ranh giới. Vui lòng bổ sung sau!"
+                          );
+                        }
+
+                        // Convert boundary to string format using Utils
+                        if (ocrData.boundary) {
+                          const coordString = Utils.boundaryToString(
+                            ocrData.boundary
+                          );
+                          setBoundaryCoords(coordString);
+                        }
+
+                        // Convert images to base64 using Utils
+                        console.log("🔄 Converting images to base64...");
+                        const base64Images = await Promise.all(
+                          uris.map(async (uri, index) => {
+                            const base64Data =
+                              await Utils.convertImageToBase64(uri);
+                            return {
+                              file_name: `land_certificate_${Date.now()}_${index + 1}.jpg`,
+                              field_name: "land_certificate_photos",
+                              data: base64Data,
+                            };
+                          })
+                        );
+                        console.log(
+                          `✅ Converted ${base64Images.length} images to base64`
+                        );
+
+                        // Convert area_sqm từ m² sang ha trước khi set form
+                        const areaInHectares = ocrData.area_sqm
+                          ? ocrData.area_sqm / 10000
+                          : undefined;
+
+                        setOcrResult(ocrData);
+                        updateFormValues({
+                          ...ocrData,
+                          area_sqm: areaInHectares,
+                          land_certificate_photos: base64Images,
+                        });
+                        setRedBookImages(limitedUris);
+
+                        console.log(
+                          "✅ OCR thành công! Form đã được cập nhật."
+                        );
+                        console.log("==========================\n");
+
+                        notification.success(
+                          "Cập nhật thông tin từ sổ đỏ thành công"
+                        );
+                      } catch (error) {
+                        console.error("\n❌ ===== OCR PARSE ERROR =====");
+                        console.error("Error:", error);
+                        console.error("==============================\n");
+                        notification.error(
+                          "Không thể xử lý kết quả. Vui lòng thử lại!"
+                        );
+                      }
+                    }}
+                  />
+                </VStack>
+              ) : (
+                redBookImages.length < MAX_IMAGES && (
+                  <ImagePickerButton
+                    onImagesSelected={(newUris) => {
+                      const remainingSlots = MAX_IMAGES - redBookImages.length;
+                      const limitedUris = newUris.slice(0, remainingSlots);
+
+                      if (newUris.length > remainingSlots) {
+                        notification.info(
+                          `Chỉ thêm được ${remainingSlots} ảnh. Đã bỏ qua ${newUris.length - remainingSlots} ảnh.`
+                        );
+                      }
+
+                      setRedBookImages((prev) => [...prev, ...limitedUris]);
+                      notification.success(`Đã thêm ${limitedUris.length} ảnh`);
+                    }}
+                    maxImages={MAX_IMAGES - redBookImages.length}
+                  />
+                )
+              )}
+            </VStack>
           )}
 
+
           {/* ===== FORM: THÔNG TIN NÔNG TRẠI ===== */}
-          {(mode === "edit" || ocrResult) && (
+          {(mode === "edit" || redBookImages.length > 0) && (
             <>
+            <Divider />
               {/* Section Header */}
-              <Box
-                bg={colors.primarySoft}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.primary + "30"}
-              >
+              <Box>
                 <HStack space="sm" alignItems="center">
-                  <Leaf size={18} color={colors.primary} strokeWidth={2} />
                   <VStack>
                     <Text
-                      fontSize="$md"
+                      fontSize="$lg"
                       fontWeight="$semibold"
                       color={colors.primary_text}
                     >
@@ -569,64 +558,15 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         ? "Thông tin nông trại"
                         : "Bước 2: Điền thông tin"}
                     </Text>
-                    <Text fontSize="$xs" color={colors.secondary_text}>
+                    <Text pt="$2" fontSize="$sm" color={colors.secondary_text}>
                       {mode === "edit"
                         ? "Cập nhật chi tiết"
-                        : "Xem và chỉnh sửa nếu cần"}
+                        : "Thông tin được điền tự động, có thể sai sót. Vui lòng kiểm tra kỹ."}
                     </Text>
                   </VStack>
                 </HStack>
               </Box>
-
-              {/* Info Notice (CREATE) */}
-              {mode === "create" && (
-                <Box
-                  bg={colors.successSoft}
-                  borderRadius="$md"
-                  p="$2.5"
-                  borderWidth={1}
-                  borderColor={colors.success + "30"}
-                >
-                  <HStack space="xs" alignItems="center">
-                    <CheckCircle2
-                      size={14}
-                      color={colors.success}
-                      strokeWidth={2}
-                    />
-                    <Text fontSize="$xs" color={colors.success} flex={1}>
-                      Thông tin đã tự động điền từ giấy chứng nhận
-                    </Text>
-                  </HStack>
-                </Box>
-              )}
-
-              {/* ===== PHẦN TỌA ĐỘ RANH GIỚI ===== */}
-              <Box
-                bg={colors.warningSoft}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.warning + "30"}
-              >
-                <HStack space="sm" alignItems="center">
-                  <MapPin size={18} color={colors.warning} strokeWidth={2} />
-                  <VStack>
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$semibold"
-                      color={colors.primary_text}
-                    >
-                      Tọa độ ranh giới nông trại
-                    </Text>
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      {ocrResult
-                        ? "Kiểm tra và chỉnh sửa nếu cần"
-                        : "Nhập thủ công nếu OCR thiếu"}
-                    </Text>
-                  </VStack>
-                </HStack>
-              </Box>
-
+                        <Divider />
               {/* Boundary Coordinates */}
               <BoundaryCoordinatesInput
                 value={boundaryCoords}
@@ -639,6 +579,15 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 }
                 disabled={mode === "create" && !ocrResult}
               />
+              <Divider />
+
+              <Box>
+                <HStack space="xs" alignItems="center">
+                  <Text fontSize="$sm" flex={1}>
+                    Thông tin nông trại
+                  </Text>
+                </HStack>
+              </Box>
 
               {/* Main Form */}
               <CustomForm
@@ -666,6 +615,89 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         {...notification.config}
         onClose={notification.hide}
       />
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={showImageViewer}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleCloseViewer}
+        statusBarTranslucent
+      >
+        <Pressable
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.9)",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onPress={handleCloseViewer}
+        >
+          <Box
+            width="100%"
+            height="100%"
+            justifyContent="center"
+            alignItems="center"
+          >
+            {selectedImageIndex !== null && (
+              <Image
+                source={{ uri: redBookImages[selectedImageIndex] }}
+                style={{
+                  width: Dimensions.get("window").width,
+                  height: Dimensions.get("window").height * 0.8,
+                }}
+                resizeMode="contain"
+              />
+            )}
+
+            {/* Close button */}
+            <TouchableOpacity
+              onPress={handleCloseViewer}
+              style={{
+                position: "absolute",
+                top: 50,
+                right: 20,
+                backgroundColor: colors.error,
+                borderRadius: 25,
+                width: 50,
+                height: 50,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.primary_white_text,
+                  fontSize: 24,
+                  fontWeight: "bold",
+                }}
+              >
+                ×
+              </Text>
+            </TouchableOpacity>
+
+            {/* Image counter */}
+            {selectedImageIndex !== null && (
+              <Box
+                position="absolute"
+                bottom={50}
+                bg={colors.overlay}
+                borderRadius="$lg"
+                px="$4"
+                py="$2"
+              >
+                <Text
+                  fontSize="$md"
+                  fontWeight="$semibold"
+                  color={colors.primary_white_text}
+                >
+                  {selectedImageIndex + 1} / {redBookImages.length}
+                </Text>
+              </Box>
+            )}
+          </Box>
+        </Pressable>
+      </Modal>
     </>
   );
 };

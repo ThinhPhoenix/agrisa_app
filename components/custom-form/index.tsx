@@ -1,4 +1,5 @@
-import { colors } from "@/domains/shared/constants/colors";
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
 import {
   Button,
   ButtonText,
@@ -52,7 +53,6 @@ import {
   VStack,
 } from "@gluestack-ui/themed";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { LinearGradient } from "expo-linear-gradient";
 import { Calendar, ChevronDown } from "lucide-react-native";
 import React, {
   forwardRef,
@@ -60,7 +60,7 @@ import React, {
   useImperativeHandle,
   useState,
 } from "react";
-import { Animated, Platform, ScrollView, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 
 export interface FormField {
   name: string;
@@ -142,7 +142,6 @@ export const CustomForm = forwardRef(function CustomForm(
   const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>(
     {}
   );
-  const [ripples, setRipples] = useState<Record<string, any>>({});
 
   // ✅ DatePicker state
   const [showDatePicker, setShowDatePicker] = useState<Record<string, boolean>>(
@@ -158,39 +157,8 @@ export const CustomForm = forwardRef(function CustomForm(
     Record<string, boolean>
   >({});
 
-  const createRipple = (name: string, nativeEvent: any) => {
-    const anim = new Animated.Value(0);
-    const opacity = new Animated.Value(0.35);
-    const ripple = {
-      x: nativeEvent.locationX,
-      y: nativeEvent.locationY,
-      anim,
-      opacity,
-      key: Date.now(),
-    };
-
-    setRipples((p) => ({ ...p, [name]: ripple }));
-
-    Animated.parallel([
-      Animated.timing(anim, {
-        toValue: 1,
-        duration: 450,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 600,
-        delay: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setRipples((p) => {
-        const next = { ...p };
-        delete next[name];
-        return next;
-      });
-    });
-  };
+  const { mode } = useAgrisaColors();
+  const themeColors = AgrisaColors[mode];
 
   useImperativeHandle(ref, () => ({
     validateFields: () => {
@@ -253,7 +221,9 @@ export const CustomForm = forwardRef(function CustomForm(
     fields.forEach((field) => {
       if (
         field.required &&
-        (formData[field.name] === undefined || formData[field.name] === "" || formData[field.name] === null)
+        (formData[field.name] === undefined ||
+          formData[field.name] === "" ||
+          formData[field.name] === null)
       ) {
         validationErrors[field.name] = `Vui lòng ${
           field.type === "select" ||
@@ -279,7 +249,7 @@ export const CustomForm = forwardRef(function CustomForm(
   };
 
   const inputContainerStyle = {
-    backgroundColor: "#fff",
+    backgroundColor: themeColors.background,
     minHeight: 56,
     borderRadius: 8,
     justifyContent: "center",
@@ -329,14 +299,20 @@ export const CustomForm = forwardRef(function CustomForm(
 
   const renderField = (field: FormField) => {
     const commonLabel = (
-      <FormControlLabel>
+      <FormControlLabel style={{ marginBottom: 10 }}>
         <FormControlLabelText
-          className="text-gray-700 font-medium mb-2 text-xs"
-          style={{ fontSize: 12 }}
+          style={{
+            fontSize: 15,
+            fontWeight: "600",
+            color: themeColors.primary_text,
+            letterSpacing: 0.2,
+          }}
         >
           {field.label}
           {field.required && (
-            <Text style={{ color: "#ef4444", marginLeft: 6, fontSize: 12 }}>
+            <Text
+              style={{ color: themeColors.error, marginLeft: 4, fontSize: 15 }}
+            >
               *
             </Text>
           )}
@@ -359,8 +335,8 @@ export const CustomForm = forwardRef(function CustomForm(
                 ...inputContainerStyle,
                 borderWidth: 2,
                 borderColor: focusedFields[field.name]
-                  ? colors.primary400
-                  : "#E5E7EB",
+                  ? themeColors.primary
+                  : themeColors.frame_border,
               }}
             >
               <InputField
@@ -390,21 +366,33 @@ export const CustomForm = forwardRef(function CustomForm(
                 }
                 style={{
                   paddingHorizontal: 16,
-                  color: "#111827",
-                  height: "100%",
+                  paddingVertical: 14,
+                  color: themeColors.primary_text,
+                  fontSize: 15,
                 }}
-                placeholderTextColor="#666"
+                placeholderTextColor={themeColors.muted_text}
               />
             </Input>
             {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+              <FormControlHelper style={{ marginTop: 8 }}>
+                \n{" "}
+                <FormControlHelperText
+                  style={{
+                    fontSize: 13,
+                    color: themeColors.secondary_text,
+                  }}
+                >
                   {field.helperText}
                 </FormControlHelperText>
               </FormControlHelper>
             )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
+            <FormControlError style={{ marginTop: 8 }}>
+              <FormControlErrorText
+                style={{
+                  fontSize: 13,
+                  color: themeColors.error,
+                }}
+              >
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
@@ -425,8 +413,8 @@ export const CustomForm = forwardRef(function CustomForm(
                 position: "relative",
                 borderWidth: 2,
                 borderColor: focusedFields[field.name]
-                  ? colors.primary400
-                  : "#E5E7EB",
+                  ? themeColors.primary
+                  : themeColors.frame_border,
               }}
             >
               <InputField
@@ -443,10 +431,11 @@ export const CustomForm = forwardRef(function CustomForm(
                 }
                 style={{
                   paddingHorizontal: 16,
-                  color: "#111827",
-                  height: "100%",
+                  paddingVertical: 14,
+                  color: themeColors.primary_text,
+                  fontSize: 15,
                 }}
-                placeholderTextColor="#666"
+                placeholderTextColor={themeColors.muted_text}
               />
               <Pressable
                 onPress={() =>
@@ -457,7 +446,7 @@ export const CustomForm = forwardRef(function CustomForm(
                 }
                 style={{
                   position: "absolute",
-                  right: 8,
+                  right: 12,
                   top: 0,
                   bottom: 0,
                   justifyContent: "center",
@@ -465,21 +454,31 @@ export const CustomForm = forwardRef(function CustomForm(
                 accessibilityRole="button"
               >
                 {showPassword[field.name] ? (
-                  <EyeOffIcon size="md" className="text-gray-500" />
+                  <EyeOffIcon size="md" color={themeColors.secondary_text} />
                 ) : (
-                  <EyeIcon size="md" className="text-gray-500" />
+                  <EyeIcon size="md" color={themeColors.secondary_text} />
                 )}
               </Pressable>
             </Input>
             {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+              <FormControlHelper style={{ marginTop: 8 }}>
+                <FormControlHelperText
+                  style={{
+                    fontSize: 13,
+                    color: themeColors.secondary_text,
+                  }}
+                >
                   {field.helperText}
                 </FormControlHelperText>
               </FormControlHelper>
             )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
+            <FormControlError style={{ marginTop: 8 }}>
+              <FormControlErrorText
+                style={{
+                  fontSize: 13,
+                  color: themeColors.error,
+                }}
+              >
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
@@ -501,24 +500,37 @@ export const CustomForm = forwardRef(function CustomForm(
               isDisabled={field.disabled}
             >
               <SelectTrigger
-                className="bg-white border-2 border-gray-200 shadow-sm"
-                style={{ borderRadius: 8, minHeight: 56 }}
+                style={{
+                  borderRadius: 8,
+                  minHeight: 56,
+                  backgroundColor: themeColors.background,
+                  borderWidth: 2,
+                  borderColor: themeColors.frame_border,
+                }}
               >
                 <SelectInput
                   placeholder={field.placeholder}
-                  className="px-4 py-3 text-gray-800"
-                  placeholderTextColor="#9CA3AF"
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    color: themeColors.primary_text,
+                  }}
+                  placeholderTextColor={themeColors.muted_text}
                 />
                 <SelectIcon
                   as={ChevronDownIcon}
-                  className="text-gray-500 mr-3"
+                  style={{ color: themeColors.secondary_text, marginRight: 12 }}
                 />
               </SelectTrigger>
               <SelectPortal>
                 <SelectBackdrop />
                 <SelectContent
-                  className="bg-white border-2 border-gray-200 shadow-lg"
-                  style={{ borderRadius: 8 }}
+                  style={{
+                    borderRadius: 8,
+                    backgroundColor: themeColors.background,
+                    borderWidth: 2,
+                    borderColor: themeColors.frame_border,
+                  }}
                 >
                   <SelectDragIndicatorWrapper>
                     <SelectDragIndicator />
@@ -535,14 +547,24 @@ export const CustomForm = forwardRef(function CustomForm(
               </SelectPortal>
             </Select>
             {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+              <FormControlHelper style={{ marginTop: 8 }}>
+                <FormControlHelperText
+                  style={{
+                    fontSize: 13,
+                    color: themeColors.secondary_text,
+                  }}
+                >
                   {field.helperText}
                 </FormControlHelperText>
               </FormControlHelper>
             )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
+            <FormControlError style={{ marginTop: 8 }}>
+              <FormControlErrorText
+                style={{
+                  fontSize: 13,
+                  color: themeColors.error,
+                }}
+              >
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
@@ -584,7 +606,7 @@ export const CustomForm = forwardRef(function CustomForm(
                 style={{
                   ...inputContainerStyle,
                   borderWidth: 2,
-                  borderColor: "#E5E7EB",
+                  borderColor: themeColors.frame_border,
                   opacity: field.disabled ? 0.5 : 1,
                   flexDirection: "row",
                   alignItems: "center",
@@ -595,25 +617,41 @@ export const CustomForm = forwardRef(function CustomForm(
                 <Text
                   style={{
                     flex: 1,
-                    color: formData[field.name] ? "#111827" : "#666",
+                    color: formData[field.name]
+                      ? themeColors.primary_text
+                      : themeColors.muted_text,
                     fontSize: 14,
                   }}
                 >
                   {formData[field.name] || field.placeholder || "Chọn ngày"}
                 </Text>
-                <Calendar size={20} color="#6B7280" strokeWidth={2} />
+                <Calendar
+                  size={20}
+                  color={themeColors.secondary_text}
+                  strokeWidth={2}
+                />
               </View>
             </Pressable>
 
             {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+              <FormControlHelper style={{ marginTop: 8 }}>
+                <FormControlHelperText
+                  style={{
+                    fontSize: 13,
+                    color: themeColors.secondary_text,
+                  }}
+                >
                   {field.helperText}
                 </FormControlHelperText>
               </FormControlHelper>
             )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
+            <FormControlError style={{ marginTop: 8 }}>
+              <FormControlErrorText
+                style={{
+                  fontSize: 13,
+                  color: themeColors.error,
+                }}
+              >
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
@@ -636,12 +674,16 @@ export const CustomForm = forwardRef(function CustomForm(
                     <ModalContent
                       style={{
                         borderRadius: 16,
-                        backgroundColor: "#fff",
+                        backgroundColor: themeColors.background,
                         padding: 20,
                       }}
                     >
                       <ModalHeader>
-                        <Text fontSize="$lg" fontWeight="$bold">
+                        <Text
+                          fontSize="$lg"
+                          fontWeight="$bold"
+                          style={{ color: themeColors.primary_text }}
+                        >
                           {field.label}
                         </Text>
                         <ModalCloseButton>
@@ -665,8 +707,8 @@ export const CustomForm = forwardRef(function CustomForm(
                             minimumDate={field.minDate}
                             maximumDate={field.maxDate}
                             locale="vi-VN"
-                            accentColor={colors.primary500}
-                            textColor="#000000"
+                            accentColor={themeColors.primary}
+                            textColor={themeColors.primary_text}
                           />
 
                           <HStack space="sm" width="100%">
@@ -768,7 +810,7 @@ export const CustomForm = forwardRef(function CustomForm(
                 style={{
                   ...inputContainerStyle,
                   borderWidth: 2,
-                  borderColor: "#E5E7EB",
+                  borderColor: themeColors.frame_border,
                   opacity: field.disabled ? 0.5 : 1,
                 }}
                 isReadOnly
@@ -779,10 +821,10 @@ export const CustomForm = forwardRef(function CustomForm(
                   editable={false}
                   style={{
                     paddingHorizontal: 16,
-                    color: "#111827",
+                    color: themeColors.primary_text,
                     height: "100%",
                   }}
-                  placeholderTextColor="#666"
+                  placeholderTextColor={themeColors.muted_text}
                 />
                 <View
                   style={{
@@ -793,20 +835,34 @@ export const CustomForm = forwardRef(function CustomForm(
                     justifyContent: "center",
                   }}
                 >
-                  <ChevronDown size={20} color="#6B7280" strokeWidth={2} />
+                  <ChevronDown
+                    size={20}
+                    color={themeColors.secondary_text}
+                    strokeWidth={2}
+                  />
                 </View>
               </Input>
             </Pressable>
 
             {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+              <FormControlHelper style={{ marginTop: 8 }}>
+                <FormControlHelperText
+                  style={{
+                    fontSize: 13,
+                    color: themeColors.secondary_text,
+                  }}
+                >
                   {field.helperText}
                 </FormControlHelperText>
               </FormControlHelper>
             )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
+            <FormControlError style={{ marginTop: 8 }}>
+              <FormControlErrorText
+                style={{
+                  fontSize: 13,
+                  color: themeColors.error,
+                }}
+              >
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
@@ -829,17 +885,21 @@ export const CustomForm = forwardRef(function CustomForm(
                   borderRadius: 16,
                   maxWidth: 400,
                   maxHeight: "80%",
-                  backgroundColor: "#fff",
+                  backgroundColor: themeColors.background,
                 }}
               >
                 <ModalHeader
                   style={{
                     borderBottomWidth: 1,
-                    borderBottomColor: "#E5E7EB",
+                    borderBottomColor: themeColors.frame_border,
                     paddingVertical: 16,
                   }}
                 >
-                  <Text fontSize="$lg" fontWeight="$bold" color="#111827">
+                  <Text
+                    fontSize="$lg"
+                    fontWeight="$bold"
+                    style={{ color: themeColors.primary_text }}
+                  >
                     {field.label}
                   </Text>
                   <ModalCloseButton>
@@ -854,10 +914,17 @@ export const CustomForm = forwardRef(function CustomForm(
                         style={{
                           padding: 16,
                           borderBottomWidth: 1,
-                          borderBottomColor: "#E5E7EB",
+                          borderBottomColor: themeColors.frame_border,
                         }}
                       >
-                        <Input style={{ borderRadius: 8 }}>
+                        <Input
+                          style={{
+                            borderRadius: 8,
+                            borderWidth: 2,
+                            borderColor: themeColors.frame_border,
+                            backgroundColor: themeColors.background,
+                          }}
+                        >
                           <InputField
                             placeholder="Tìm kiếm..."
                             value={searchQuery}
@@ -869,9 +936,11 @@ export const CustomForm = forwardRef(function CustomForm(
                             }
                             style={{
                               paddingHorizontal: 16,
-                              color: "#111827",
+                              paddingVertical: 12,
+                              color: themeColors.primary_text,
+                              fontSize: 14,
                             }}
-                            placeholderTextColor="#9CA3AF"
+                            placeholderTextColor={themeColors.muted_text}
                           />
                         </Input>
                       </View>
@@ -884,7 +953,10 @@ export const CustomForm = forwardRef(function CustomForm(
                     >
                       {filteredOptions.length === 0 ? (
                         <View style={{ padding: 32, alignItems: "center" }}>
-                          <Text fontSize="$sm" color="#6B7280">
+                          <Text
+                            fontSize="$sm"
+                            style={{ color: themeColors.secondary_text }}
+                          >
                             Không tìm thấy kết quả
                           </Text>
                         </View>
@@ -910,9 +982,9 @@ export const CustomForm = forwardRef(function CustomForm(
                                 paddingVertical: 16,
                                 paddingHorizontal: 16,
                                 borderBottomWidth: 1,
-                                borderBottomColor: "#F3F4F6",
+                                borderBottomColor: themeColors.frame_border,
                                 backgroundColor: isSelected
-                                  ? "#EFF6FF"
+                                  ? themeColors.successSoft
                                   : "transparent",
                               }}
                             >
@@ -922,17 +994,19 @@ export const CustomForm = forwardRef(function CustomForm(
                               >
                                 <Text
                                   fontSize="$sm"
-                                  color={
-                                    isSelected ? colors.primary500 : "#111827"
-                                  }
-                                  fontWeight={isSelected ? "$bold" : "$normal"}
+                                  style={{
+                                    color: isSelected
+                                      ? themeColors.primary
+                                      : themeColors.primary_text,
+                                    fontWeight: isSelected ? "700" : "400",
+                                  }}
                                 >
                                   {option.label}
                                 </Text>
                                 {isSelected && (
                                   <CheckIcon
                                     size="sm"
-                                    color={colors.primary500}
+                                    color={themeColors.primary}
                                   />
                                 )}
                               </HStack>
@@ -956,29 +1030,48 @@ export const CustomForm = forwardRef(function CustomForm(
             style={field.style}
           >
             {commonLabel}
-            <Textarea style={{ borderRadius: 8, minHeight: 100, padding: 0 }}>
+            <Textarea
+              style={{
+                borderRadius: 8,
+                minHeight: 100,
+                padding: 0,
+                backgroundColor: themeColors.background,
+                borderWidth: 2,
+                borderColor: themeColors.frame_border,
+              }}
+            >
               <TextareaInput
                 placeholder={field.placeholder}
                 value={formData[field.name] || ""}
                 onChangeText={(v) => handleFieldChange(field.name, v)}
                 editable={!field.disabled}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={themeColors.muted_text}
                 style={{
                   paddingHorizontal: 16,
                   paddingVertical: 12,
-                  color: "#111827",
+                  color: themeColors.primary_text,
                 }}
               />
             </Textarea>
             {field.helperText && (
-              <FormControlHelper>
-                <FormControlHelperText className="text-gray-500 text-sm mt-1">
+              <FormControlHelper style={{ marginTop: 8 }}>
+                <FormControlHelperText
+                  style={{
+                    fontSize: 13,
+                    color: themeColors.secondary_text,
+                  }}
+                >
                   {field.helperText}
                 </FormControlHelperText>
               </FormControlHelper>
             )}
-            <FormControlError>
-              <FormControlErrorText className="text-red-500 text-sm mt-1">
+            <FormControlError style={{ marginTop: 8 }}>
+              <FormControlErrorText
+                style={{
+                  fontSize: 13,
+                  color: themeColors.error,
+                }}
+              >
                 {errors[field.name]}
               </FormControlErrorText>
             </FormControlError>
@@ -1069,46 +1162,25 @@ export const CustomForm = forwardRef(function CustomForm(
         return (
           <FormControl key={field.name} style={field.style}>
             {field.isSubmit ? (
-              <LinearGradient
-                colors={[colors.primary500, colors.primary700]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+              <Button
+                onPress={handleSubmit}
+                isDisabled={field.disabled || isSubmitting}
                 style={{
-                  height: 56,
+                  backgroundColor: themeColors.primary,
                   borderRadius: 8,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 6,
-                  elevation: 6,
-                  overflow: "hidden",
-                  opacity: field.disabled || isSubmitting ? 0.5 : 1,
+                  minHeight: 52,
                 }}
               >
-                <Button
-                  onPress={handleSubmit}
-                  onPressIn={(e: any) =>
-                    createRipple(
-                      field.name,
-                      e?.nativeEvent || { locationX: 0, locationY: 0 }
-                    )
-                  }
-                  isDisabled={field.disabled || isSubmitting}
+                <ButtonText
                   style={{
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "transparent",
+                    color: themeColors.primary_white_text,
+                    fontWeight: "600",
+                    fontSize: 16,
                   }}
                 >
-                  <ButtonText
-                    style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
-                  >
-                    {field.buttonText || field.label}
-                  </ButtonText>
-                </Button>
-              </LinearGradient>
+                  {field.buttonText || field.label}
+                </ButtonText>
+              </Button>
             ) : (
               <Button
                 onPress={
@@ -1122,48 +1194,33 @@ export const CustomForm = forwardRef(function CustomForm(
                       });
                   })
                 }
-                onPressIn={(e: any) =>
-                  createRipple(
-                    field.name,
-                    e?.nativeEvent || { locationX: 0, locationY: 0 }
-                  )
-                }
                 variant={field.variant || "solid"}
                 size={field.size || "md"}
                 isDisabled={field.disabled}
-                className={`shadow-md ${field.variant === "outline" ? "border-2 border-blue-500 bg-transparent" : "bg-blue-500 hover:bg-blue-600"}`}
-                style={{ borderRadius: 8, overflow: "hidden" }}
+                style={{
+                  borderRadius: 8,
+                  backgroundColor:
+                    field.variant === "outline"
+                      ? "transparent"
+                      : themeColors.primary,
+                  borderWidth: field.variant === "outline" ? 2 : 0,
+                  borderColor:
+                    field.variant === "outline"
+                      ? themeColors.primary
+                      : "transparent",
+                }}
               >
                 <ButtonText
-                  className={`font-semibold ${field.variant === "outline" ? "text-blue-500" : "text-white"}`}
+                  style={{
+                    color:
+                      field.variant === "outline"
+                        ? themeColors.primary
+                        : themeColors.primary_white_text,
+                    fontWeight: "600",
+                  }}
                 >
                   {field.buttonText || field.label}
                 </ButtonText>
-                {ripples[field.name] && (
-                  <Animated.View
-                    pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      left: ripples[field.name].x - 150,
-                      top: ripples[field.name].y - 150,
-                      width: 300,
-                      height: 300,
-                      borderRadius: 150,
-                      backgroundColor: "rgba(0,0,0,0.12)",
-                      transform: [
-                        {
-                          scale: ripples[field.name].anim.interpolate
-                            ? ripples[field.name].anim.interpolate({
-                                inputRange: [0, 1],
-                                outputRange: [0.1, 1],
-                              })
-                            : 1,
-                        },
-                      ],
-                      opacity: ripples[field.name].opacity,
-                    }}
-                  />
-                )}
               </Button>
             )}
           </FormControl>
@@ -1179,59 +1236,44 @@ export const CustomForm = forwardRef(function CustomForm(
   );
 
   return (
-    <VStack style={formStyle}>
-      {fields.map((f, idx) => (
-        <View
-          key={f.name + "-wrap"}
-          style={{ marginBottom: idx === fields.length - 1 ? 0 : gap }}
-        >
-          {renderField(f)}
+    <VStack
+      space="lg"
+      style={[
+        {
+          padding: 20,
+          backgroundColor: themeColors.card_surface,
+          borderRadius: 12,
+        },
+        formStyle,
+      ]}
+    >
+      {fields.map((field) => (
+        <View key={field.name} style={{ marginBottom: 12 }}>
+          {renderField(field)}
         </View>
       ))}
 
       {!hasSubmitField && onSubmit && (
-        <View style={{ marginTop: gap }}>
-          <LinearGradient
-            colors={[colors.primary500, colors.primary700]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+        <Button
+          onPress={handleSubmit}
+          isDisabled={isSubmitting}
+          style={{
+            backgroundColor: themeColors.primary,
+            borderRadius: 8,
+            minHeight: 52,
+            marginTop: 8,
+          }}
+        >
+          <ButtonText
             style={{
-              height: 56,
-              borderRadius: 8,
-              justifyContent: "center",
-              alignItems: "center",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.25,
-              shadowRadius: 6,
-              elevation: 6,
-              overflow: "hidden",
-              opacity: isSubmitting ? 0.5 : 1,
+              color: themeColors.primary_white_text,
+              fontWeight: "600",
+              fontSize: 16,
             }}
           >
-            <Button
-              onPress={handleSubmit}
-              onPressIn={(e: any) =>
-                createRipple(
-                  "__default_submit",
-                  e?.nativeEvent || { locationX: 0, locationY: 0 }
-                )
-              }
-              isDisabled={isSubmitting}
-              style={{
-                width: "100%",
-                height: "100%",
-                backgroundColor: "transparent",
-              }}
-            >
-              <ButtonText
-                style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
-              >
-                {submitButtonText}
-              </ButtonText>
-            </Button>
-          </LinearGradient>
-        </View>
+            {isSubmitting ? "Đang xử lý..." : submitButtonText}
+          </ButtonText>
+        </Button>
       )}
     </VStack>
   );

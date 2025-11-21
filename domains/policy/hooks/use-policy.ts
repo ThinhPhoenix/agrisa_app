@@ -22,6 +22,21 @@ export const usePolicy = () => {
     });
   };
 
+  const getRegisteredPolicy = () => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.REGISTERED_POLICIES],
+      queryFn: () => policyServices.get.get_registered_policies(),
+    });
+  }
+
+  const getRegisteredPolicyDetail = (policy_id: string) => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.REGISTERED_POLICY_DETAIL, policy_id],
+      queryFn: () => policyServices.get.get_registered_policy_detail(policy_id),
+      enabled: !!policy_id,
+    });
+  };
+
   const registerPolicyMutation = useMutation({
     mutationKey: [QueryKey.POLICY.REGISTER],
     mutationFn: async (payload: any) => {
@@ -81,5 +96,7 @@ export const usePolicy = () => {
     getPublicBasePolicy,
     getDetailBasePolicy,
     registerPolicyMutation,
+    getRegisteredPolicy,
+    getRegisteredPolicyDetail,
   };
 };

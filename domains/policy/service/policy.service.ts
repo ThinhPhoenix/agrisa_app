@@ -2,6 +2,8 @@ import useAxios from "@/config/useAxios.config";
 import {
   PolicyDetailResponse,
   PublicBasePolicyResponse,
+  RegisteredPoliciesResponse,
+  RegisteredPolicyDetailResponse,
   RegisterPolicyPayload,
 } from "../models/policy.models";
 
@@ -26,6 +28,18 @@ export const policyServices = {
     ): Promise<ApiResponse<PolicyDetailResponse>> => {
       return useAxios.get(
         `/policy/protected/api/v2/base-policies/detail?id=${base_policy_id}&include_pdf=true`
+      );
+    },
+    get_registered_policies: async (): Promise<
+      ApiResponse<RegisteredPoliciesResponse>
+    > => {
+      return useAxios.get(`/policy/protected/api/v2/policies/read-own/list`);
+    },
+    get_registered_policy_detail: async (
+      policy_id: string
+    ): Promise<ApiResponse<RegisteredPolicyDetailResponse>> => {
+      return useAxios.get(
+        `/policy/protected/api/v2/policies/read-own/detail/${policy_id}`
       );
     },
   },

@@ -170,7 +170,7 @@ export default function ProfileScreen() {
 
     if (ekycStatus.is_face_verified && ekycStatus.is_ocr_done) {
       return {
-        text: "Đã xác thực danh tính",
+        text: "Đã xác thực",
         route: null,
         disabled: true,
         icon: CheckCircle,

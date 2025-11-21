@@ -1,6 +1,4 @@
 export const QueryKey = {
-  
-
   AUTH: {
     SIGN_IN: "sign-in",
     SIGN_UP: "sign-up",
@@ -16,6 +14,8 @@ export const QueryKey = {
     BASE: "policy-base",
     DETAIL: "policy-detail",
     REGISTER: "policy-register",
+    REGISTERED_POLICIES: "registered-policies",
+    REGISTERED_POLICY_DETAIL: "registered-policy-detail",
   },
 
   FARM: {
@@ -26,5 +26,4 @@ export const QueryKey = {
   },
 
   TEST: "test",
-  
 };

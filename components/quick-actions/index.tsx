@@ -20,6 +20,8 @@ export default function QuickActions({ items }: QuickActionsProps) {
       router.push("/(farmer)/farm");
     } else if (item.key === "policy") {
       router.push("/(farmer)/policy");
+    } else if (item.key === "satellite") {
+      router.push("/(farmer)/satellite");
     } else {
       router.push(item.href || `/${item.key}`);
     }

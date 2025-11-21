@@ -30,7 +30,7 @@ const quickActionItems = [
     color: "#476EAE",
   },
   {
-    key: "ocr",
+    key: "satellite",
     name: "Vệ tinh",
     icon: Satellite,
     color: "#59AC77",

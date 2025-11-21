@@ -15,6 +15,7 @@ export const QueryKey = {
   POLICY: {
     BASE: "policy-base",
     DETAIL: "policy-detail",
+    REGISTER: "policy-register",
   },
 
   FARM: {

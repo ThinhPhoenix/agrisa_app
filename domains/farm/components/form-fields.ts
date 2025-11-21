@@ -73,12 +73,12 @@ export const createFarmFormFields = ({
     },
     {
       name: "area_sqm",
-      label: "Diện tích (m²)",
+      label: "Diện tích (ha)",
       placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập diện tích",
       type: "number",
       required: true,
       disabled: mode === "create" && !ocrResult,
-      helperText: "Đơn vị tính: mét vuông (m²)",
+      helperText: "Đơn vị tính: hecta (ha) - Tự động chuyển đổi từ m²",
     },
 
     // ===== LỊCH CANH TÁC =====
@@ -121,17 +121,10 @@ export const createFarmFormFields = ({
     {
       name: "soil_type",
       label: "Loại đất",
-      placeholder: "Chọn loại đất",
-      type: "select",
+      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập loại đất",
+      type: "input",
       required: true,
-      options: [
-        { label: "Đất phù sa", value: "alluvial" },
-        { label: "Đất sét", value: "clay" },
-        { label: "Đất cát", value: "sandy" },
-        { label: "Đất thịt", value: "loam" },
-        { label: "Đất than bùn", value: "peat" },
-        { label: "Khác", value: "other" },
-      ],
+      disabled: mode === "create" && !ocrResult,
     },
 
     // ===== HỆ THỐNG TƯỚI TIÊU =====
@@ -148,12 +141,13 @@ export const createFarmFormFields = ({
       type: "select",
       required: false,
       options: [
-        { label: "Kênh mương", value: "canal" },
-        { label: "Nhỏ giọt", value: "drip" },
-        { label: "Phun mưa", value: "sprinkler" },
-        { label: "Máy bơm", value: "pump" },
-        { label: "Nước mưa", value: "rain_fed" },
+        { label: "Kênh mương", value: "Kênh mương" },
+        { label: "Nhỏ giọt", value: "Nhỏ giọt" },
+        { label: "Phun mưa", value: "Phun mưa" },
+        { label: "Máy bơm", value: "Máy bơm" },
+        { label: "Nước mưa", value: "Nước mưa" },
         { label: "Không có", value: "Không có" },
+        { label: "Khác", value: "Khác" },
       ],
     },
 

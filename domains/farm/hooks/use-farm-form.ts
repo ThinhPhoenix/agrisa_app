@@ -21,7 +21,7 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
       // Convert center_location thành lng/lat riêng
       const centerLng = initialData.center_location?.coordinates?.[0];
       const centerLat = initialData.center_location?.coordinates?.[1];
-      
+
       // Convert boundary thành string format
       let boundaryCoords = "";
       if (initialData.boundary?.coordinates?.[0]) {
@@ -37,7 +37,7 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         commune: initialData.commune,
         address: initialData.address,
         crop_type: initialData.crop_type,
-        area_sqm: initialData.area_sqm,
+        area_sqm: initialData.area_sqm, // Giữ nguyên giá trị từ backend (đã là ha)
         planting_date: initialData.planting_date,
         expected_harvest_date: initialData.expected_harvest_date,
         land_certificate_number: initialData.land_certificate_number,
@@ -54,7 +54,7 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         boundary_coords: boundaryCoords,
       } as any;
     }
-    
+
     // Create mode - set giá trị mặc định
     return {
       has_irrigation: false, // Mặc định là không có hệ thống tưới tiêu
@@ -90,7 +90,9 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         // Convert date strings (DD/MM/YYYY) to Unix timestamp
         const parseDateToTimestamp = (dateString: string): number => {
           const [day, month, year] = dateString.split("/");
-          return Math.floor(new Date(`${year}-${month}-${day}`).getTime() / 1000);
+          return Math.floor(
+            new Date(`${year}-${month}-${day}`).getTime() / 1000
+          );
         };
 
         const farmData: FormFarmDTO = {
@@ -100,9 +102,11 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
           commune: values.commune as string,
           address: values.address as string,
           crop_type: values.crop_type as string,
-          area_sqm: Number(values.area_sqm),
+          area_sqm: Number(values.area_sqm), // Giữ nguyên giá trị ha (đã được convert từ OCR hoặc user nhập)
           planting_date: parseDateToTimestamp(values.planting_date),
-          expected_harvest_date: parseDateToTimestamp(values.expected_harvest_date),
+          expected_harvest_date: parseDateToTimestamp(
+            values.expected_harvest_date
+          ),
           land_certificate_number: values.land_certificate_number as string,
           owner_national_id: values.owner_national_id as string,
           soil_type: values.soil_type as string,
@@ -110,9 +114,13 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
           irrigation_type: (values.irrigation_type as string) || "none",
           boundary: values.boundary || formValues.boundary,
           center_location: values.center_location || formValues.center_location,
-          land_certificate_photos: values.land_certificate_photos || formValues.land_certificate_photos,
+          land_certificate_photos:
+            values.land_certificate_photos ||
+            formValues.land_certificate_photos,
           status: "active",
-          ...(mode === "edit" && values.status ? { status: values.status as string } : {}),
+          ...(mode === "edit" && values.status
+            ? { status: values.status as string }
+            : {}),
         };
 
         if (mode === "edit" && farmId) {

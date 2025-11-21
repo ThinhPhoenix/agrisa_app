@@ -152,7 +152,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                   fontSize={16}
                   fontWeight="700"
                 >
-                  {Utils.formatArea(farm.area_sqm)}
+                  {(farm.area_sqm)} ha
                 </Text>
               </VStack>
               <VStack flex={1} alignItems="center">

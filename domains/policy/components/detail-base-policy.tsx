@@ -1,7 +1,7 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useToast } from "@/domains/shared/hooks/useToast";
-import { Utils } from "@/libs/utils/utils"; // ✅ THÊM IMPORT
+import { Utils } from "@/libs/utils/utils";
 import {
   Badge,
   BadgeText,
@@ -80,7 +80,7 @@ export default function DetailBasePolicyScreen() {
   };
 
   const handleEnroll = () => {
-    toast.toast.success("Chức năng đăng ký đang được phát triển");
+    router.push(`/(farmer)/register-policy/${policyId}`);
   };
 
   // Loading State

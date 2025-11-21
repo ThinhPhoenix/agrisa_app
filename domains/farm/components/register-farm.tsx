@@ -5,15 +5,7 @@ import OcrScanner from "@/components/ocr-scanner";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Farm, FormFarmDTO } from "@/domains/farm/models/farm.models";
 import { Utils } from "@/libs/utils/utils";
-import {
-  Box,
-  HStack,
-  Input,
-  InputField,
-  ScrollView,
-  Text,
-  VStack,
-} from "@gluestack-ui/themed";
+import { Box, HStack, ScrollView, Text, VStack } from "@gluestack-ui/themed";
 import {
   AlertCircle,
   Camera,
@@ -60,36 +52,20 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       mode,
       farmId,
       initialData,
-      
     });
 
   // ===== STATE =====
   const [redBookImages, setRedBookImages] = useState<string[]>([]);
   const [ocrResult, setOcrResult] = useState<Partial<FormFarmDTO> | null>(null);
 
-  // Helper fields cho coordinate inputs (không gửi lên server)
-  const [centerLng, setCenterLng] = useState<string>("");
-  const [centerLat, setCenterLat] = useState<string>("");
+  // Helper field cho boundary coordinates input (không gửi lên server)
   const [boundaryCoords, setBoundaryCoords] = useState<string>("");
 
-  // Sync helper fields from initialData (edit mode)
+  // Sync boundary from initialData (edit mode)
   useEffect(() => {
-    if (initialData) {
-      // Parse center_location
-      if (initialData.center_location?.coordinates) {
-        setCenterLng(
-          initialData.center_location.coordinates[0]?.toString() || ""
-        );
-        setCenterLat(
-          initialData.center_location.coordinates[1]?.toString() || ""
-        );
-      }
-
-      // Parse boundary using Utils
-      if (initialData.boundary) {
-        const coordString = Utils.boundaryToString(initialData.boundary);
-        setBoundaryCoords(coordString);
-      }
+    if (initialData?.boundary) {
+      const coordString = Utils.boundaryToString(initialData.boundary);
+      setBoundaryCoords(coordString);
     }
   }, [initialData]);
 
@@ -123,35 +99,16 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
           );
         }
 
-        // Parse center_location từ lng/lat inputs
-        let center_location =
-          values.center_location ||
-          ocrResult?.center_location ||
-          formValues.center_location;
-        if (centerLng && centerLat) {
-          const parsedCenter = Utils.parseCenterLocation(centerLng, centerLat);
-          if (!parsedCenter) {
-            notification.error("Tọa độ trung tâm không hợp lệ!");
-            return;
-          }
-          center_location = parsedCenter;
-          console.log(
-            "✅ Parsed center_location from inputs:",
-            JSON.stringify(center_location, null, 2)
-          );
-        }
-
-        // Merge values
+        // Merge values (bỏ center_location)
         const finalValues: any = {
           ...values,
           boundary,
-          center_location,
         };
 
-        // Validate tọa độ
-        if (!finalValues.boundary || !finalValues.center_location) {
+        // Validate tọa độ boundary
+        if (!finalValues.boundary) {
           notification.info(
-            "Thiếu thông tin tọa độ. Vui lòng nhập tọa độ thủ công!"
+            "Thiếu thông tin tọa độ ranh giới. Vui lòng nhập tọa độ thủ công!"
           );
         }
         await submitForm(finalValues);
@@ -356,7 +313,8 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                                 fontWeight="$semibold"
                                 color={colors.primary_white_text}
                               >
-                                {ocrResult.area_sqm.toLocaleString("vi-VN")} m²
+                                {(ocrResult.area_sqm / 10000).toFixed(2)} ha (
+                                {ocrResult.area_sqm.toLocaleString("vi-VN")} m²)
                               </Text>
                             </HStack>
                           )}
@@ -516,25 +474,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                             return;
                           }
 
-                          // Validate boundary và center_location
-                          if (!ocrData.boundary || !ocrData.center_location) {
-                            console.log(
-                              "⚠️ Warning: Thiếu boundary hoặc center_location"
-                            );
+                          // Validate boundary
+                          if (!ocrData.boundary) {
+                            console.log("⚠️ Warning: Thiếu thông tin boundary");
                             notification.info(
-                              "Thiếu thông tin tọa độ. Sẽ bổ sung sau!"
-                            );
-                          }
-
-                          // Convert center_location to helper fields
-                          if (ocrData.center_location?.coordinates) {
-                            setCenterLng(
-                              ocrData.center_location.coordinates[0]?.toString() ||
-                                ""
-                            );
-                            setCenterLat(
-                              ocrData.center_location.coordinates[1]?.toString() ||
-                                ""
+                              "Thiếu thông tin tọa độ ranh giới. Vui lòng bổ sung sau!"
                             );
                           }
 
@@ -563,10 +507,17 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                             `✅ Converted ${base64Images.length} images to base64`
                           );
 
-                          // Set OCR result và update form values
+                          // Convert area_sqm từ m² sang ha trước khi set form
+                          const areaInHectares = ocrData.area_sqm
+                            ? ocrData.area_sqm / 10000
+                            : undefined;
+
                           setOcrResult(ocrData);
+
+                          // Update form values với area đã convert sang ha
                           updateFormValues({
                             ...ocrData,
+                            area_sqm: areaInHectares, // Convert m² → ha cho form input
                             land_certificate_photos: base64Images,
                           });
                           setRedBookImages(uris);
@@ -649,7 +600,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 </Box>
               )}
 
-              {/* ===== PHẦN TỌA ĐỘ ===== */}
+              {/* ===== PHẦN TỌA ĐỘ RANH GIỚI ===== */}
               <Box
                 bg={colors.warningSoft}
                 borderRadius="$lg"
@@ -665,7 +616,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       fontWeight="$semibold"
                       color={colors.primary_text}
                     >
-                      Tọa độ nông trại
+                      Tọa độ ranh giới nông trại
                     </Text>
                     <Text fontSize="$xs" color={colors.secondary_text}>
                       {ocrResult
@@ -674,73 +625,6 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     </Text>
                   </VStack>
                 </HStack>
-              </Box>
-
-              {/* Center Location - 2 cột */}
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$lg"
-                p="$4"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-              >
-                <VStack space="md">
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    Tọa độ trung tâm
-                  </Text>
-
-                  <HStack space="md">
-                    {/* Kinh độ */}
-                    <VStack flex={1} space="xs">
-                      <Text
-                        fontSize="$xs"
-                        color={colors.secondary_text}
-                        fontWeight="$medium"
-                      >
-                        Kinh độ
-                      </Text>
-                      <Input
-                        variant="outline"
-                        borderColor={colors.frame_border}
-                        isDisabled={mode === "create" && !ocrResult}
-                      >
-                        <InputField
-                          value={centerLng}
-                          onChangeText={(v) => setCenterLng(v)}
-                          placeholder="105.6302"
-                          keyboardType="numeric"
-                        />
-                      </Input>
-                    </VStack>
-
-                    {/* Vĩ độ */}
-                    <VStack flex={1} space="xs">
-                      <Text
-                        fontSize="$xs"
-                        color={colors.secondary_text}
-                        fontWeight="$medium"
-                      >
-                        Vĩ độ
-                      </Text>
-                      <Input
-                        variant="outline"
-                        borderColor={colors.frame_border}
-                        isDisabled={mode === "create" && !ocrResult}
-                      >
-                        <InputField
-                          value={centerLat}
-                          onChangeText={(v) => setCenterLat(v)}
-                          placeholder="10.4533"
-                          keyboardType="numeric"
-                        />
-                      </Input>
-                    </VStack>
-                  </HStack>
-                </VStack>
               </Box>
 
               {/* Boundary Coordinates */}

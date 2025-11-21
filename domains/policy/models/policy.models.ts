@@ -3,10 +3,7 @@
 /**
  * Loại cây trồng được hỗ trợ bảo hiểm
  */
-export type CropType =
-  | "rice"
-  | "coffee";
-
+export type CropType = "rice" | "coffee";
 
 /**
  * Trạng thái của sản phẩm bảo hiểm
@@ -76,7 +73,7 @@ export type PublicBasePolicyResponse = {
   // Trạng thái và xác thực
   status: ProductStatus; // Trạng thái sản phẩm
   document_validation_status: DocumentValidationStatus; // Trạng thái xác thực tài liệu
-
+  document_tags?: Record<string, any>; // Thẻ tài liệu bổ sung
   // Thông tin bổ sung
   important_additional_information: string;
 
@@ -186,4 +183,21 @@ export type PolicyDetailResponse = {
   document: PolicyDocument;
   triggers: PolicyTrigger[];
   metadata: PolicyDetailMetadata;
+};
+
+export type RegisterPolicyPayload = {
+  registered_policy: {
+    base_policy_id: string;
+    insurance_provider_id: string;
+    farmer_id: string;
+    planting_date: number;
+    area_multiplier: number;
+    total_farmer_premium: number;
+    total_data_cost: number;
+    coverage_amount: number;
+  };
+  farm: {
+    id: string;
+  };
+  policy_tags?: Record<string, any>; // Dynamic data từ document_tags
 };

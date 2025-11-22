@@ -2,18 +2,18 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import { AlertCircle, MapPin, Satellite } from "lucide-react-native";
 import React from "react";
-import { Image } from "react-native";
+import { Image, RefreshControl } from "react-native";
 
 /**
  * Màn hình danh sách nông trại với ảnh vệ tinh
@@ -22,7 +22,15 @@ import { Image } from "react-native";
 export default function SatelliteListScreen() {
   const { colors } = useAgrisaColors();
   const { getListFarm } = useFarm();
-  const { data, isLoading, error } = getListFarm();
+  const { data, isLoading, error, refetch } = getListFarm();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  // Handle pull to refresh
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   // Helper: Fix photo URL by adding https:// if missing
   const getPhotoUrl = (url: string) => {
@@ -41,13 +49,19 @@ export default function SatelliteListScreen() {
 
   return (
     <Box flex={1} bg={colors.background}>
-      <AgrisaHeader
-        title="Ảnh vệ tinh"
-      />
+      <AgrisaHeader title="Ảnh vệ tinh" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
         <VStack space="md" p="$4">
           {/* Loading */}
@@ -81,7 +95,11 @@ export default function SatelliteListScreen() {
           {/* Empty state */}
           {!isLoading && farmsWithSatellite?.length === 0 && (
             <Box py="$8" alignItems="center">
-              <Satellite size={64} color={colors.secondary_text} strokeWidth={1} />
+              <Satellite
+                size={64}
+                color={colors.secondary_text}
+                strokeWidth={1}
+              />
               <Text
                 fontSize="$md"
                 fontWeight="$semibold"
@@ -118,8 +136,10 @@ export default function SatelliteListScreen() {
                 <Box width="100%" aspectRatio={16 / 9} bg={colors.overlay}>
                   {farm.farm_photos[0]?.photo_url ? (
                     <Image
-                      source={{ uri: getPhotoUrl(farm.farm_photos[0].photo_url) }}
-                      style={{ width: '100%', height: '100%' }}
+                      source={{
+                        uri: getPhotoUrl(farm.farm_photos[0].photo_url),
+                      }}
+                      style={{ width: "100%", height: "100%" }}
                       resizeMode="cover"
                     />
                   ) : (
@@ -199,7 +219,7 @@ export default function SatelliteListScreen() {
                           fontWeight="$semibold"
                           color={colors.success}
                         >
-                          {(farm.area_sqm / 10000).toFixed(2)} ha
+                          {farm.area_sqm} ha
                         </Text>
                       </Box>
                       <Box
@@ -213,7 +233,7 @@ export default function SatelliteListScreen() {
                           fontWeight="$semibold"
                           color={colors.primary}
                         >
-                          {farm.crop_type}
+                          {farm.crop_type === "rice" ? "Lúa" : "Cà phê"}
                         </Text>
                       </Box>
                     </HStack>

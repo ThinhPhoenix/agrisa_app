@@ -2,18 +2,18 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import { AlertCircle, FileText, MapPin } from "lucide-react-native";
 import React from "react";
-import { Image } from "react-native";
+import { Image, RefreshControl } from "react-native";
 
 /**
  * Màn hình danh sách giấy tờ chứng nhận quyền sử dụng đất
@@ -22,7 +22,15 @@ import { Image } from "react-native";
 export default function DocumentsListScreen() {
   const { colors } = useAgrisaColors();
   const { getListFarm } = useFarm();
-  const { data, isLoading, error } = getListFarm();
+  const { data, isLoading, error, refetch } = getListFarm();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  // Handle pull to refresh
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
   // Helper: Fix photo URL by adding https:// if missing
   const getPhotoUrl = (url: string) => {
@@ -42,7 +50,8 @@ export default function DocumentsListScreen() {
   // Filter farms có giấy tờ
   const farms = data?.success ? data.data : [];
   const farmsWithDocuments = farms?.filter(
-    (farm: any) => farm.land_certificate_url && farm.land_certificate_url.trim() !== ""
+    (farm: any) =>
+      farm.land_certificate_url && farm.land_certificate_url.trim() !== ""
   );
 
   return (
@@ -52,6 +61,14 @@ export default function DocumentsListScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
         <VStack space="md" p="$4">
           {/* Loading */}

@@ -1,19 +1,20 @@
 import { AgrisaHeader } from "@/components/Header";
+import { FullscreenImageViewer } from "@/components/image-viewer";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
-import { AlertCircle, X } from "lucide-react-native";
+import { AlertCircle } from "lucide-react-native";
 import React, { useState } from "react";
-import { Dimensions, Image, Modal, StyleSheet } from "react-native";
+import { Image } from "react-native";
 
 /**
  * Màn hình chi tiết ảnh vệ tinh
@@ -155,7 +156,7 @@ export default function SatelliteDetailScreen() {
                     <Image
                       source={{ uri: getPhotoUrl(photo.photo_url) }}
                       style={{
-                        width: '100%',
+                        width: "100%",
                         aspectRatio: 16 / 9,
                       }}
                       resizeMode="cover"
@@ -187,87 +188,13 @@ export default function SatelliteDetailScreen() {
         </Box>
       </ScrollView>
 
-      {/* Fullscreen Image Viewer Modal */}
-      <Modal
-        visible={selectedImageIndex !== null}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={closeImageViewer}
-        statusBarTranslucent
-      >
-        <Pressable
-          style={styles.modalContainer}
-          onPress={closeImageViewer}
-        >
-          <Box
-            width="100%"
-            height="100%"
-            justifyContent="center"
-            alignItems="center"
-          >
-            {selectedImageIndex !== null && photos[selectedImageIndex] && (
-              <>
-                <Image
-                  source={{ uri: getPhotoUrl(photos[selectedImageIndex].photo_url) }}
-                  style={{
-                    width: Dimensions.get("window").width,
-                    height: Dimensions.get("window").height * 0.8,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Close button */}
-                <Pressable
-                  onPress={closeImageViewer}
-                  style={[
-                    styles.closeButton,
-                    { backgroundColor: colors.error },
-                  ]}
-                >
-                  <X size={24} color={colors.primary_white_text} strokeWidth={2} />
-                </Pressable>
-
-                {/* Image counter */}
-                <Box
-                  position="absolute"
-                  bottom={50}
-                  bg="rgba(0,0,0,0.7)"
-                  borderRadius="$lg"
-                  px="$4"
-                  py="$2"
-                >
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$semibold"
-                    color={colors.primary_white_text}
-                  >
-                    {selectedImageIndex + 1} / {photos.length}
-                  </Text>
-                </Box>
-              </>
-            )}
-          </Box>
-        </Pressable>
-      </Modal>
+      {/* Fullscreen Image Viewer */}
+      <FullscreenImageViewer
+        images={photos.map((photo: any) => getPhotoUrl(photo.photo_url))}
+        selectedIndex={selectedImageIndex}
+        onClose={closeImageViewer}
+        onIndexChange={setSelectedImageIndex}
+      />
     </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.95)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    borderRadius: 25,
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

@@ -26,5 +26,9 @@ export const QueryKey = {
     UPDATE: "farm-update",
   },
 
+  STATS: {
+    OVERVIEW: "stats-overview",
+  },
+
   TEST: "test",
 };

@@ -71,7 +71,7 @@ export default function HomeScreen() {
           top: 0,
           left: 0,
           right: 0,
-          height: 300, // Kéo dài xuống để phủ cả phần Quick Actions
+          height: 350, // Kéo dài xuống để phủ cả phần Quick Actions
           width: "100%",
           resizeMode: "cover",
           opacity: 0.25,
@@ -105,7 +105,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Quick Actions & New Policies Section with Border and Rounded Top */}
-      <View className="flex-1 bg-white rounded-tl-[3rem] rounded-tr-[3rem] shadow-sm relative z-20">
+      <View className="flex-1 bg-white rounded-tl-[2rem] rounded-tr-[2rem] shadow-sm relative z-20">
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}

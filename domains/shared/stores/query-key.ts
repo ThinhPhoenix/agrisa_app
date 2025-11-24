@@ -1,9 +1,8 @@
 export const QueryKey = {
-  
-
   AUTH: {
     SIGN_IN: "sign-in",
     SIGN_UP: "sign-up",
+    CHECK_IDENTIFIER: "check-identifier",
   },
 
   EKYC: {
@@ -15,6 +14,9 @@ export const QueryKey = {
   POLICY: {
     BASE: "policy-base",
     DETAIL: "policy-detail",
+    REGISTER: "policy-register",
+    REGISTERED_POLICIES: "registered-policies",
+    REGISTERED_POLICY_DETAIL: "registered-policy-detail",
   },
 
   FARM: {
@@ -24,6 +26,9 @@ export const QueryKey = {
     UPDATE: "farm-update",
   },
 
+  STATS: {
+    OVERVIEW: "stats-overview",
+  },
+
   TEST: "test",
-  
 };

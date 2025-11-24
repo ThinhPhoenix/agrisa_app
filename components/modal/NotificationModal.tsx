@@ -83,7 +83,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
         };
       case "error":
         return {
-          icon: AlertCircle,
+          icon: X,
           iconColor: AgrisaColors.light.error,
           bgColor: AgrisaColors.light.errorSoft,
           defaultTitle: "Lỗi",

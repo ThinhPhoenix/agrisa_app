@@ -1,0 +1,340 @@
+{
+  "metadata": {
+    "description": "Kinh tuyến trục VN-2000 theo tỉnh thành Việt Nam",
+    "note": "Dữ liệu bao gồm cả trường hợp sáp nhập và không sáp nhập tỉnh"
+  },
+  "provinces": [
+    {
+      "code": 32,
+      "name": "An Giang",
+      "meridian": 104.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "An Giang", "meridian": 104.75},
+        {"name": "Kiên Giang", "meridian": 104.50}
+      ]
+    },
+    {
+      "code": 2,
+      "name": "Bắc Ninh",
+      "meridian": 107.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Bắc Ninh", "meridian": 105.50},
+        {"name": "Bắc Giang", "meridian": 107.00}
+      ]
+    },
+    {
+      "code": 7,
+      "name": "Cao Bằng",
+      "meridian": 105.75,
+      "merged": false
+    },
+    {
+      "code": 34,
+      "name": "Cà Mau",
+      "meridian": 104.50,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Cà Mau", "meridian": 104.50},
+        {"name": "Bạc Liêu", "meridian": 105.00}
+      ]
+    },
+    {
+      "code": 33,
+      "name": "Cần Thơ",
+      "meridian": 105.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Cần Thơ", "meridian": 105.00},
+        {"name": "Sóc Trăng", "meridian": 105.50},
+        {"name": "Hậu Giang", "meridian": 105.00}
+      ]
+    },
+    {
+      "code": 21,
+      "name": "Đà Nẵng",
+      "meridian": 107.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Đà Nẵng", "meridian": 107.75},
+        {"name": "Quảng Nam", "meridian": 107.75}
+      ]
+    },
+    {
+      "code": 25,
+      "name": "Đắk Lắk",
+      "meridian": 108.50,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Đắk Lắk", "meridian": 108.50},
+        {"name": "Phú Yên", "meridian": 108.50}
+      ]
+    },
+    {
+      "code": 13,
+      "name": "Điện Biên",
+      "meridian": 103.00,
+      "merged": false
+    },
+    {
+      "code": 28,
+      "name": "Đồng Nai",
+      "meridian": 107.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Đồng Nai", "meridian": 107.75},
+        {"name": "Bình Phước", "meridian": 106.25}
+      ]
+    },
+    {
+      "code": 31,
+      "name": "Đồng Tháp",
+      "meridian": 105.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Đồng Tháp", "meridian": 105.00},
+        {"name": "Tiền Giang", "meridian": 105.75}
+      ]
+    },
+    {
+      "code": 24,
+      "name": "Gia Lai",
+      "meridian": 108.25,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Gia Lai", "meridian": 108.50},
+        {"name": "Bình Định", "meridian": 108.25}
+      ]
+    },
+    {
+      "code": 1,
+      "name": "Hà Nội",
+      "meridian": 105.00,
+      "merged": false
+    },
+    {
+      "code": 18,
+      "name": "Hà Tĩnh",
+      "meridian": 105.50,
+      "merged": false
+    },
+    {
+      "code": 4,
+      "name": "Hải Phòng",
+      "meridian": 105.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Hải Phòng", "meridian": 105.75},
+        {"name": "Hải Dương", "meridian": 105.50}
+      ]
+    },
+    {
+      "code": 20,
+      "name": "Huế",
+      "meridian": 107.00,
+      "merged": false
+    },
+    {
+      "code": 5,
+      "name": "Hưng Yên",
+      "meridian": 105.50,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Hưng Yên", "meridian": 105.50},
+        {"name": "Thái Bình", "meridian": 105.50}
+      ]
+    },
+    {
+      "code": 23,
+      "name": "Khánh Hoà",
+      "meridian": 108.25,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Khánh Hoà", "meridian": 108.25},
+        {"name": "Ninh Thuận", "meridian": 108.25}
+      ]
+    },
+    {
+      "code": 14,
+      "name": "Lai Châu",
+      "meridian": 103.00,
+      "merged": false
+    },
+    {
+      "code": 9,
+      "name": "Lào Cai",
+      "meridian": 104.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Lào Cai", "meridian": 104.75},
+        {"name": "Yên Bái", "meridian": 104.75}
+      ]
+    },
+    {
+      "code": 11,
+      "name": "Lạng Sơn",
+      "meridian": 107.25,
+      "merged": false
+    },
+    {
+      "code": 26,
+      "name": "Lâm Đồng",
+      "meridian": 107.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Lâm Đồng", "meridian": 107.75},
+        {"name": "Đắk Nông", "meridian": 108.50},
+        {"name": "Bình Thuận", "meridian": 108.50}
+      ]
+    },
+    {
+      "code": 17,
+      "name": "Nghệ An",
+      "meridian": 104.75,
+      "merged": false
+    },
+    {
+      "code": 6,
+      "name": "Ninh Bình",
+      "meridian": 105.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Hà Nam", "meridian": 105.00},
+        {"name": "Ninh Bình", "meridian": 105.00},
+        {"name": "Nam Định", "meridian": 105.50}
+      ]
+    },
+    {
+      "code": 12,
+      "name": "Phú Thọ",
+      "meridian": 104.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Phú Thọ", "meridian": 104.75},
+        {"name": "Vĩnh Phúc", "meridian": 105.00},
+        {"name": "Hoà Bình", "meridian": 106.00}
+      ]
+    },
+    {
+      "code": 22,
+      "name": "Quảng Ngãi",
+      "meridian": 108.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Quảng Ngãi", "meridian": 108.00},
+        {"name": "Kon Tum", "meridian": 107.50}
+      ]
+    },
+    {
+      "code": 3,
+      "name": "Quảng Ninh",
+      "meridian": 107.75,
+      "merged": false
+    },
+    {
+      "code": 19,
+      "name": "Quảng Trị",
+      "meridian": 106.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Quảng Trị", "meridian": 106.25},
+        {"name": "Quảng Bình", "meridian": 106.00}
+      ]
+    },
+    {
+      "code": 15,
+      "name": "Sơn La",
+      "meridian": 104.00,
+      "merged": false
+    },
+    {
+      "code": 27,
+      "name": "Tây Ninh",
+      "meridian": 105.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Tây Ninh", "meridian": 105.50},
+        {"name": "Long An", "meridian": 105.75}
+      ]
+    },
+    {
+      "code": 16,
+      "name": "Thanh Hoá",
+      "meridian": 105.00,
+      "merged": false
+    },
+    {
+      "code": 10,
+      "name": "Thái Nguyên",
+      "meridian": 106.50,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Thái Nguyên", "meridian": 106.50},
+        {"name": "Bắc Kạn", "meridian": 106.50}
+      ]
+    },
+    {
+      "code": 29,
+      "name": "TP Hồ Chí Minh",
+      "meridian": 105.75,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Hồ Chí Minh", "meridian": 105.75},
+        {"name": "Bình Dương", "meridian": 105.75},
+        {"name": "Bà Rịa - Vũng Tàu", "meridian": 107.75}
+      ]
+    },
+    {
+      "code": 8,
+      "name": "Tuyên Quang",
+      "meridian": 106.00,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Tuyên Quang", "meridian": 106.00},
+        {"name": "Hà Giang", "meridian": 105.50}
+      ]
+    },
+    {
+      "code": 30,
+      "name": "Vĩnh Long",
+      "meridian": 105.50,
+      "merged": true,
+      "merged_provinces": [
+        {"name": "Vĩnh Long", "meridian": 105.50},
+        {"name": "Trà Vinh", "meridian": 105.50},
+        {"name": "Bến Tre", "meridian": 105.75}
+      ]
+    }
+  ],
+  "meridian_to_epsg": {
+    "103.00": "EPSG:3405",
+    "104.00": "EPSG:3405",
+    "104.50": "EPSG:3405",
+    "104.75": "EPSG:3405",
+    "105.00": "EPSG:3405",
+    "105.50": "EPSG:3405",
+    "105.75": "EPSG:3405",
+    "106.00": "EPSG:9205",
+    "106.25": "EPSG:9205",
+    "106.50": "EPSG:9205",
+    "107.00": "EPSG:9206",
+    "107.25": "EPSG:9206",
+    "107.50": "EPSG:9206",
+    "107.75": "EPSG:9206",
+    "108.00": "EPSG:9207",
+    "108.25": "EPSG:9207",
+    "108.50": "EPSG:9207"
+  },
+  "usage_instructions": {
+    "description": "Cách sử dụng file JSON này để xác định kinh tuyến trục",
+    "steps": [
+      "1. Xác định tọa độ WGS84 (latitude, longitude) của điểm cần chuyển đổi",
+      "2. Dựa vào longitude để tìm tỉnh/thành phù hợp trong danh sách",
+      "3. Lấy giá trị 'meridian' tương ứng",
+      "4. Tra cứu EPSG code trong 'meridian_to_epsg'",
+      "5. Sử dụng EPSG code để chuyển đổi từ WGS84 sang VN-2000"
+    ],
+    "example": "Nếu có tọa độ ở TP.HCM (lon ~106.7), tìm 'TP Hồ Chí Minh' có meridian 105.75, sử dụng EPSG:3405"
+  }
+}

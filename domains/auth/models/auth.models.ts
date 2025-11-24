@@ -18,6 +18,14 @@ export interface SignUpPayload {
   };
 }
 
+export type checkIdentifierPayload = {
+    identifier: string;
+};
+
+export type checkIdentifierResponse = {
+    available: boolean;
+};
+
 
 export interface AuthUser {
   id: string;

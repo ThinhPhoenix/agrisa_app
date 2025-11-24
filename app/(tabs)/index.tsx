@@ -1,19 +1,16 @@
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import usePushNoti from "@/domains/shared/hooks/usePushNoti";
 import {
   DancingScript_400Regular,
   useFonts,
 } from "@expo-google-fonts/dancing-script";
-import { Heading, VStack } from "@gluestack-ui/themed";
-import {
-  ChevronRight,
-  ReceiptText,
-  Satellite,
-  Scroll,
-  TriangleAlert,
-  Wheat,
-} from "lucide-react-native";
-import { Image, Pressable, Text, View } from "react-native";
+import { VStack } from "@gluestack-ui/themed";
+import { ReceiptText, Satellite, Scroll, Wheat } from "lucide-react-native";
+import React from "react";
+import { Image, RefreshControl, ScrollView, Text, View } from "react-native";
 import InfoCards from "../../components/HomeScreen/InfoCards";
+import { NewPolicies } from "../../components/HomeScreen/NewPolicies";
 import QuickActions from "../../components/quick-actions";
 
 const quickActionItems = [
@@ -30,7 +27,7 @@ const quickActionItems = [
     color: "#476EAE",
   },
   {
-    key: "ocr",
+    key: "satellite",
     name: "Vệ tinh",
     icon: Satellite,
     color: "#59AC77",
@@ -45,17 +42,24 @@ const quickActionItems = [
 
 export default function HomeScreen() {
   const [fontsLoaded] = useFonts({ DancingScript_400Regular });
+  const { colors } = useAgrisaColors();
+  const { getPublicBasePolicy } = usePolicy();
+  const { refetch } = getPublicBasePolicy();
+  const [refreshing, setRefreshing] = React.useState(false);
 
   const sendNotification = usePushNoti({
     title: "Thông báo từ Agrisa",
     body: "Bạn vừa chạm vào xem ngay!",
   });
 
-  if (!fontsLoaded) return null;
+  // Handle pull to refresh
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
 
-  const handleTouchEnd = () => {
-    sendNotification();
-  };
+  if (!fontsLoaded) return null;
 
   return (
     <VStack className="flex-1 bg-white">
@@ -67,7 +71,7 @@ export default function HomeScreen() {
           top: 0,
           left: 0,
           right: 0,
-          height: 250, // Kéo dài xuống để phủ cả phần Quick Actions
+          height: 350, // Kéo dài xuống để phủ cả phần Quick Actions
           width: "100%",
           resizeMode: "cover",
           opacity: 0.25,
@@ -100,59 +104,28 @@ export default function HomeScreen() {
         <InfoCards />
       </View>
 
-      {/* Quick Actions & Farm List Section with Border and Rounded Top */}
-      <View className="flex-1 bg-white border-x border-t  rounded-tl-3xl rounded-tr-3xl shadow-sm relative z-20">
-        {/* Quick Actions */}
-        <View className="px-4 py-4">
-          <QuickActions items={quickActionItems} />
-        </View>
+      {/* Quick Actions & New Policies Section with Border and Rounded Top */}
+      <View className="flex-1 bg-white rounded-tl-[2rem] rounded-tr-[2rem] shadow-sm relative z-20">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
+        >
+          {/* Quick Actions */}
+          <View className="px-4 py-5">
+            <QuickActions items={quickActionItems} />
+          </View>
 
-        {/* Farm List */}
-        <View className="px-4">
-          <View className="flex-row items-center gap-2 mb-3">
-            <Heading size="xl">Trang trại</Heading>
-            <ChevronRight size={18} />
-          </View>
-          <View className="bg-white p-4 rounded-xl border border-gray-300 relative flex-row">
-            <View className="relative mr-4">
-              <Image
-                className="object-cover rounded-lg"
-                source={{
-                  uri: "https://cdn-media.sforum.vn/storage/app/media/wp-content/uploads/2023/05/game-nong-trai.jpg",
-                }}
-                style={{ width: 140, height: 140 }}
-              />
-              <View className="flex-row gap-1 absolute top-1 right-1 z-10 bg-red-200 border border-red-500 px-1 py-0.5 rounded-md">
-                <TriangleAlert size={12} color="red" />
-                <Text className="text-red-600 font-semibold text-xs">
-                  Khẩn cấp
-                </Text>
-              </View>
-            </View>
-            <View className="flex-1 justify-center">
-              <Text className="text-black font-bold text-lg mb-2 line-clamp-2">
-                Trại ThinhPhoenix Chuyên Trồng Lúa Gạo ST25
-              </Text>
-              <Text className="text-gray-600 text-xs mb-0.5 truncate">
-                Sóc Trăng
-              </Text>
-              <Text className="text-gray-600 text-xs mb-0.5 truncate">
-                21/09/2025
-              </Text>
-              <Text className="text-gray-600 text-xs mb-0.5 truncate">
-                50 Hecta
-              </Text>
-              <Text className="text-gray-600 text-xs truncate">Gạo ST25</Text>
-            </View>
-            <View className="absolute bottom-4 right-4 z-10">
-              <Pressable onTouchEnd={handleTouchEnd}>
-                <Text className="text-primary-500 font-semibold text-xs">
-                  Xem ngay
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
+          {/* New Policies List */}
+          <NewPolicies />
+        </ScrollView>
       </View>
     </VStack>
   );

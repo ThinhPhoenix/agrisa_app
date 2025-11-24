@@ -25,7 +25,6 @@ import {
   ScanFace,
   Settings as SettingsIcon,
   Shield,
-  Smartphone,
   Sprout,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
@@ -359,7 +358,7 @@ export default function SettingsScreen() {
   };
 
   const handleVerifyIdentity = () => {
-    router.push("/settings/verify-identity");
+    router.push("/settings/verify/ekyc-status");
   };
 
   // ============================================
@@ -369,8 +368,8 @@ export default function SettingsScreen() {
     const IconComponent = icon;
     return (
       <HStack space="sm" alignItems="center" mb="$3" mt="$2">
-        <IconComponent size={20} color={colors.text} />
-        <Text fontSize="$md" fontWeight="$bold" color={colors.text}>
+        <IconComponent size={20} color={colors.primary_text} />
+        <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text}>
           {title}
         </Text>
       </HStack>
@@ -389,7 +388,7 @@ export default function SettingsScreen() {
       <Pressable onPress={disabled ? undefined : onToggle} disabled={disabled}>
         <HStack
           p="$4"
-          bg={colors.card}
+          bg={colors.card_surface}
           borderRadius="$lg"
           justifyContent="space-between"
           alignItems="center"
@@ -397,13 +396,13 @@ export default function SettingsScreen() {
           opacity={disabled ? 0.5 : 1}
         >
           <HStack space="md" alignItems="center" flex={1}>
-            <Box bg={colors.surface} p="$2" borderRadius="$md">
-              <IconComponent size={20} color={colors.textSecondary} />
+            <Box bg={colors.background} p="$2" borderRadius="$md">
+              <IconComponent size={20} color={colors.secondary_text} />
             </Box>
             <Text
               fontSize="$sm"
               fontWeight="$medium"
-              color={colors.text}
+              color={colors.primary_text}
               flex={1}
             >
               {label}
@@ -432,26 +431,26 @@ export default function SettingsScreen() {
       <Pressable onPress={onPress}>
         <HStack
           p="$4"
-          bg={colors.card}
+          bg={colors.card_surface}
           borderRadius="$lg"
           justifyContent="space-between"
           alignItems="center"
           mb="$2"
         >
           <HStack space="md" alignItems="center" flex={1}>
-            <Box bg={colors.surface} p="$2" borderRadius="$md">
-              <IconComponent size={20} color={colors.text} />
+            <Box bg={colors.background} p="$2" borderRadius="$md">
+              <IconComponent size={20} color={colors.primary_text} />
             </Box>
             <Text
               fontSize="$sm"
               fontWeight="$medium"
-              color={colors.text}
+              color={colors.primary_text}
               flex={1}
             >
               {label}
             </Text>
           </HStack>
-          <ChevronRight size={20} color={colors.textSecondary} />
+          <ChevronRight size={20} color={colors.secondary_text} />
         </HStack>
       </Pressable>
     );
@@ -470,7 +469,7 @@ export default function SettingsScreen() {
         alignItems="center"
         bg={colors.background}
       >
-        <Text fontSize="$lg" color={colors.textMuted}>
+        <Text fontSize="$lg" color={colors.muted_text}>
           Đang tải thông tin...
         </Text>
       </Box>
@@ -513,7 +512,7 @@ export default function SettingsScreen() {
             </VStack>
           </Box>
 
-          <Divider bg={colors.border} />
+          <Divider bg={colors.frame_border} />
 
           {/* ============================================ */}
           {/* 🔔 THÔNG BÁO */}

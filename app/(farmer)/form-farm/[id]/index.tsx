@@ -67,14 +67,6 @@ export default function FarmFormScreen() {
     console.error("❌ [FarmForm] Fetch farm error:", farmError);
   }
 
-  /**
-   * Handle submit form (Create hoặc Update)
-   * NOTE: Logic này không còn cần thiết vì đã được handle trong RegisterFarmForm
-   */
-  const handleSubmit = useCallback(async (formData: FormFarmDTO) => {
-    // Logic cũ đã được chuyển sang useFarmForm hook
-    // Giữ lại function này để tránh lỗi nếu có reference
-  }, []);
 
   /**
    * Handle Edit button click từ Detail view

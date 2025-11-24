@@ -20,6 +20,7 @@ import { useRouter } from "expo-router";
 import { Camera, CheckCircle2, ScanFace, Video, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Dimensions, Platform, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, Ellipse, Mask, Rect } from "react-native-svg";
 import {
   Camera as VisionCamera,
@@ -33,7 +34,6 @@ import {
 } from "react-native-vision-camera-face-detector";
 import { useEkyc } from "../hooks/use-ekyc";
 import { useEkycStore } from "../stores/ekyc.store";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 // ✅ Constants - Tăng kích thước khung face
@@ -50,11 +50,11 @@ const RING_STROKE_WIDTH = 6;
 const RING_GAP = 12; // Giảm gap từ 15 xuống 12
 
 type ScanStep =
-| "instruction"
-| "preparing"
-| "recording"
-| "processing"
-| "success";
+  | "instruction"
+  | "preparing"
+  | "recording"
+  | "processing"
+  | "success";
 
 export const FaceScanScreen = () => {
   const insets = useSafeAreaInsets();
@@ -388,17 +388,17 @@ export const FaceScanScreen = () => {
           if (currentlyPausedRef.current) {
             const timeSinceLastFace =
               Date.now() - lastFaceDetectedTimeRef.current;
-              
-              if (timeSinceLastFace > MAX_NO_FACE_PAUSE) {
-                console.warn("⚠️ Paused too long");
-                stopRecording();
+
+            if (timeSinceLastFace > MAX_NO_FACE_PAUSE) {
+              console.warn("⚠️ Paused too long");
+              stopRecording();
 
               if (pauseCheckIntervalRef.current) {
                 clearInterval(pauseCheckIntervalRef.current);
                 pauseCheckIntervalRef.current = null;
                 stopRecording();
               }
-              
+
               Alert.alert(
                 "Cảnh báo",
                 "Không phát hiện khuôn mặt. Vui lòng đưa khuôn mặt vào khung.",
@@ -585,7 +585,7 @@ export const FaceScanScreen = () => {
         console.error("❌ Submit error:", error);
 
         setCurrentStep("instruction");
-              stopRecording();
+        stopRecording();
 
         Alert.alert(
           "Lỗi xác thực",
@@ -636,7 +636,7 @@ export const FaceScanScreen = () => {
 
     if (faceScanMutation.isError) {
       console.error("❌ Error:", faceScanMutation.error);
-            stopRecording();
+      stopRecording();
 
       Alert.alert(
         "Lỗi xác thực",
@@ -810,11 +810,11 @@ export const FaceScanScreen = () => {
         alignItems="center"
         p="$6"
       >
-        <Camera size={64} color={colors.textSecondary} />
+        <Camera size={64} color={colors.secondary_text} />
         <Text
           fontSize="$lg"
           fontWeight="$bold"
-          color={colors.text}
+          color={colors.primary_text}
           mt="$4"
           textAlign="center"
         >
@@ -822,7 +822,7 @@ export const FaceScanScreen = () => {
         </Text>
         <Text
           fontSize="$sm"
-          color={colors.textSecondary}
+          color={colors.secondary_text}
           mt="$2"
           textAlign="center"
         >
@@ -834,7 +834,7 @@ export const FaceScanScreen = () => {
           onPress={requestPermission}
           mt="$6"
         >
-          <ButtonText color={colors.text}>Cấp quyền</ButtonText>
+          <ButtonText color={colors.primary_white_text}>Cấp quyền</ButtonText>
         </Button>
       </Box>
     );
@@ -850,7 +850,7 @@ export const FaceScanScreen = () => {
         p="$6"
       >
         <Spinner size="large" color={colors.primary} />
-        <Text mt="$4" color={colors.text}>
+        <Text mt="$4" color={colors.primary_text}>
           Đang khởi tạo camera...
         </Text>
       </Box>
@@ -868,39 +868,43 @@ export const FaceScanScreen = () => {
           <Text
             fontSize="$2xl"
             fontWeight="$bold"
-            color={colors.text}
+            color={colors.primary_text}
             textAlign="center"
           >
             Xác thực khuôn mặt
           </Text>
-          <Text fontSize="$sm" color={colors.textSecondary} textAlign="center">
+          <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
             Quá trình này sẽ ghi hình khuôn mặt của bạn trong 10 giây
           </Text>
         </VStack>
 
         <Box
-          bg={colors.surface}
+          bg={colors.card_surface}
           p="$5"
           borderRadius="$lg"
           borderWidth={1}
-          borderColor={colors.border}
+          borderColor={colors.frame_border}
           w="$full"
         >
           <VStack space="md">
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Lưu ý khi quay video:
             </Text>
             <VStack space="sm">
-              <Text fontSize="$xs" color={colors.textSecondary}>
+              <Text fontSize="$xs" color={colors.secondary_text}>
                 • Đặt khuôn mặt vào trong khung oval
               </Text>
-              <Text fontSize="$xs" color={colors.textSecondary}>
+              <Text fontSize="$xs" color={colors.secondary_text}>
                 • Nhìn thẳng vào camera và giữ nguyên tư thế
               </Text>
-              <Text fontSize="$xs" color={colors.textSecondary}>
+              <Text fontSize="$xs" color={colors.secondary_text}>
                 • Đảm bảo có đủ ánh sáng, tránh ngược sáng
               </Text>
-              <Text fontSize="$xs" color={colors.textSecondary}>
+              <Text fontSize="$xs" color={colors.secondary_text}>
                 • Nếu không tìm thấy khuôn mặt, quá trình sẽ tạm dừng
               </Text>
             </VStack>
@@ -913,7 +917,7 @@ export const FaceScanScreen = () => {
           onPress={startPreparation}
           w="$full"
         >
-          <ButtonText color={colors.text} fontWeight="$semibold">
+          <ButtonText color={colors.primary_white_text} fontWeight="$semibold">
             Bắt đầu quay
           </ButtonText>
         </Button>
@@ -935,7 +939,7 @@ export const FaceScanScreen = () => {
       >
         <HStack justifyContent="space-between" alignItems="center">
           <VStack flex={1}>
-            <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
+            <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
               {currentStep === "preparing"
                 ? "Chuẩn bị..."
                 : "Xác thực khuôn mặt"}
@@ -947,7 +951,7 @@ export const FaceScanScreen = () => {
             )}
           </VStack>
           <Button size="sm" variant="link" onPress={cancelScan}>
-            <ButtonIcon as={X} color={colors.text} />
+            <ButtonIcon as={X} color={colors.primary_text} />
           </Button>
         </HStack>
       </Box>
@@ -1028,11 +1032,11 @@ export const FaceScanScreen = () => {
               <HStack space="sm" alignItems="center" px="$4">
                 <ButtonIcon
                   as={Video}
-                  color={colors.textWhiteButton}
+                  color={colors.primary_white_text}
                   size="lg"
                 />
                 <Text
-                  color={colors.textWhiteButton}
+                  color={colors.primary_white_text}
                   fontWeight="$bold"
                   fontSize="$md"
                 >
@@ -1053,7 +1057,7 @@ export const FaceScanScreen = () => {
         >
           <Text
             fontSize="$lg"
-            color={colors.text}
+            color={colors.primary_text}
             textAlign="center"
             fontWeight="$bold"
             p="$3"
@@ -1081,12 +1085,17 @@ export const FaceScanScreen = () => {
       p="$6"
     >
       <Spinner size="large" color={colors.primary} />
-      <Text fontSize="$lg" fontWeight="$semibold" color={colors.text} mt="$4">
+      <Text
+        fontSize="$lg"
+        fontWeight="$semibold"
+        color={colors.primary_text}
+        mt="$4"
+      >
         Đang xử lý video xác thực...
       </Text>
       <Text
         fontSize="$sm"
-        color={colors.textSecondary}
+        color={colors.secondary_text}
         mt="$2"
         textAlign="center"
       >
@@ -1094,7 +1103,7 @@ export const FaceScanScreen = () => {
       </Text>
       <Text
         fontSize="$xs"
-        color={colors.textSecondary}
+        color={colors.muted_text}
         mt="$4"
         textAlign="center"
         px="$6"
@@ -1116,7 +1125,7 @@ export const FaceScanScreen = () => {
       <Text
         fontSize="$2xl"
         fontWeight="$bold"
-        color={colors.text}
+        color={colors.primary_text}
         mt="$4"
         textAlign="center"
       >
@@ -1124,7 +1133,7 @@ export const FaceScanScreen = () => {
       </Text>
       <Text
         fontSize="$sm"
-        color={colors.textSecondary}
+        color={colors.secondary_text}
         mt="$2"
         textAlign="center"
       >

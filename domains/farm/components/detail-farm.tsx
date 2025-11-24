@@ -168,14 +168,14 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                   fontSize={18}
                   fontWeight="700"
                 >
-                  {Utils.formatArea(farm.area_sqm)}
+                  {(farm.area_sqm)} ha
                 </Text>
                 <Text
                   color={colors.secondary_text}
                   fontSize={10}
                   mt="$0.5"
                 >
-                  {farm.area_sqm.toLocaleString("vi-VN")} m²
+                  {farm.area_sqm * 10000} m²
                 </Text>
               </VStack>
 

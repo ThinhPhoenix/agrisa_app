@@ -8,15 +8,24 @@ import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import {
   Box,
   Heading,
+  HStack,
   Pressable,
   Spinner,
-  Switch,
   Text,
   VStack,
 } from "@gluestack-ui/themed";
 import { useFocusEffect } from "@react-navigation/native";
-import { Link, router } from "expo-router";
-import { CheckCircle, LogOut, Shield } from "lucide-react-native";
+import { router } from "expo-router";
+import {
+  CheckCircle,
+  ChevronRight,
+  Edit,
+  LogOut,
+  Mail,
+  Phone,
+  Shield,
+  UserCircle,
+} from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import { RefreshControl, ScrollView, Share, View } from "react-native";
 
@@ -34,7 +43,7 @@ import { RefreshControl, ScrollView, Share, View } from "react-native";
 export default function ProfileScreen() {
   const { user: storeUser, logout } = useAuthStore();
   const { toast } = useToast();
-  const { isDark } = useAgrisaColors();
+  const { colors, isDark } = useAgrisaColors();
   const { toggleTheme } = useThemeStore();
   const { geteKYCStatusQuery } = useEkyc();
 
@@ -152,7 +161,7 @@ export default function ProfileScreen() {
   const getKycButton = () => {
     if (!ekycStatus) {
       return {
-        text: "Bắt đầu KYC",
+        text: "Bắt đầu xác thực",
         route: "/settings/verify/id-scan",
         disabled: false,
         icon: Shield,
@@ -161,7 +170,7 @@ export default function ProfileScreen() {
 
     if (ekycStatus.is_face_verified && ekycStatus.is_ocr_done) {
       return {
-        text: "Đã xác minh KYC",
+        text: "Đã xác thực",
         route: null,
         disabled: true,
         icon: CheckCircle,
@@ -170,7 +179,7 @@ export default function ProfileScreen() {
 
     if (ekycStatus.is_ocr_done && !ekycStatus.is_face_verified) {
       return {
-        text: "Tiếp tục xác thực mặt",
+        text: "Tiếp tục xác thực khuôn mặt",
         route: "/settings/verify/face-scan",
         disabled: false,
         icon: Shield,
@@ -178,7 +187,7 @@ export default function ProfileScreen() {
     }
 
     return {
-      text: "Bắt đầu KYC",
+      text: "Bắt đầu xác thực",
       route: "/settings/verify/id-scan",
       disabled: false,
       icon: Shield,
@@ -267,23 +276,73 @@ export default function ProfileScreen() {
           {/* ============================================ */}
           {/* 👤 HEADER: Avatar + Info + Actions */}
           {/* ============================================ */}
-          <View className="bg-white p-4 rounded-xl border border-gray-300 relative">
-            <View className="flex-row gap-1 absolute top-2 right-2 z-10 bg-green-200 border border-green-500 px-1 py-0.5 rounded-md">
-              <Text className="text-green-600 font-semibold text-xs capitalize">
-                {user?.status || "active"}
-              </Text>
-            </View>
-            <View className="items-center mb-4">
-              <View className="w-20 h-20 bg-gray-300 rounded-full items-center justify-center mb-2">
-                <Text className="text-2xl font-bold text-white">
-                  {user?.email.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <Text className="text-black font-bold text-xl mb-2">
-                {user?.email.split("@")[0]}
-              </Text>
-            </View>
-            <View className="flex-row gap-2">
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            p="$5"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+          >
+            {/* Avatar & Name */}
+            <VStack space="md" alignItems="center">
+              {/* Avatar với gradient */}
+              <Box position="relative">
+                <Box
+                  w={88}
+                  h={88}
+                  borderRadius="$full"
+                  bg={colors.primary}
+                  alignItems="center"
+                  justifyContent="center"
+                  borderWidth={3}
+                  borderColor={colors.background}
+                  shadowColor={colors.shadow}
+                  shadowOffset={{ width: 0, height: 4 }}
+                  shadowOpacity={0.2}
+                  shadowRadius={8}
+                  elevation={6}
+                >
+                  <UserCircle
+                    size={44}
+                    color={colors.primary_white_text}
+                    strokeWidth={2}
+                  />
+                </Box>
+              </Box>
+
+              {/* User Name */}
+              <VStack space="xs" alignItems="center">
+                <HStack space="sm" alignItems="center">
+                  <Text
+                    fontSize="$xl"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
+                    {user?.email.split("@")[0]}
+                  </Text>
+
+                  {/* Chấm trạng thái xác thực */}
+                  <Box
+                    w={10}
+                    h={10}
+                    borderRadius="$full"
+                    bg={
+                      ekycStatus?.is_ocr_done && ekycStatus?.is_face_verified
+                        ? colors.success
+                        : ekycStatus?.is_ocr_done &&
+                            !ekycStatus?.is_face_verified
+                          ? colors.warning
+                          : colors.error
+                    }
+                    borderWidth={2}
+                    borderColor={colors.background}
+                  />
+                </HStack>
+              </VStack>
+            </VStack>
+
+            {/* Action Buttons */}
+            <HStack space="sm" mt="$4">
               <Pressable
                 onPress={() => {
                   if (kycButton.route) {
@@ -291,50 +350,244 @@ export default function ProfileScreen() {
                   }
                 }}
                 disabled={kycButton.disabled}
-                className={`flex-1 p-3 rounded-lg border ${kycButton.disabled ? "bg-green-500 border-green-500" : "bg-white border-gray-300"}`}
+                style={{ flex: 1 }}
               >
-                <Text
-                  className={`text-center font-semibold ${kycButton.disabled ? "text-white" : "text-black"}`}
+                <Box
+                  bg={kycButton.disabled ? colors.success : colors.background}
+                  borderRadius="$xl"
+                  py="$3"
+                  px="$4"
+                  borderWidth={1}
+                  borderColor={
+                    kycButton.disabled ? colors.success : colors.frame_border
+                  }
+                  opacity={kycButton.disabled ? 1 : 1}
                 >
-                  {kycButton.text}
-                </Text>
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    {kycButton.disabled ? (
+                      <CheckCircle
+                        size={18}
+                        color={colors.primary_white_text}
+                        strokeWidth={2.5}
+                      />
+                    ) : (
+                      <Shield
+                        size={18}
+                        color={colors.primary}
+                        strokeWidth={2.5}
+                      />
+                    )}
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={
+                        kycButton.disabled
+                          ? colors.primary_white_text
+                          : colors.primary
+                      }
+                    >
+                      {kycButton.text}
+                    </Text>
+                  </HStack>
+                </Box>
               </Pressable>
-              <Link
-                href={`/edit-profile`}
-                className="flex-1 p-3 rounded-lg border border-gray-300 bg-white"
+
+              <Pressable
+                onPress={() => router.push("/edit-profile")}
+                style={{ flex: 1 }}
               >
-                <Text className="text-center font-semibold text-black">
-                  Chỉnh sửa
-                </Text>
-              </Link>
-            </View>
-          </View>
+                <Box
+                  bg={colors.background}
+                  borderRadius="$xl"
+                  py="$3"
+                  px="$4"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Edit
+                      size={18}
+                      color={colors.secondary_text}
+                      strokeWidth={2.5}
+                    />
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.secondary_text}
+                    >
+                      Chỉnh sửa
+                    </Text>
+                  </HStack>
+                </Box>
+              </Pressable>
+            </HStack>
+          </Box>
 
           {/* ============================================ */}
           {/* 📞 THÔNG TIN CÁ NHÂN */}
           {/* ============================================ */}
-          <View className="bg-white p-4 rounded-xl border border-gray-300 mb-4">
-            <Heading className="text-black text-lg mb-4">
-              Thông tin cá nhân
-            </Heading>
+          <Pressable onPress={() => router.push("/settings/profile")}>
+            <Box
+              bg={colors.card_surface}
+              borderRadius="$2xl"
+              p="$5"
+              borderWidth={1}
+              borderColor={colors.frame_border}
+            >
+              <HStack
+                alignItems="center"
+                justifyContent="space-between"
+                mb="$4"
+              >
+                <Text
+                  fontSize="$lg"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Thông tin cá nhân
+                </Text>
+                <ChevronRight size={20} color={colors.muted_text} />
+              </HStack>
 
-            <View className="mb-3">
-              <Text className="text-gray-600 text-sm">Email</Text>
-              <Text className="text-black font-medium">{user?.email}</Text>
-            </View>
+              <VStack space="sm">
+                {/* Email Card */}
+                <Box
+                  bg={colors.background}
+                  borderRadius="$xl"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <HStack space="md" alignItems="center">
+                    <Box
+                      bg={colors.primary}
+                      borderRadius="$full"
+                      p="$2.5"
+                      w={40}
+                      h={40}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Mail
+                        size={20}
+                        color={colors.primary_white_text}
+                        strokeWidth={2.5}
+                      />
+                    </Box>
 
-            <View className="mb-3">
-              <Text className="text-gray-600 text-sm">Số điện thoại</Text>
-              <Text className="text-black font-medium">
-                {user?.phone_number || "Chưa cập nhật"}
-              </Text>
-            </View>
-          </View>
+                    <VStack flex={1} space="xs">
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$medium"
+                        color={colors.muted_text}
+                      >
+                        Địa chỉ email
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {user?.email}
+                      </Text>
+                    </VStack>
+
+                    <Box
+                      w={10}
+                      h={10}
+                      borderRadius="$full"
+                      bg={colors.success}
+                      borderWidth={2}
+                      borderColor={colors.background}
+                    />
+                  </HStack>
+                </Box>
+
+                {/* Phone Card */}
+                <Box
+                  bg={colors.background}
+                  borderRadius="$xl"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <HStack space="md" alignItems="center">
+                    <Box
+                      bg={colors.primary}
+                      borderRadius="$full"
+                      p="$2.5"
+                      w={40}
+                      h={40}
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <Phone
+                        size={20}
+                        color={colors.primary_white_text}
+                        strokeWidth={2.5}
+                      />
+                    </Box>
+
+                    <VStack flex={1} space="xs">
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$medium"
+                        color={colors.muted_text}
+                      >
+                        Số điện thoại
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                        color={
+                          user?.phone_number
+                            ? colors.primary_text
+                            : colors.muted_text
+                        }
+                      >
+                        {user?.phone_number || "Chưa cập nhật"}
+                      </Text>
+                    </VStack>
+
+                    {user?.phone_verified ? (
+                      <Box
+                        w={10}
+                        h={10}
+                        borderRadius="$full"
+                        bg={colors.success}
+                        borderWidth={2}
+                        borderColor={colors.background}
+                      />
+                    ) : (
+                      <Box
+                        w={10}
+                        h={10}
+                        borderRadius="$full"
+                        bg={colors.muted_text}
+                        borderWidth={2}
+                        borderColor={colors.background}
+                      />
+                    )}
+                  </HStack>
+                </Box>
+              </VStack>
+            </Box>
+          </Pressable>
 
           {/* ============================================ */}
           {/* ⚙️ CÀI ĐẶT */}
           {/* ============================================ */}
-          <View className="bg-white p-4 rounded-xl border border-gray-300 mb-4">
+          <View
+            className={`bg-[#f8f9fa] p-4 rounded-xl border border-gray-300 mb-4`}
+          >
             <Heading className="text-black text-lg mb-4">Cài đặt</Heading>
 
             <Pressable
@@ -354,21 +607,10 @@ export default function ProfileScreen() {
               className="flex-row items-center py-3"
             >
               <Text className="text-black font-medium flex-1">
-                Thông tin chung
+                Về chúng tôi
               </Text>
               <Text className="text-gray-400">›</Text>
             </Pressable>
-
-            {/* <View className="h-px bg-gray-200 my-2" /> */}
-
-            {/* <View className="flex-row items-center justify-between py-3">
-              <Text className="text-black font-medium">Đổi màu nền</Text>
-              <Switch
-                value={isDark}
-                onValueChange={handleThemeToggle}
-                size="sm"
-              />
-            </View> */}
 
             <View className="h-px bg-gray-200 my-2" />
 

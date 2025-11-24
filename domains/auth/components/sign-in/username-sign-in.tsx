@@ -23,7 +23,7 @@ import {
   Newspaper,
   Phone,
   PhoneIcon,
-  ShieldCheck
+  ShieldCheck,
 } from "lucide-react-native";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -33,9 +33,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
+import { useAuthForm } from "../../hooks/use-auth-form";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -48,6 +49,9 @@ const CARD_GRADIENT = ["rgba(255,255,255,0.7)", "rgba(255,237,237,0.7)"];
 
 const UsernameSignInComponent = () => {
   const { colors } = useAgrisaColors();
+  const { handleCheckIdentifier, isCheckingIdentifier } = useAuthForm({
+    type: "sign-in",
+  });
 
   const {
     control,
@@ -125,11 +129,22 @@ const UsernameSignInComponent = () => {
 
       console.log("✅ [Username Sign-In] Identifier:", finalIdentifier);
 
-      await secureStorage.setIdentifier(finalIdentifier);
+      // Kiểm tra identifier có tồn tại trong hệ thống không
+      const isValid = await handleCheckIdentifier(finalIdentifier, {
+        onSuccess: async () => {
+          // Nếu tồn tại, lưu vào SecureStore và chuyển trang
+          await secureStorage.setIdentifier(finalIdentifier);
+          console.log("✅ [Username Sign-In] Saved to SecureStore");
+          router.push("/auth/sign-in");
+        },
+        onError: () => {
+          console.log("❌ [Username Sign-In] Identifier not found");
+        },
+      });
 
-      console.log("✅ [Username Sign-In] Saved to SecureStore");
-
-      router.push("/auth/sign-in");
+      if (!isValid) {
+        console.error("❌ [Username Sign-In] Invalid identifier");
+      }
     } catch (error) {
       console.error("❌ [Username Sign-In] Error:", error);
     }
@@ -141,7 +156,6 @@ const UsernameSignInComponent = () => {
     { label: "Điều khoản sử dụng", icon: Newspaper },
     { label: "Liên hệ hỗ trợ", icon: PhoneIcon },
   ];
-
 
   return (
     <Box flex={1}>
@@ -223,14 +237,10 @@ const UsernameSignInComponent = () => {
                 >
                   <Box px="$6" py="$7">
                     <HStack alignItems="center" space="md" mb="$5">
-                      <Box
-                        bg={colors.primary}
-                        borderRadius="$full"
-                        p="$2.5"
-                      >
+                      <Box bg={colors.primary} borderRadius="$full" p="$2.5">
                         <ShieldCheck
                           size={22}
-                          color={colors.primary}
+                          color={colors.primary_white_text}
                           strokeWidth={2.6}
                         />
                       </Box>
@@ -249,14 +259,14 @@ const UsernameSignInComponent = () => {
                           fontWeight="$bold"
                           color={colors.primary_text}
                         >
-                          Nông dân Agrisa
+                          Người dùng Agrisa
                         </Text>
                       </VStack>
                     </HStack>
 
                     <Box
                       h={1}
-                      bg={colors.frame_border}
+                      bg={colors.primary_text}
                       mb="$5"
                       borderRadius={999}
                     />
@@ -269,15 +279,6 @@ const UsernameSignInComponent = () => {
                         render={({ field, fieldState }) => (
                           <FormControl isInvalid={!!fieldState.error}>
                             <VStack space="xs">
-                              <Text
-                                fontSize="$sm"
-                                fontWeight="$semibold"
-                                color={colors.primary_text}
-                                pb={10}
-                              >
-                                Email hoặc Số điện thoại
-                              </Text>
-
                               <Input
                                 variant="outline"
                                 size="lg"
@@ -339,7 +340,7 @@ const UsernameSignInComponent = () => {
                                       field.onChange(text);
                                     }
                                   }}
-                                  placeholder="0987654321 hoặc email@agrisa.vn"
+                                  placeholder="Email hoặc Số điện thoại"
                                   placeholderTextColor={colors.muted_text}
                                   autoCapitalize="none"
                                   autoCorrect={false}
@@ -368,7 +369,7 @@ const UsernameSignInComponent = () => {
 
                       <Button
                         onPress={handleSubmit(onSubmit)}
-                        isDisabled={isSubmitting}
+                        isDisabled={isSubmitting || isCheckingIdentifier}
                         size="lg"
                         bg={colors.primary}
                         borderRadius="$full"
@@ -389,7 +390,9 @@ const UsernameSignInComponent = () => {
                           fontWeight="$bold"
                           color="$white"
                         >
-                          {isSubmitting ? "Đang xử lý..." : "Tiếp theo"}
+                          {isSubmitting || isCheckingIdentifier
+                            ? "Đang kiểm tra..."
+                            : "Tiếp theo"}
                         </ButtonText>
                         <ButtonIcon as={ArrowRight} ml="$2" color="$white" />
                       </Button>

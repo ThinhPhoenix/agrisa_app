@@ -1,5 +1,6 @@
 import useAxios from "@/config/useAxios.config";
-import { SignInPayload, SignInResponse, SignUpPayload } from "../models/auth.models";
+import { checkIdentifierPayload, checkIdentifierResponse, SignInPayload, SignInResponse, SignUpPayload } from "../models/auth.models";
+import { check } from "zod";
 
 
 export const AuthServices = {
@@ -8,5 +9,8 @@ export const AuthServices = {
     },
     signup: async (payload: SignUpPayload): Promise<ApiResponse<void>> => { 
         return useAxios.post("/auth/public/register", payload);
+    },
+    checkIdentifier: async (payload: checkIdentifierPayload): Promise<ApiResponse<checkIdentifierResponse>> => {
+        return useAxios.post("/auth/public/verify-identifier", payload);
     }
 }

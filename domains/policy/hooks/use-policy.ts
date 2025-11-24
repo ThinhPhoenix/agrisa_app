@@ -45,7 +45,7 @@ export const usePolicy = () => {
     },
     onSuccess: async (data: any) => {
       // Hiển thị Result Status Screen với success
-      resultStatus.showLoading({
+      resultStatus.showSuccess({
         title: "Đăng ký bảo hiểm thành công!",
         message: "Hồ sơ của bạn đã được gửi đi và đang chờ xét duyệt.",
         subMessage: "Chúng tôi sẽ thông báo kết quả trong vòng 1-3 ngày làm việc.",

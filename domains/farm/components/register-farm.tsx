@@ -687,6 +687,8 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 )}
               </VStack>
 
+              <Divider />
+
               {/* Map Viewer */}
               {boundaryPolygon && (
                 <VStack space="sm">
@@ -699,22 +701,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     >
                       Bản đồ nông trại
                     </Text>
-                    {isVn2000 && (
-                      <Box
-                        bg={colors.warning + "20"}
-                        borderRadius="$sm"
-                        px="$2"
-                        py="$1"
-                      >
-                        <Text
-                          fontSize="$xs"
-                          color={colors.warning}
-                          fontWeight="$semibold"
-                        >
-                          VN2000
-                        </Text>
-                      </Box>
-                    )}
+                    
                   </HStack>
 
                   <FarmBoundaryMap
@@ -725,29 +712,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     showControls={true}
                   />
 
-                  <Box
-                    bg={colors.background}
-                    borderRadius="$md"
-                    p="$3"
-                    borderWidth={1}
-                    borderColor={colors.frame_border}
-                  >
-                    <HStack alignItems="flex-start" space="xs">
-                      <AlertCircle
-                        size={16}
-                        color={colors.secondary_text}
-                        strokeWidth={2}
-                        style={{ marginTop: 2 }}
-                      />
-                      <VStack flex={1}>
-                        <Text fontSize="$xs" color={colors.secondary_text}>
-                          {isVn2000
-                            ? "Tọa độ VN2000 được tự động chuyển sang WGS84 để hiển thị bản đồ. Dữ liệu gốc (VN2000) sẽ được gửi về hệ thống."
-                            : "Bản đồ hiển thị ranh giới nông trại của bạn. Có thể zoom và di chuyển để xem chi tiết."}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </Box>
+                  
                 </VStack>
               )}
               <Divider />

@@ -355,7 +355,7 @@ const PolicyCard = ({
             >
               <Text fontSize="$2xs" color={colors.muted_text}>
                 Cập nhật{" "}
-                {Utils.formatDateForMS(new Date(policy.updated_at).getTime())}
+                {Utils.formatVietnameseDate(new Date(policy.updated_at))}
               </Text>
 
               <HStack space="xs" alignItems="center">

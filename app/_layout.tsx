@@ -91,6 +91,15 @@ export default function RootLayout() {
                       name="(tabs)"
                       options={{ headerShown: false }}
                     />
+                    {/* Result Status Screen - Lock navigation hoàn toàn */}
+                    <Stack.Screen
+                      name="result-status/index"
+                      options={{
+                        headerShown: false,
+                        gestureEnabled: false, // Tắt gesture swipe back
+                        animation: "fade", // Animation mượt hơn
+                      }}
+                    />
                     <Stack.Screen name="+not-found" />
                   </Stack>
                 </ToastProvider>

@@ -100,18 +100,17 @@ export default function DocumentsListScreen() {
           )}
 
           {/* Empty state */}
-          {!isLoading && farmsWithDocuments?.length === 0 && (
-            <Box py="$8" alignItems="center">
-              <FileText
-                size={64}
-                color={colors.secondary_text}
-                strokeWidth={1}
-              />
+          {!isLoading && !error && farmsWithDocuments?.length === 0 && (
+            <Box py="$12" px="$6" alignItems="center">
+              <Box bg={colors.infoSoft} p="$6" borderRadius="$full" mb="$4">
+                <FileText size={64} color={colors.info} strokeWidth={1.5} />
+              </Box>
               <Text
-                fontSize="$md"
-                fontWeight="$semibold"
+                fontSize="$xl"
+                fontWeight="$bold"
                 color={colors.primary_text}
-                mt="$4"
+                textAlign="center"
+                mb="$2"
               >
                 Chưa có giấy tờ
               </Text>
@@ -119,9 +118,12 @@ export default function DocumentsListScreen() {
                 fontSize="$sm"
                 color={colors.secondary_text}
                 textAlign="center"
-                mt="$2"
+                lineHeight={22}
+                mb="$6"
               >
-                Các nông trại của bạn chưa có giấy tờ chứng nhận
+                {farms?.length === 0
+                  ? "Bạn chưa có nông trại nào. Hãy đăng ký nông trại và tải lên giấy tờ chứng nhận quyền sử dụng đất."
+                  : "Các nông trại của bạn chưa có giấy tờ chứng nhận. Vui lòng cập nhật giấy tờ trong phần quản lý nông trại."}
               </Text>
             </Box>
           )}

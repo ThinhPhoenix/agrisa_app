@@ -7,6 +7,13 @@ export const Utils = {
     return `${day}/${month}/${year}`;
   },
 
+  formatVietnameseDate: (date: Date): string => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  },
+
   formatCurrency: (value: number): string => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",

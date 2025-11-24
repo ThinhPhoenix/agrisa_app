@@ -412,24 +412,7 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
         </Box>
       )}
 
-      {/* Map Info Badge */}
-      {mapReady && isVn2000 && (
-        <Box
-          position="absolute"
-          top="$4"
-          left="$4"
-          bg={colors.warning + "20"}
-          borderRadius="$md"
-          borderWidth={1}
-          borderColor={colors.warning}
-          px="$3"
-          py="$2"
-        >
-          <Text fontSize="$xs" color={colors.warning} fontWeight="$semibold">
-            VN2000 → WGS84
-          </Text>
-        </Box>
-      )}
+      
     </Box>
   );
 };

@@ -1,13 +1,17 @@
-import {
-  PrimaryButton,
-  SecondaryButton,
-} from "@/components/common/custom-button.tsx";
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
 import usePushNoti from "@/domains/shared/hooks/usePushNoti";
-import { Box, Text } from "@gluestack-ui/themed";
+import {
+  Box,
+  Button,
+  ButtonSpinner,
+  ButtonText,
+  Text,
+} from "@gluestack-ui/themed";
 import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import { ScanText, X, Upload } from "lucide-react-native";
+import { ScanText, Upload, X } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
   Alert,
@@ -41,6 +45,8 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
   multiple = false,
 }) => {
   const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey;
+  const { mode } = useAgrisaColors();
+  const themeColors = AgrisaColors[mode];
 
   const [open, setOpen] = useState(false);
   const anim = useRef(new Animated.Value(0)).current;
@@ -49,6 +55,8 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
   const [ocrText, setOcrText] = useState<string>("");
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Processing OCR
+  const [isUploading, setIsUploading] = useState(false); // Uploading images
 
   const sendNotification = usePushNoti();
 
@@ -71,7 +79,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
 
   const performOCR = async (uris: string[]) => {
     try {
-      setLoading(true);
+      setIsProcessing(true);
       setOcrText("");
 
       // Convert all images to base64
@@ -107,7 +115,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       });
 
       const geminiResp = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -149,12 +157,13 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       console.error("OCR error:", err);
       Alert.alert("Lỗi", "Không thể xử lý ảnh. Vui lòng thử lại.");
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
   const chooseFromLibrary = async () => {
     try {
+      setIsUploading(true);
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted")
@@ -195,11 +204,14 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       console.warn("Image pick error", err);
       Alert.alert("Lỗi", "Không thể mở thư viện ảnh");
       closeDrawer();
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const takePhoto = async () => {
     try {
+      setIsUploading(true);
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== "granted")
         return Alert.alert(
@@ -233,6 +245,8 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       console.warn("Camera error", err);
       Alert.alert("Lỗi", "Không thể mở camera");
       closeDrawer();
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -267,21 +281,29 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Box alignItems="center" justifyContent="center" padding={20}>
-          <PrimaryButton
+          <Button
             onPress={openDrawer}
-            style={{ width: "100%" }}
-            loading={loading}
-            disabled={loading}
+            isDisabled={isUploading || isProcessing}
+            style={{
+              width: "100%",
+              backgroundColor: themeColors.primary,
+              borderRadius: 8,
+              minHeight: 52,
+            }}
           >
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+            {isUploading && <ButtonSpinner mr="$2" />}
+            <ScanText color={themeColors.primary_white_text} size={18} />
+            <ButtonText
+              ml="$2"
+              style={{
+                color: themeColors.primary_white_text,
+                fontWeight: "600",
+                fontSize: 15,
+              }}
             >
-              <ScanText color="#fff" size={18} />
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                {buttonLabel ?? (multiple ? "Chọn ảnh" : "Chọn ảnh")}
-              </Text>
-            </View>
-          </PrimaryButton>
+              {buttonLabel ?? (multiple ? "Chọn ảnh" : "Chọn ảnh")}
+            </ButtonText>
+          </Button>
 
           {/* Preview selected images in multiple mode */}
           {multiple && imageUris.length > 0 && (
@@ -311,21 +333,30 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
                 </View>
               </ScrollView>
 
-              <PrimaryButton
+              <Button
                 onPress={processImages}
-                style={{ width: "100%", marginTop: 12 }}
-                loading={loading}
-                disabled={loading}
+                isDisabled={isProcessing}
+                style={{
+                  width: "100%",
+                  marginTop: 12,
+                  backgroundColor: themeColors.primary,
+                  borderRadius: 8,
+                  minHeight: 52,
+                }}
               >
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                {isProcessing && <ButtonSpinner mr="$2" />}
+                <Upload color={themeColors.primary_white_text} size={18} />
+                <ButtonText
+                  ml="$2"
+                  style={{
+                    color: themeColors.primary_white_text,
+                    fontWeight: "600",
+                    fontSize: 15,
+                  }}
                 >
-                  <Upload color="#fff" size={18} />
-                  <Text style={{ color: "#fff", fontWeight: "600" }}>
-                    Gửi {imageUris.length} ảnh để OCR
-                  </Text>
-                </View>
-              </PrimaryButton>
+                  Tải lên {imageUris.length} ảnh để xử lý
+                </ButtonText>
+              </Button>
             </View>
           )}
 
@@ -347,7 +378,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
                 </ScrollView>
               ) : null}
 
-              {loading ? (
+              {isProcessing ? (
                 <Text style={styles.debugStatus}>Đang xử lý ảnh...</Text>
               ) : null}
 
@@ -397,17 +428,54 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
         >
           <View style={{ flexDirection: "row", gap: 12, marginBottom: 12 }}>
             <View style={{ flex: 1 }}>
-              <SecondaryButton onPress={chooseFromLibrary}>
-                <Text>
+              <Button
+                onPress={chooseFromLibrary}
+                variant="outline"
+                isDisabled={isUploading}
+                style={{
+                  borderRadius: 8,
+                  borderWidth: 2,
+                  borderColor: themeColors.primary,
+                  backgroundColor: "transparent",
+                  minHeight: 48,
+                }}
+              >
+                {isUploading && (
+                  <ButtonSpinner mr="$1" color={themeColors.primary} />
+                )}
+                <ButtonText
+                  style={{
+                    color: themeColors.primary,
+                    fontWeight: "600",
+                    fontSize: 14,
+                  }}
+                >
                   {multiple ? "Chọn từ thư viện" : "Chọn từ thư viện"}
-                </Text>
-              </SecondaryButton>
+                </ButtonText>
+              </Button>
             </View>
 
             <View style={{ flex: 1 }}>
-              <PrimaryButton onPress={takePhoto}>
-                <Text color="$white">Chụp ảnh</Text>
-              </PrimaryButton>
+              <Button
+                onPress={takePhoto}
+                isDisabled={isUploading}
+                style={{
+                  borderRadius: 8,
+                  backgroundColor: themeColors.primary,
+                  minHeight: 48,
+                }}
+              >
+                {isUploading && <ButtonSpinner mr="$1" />}
+                <ButtonText
+                  style={{
+                    color: themeColors.primary_white_text,
+                    fontWeight: "600",
+                    fontSize: 14,
+                  }}
+                >
+                  Chụp ảnh
+                </ButtonText>
+              </Button>
             </View>
           </View>
         </Animated.View>

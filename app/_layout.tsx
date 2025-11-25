@@ -14,6 +14,7 @@ import { useEffect } from "react";
 
 import ResponsiveWrapper from "@/components/common/ResponsiveWrapper";
 import NetworkWrapper from "@/components/connection/NetworkWrapper";
+import { NotificationProvider } from "@/components/modal/providers/NotificationProvider";
 import { AgrisaThemeProvider } from "@/components/theme/AgrisaThemeProvider";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
@@ -63,37 +64,48 @@ export default function RootLayout() {
           <NetworkWrapper>
             <AgrisaThemeProvider>
               <ResponsiveWrapper>
-                <ToastProvider>
-                  <NotificationInitializer />
-                  {/* ✅ THÊM StatusBar component - Tự động đổi màu theo theme */}
-                  <StatusBar
-                    style={isDark ? "light" : "dark"}
-                    backgroundColor={colors.background}
-                    translucent={false}
-                  />
+                <NotificationProvider>
+                  <ToastProvider>
+                    <NotificationInitializer />
+                    {/* ✅ THÊM StatusBar component - Tự động đổi màu theo theme */}
+                    <StatusBar
+                      style={isDark ? "light" : "dark"}
+                      backgroundColor={colors.background}
+                      translucent={false}
+                    />
 
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      contentStyle: {
-                        backgroundColor: "transparent",
-                      },
-                    }}
-                  >
-                    <Stack.Screen
-                      name="index"
-                      options={{
+                    <Stack
+                      screenOptions={{
                         headerShown: false,
-                        gestureEnabled: false,
+                        contentStyle: {
+                          backgroundColor: "transparent",
+                        },
                       }}
-                    />
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                </ToastProvider>
+                    >
+                      <Stack.Screen
+                        name="index"
+                        options={{
+                          headerShown: false,
+                          gestureEnabled: false,
+                        }}
+                      />
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      {/* Result Status Screen - Lock navigation hoàn toàn */}
+                      <Stack.Screen
+                        name="result-status/index"
+                        options={{
+                          headerShown: false,
+                          gestureEnabled: false, // Tắt gesture swipe back
+                          animation: "fade", // Animation mượt hơn
+                        }}
+                      />
+                      <Stack.Screen name="+not-found" />
+                    </Stack>
+                  </ToastProvider>
+                </NotificationProvider>
               </ResponsiveWrapper>
             </AgrisaThemeProvider>
           </NetworkWrapper>

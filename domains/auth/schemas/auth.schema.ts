@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const REGEX_PHONE_VN = /^(\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
-const REGEX_PASSWORD = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+// const REGEX_PASSWORD = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const REGEX_NATIONAL_ID = /^\d{12}$/;
 
@@ -58,10 +58,10 @@ export const signInSchema = z
     password: z
       .string()
       .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .regex(
-        REGEX_PASSWORD,
-        "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt"
-      ),
+      // .regex(
+      //   REGEX_PASSWORD,
+      //   "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt"
+      // ),
   });
 
 
@@ -75,10 +75,11 @@ export const signUpSchema = z
     password: z
       .string()
       .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .regex(
-        REGEX_PASSWORD,
-        "Mật khẩu phải có ít nhất 1 chữ cái, 1 số và 1 ký tự đặc biệt"
-      ),
+      // .regex(
+      //   REGEX_PASSWORD,
+      //   "Mật khẩu phải có ít nhất 1 chữ cái, 1 số và 1 ký tự đặc biệt"
+    // )
+    ,
     national_id: z
       .string()
       .regex(REGEX_NATIONAL_ID, "CCCD phải có 12 số")

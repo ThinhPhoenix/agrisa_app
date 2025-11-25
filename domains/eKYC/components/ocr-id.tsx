@@ -30,13 +30,17 @@ import { useEkycStore } from "../stores/ekyc.store";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const FRAME_WIDTH_RATIO = 0.8;
+const FRAME_WIDTH_RATIO = 0.85;
 const CCCD_ASPECT_RATIO = 1.586;
 const CROP_OFFSET_X = 0;
-const CROP_OFFSET_Y = -50;
-const CROP_SCALE_ADJUSTMENT = 1.05;
+const CROP_OFFSET_Y = 0;
+const CROP_SCALE_ADJUSTMENT = 1.0;
 const RESIZE_WIDTH = 1300;
-const COMPRESS_QUALITY = 0.9;
+const COMPRESS_QUALITY = 0.92;
+
+// Chiều cao của header và footer trong camera view
+const HEADER_ESTIMATED_HEIGHT = 140; // Top bar (~56) + Hướng dẫn (~84)
+const FOOTER_ESTIMATED_HEIGHT = 160; // Button area + padding
 
 const FRAME_WIDTH = SCREEN_WIDTH * FRAME_WIDTH_RATIO;
 const FRAME_HEIGHT = FRAME_WIDTH / CCCD_ASPECT_RATIO;
@@ -98,7 +102,7 @@ export const OCRIdScreen = () => {
         p="$6"
       >
         <Spinner size="large" color={colors.primary} />
-        <Text mt="$4" color={colors.text}>
+        <Text mt="$4" color={colors.primary_text}>
           Đang kiểm tra quyền camera...
         </Text>
       </Box>
@@ -114,11 +118,11 @@ export const OCRIdScreen = () => {
         alignItems="center"
         p="$6"
       >
-        <Camera size={64} color={colors.textSecondary} />
+        <Camera size={64} color={colors.secondary_text} />
         <Text
           fontSize="$lg"
           fontWeight="$bold"
-          color={colors.text}
+          color={colors.primary_text}
           mt="$4"
           textAlign="center"
         >
@@ -126,7 +130,7 @@ export const OCRIdScreen = () => {
         </Text>
         <Text
           fontSize="$sm"
-          color={colors.textSecondary}
+          color={colors.secondary_text}
           mt="$2"
           textAlign="center"
         >
@@ -138,31 +142,39 @@ export const OCRIdScreen = () => {
           onPress={requestPermission}
           mt="$6"
         >
-          <ButtonText color={colors.text}>Cấp quyền</ButtonText>
+          <ButtonText color={colors.primary_white_text}>Cấp quyền</ButtonText>
         </Button>
       </Box>
     );
   }
 
   const calculateCropRegion = (photoWidth: number, photoHeight: number) => {
+    // Tính scale chính xác từ màn hình sang ảnh
     const scaleX = photoWidth / SCREEN_WIDTH;
     const scaleY = photoHeight / SCREEN_HEIGHT;
 
-    const centerX = SCREEN_WIDTH / 2;
-    const centerY = SCREEN_HEIGHT / 2;
-    const frameX = centerX - FRAME_WIDTH / 2;
-    const frameY = centerY - FRAME_HEIGHT / 2;
+    // Tính không gian hiển thị thực tế (trừ đi header và footer)
+    const availableHeight =
+      SCREEN_HEIGHT - HEADER_ESTIMATED_HEIGHT - FOOTER_ESTIMATED_HEIGHT;
 
-    let cropX = frameX * scaleX;
-    let cropY = frameY * scaleY;
+    // Tính vị trí khung giữa không gian hiển thị
+    const frameTop =
+      HEADER_ESTIMATED_HEIGHT + (availableHeight - FRAME_HEIGHT) / 2;
+    const frameLeft = (SCREEN_WIDTH - FRAME_WIDTH) / 2;
+
+    // Chuyển đổi sang tọa độ ảnh
+    let cropX = frameLeft * scaleX;
+    let cropY = frameTop * scaleY;
     let cropWidth = FRAME_WIDTH * scaleX;
     let cropHeight = FRAME_HEIGHT * scaleY;
 
+    // Apply offset và scale adjustment nếu cần
     cropX += CROP_OFFSET_X * scaleX;
     cropY += CROP_OFFSET_Y * scaleY;
     cropWidth *= CROP_SCALE_ADJUSTMENT;
     cropHeight *= CROP_SCALE_ADJUSTMENT;
 
+    // Đảm bảo không vượt quá kích thước ảnh
     const result = {
       originX: Math.max(0, Math.round(cropX)),
       originY: Math.max(0, Math.round(cropY)),
@@ -176,22 +188,34 @@ export const OCRIdScreen = () => {
       ),
     };
 
+    // Điều chỉnh để giữ đúng aspect ratio CCCD
     const targetAspect = CCCD_ASPECT_RATIO;
-    let cropAspect = result.width / result.height;
-    if (cropAspect > targetAspect) {
-      const newWidth = result.height * targetAspect;
-      result.originX += (result.width - newWidth) / 2;
-      result.width = newWidth;
-    } else if (cropAspect < targetAspect) {
-      const newHeight = result.width / targetAspect;
-      result.originY += (result.height - newHeight) / 2;
-      result.height = newHeight;
+    const cropAspect = result.width / result.height;
+
+    if (Math.abs(cropAspect - targetAspect) > 0.01) {
+      if (cropAspect > targetAspect) {
+        const newWidth = result.height * targetAspect;
+        result.originX += Math.round((result.width - newWidth) / 2);
+        result.width = Math.round(newWidth);
+      } else {
+        const newHeight = result.width / targetAspect;
+        result.originY += Math.round((result.height - newHeight) / 2);
+        result.height = Math.round(newHeight);
+      }
     }
 
-    result.originX = Math.round(result.originX);
-    result.originY = Math.round(result.originY);
-    result.width = Math.round(result.width);
-    result.height = Math.round(result.height);
+    console.log("📸 [OCR] Crop calculation:", {
+      screenSize: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT },
+      photoSize: { width: photoWidth, height: photoHeight },
+      scale: { x: scaleX.toFixed(2), y: scaleY.toFixed(2) },
+      framePosition: { top: frameTop.toFixed(0), left: frameLeft.toFixed(0) },
+      frameSize: {
+        width: FRAME_WIDTH.toFixed(0),
+        height: FRAME_HEIGHT.toFixed(0),
+      },
+      cropRegion: result,
+      aspectRatio: (result.width / result.height).toFixed(3),
+    });
 
     return result;
   };
@@ -347,47 +371,51 @@ export const OCRIdScreen = () => {
           <Text
             fontSize="$2xl"
             fontWeight="$bold"
-            color={colors.text}
+            color={colors.primary_text}
             textAlign="center"
           >
             Chụp CCCD/CMND
           </Text>
-          <Text fontSize="$sm" color={colors.textSecondary} textAlign="center">
+          <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
             Bạn sẽ cần chụp cả 2 mặt của CCCD/CMND
           </Text>
         </VStack>
 
         <Box
-          bg={colors.surface}
+          bg={colors.card_surface}
           p="$5"
           borderRadius="$lg"
           borderWidth={1}
-          borderColor={colors.border}
+          borderColor={colors.frame_border}
           w="$full"
         >
           <VStack space="md">
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Lưu ý khi chụp:
             </Text>
             <VStack space="sm">
               <HStack space="sm" alignItems="flex-start">
-                <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Đặt CCCD/CMND trong khung
+                <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                  • Đặt CCCD/CMND vào đúng trong khung hiển thị
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Chụp ở nơi có ánh sáng đủ, tránh chói sáng
+                <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                  • Chụp ở nơi có ánh sáng đủ, tránh chói sáng
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Đảm bảo thông tin rõ nét, không bị mờ
+                <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                  • Đảm bảo thông tin rõ nét, không bị mờ
                 </Text>
               </HStack>
               <HStack space="sm" alignItems="flex-start">
-                <Text fontSize="$xs" color={colors.textSecondary} flex={1}>
-                  Tránh bóng đổ che khuất thông tin
+                <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                  • Tránh bóng đổ che khuất thông tin
                 </Text>
               </HStack>
             </VStack>
@@ -395,7 +423,7 @@ export const OCRIdScreen = () => {
         </Box>
 
         <Button size="lg" bg={colors.primary} onPress={startCapture} w="$full">
-          <ButtonText color={colors.text} fontWeight="$semibold">
+          <ButtonText color={colors.primary_white_text} fontWeight="$semibold">
             Bắt đầu chụp
           </ButtonText>
         </Button>
@@ -407,8 +435,11 @@ export const OCRIdScreen = () => {
     const label = isCapturingFront ? "Mặt trước" : "Mặt sau";
     const currentPhoto = isCapturingFront ? frontPhoto : backPhoto;
 
-    // Tính toán vị trí của khung CCCD
-    const frameTop = (SCREEN_HEIGHT - FRAME_HEIGHT) / 2;
+    // Tính toán vị trí của khung CCCD (khớp với calculateCropRegion)
+    const availableHeight =
+      SCREEN_HEIGHT - HEADER_ESTIMATED_HEIGHT - FOOTER_ESTIMATED_HEIGHT;
+    const frameTop =
+      HEADER_ESTIMATED_HEIGHT + (availableHeight - FRAME_HEIGHT) / 2;
 
     return (
       <Box flex={1}>
@@ -425,7 +456,6 @@ export const OCRIdScreen = () => {
               top={0}
               left={0}
               right={0}
-              
               justifyContent="space-between"
               pb="$4"
             >
@@ -435,12 +465,12 @@ export const OCRIdScreen = () => {
                   <Text
                     fontSize="$lg"
                     fontWeight="$bold"
-                    color={colors.textWhiteButton}
+                    color={colors.primary_white_text}
                   >
                     Chụp {label} CCCD
                   </Text>
                   <Pressable onPress={cancelCapture}>
-                    <X size={24} color={colors.textWhiteButton} />
+                    <X size={24} color={colors.primary_white_text} />
                   </Pressable>
                 </HStack>
               </Box>
@@ -449,7 +479,7 @@ export const OCRIdScreen = () => {
               <Box px="$6" pb="$2">
                 <Text
                   fontSize="$lg"
-                  color={colors.textWhiteButton}
+                  color={colors.primary_white_text}
                   textAlign="center"
                   fontWeight="$medium"
                 >
@@ -457,14 +487,14 @@ export const OCRIdScreen = () => {
                 </Text>
                 <Text
                   fontSize="$sm"
-                  color={colors.textWhiteButton}
+                  color={colors.primary_white_text}
                   textAlign="center"
                   mt="$2"
-                  opacity={0.8}
+                  opacity={0.9}
                 >
                   {currentPhoto
-                    ? "Ảnh đã được chụp"
-                    : "Giữ máy thẳng và đảm bảo CCCD nằm ở trong khung"}
+                    ? "✓ Ảnh đã được chụp thành công"
+                    : "Giữ máy thẳng và căn CCCD nằm chính giữa khung"}
                 </Text>
               </Box>
             </Box>
@@ -557,15 +587,16 @@ export const OCRIdScreen = () => {
                       flex={1}
                       size="lg"
                       variant="outline"
-                      borderColor={colors.border}
+                      borderColor={colors.frame_border}
+                      bg="rgba(255,255,255,0.15)"
                       onPress={retakeCurrentPhoto}
                     >
                       <ButtonIcon
                         as={RotateCcw}
-                        color={colors.textWhiteButton}
+                        color={colors.primary_white_text}
                         mr="$2"
                       />
-                      <ButtonText color={colors.textWhiteButton}>
+                      <ButtonText color={colors.primary_white_text}>
                         Chụp lại
                       </ButtonText>
                     </Button>
@@ -577,15 +608,15 @@ export const OCRIdScreen = () => {
                       isDisabled={ocrIdMutation.isPending}
                     >
                       {ocrIdMutation.isPending ? (
-                        <Spinner color={colors.text} />
+                        <Spinner color={colors.primary_white_text} />
                       ) : (
                         <>
                           <ButtonIcon
                             as={CheckCircle2}
-                            color={colors.text}
+                            color={colors.primary_white_text}
                             mr="$2"
                           />
-                          <ButtonText color={colors.text}>
+                          <ButtonText color={colors.primary_white_text}>
                             {isCapturingFront ? "Tiếp tục" : "Xác nhận"}
                           </ButtonText>
                         </>
@@ -599,7 +630,7 @@ export const OCRIdScreen = () => {
                         width={70}
                         height={70}
                         borderRadius="$full"
-                        bg={colors.text}
+                        bg={colors.primary_white_text}
                         borderWidth={5}
                         borderColor={colors.primary}
                         justifyContent="center"
@@ -613,7 +644,11 @@ export const OCRIdScreen = () => {
                         />
                       </Box>
                     </Pressable>
-                    <Text fontSize="$sm" color={colors.textWhiteButton}>
+                    <Text
+                      fontSize="$sm"
+                      color={colors.primary_white_text}
+                      fontWeight="$medium"
+                    >
                       Chạm để chụp
                     </Text>
                   </VStack>
@@ -635,12 +670,17 @@ export const OCRIdScreen = () => {
       p="$6"
     >
       <Spinner size="large" color={colors.primary} />
-      <Text fontSize="$lg" fontWeight="$semibold" color={colors.text} mt="$4">
+      <Text
+        fontSize="$lg"
+        fontWeight="$semibold"
+        color={colors.primary_text}
+        mt="$4"
+      >
         Đang xử lý thông tin CCCD...
       </Text>
       <Text
         fontSize="$sm"
-        color={colors.textSecondary}
+        color={colors.secondary_text}
         mt="$2"
         textAlign="center"
       >
@@ -648,7 +688,7 @@ export const OCRIdScreen = () => {
       </Text>
       <Text
         fontSize="$xs"
-        color={colors.textSecondary}
+        color={colors.muted_text}
         mt="$4"
         textAlign="center"
         px="$6"

@@ -1,7 +1,7 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Pressable, SafeAreaView, Text, View, Animated } from "react-native";
+import { Animated, Pressable, SafeAreaView, Text, View } from "react-native";
 import Svg, { G, Path } from "react-native-svg";
 
 function HomeIcon(props: any) {
@@ -108,6 +108,60 @@ function ContractIcon(props: any) {
         fillRule="evenodd"
         clipRule="evenodd"
         d="M6.75 6a.75.75 0 01.75-.75h9a.75.75 0 010 1.5h-9A.75.75 0 016.75 6zM6.75 10a.75.75 0 01.75-.75h6a.75.75 0 010 1.5h-6a.75.75 0 01-.75-.75z"
+        fill="#000"
+      />
+    </Svg>
+  );
+}
+
+function NotificationIcon(props: any) {
+  return (
+    <Svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="injected-svg"
+      data-src="https://cdn.hugeicons.com/icons/notification-02-bulk-rounded.svg?v=3.0"
+      color="#000"
+      {...props}
+    >
+      <Path
+        opacity={0.4}
+        d="M12 2C8.5 2 5.71 4.98 6 8.5c0 1.85.67 3.58 1.78 4.87l1.15 1.31c.5.57.88 1.1 1.16 1.61L10 17h4l-.09-.71c.28-.51.66-1.04 1.16-1.61l1.15-1.31C17.33 12.08 18 10.35 18 8.5c.29-3.52-2.5-6.5-6-6.5z"
+        fill="#000"
+      />
+      <Path
+        d="M10 17h4c0 1.1-.9 2-2 2s-2-.9-2-2zm4.54 3.75c.14-.3.21-.64.21-1v-.5c0-.14-.11-.25-.25-.25h-5c-.14 0-.25.11-.25.25v.5c0 .36.07.7.21 1h5.08z"
+        fill="#000"
+      />
+    </Svg>
+  );
+}
+
+function TransactionIcon(props: any) {
+  return (
+    <Svg
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="injected-svg"
+      data-src="https://cdn.hugeicons.com/icons/invoice-01-bulk-rounded.svg?v=3.0"
+      color="#000"
+      {...props}
+    >
+      <Path
+        opacity={0.4}
+        d="M3.25 10c0-3.771 0-5.657 1.172-6.828C5.593 2 7.48 2 11.25 2h1.5c3.771 0 5.657 0 6.828 1.172C20.75 4.343 20.75 6.229 20.75 10v4c0 3.771 0 5.657-1.172 6.828-1.171 1.172-3.057 1.172-6.828 1.172h-1.5c-3.771 0-5.657 0-6.828-1.172C3.25 19.657 3.25 17.771 3.25 14v-4z"
+        fill="#000"
+      />
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.25 7a.75.75 0 01.75-.75h8a.75.75 0 010 1.5H8A.75.75 0 017.25 7zm0 4a.75.75 0 01.75-.75h8a.75.75 0 010 1.5H8a.75.75 0 01-.75-.75zm0 4a.75.75 0 01.75-.75h5a.75.75 0 010 1.5H8a.75.75 0 01-.75-.75z"
         fill="#000"
       />
     </Svg>
@@ -295,20 +349,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="farm/index"
+        name="transaction-history/index"
         options={{
-          title: "Trang trại",
+          title: "Lịch sử giao dịch",
           tabBarIcon: ({ color, size }) => (
-            <FarmIcon width={size} height={size} color={color} />
+            <TransactionIcon width={size} height={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="policy/index"
+        name="notification/index"
         options={{
-          title: "Hợp đồng",
+          title: "Thông báo",
           tabBarIcon: ({ color, size }) => (
-            <ContractIcon width={size} height={size} color={color} />
+            <NotificationIcon width={size} height={size} color={color} />
           ),
         }}
       />

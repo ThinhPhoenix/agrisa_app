@@ -18,6 +18,11 @@ interface AuthFormHooks {
   type: "sign-in" | "sign-up";
 }
 
+interface CheckIdentifierHooks {
+  onSuccess?: () => void;
+  onError?: () => void;
+}
+
 const isEmail = (value: string): boolean => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 };
@@ -62,7 +67,7 @@ const transformIdentifierToPayload = (
 };
 
 export const useAuthForm = ({ type }: AuthFormHooks) => {
-  const { signInMutation, signUpMutation } = useAuth();
+  const { signInMutation, signUpMutation, checkIdentifierMutation } = useAuth();
 
   const signInForm = useForm<SignInPayloadSchema>({
     resolver: zodResolver(signInSchema),
@@ -96,7 +101,9 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
   // ============================================
   const handleSignIn = signInForm.handleSubmit(async (data) => {
     try {
-      logger.auth.authSuccess("Sign in attempt", { identifier: data.identifier });
+      logger.auth.authSuccess("Sign in attempt", {
+        identifier: data.identifier,
+      });
 
       const { identifier, password } = data;
       let payload: SignInPayload;
@@ -119,7 +126,6 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
       await signInMutation.mutateAsync(payload);
     } catch (error) {
       logger.auth.authError("Lỗi đăng nhập", error);
-      
     }
   });
 
@@ -243,11 +249,45 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
 
   const onSubmit = type === "sign-in" ? handleSignIn : handleSignUp;
 
+  // ============================================
+  // 🔍 KIỂM TRA IDENTIFIER TỒN TẠI
+  // ============================================
+  const handleCheckIdentifier = async (
+    identifier: string,
+    callbacks?: CheckIdentifierHooks
+  ): Promise<boolean> => {
+    try {
+      logger.auth.authSuccess("Checking identifier", { identifier });
+
+      const result = await checkIdentifierMutation.mutateAsync(identifier);
+
+      // Chỉ vào đây khi available = true
+      if (result.available) {
+        logger.auth.authSuccess("Identifier exists and available");
+        callbacks?.onSuccess?.();
+        return true;
+      }
+
+      // Fallback (không nên xảy ra vì đã throw trong mutationFn)
+      callbacks?.onError?.();
+      return false;
+    } catch (error) {
+      logger.auth.authError("Identifier check failed", error);
+      callbacks?.onError?.();
+      return false;
+    }
+  };
+
   return {
     form,
     onSubmit,
     handleBiometricSignIn,
-    isLoading: signInMutation.isPending || signUpMutation.isPending,
+    handleCheckIdentifier,
+    isLoading:
+      signInMutation.isPending ||
+      signUpMutation.isPending ||
+      checkIdentifierMutation.isPending,
+    isCheckingIdentifier: checkIdentifierMutation.isPending,
     error: signInMutation.error || signUpMutation.error,
     isSuccess: signInMutation.isSuccess || signUpMutation.isSuccess,
     reset: () => form.reset(),

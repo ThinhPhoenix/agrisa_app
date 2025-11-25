@@ -3,10 +3,7 @@
 /**
  * Loại cây trồng được hỗ trợ bảo hiểm
  */
-export type CropType =
-  | "rice"
-  | "coffee";
-
+export type CropType = "rice" | "coffee";
 
 /**
  * Trạng thái của sản phẩm bảo hiểm
@@ -27,14 +24,14 @@ export type DocumentValidationStatus =
  */
 export type CurrencyCode = "VND" | "USD";
 
-/**
- * Thông tin bổ sung quan trọng của sản phẩm
- */
-export type ImportantAdditionalInformation = {
-  notes?: string; // Ghi chú đặc biệt
-  special_conditions?: string[]; // Các điều kiện đặc biệt
-  [key: string]: any; // Cho phép thêm các trường tùy chỉnh
-};
+// /**
+//  * Thông tin bổ sung quan trọng của sản phẩm
+//  */
+// export type ImportantAdditionalInformation = {
+//   notes?: string; // Ghi chú đặc biệt
+//   special_conditions?: string[]; // Các điều kiện đặc biệt
+//   [key: string]: any; // Cho phép thêm các trường tùy chỉnh
+// };
 
 /**
  * Model chính cho Sản phẩm Bảo hiểm Nông nghiệp
@@ -76,9 +73,9 @@ export type PublicBasePolicyResponse = {
   // Trạng thái và xác thực
   status: ProductStatus; // Trạng thái sản phẩm
   document_validation_status: DocumentValidationStatus; // Trạng thái xác thực tài liệu
-
+  document_tags?: Record<string, any>; // Thẻ tài liệu bổ sung
   // Thông tin bổ sung
-  important_additional_information: ImportantAdditionalInformation | null;
+  important_additional_information: string;
 
   // Metadata
   created_at: string; // ISO timestamp
@@ -186,4 +183,83 @@ export type PolicyDetailResponse = {
   document: PolicyDocument;
   triggers: PolicyTrigger[];
   metadata: PolicyDetailMetadata;
+};
+
+export type RegisterPolicyPayload = {
+  registered_policy: {
+    base_policy_id: string;
+    insurance_provider_id: string;
+    farmer_id: string;
+    planting_date: number;
+    area_multiplier: number;
+    total_farmer_premium: number;
+    total_data_cost: number;
+    coverage_amount: number;
+  };
+  farm: {
+    id: string;
+  };
+  policy_tags?: Record<string, any>; // Dynamic data từ document_tags
+};
+
+// ============= REGISTERED POLICY MODELS =============
+
+/**
+ * Trạng thái của policy đã đăng ký
+ */
+export type RegisteredPolicyStatus = 
+  | "pending_review"      // Chờ xét duyệt
+  | "active"              // Đang hoạt động
+  | "expired"             // Hết hạn
+  | "cancelled"           // Đã hủy
+  | "rejected"            // Bị từ chối
+  | "suspended";          // Tạm ngưng
+
+/**
+ * Trạng thái underwriting (thẩm định)
+ */
+export type UnderwritingStatus =
+  | "pending"             // Đang chờ
+  | "approved"            // Đã duyệt
+  | "rejected"            // Từ chối
+  | "under_review";       // Đang xem xét
+
+/**
+ * Model cho một policy đã đăng ký
+ */
+export type RegisteredPolicy = {
+  id: string;
+  policy_number: string;
+  base_policy_id: string;
+  insurance_provider_id: string;
+  farm_id: string;
+  farmer_id: string;
+  coverage_amount: number;
+  coverage_end_date: number;
+  planting_date: number;
+  area_multiplier: number;
+  total_farmer_premium: number;
+  total_data_cost: number;
+  status: RegisteredPolicyStatus;
+  underwriting_status: UnderwritingStatus;
+  signed_policy_document_url: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Response danh sách policies đã đăng ký
+ */
+export type RegisteredPoliciesResponse = {
+  count: number;
+  farmer_id: string;
+  policies: RegisteredPolicy[];
+};
+
+/**
+ * Response chi tiết policy đã đăng ký
+ */
+export type RegisteredPolicyDetailResponse = RegisteredPolicy & {
+  base_policy?: PublicBasePolicyResponse;
+  farm?: any; // TODO: Add Farm type
 };

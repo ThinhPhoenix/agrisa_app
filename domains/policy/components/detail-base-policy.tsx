@@ -1,7 +1,7 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useToast } from "@/domains/shared/hooks/useToast";
-import { Utils } from "@/libs/utils/utils"; // ✅ THÊM IMPORT
+import { Utils } from "@/libs/utils/utils";
 import {
   Badge,
   BadgeText,
@@ -80,7 +80,7 @@ export default function DetailBasePolicyScreen() {
   };
 
   const handleEnroll = () => {
-    toast.success("Chức năng đăng ký đang được phát triển");
+    router.push(`/(farmer)/register-policy/${policyId}`);
   };
 
   // Loading State
@@ -92,8 +92,8 @@ export default function DetailBasePolicyScreen() {
         alignItems="center"
         justifyContent="center"
       >
-        <Spinner size="large" color={colors.success} />
-        <Text color={colors.textSecondary} fontSize="$sm" mt="$3">
+        <Spinner size="large" color={colors.primary} />
+        <Text color={colors.secondary_text} fontSize="$sm" mt="$3">
           Đang tải chi tiết sản phẩm...
         </Text>
       </Box>
@@ -110,12 +110,17 @@ export default function DetailBasePolicyScreen() {
         justifyContent="center"
         alignItems="center"
       >
-        <Shield size={64} color={colors.textSecondary} strokeWidth={1.5} />
-        <Text fontSize="$lg" fontWeight="$semibold" color={colors.text} mt="$4">
+        <Shield size={64} color={colors.muted_text} strokeWidth={1.5} />
+        <Text
+          fontSize="$lg"
+          fontWeight="$semibold"
+          color={colors.primary_text}
+          mt="$4"
+        >
           Không tìm thấy sản phẩm
         </Text>
-        <Button bg={colors.success} mt="$4" onPress={() => router.back()}>
-          <ButtonText color={colors.textWhiteButton}>Quay lại</ButtonText>
+        <Button bg={colors.primary} mt="$4" onPress={() => router.back()}>
+          <ButtonText color={colors.primary_white_text}>Quay lại</ButtonText>
         </Button>
       </Box>
     );
@@ -139,8 +144,8 @@ export default function DetailBasePolicyScreen() {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={refetch}
-              colors={[colors.success]}
-              tintColor={colors.success}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
             />
           }
           contentContainerStyle={{
@@ -196,7 +201,7 @@ export default function DetailBasePolicyScreen() {
 
               <Text
                 fontSize="$sm"
-                color={colors.textSecondary}
+                color={colors.secondary_text}
                 lineHeight="$lg"
               >
                 Bảo hiểm sẽ tự động kích hoạt chi trả khi các điều kiện sau được
@@ -215,10 +220,6 @@ export default function DetailBasePolicyScreen() {
                   />
                 ))}
               </VStack>
-
-              <Box mt="$4">
-                <FAQSection colors={colors} />
-              </Box>
             </VStack>
 
             {/* 5. THÔNG TIN KỸ THUẬT */}
@@ -233,7 +234,7 @@ export default function DetailBasePolicyScreen() {
             </VStack>
 
             {/* 6. LƯU Ý QUAN TRỌNG */}
-            {base_policy.important_additional_information?.notes && (
+            {base_policy.important_additional_information && (
               <VStack space="md">
                 <SectionTitle
                   number="6"
@@ -244,6 +245,10 @@ export default function DetailBasePolicyScreen() {
                 <ImportantNotesCard policy={base_policy} colors={colors} />
               </VStack>
             )}
+
+            <Box mt="$4">
+              <FAQSection policy={base_policy} colors={colors} />{" "}
+            </Box>
           </VStack>
         </ScrollView>
 
@@ -275,19 +280,19 @@ const SectionTitle = ({
 }) => (
   <HStack space="sm" alignItems="center">
     <Box
-      bg={colors.primarySoft}
+      bg={colors.primary}
       borderRadius="$full"
       w="$8"
       h="$8"
       alignItems="center"
       justifyContent="center"
     >
-      <Text fontSize="$sm" fontWeight="$bold" color={colors.success}>
+      <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_white_text}>
         {number}
       </Text>
     </Box>
-    <Icon size={20} color={colors.success} strokeWidth={2} />
-    <Text fontSize="$lg" fontWeight="$bold" color={colors.text}>
+    <Icon size={20} color={colors.primary} strokeWidth={2.5} />
+    <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
       {title}
     </Text>
   </HStack>
@@ -304,11 +309,18 @@ const ProductInfoCard = ({
   colors: ColorSet;
 }) => (
   <Box
-    bg={colors.card}
+    bg={colors.card_surface}
     borderWidth={1}
-    borderColor={colors.border}
+    borderColor={colors.frame_border}
     borderRadius="$xl"
     overflow="hidden"
+    sx={{
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 3,
+    }}
   >
     <VStack space="md" p="$4">
       {/* Product Name */}
@@ -316,50 +328,50 @@ const ProductInfoCard = ({
         <Text
           fontSize="$xl"
           fontWeight="$bold"
-          color={colors.text}
+          color={colors.primary_text}
           lineHeight="$xl"
         >
           {policy.product_name}
         </Text>
       </VStack>
 
-      <Divider bg={colors.border} />
+      <Divider bg={colors.frame_border} />
 
       {/* Description */}
       <VStack space="xs">
-        <Text fontSize="$xs" color={colors.textSecondary} fontWeight="$medium">
+        <Text fontSize="$xs" color={colors.secondary_text} fontWeight="$medium">
           Mô tả bảo hiểm
         </Text>
-        <Text fontSize="$sm" color={colors.text} lineHeight="$lg">
+        <Text fontSize="$sm" color={colors.primary_text} lineHeight="$lg">
           {policy.product_description}
         </Text>
       </VStack>
 
-      <Divider bg={colors.border} />
+      <Divider bg={colors.frame_border} />
 
       {/* 🆕 POLICY DOCUMENT SECTION */}
       <PolicyDocumentSection document={document} colors={colors} />
 
-      <Divider bg={colors.border} />
+      <Divider bg={colors.frame_border} />
 
       {/* Footer: Crop Type & Status */}
       <HStack justifyContent="space-between" alignItems="center">
         <VStack>
-          <Text fontSize="$xs" color={colors.textSecondary} mb="$1">
+          <Text fontSize="$xs" color={colors.secondary_text} mb="$1">
             Loại cây bảo hiểm
           </Text>
           <HStack space="xs" alignItems="center">
             <Box bg={colors.primarySoft} borderRadius="$md" p="$2">
-              <Leaf size={16} color={colors.success} strokeWidth={2} />
+              <Leaf size={16} color={colors.primary} strokeWidth={2.5} />
             </Box>
-            <Text fontSize="$sm" fontWeight="$bold" color={colors.success}>
+            <Text fontSize="$sm" fontWeight="$bold" color={colors.primary}>
               {Utils.getCropLabel(policy.crop_type)}
             </Text>
           </HStack>
         </VStack>
 
         <VStack alignItems="flex-end">
-          <Text fontSize="$xs" color={colors.textSecondary} mb="$1">
+          <Text fontSize="$xs" color={colors.secondary_text} mb="$1">
             Tình trạng hiện tại
           </Text>
           <StatusBadge status={policy.status} colors={colors} />
@@ -436,7 +448,11 @@ const PolicyDocumentSection = ({
       >
         <HStack space="sm" alignItems="center">
           <Box bg={colors.warning} borderRadius="$full" p="$2">
-            <FileText size={18} color="#fff" strokeWidth={2} />
+            <FileText
+              size={18}
+              color={colors.primary_white_text}
+              strokeWidth={2.5}
+            />
           </Box>
           <VStack flex={1}>
             <Text fontSize="$sm" fontWeight="$bold" color={colors.warning}>
@@ -455,7 +471,7 @@ const PolicyDocumentSection = ({
   return (
     <VStack space="xs">
       <HStack space="xs" alignItems="center" mb="$1">
-        <Text fontSize="$xs" color={colors.textSecondary} fontWeight="$medium">
+        <Text fontSize="$xs" color={colors.secondary_text} fontWeight="$medium">
           Hợp đồng bảo hiểm gốc
         </Text>
       </HStack>
@@ -464,35 +480,39 @@ const PolicyDocumentSection = ({
         <Box
           bg={colors.primarySoft}
           borderWidth={1}
-          borderColor={colors.success}
+          borderColor={colors.primary}
           borderRadius="$lg"
           p="$3"
           sx={{
             ":active": {
-              opacity: 0.7,
+              opacity: 0.8,
             },
           }}
         >
           <HStack space="sm" alignItems="center" justifyContent="space-between">
             {/* Left: File Icon & Info */}
             <HStack space="sm" alignItems="center" flex={1}>
-              <Box bg={colors.success} borderRadius="$md" p="$2">
-                <FileText size={20} color="#fff" strokeWidth={2.5} />
+              <Box bg={colors.primary} borderRadius="$md" p="$2">
+                <FileText
+                  size={20}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
               </Box>
               <VStack flex={1}>
                 <Text
                   fontSize="$sm"
                   fontWeight="$bold"
-                  color={colors.text}
+                  color={colors.primary_text}
                   numberOfLines={1}
                 >
                   {document.object_name || "Hợp đồng bảo hiểm.pdf"}
                 </Text>
                 <HStack space="xs" alignItems="center" mt="$0.5">
-                  <Text fontSize="$2xs" color={colors.textMuted}>
+                  <Text fontSize="$2xs" color={colors.muted_text}>
                     {formatFileSize(document.file_size_bytes)}
                   </Text>
-                  <Text fontSize="$2xs" color={colors.textMuted}>
+                  <Text fontSize="$2xs" color={colors.muted_text}>
                     • PDF
                   </Text>
                 </HStack>
@@ -500,8 +520,12 @@ const PolicyDocumentSection = ({
             </HStack>
 
             {/* Right: Action Button */}
-            <Box bg={colors.success} borderRadius="$full" p="$2">
-              <ExternalLink size={18} color="#fff" strokeWidth={2.5} />
+            <Box bg={colors.primary} borderRadius="$full" p="$2">
+              <ExternalLink
+                size={18}
+                color={colors.primary_white_text}
+                strokeWidth={2.5}
+              />
             </Box>
           </HStack>
 
@@ -513,10 +537,10 @@ const PolicyDocumentSection = ({
               mt="$2"
               pt="$2"
               borderTopWidth={1}
-              borderTopColor={colors.border}
+              borderTopColor={colors.frame_border}
             >
-              <Clock size={12} color={colors.textMuted} strokeWidth={2} />
-              <Text fontSize="$2xs" color={colors.textMuted}>
+              <Clock size={12} color={colors.muted_text} strokeWidth={2} />
+              <Text fontSize="$2xs" color={colors.muted_text}>
                 Link hết hạn: {formatExpiryDate(document.presigned_url_expiry)}
               </Text>
             </HStack>
@@ -526,10 +550,10 @@ const PolicyDocumentSection = ({
 
       {/* Helper Text */}
       <HStack space="xs" alignItems="flex-start" mt="$1">
-        <Info size={12} color={colors.textMuted} strokeWidth={2} />
+        <Info size={12} color={colors.muted_text} strokeWidth={2} />
         <Text
           fontSize="$2xs"
-          color={colors.textMuted}
+          color={colors.muted_text}
           flex={1}
           lineHeight="$sm"
         >
@@ -541,7 +565,7 @@ const PolicyDocumentSection = ({
   );
 };
 
-// 2. Cost & Payout Grid
+// 2. Cost & Payout Grid - CẬP NHẬT ĐƠN GIẢN HÓA
 const CostPayoutGrid = ({
   policy,
   colors,
@@ -550,57 +574,40 @@ const CostPayoutGrid = ({
   colors: ColorSet;
 }) => (
   <VStack space="sm">
-    {/* Row 1: Premium & Payout */}
-    <HStack space="sm">
-      <InfoCard
-        label="Phí bảo hiểm"
-        value={Utils.formatCurrency(policy.fix_premium_amount)}
-        subtext={
-          policy.is_per_hectare
-            ? "Tính theo diện tích (mỗi hecta)"
-            : "Phí cố định (không phụ thuộc diện tích)"
-        }
-        icon={Shield}
-        iconBg={colors.primarySoft}
-        iconColor={colors.success}
-        colors={colors}
-        flex={1}
-      />
-      <InfoCard
-        label="Bồi thường tối đa"
-        value={Utils.formatCurrency(policy.payout_cap)}
-        subtext={
-          policy.is_payout_per_hectare
-            ? "Mỗi hecta thiệt hại"
-            : "Tổng số tiền tối đa"
-        }
-        icon={CheckCircle2}
-        iconBg={colors.successSoft}
-        iconColor={colors.success}
-        colors={colors}
-        flex={1}
-      />
-    </HStack>
+    {/* Row 1: Premium */}
+    <InfoCard
+      label="Phí bảo hiểm"
+      value={Utils.formatCurrency(policy.fix_premium_amount)}
+      subtext={
+        policy.is_per_hectare
+          ? "Tính theo diện tích (mỗi hecta)"
+          : "Phí cố định (không phụ thuộc diện tích)"
+      }
+      icon={Shield}
+      iconBg={colors.primarySoft}
+      iconColor={colors.primary}
+      colors={colors}
+    />
 
-    {/* Row 2: Rates */}
+    {/* Row 2: Rates - ĐƠN GIẢN HÓA */}
     <HStack space="sm">
       <InfoCard
         label="Tỷ lệ bồi thường cơ bản"
         value={`${(policy.payout_base_rate * 100).toFixed(0)}%`}
-        subtext="Tỷ lệ % giá trị cây trồng được bồi thường"
+        subtext="% giá trị cây trồng được bồi thường"
         icon={Percent}
-        iconBg={colors.background}
-        iconColor={colors.textSecondary}
+        iconBg={colors.card_surface}
+        iconColor={colors.info}
         colors={colors}
         flex={1}
       />
       <InfoCard
         label="Hệ số vượt ngưỡng"
         value={`×${policy.over_threshold_multiplier}`}
-        subtext="Nhân thêm khi thiệt hại vượt mức nghiêm trọng"
+        subtext="Nhân thêm khi thiệt hại nghiêm trọng"
         icon={TrendingUp}
-        iconBg={colors.background}
-        iconColor={colors.textSecondary}
+        iconBg={colors.warningSoft}
+        iconColor={colors.warning}
         colors={colors}
         flex={1}
       />
@@ -613,8 +620,8 @@ const CostPayoutGrid = ({
         value={`${(policy.cancel_premium_rate * 100).toFixed(0)}%`}
         subtext="Số tiền được hoàn lại nếu hủy hợp đồng"
         icon={XCircle}
-        iconBg={colors.background}
-        iconColor={colors.textSecondary}
+        iconBg={colors.card_surface}
+        iconColor={colors.error}
         colors={colors}
         flex={1}
       />
@@ -623,8 +630,8 @@ const CostPayoutGrid = ({
         value={`${(policy.renewal_discount_rate * 100).toFixed(0)}%`}
         subtext={policy.auto_renewal ? "Tự động gia hạn" : "Gia hạn thủ công"}
         icon={Calendar}
-        iconBg={colors.background}
-        iconColor={colors.textSecondary}
+        iconBg={colors.card_surface}
+        iconColor={colors.success}
         colors={colors}
         flex={1}
       />
@@ -641,9 +648,9 @@ const TimelineCard = ({
   colors: ColorSet;
 }) => (
   <Box
-    bg={colors.card}
+    bg={colors.card_surface}
     borderWidth={1}
-    borderColor={colors.border}
+    borderColor={colors.frame_border}
     borderRadius="$xl"
     p="$4"
   >
@@ -655,20 +662,24 @@ const TimelineCard = ({
             <Clock size={16} color={colors.success} strokeWidth={2} />
           </Box>
           <VStack flex={1}>
-            <Text fontSize="$xs" color={colors.textSecondary}>
+            <Text fontSize="$xs" color={colors.secondary_text}>
               Thời hạn bảo hiểm
             </Text>
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               {Utils.formatDuration(policy.coverage_duration_days)}
             </Text>
           </VStack>
         </HStack>
-        <Text fontSize="$xs" color={colors.textMuted}>
+        <Text fontSize="$xs" color={colors.muted_text}>
           ({policy.coverage_duration_days} ngày)
         </Text>
       </HStack>
 
-      <Divider bg={colors.border} />
+      <Divider bg={colors.frame_border} />
 
       {/* Enrollment Period */}
       <VStack space="xs">
@@ -676,37 +687,45 @@ const TimelineCard = ({
           <Box bg={colors.primarySoft} borderRadius="$md" p="$2">
             <Calendar size={16} color={colors.success} strokeWidth={2} />
           </Box>
-          <Text fontSize="$xs" color={colors.textSecondary}>
+          <Text fontSize="$xs" color={colors.secondary_text}>
             Thời gian đăng ký
           </Text>
         </HStack>
         <HStack justifyContent="space-between" alignItems="center" ml="$10">
           <VStack>
-            <Text fontSize="$2xs" color={colors.textMuted}>
+            <Text fontSize="$2xs" color={colors.muted_text}>
               Bắt đầu
             </Text>
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Ngày {Utils.formatDateForMS(policy.enrollment_start_day)}
             </Text>
           </VStack>
-          <Text fontSize="$lg" color={colors.textMuted}>
+          <Text fontSize="$lg" color={colors.muted_text}>
             →
           </Text>
           <VStack alignItems="flex-end">
-            <Text fontSize="$2xs" color={colors.textMuted}>
+            <Text fontSize="$2xs" color={colors.muted_text}>
               Kết thúc
             </Text>
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Ngày {Utils.formatDateForMS(policy.enrollment_end_day)}
             </Text>
           </VStack>
         </HStack>
-        <Text fontSize="$xs" color={colors.textSecondary} ml="$10" mt="$1">
+        <Text fontSize="$xs" color={colors.secondary_text} ml="$10" mt="$1">
           Chỉ có thể đăng ký trong khoảng thời gian này
         </Text>
       </VStack>
 
-      <Divider bg={colors.border} />
+      <Divider bg={colors.frame_border} />
 
       {/* Insurance Valid Period */}
       <VStack space="xs">
@@ -714,24 +733,24 @@ const TimelineCard = ({
           <Box bg={colors.successSoft} borderRadius="$md" p="$2">
             <Shield size={16} color={colors.success} strokeWidth={2} />
           </Box>
-          <Text fontSize="$xs" color={colors.textSecondary}>
+          <Text fontSize="$xs" color={colors.secondary_text}>
             Thời gian hiệu lực bảo hiểm
           </Text>
         </HStack>
         <HStack justifyContent="space-between" alignItems="center" ml="$10">
           <VStack>
-            <Text fontSize="$2xs" color={colors.textMuted}>
+            <Text fontSize="$2xs" color={colors.muted_text}>
               Có hiệu lực từ
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
               Ngày {Utils.formatDateForMS(policy.insurance_valid_from_day)}
             </Text>
           </VStack>
-          <Text fontSize="$lg" color={colors.textMuted}>
+          <Text fontSize="$lg" color={colors.muted_text}>
             →
           </Text>
           <VStack alignItems="flex-end">
-            <Text fontSize="$2xs" color={colors.textMuted}>
+            <Text fontSize="$2xs" color={colors.muted_text}>
               Hết hiệu lực
             </Text>
             <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
@@ -739,12 +758,12 @@ const TimelineCard = ({
             </Text>
           </VStack>
         </HStack>
-        <Text fontSize="$xs" color={colors.textSecondary} ml="$10" mt="$1">
+        <Text fontSize="$xs" color={colors.secondary_text} ml="$10" mt="$1">
           Bảo hiểm chỉ có hiệu lực trong khoảng thời gian này
         </Text>
       </VStack>
 
-      <Divider bg={colors.border} />
+      <Divider bg={colors.frame_border} />
 
       {/* Max Premium Payment Extension */}
       <HStack justifyContent="space-between" alignItems="center">
@@ -753,10 +772,14 @@ const TimelineCard = ({
             <Clock size={16} color={colors.warning} strokeWidth={2} />
           </Box>
           <VStack flex={1}>
-            <Text fontSize="$xs" color={colors.textSecondary}>
+            <Text fontSize="$xs" color={colors.secondary_text}>
               Thời gian gia hạn thanh toán tối đa
             </Text>
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               {policy.max_premium_payment_prolong} ngày
             </Text>
           </VStack>
@@ -766,11 +789,25 @@ const TimelineCard = ({
   </Box>
 );
 
-// 🆕 FAQ SECTION COMPONENT
-const FAQSection = ({ colors }: { colors: ColorSet }) => {
+// 🆕 FAQ SECTION COMPONENT - THÊM CÂU HỎI VỀ BỒI THƯỜNG
+const FAQSection = ({
+  policy,
+  colors,
+}: {
+  policy: PublicBasePolicyResponse; // ✅ THÊM policy prop
+  colors: ColorSet;
+}) => {
   const [expandedFAQ, setExpandedFAQ] = useState<string | null>(null);
 
   const faqs = [
+    // 🆕 THÊM CÂU HỎI VỀ BỒI THƯỜNG Ở ĐẦU
+    {
+      id: "payout-calculation",
+      question: "Tôi sẽ nhận được bao nhiêu tiền bồi thường?",
+      answer: `Số tiền bồi thường phụ thuộc vào mức độ thiệt hại:\n\n📌 MỨC CƠ BẢN (Điều kiện thường):\n${Utils.formatCurrency(policy.fix_payout_amount)}${policy.is_payout_per_hectare ? " / hecta thiệt hại" : " (tổng số tiền)"}\n• Áp dụng khi đạt điều kiện kích hoạt bình thường\n• Đây là mức bồi thường tiêu chuẩn\n\n🔥 MỨC TỐI ĐA (Vượt ngưỡng nghiêm trọng):\n${Utils.formatCurrency(policy.payout_cap)}${policy.is_payout_per_hectare ? " / hecta thiệt hại" : " (tổng số tiền)"}\n• Áp dụng khi thiệt hại VỰA đạt điều kiện bình thường VỪA vượt ngưỡng nghiêm trọng\n• Công thức: ${Utils.formatCurrency(policy.fix_payout_amount)} × ${policy.over_threshold_multiplier} = ${Utils.formatCurrency(policy.payout_cap)}\n\n💡 Ví dụ thực tế:\n• Nếu ruộng lúa của bạn ${policy.is_payout_per_hectare ? "5 hecta" : ""} bị hạn hán nhẹ → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.fix_payout_amount * 5) : Utils.formatCurrency(policy.fix_payout_amount)}\n• Nếu ${policy.is_payout_per_hectare ? "cùng diện tích" : "ruộng"} bị hạn hán nặng (vượt ngưỡng) → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.payout_cap * 5) : Utils.formatCurrency(policy.payout_cap)}\n\n⚡ Lưu ý:\n${policy.is_payout_per_hectare ? "• Số tiền cuối cùng = Mức bồi thường × Diện tích thiệt hại thực tế\n" : ""}• Bồi thường được chi trả TỰ ĐỘNG khi hệ thống phát hiện thiệt hại qua vệ tinh\n• Không cần nộp đơn yêu cầu hay chờ thẩm định`,
+      icon: TrendingUp,
+      color: colors.success,
+    },
     {
       id: "trigger",
       question: "Trigger (Bộ kích hoạt) là gì?",
@@ -837,7 +874,7 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
     <VStack space="xs">
       <HStack space="sm" alignItems="center" mb="$2">
         <HelpCircle size={18} color={colors.info} strokeWidth={2} />
-        <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+        <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
           Câu hỏi thường gặp
         </Text>
       </HStack>
@@ -849,9 +886,9 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
         return (
           <Box
             key={faq.id}
-            bg={colors.card}
+            bg={colors.card_surface}
             borderWidth={1}
-            borderColor={isExpanded ? faq.color : colors.border}
+            borderColor={isExpanded ? faq.color : colors.frame_border}
             borderRadius="$lg"
             overflow="hidden"
           >
@@ -878,7 +915,7 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
                   <Text
                     fontSize="$sm"
                     fontWeight={isExpanded ? "$bold" : "$medium"}
-                    color={isExpanded ? faq.color : colors.text}
+                    color={isExpanded ? faq.color : colors.primary_text}
                     flex={1}
                     lineHeight="$md"
                   >
@@ -895,7 +932,7 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
                   ) : (
                     <ChevronDown
                       size={16}
-                      color={colors.textSecondary}
+                      color={colors.secondary_text}
                       strokeWidth={2.5}
                     />
                   )}
@@ -909,10 +946,14 @@ const FAQSection = ({ colors }: { colors: ColorSet }) => {
                 pb="$3"
                 pt="$2"
                 borderTopWidth={1}
-                borderTopColor={colors.border}
+                borderTopColor={colors.frame_border}
                 bg={`${faq.color}05`}
               >
-                <Text fontSize="$xs" color={colors.text} lineHeight="$lg">
+                <Text
+                  fontSize="$xs"
+                  color={colors.primary_text}
+                  lineHeight="$lg"
+                >
                   {faq.answer}
                 </Text>
               </Box>
@@ -973,7 +1014,7 @@ const TechnicalInfoFAQ = ({
     <VStack space="xs">
       <HStack space="sm" alignItems="center" mb="$2">
         <Info size={18} color={colors.info} strokeWidth={2} />
-        <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+        <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
           Thông tin chi tiết
         </Text>
       </HStack>
@@ -985,9 +1026,9 @@ const TechnicalInfoFAQ = ({
         return (
           <Box
             key={faq.id}
-            bg={colors.card}
+            bg={colors.card_surface}
             borderWidth={1}
-            borderColor={isExpanded ? faq.color : colors.border}
+            borderColor={isExpanded ? faq.color : colors.frame_border}
             borderRadius="$lg"
             overflow="hidden"
           >
@@ -1014,7 +1055,7 @@ const TechnicalInfoFAQ = ({
                       <Text
                         fontSize="$xs"
                         fontWeight={isExpanded ? "$bold" : "$medium"}
-                        color={isExpanded ? faq.color : colors.text}
+                        color={isExpanded ? faq.color : colors.primary_text}
                         lineHeight="$md"
                       >
                         {faq.question}
@@ -1052,7 +1093,7 @@ const TechnicalInfoFAQ = ({
                     ) : (
                       <ChevronDown
                         size={16}
-                        color={colors.textSecondary}
+                        color={colors.secondary_text}
                         strokeWidth={2.5}
                       />
                     )}
@@ -1067,7 +1108,7 @@ const TechnicalInfoFAQ = ({
                 pb="$3"
                 pt="$2"
                 borderTopWidth={1}
-                borderTopColor={colors.border}
+                borderTopColor={colors.frame_border}
                 bg={`${faq.color}05`}
               >
                 <VStack space="sm">
@@ -1083,9 +1124,8 @@ const TechnicalInfoFAQ = ({
                   </Badge>
                   <Text
                     fontSize="$xs"
-                    color={colors.text}
+                    color={colors.primary_text}
                     lineHeight="$lg"
-                    style={{ whiteSpace: "pre-line" }}
                   >
                     {faq.answer}
                   </Text>
@@ -1095,16 +1135,6 @@ const TechnicalInfoFAQ = ({
           </Box>
         );
       })}
-
-      {/* Summary Card */}
-      <Box px="$3" mt="$2">
-        <HStack space="xs" alignItems="flex-end">
-          <Text className="text-gray-200" fontSize="$xs" flex={1}>
-            Cập nhật lần cuối vào:{" "}
-            {new Date(metadata.retrieved_at).toLocaleString("vi-VN")}
-          </Text>
-        </HStack>
-      </Box>
     </VStack>
   );
 };
@@ -1135,9 +1165,9 @@ const TriggerCard = ({
 
   return (
     <Box
-      bg={colors.card}
+      bg={colors.card_surface}
       borderWidth={1}
-      borderColor={isExpanded ? operatorColor : colors.border}
+      borderColor={isExpanded ? operatorColor : colors.frame_border}
       borderRadius="$xl"
       overflow="hidden"
     >
@@ -1152,20 +1182,28 @@ const TriggerCard = ({
             {/* Left: Trigger Info */}
             <HStack space="sm" alignItems="center" flex={1}>
               <Box
-                bg={operatorColor}
+                bg={colors.primary}
                 borderRadius="$full"
                 w="$8"
                 h="$8"
                 alignItems="center"
                 justifyContent="center"
               >
-                <Text fontSize="$sm" fontWeight="$bold" color="#fff">
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$bold"
+                  color={colors.primary_white_text}
+                >
                   {index + 1}
                 </Text>
               </Box>
               <VStack flex={1}>
                 <HStack space="xs" alignItems="center">
-                  <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
                     Giai đoạn: {trigger.growth_stage}
                   </Text>
                 </HStack>
@@ -1175,10 +1213,10 @@ const TriggerCard = ({
                       {trigger.logical_operator}
                     </BadgeText>
                   </Badge>
-                  <Text fontSize="$xs" color={colors.textMuted}>
+                  <Text fontSize="$xs" color={colors.muted_text}>
                     {trigger.conditions.length} điều kiện
                   </Text>
-                  <Text fontSize="$xs" color={colors.textMuted}>
+                  <Text fontSize="$xs" color={colors.muted_text}>
                     • {Utils.formatDataCost(totalDataCost)}
                   </Text>
                 </HStack>
@@ -1196,7 +1234,7 @@ const TriggerCard = ({
               ) : (
                 <ChevronDown
                   size={18}
-                  color={colors.textSecondary}
+                  color={colors.secondary_text}
                   strokeWidth={2.5}
                 />
               )}
@@ -1206,8 +1244,8 @@ const TriggerCard = ({
           {/* Monitor Info */}
           {!isExpanded && (
             <HStack space="xs" alignItems="center" mt="$2">
-              <Clock size={14} color={colors.textMuted} strokeWidth={2} />
-              <Text fontSize="$xs" color={colors.textMuted}>
+              <Clock size={14} color={colors.muted_text} strokeWidth={2} />
+              <Text fontSize="$xs" color={colors.muted_text}>
                 Giám sát mỗi {trigger.monitor_interval}{" "}
                 {Utils.getFrequencyLabel(trigger.monitor_frequency_unit)}
               </Text>
@@ -1219,17 +1257,21 @@ const TriggerCard = ({
       {/* Expanded Content */}
       {isExpanded && (
         <VStack space="sm" px="$4" pb="$4">
-          <Divider bg={colors.border} />
+          <Divider bg={colors.frame_border} />
 
           {/* Monitor Info Detail */}
           <VStack space="xs">
             <HStack space="sm" alignItems="center">
               <Clock size={16} color={colors.info} strokeWidth={2} />
-              <Text fontSize="$xs" fontWeight="$semibold" color={colors.text}>
+              <Text
+                fontSize="$xs"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 Tần suất giám sát
               </Text>
             </HStack>
-            <Text fontSize="$sm" color={colors.textSecondary} ml="$6">
+            <Text fontSize="$sm" color={colors.secondary_text} ml="$6">
               Kiểm tra mỗi {trigger.monitor_interval}{" "}
               {Utils.getFrequencyLabel(trigger.monitor_frequency_unit)} trong
               suốt giai đoạn này
@@ -1239,7 +1281,7 @@ const TriggerCard = ({
           {/* Blackout Periods */}
           {trigger.blackout_periods && (
             <>
-              <Divider bg={colors.border} />
+              <Divider bg={colors.frame_border} />
               <VStack space="xs">
                 <HStack space="sm" alignItems="center">
                   <AlertTriangle
@@ -1250,17 +1292,17 @@ const TriggerCard = ({
                   <Text
                     fontSize="$xs"
                     fontWeight="$semibold"
-                    color={colors.text}
+                    color={colors.primary_text}
                   >
                     Thời gian không kích hoạt
                   </Text>
                 </HStack>
                 <Box bg={colors.warningSoft} borderRadius="$md" p="$2" ml="$6">
-                  <Text fontSize="$sm" color={colors.text}>
+                  <Text fontSize="$sm" color={colors.primary_text}>
                     Từ ngày {trigger.blackout_periods.start_day} đến ngày{" "}
                     {trigger.blackout_periods.end_day}
                   </Text>
-                  <Text fontSize="$xs" color={colors.textMuted} mt="$1">
+                  <Text fontSize="$xs" color={colors.muted_text} mt="$1">
                     Lý do: {trigger.blackout_periods.reason}
                   </Text>
                 </Box>
@@ -1269,11 +1311,15 @@ const TriggerCard = ({
           )}
 
           {/* Conditions List */}
-          <Divider bg={colors.border} />
+          <Divider bg={colors.frame_border} />
           <VStack space="xs">
             <HStack space="sm" alignItems="center">
               <FileCheck size={16} color={colors.success} strokeWidth={2} />
-              <Text fontSize="$xs" fontWeight="$semibold" color={colors.text}>
+              <Text
+                fontSize="$xs"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 Các điều kiện kích hoạt
               </Text>
             </HStack>
@@ -1293,7 +1339,7 @@ const TriggerCard = ({
           </VStack>
 
           {/* Data Cost Summary */}
-          <Divider bg={colors.border} />
+          <Divider bg={colors.frame_border} />
           <HStack
             space="sm"
             alignItems="center"
@@ -1304,7 +1350,7 @@ const TriggerCard = ({
           >
             <HStack space="xs" alignItems="center">
               <Database size={16} color={colors.info} strokeWidth={2} />
-              <Text fontSize="$xs" color={colors.textSecondary}>
+              <Text fontSize="$xs" color={colors.secondary_text}>
                 Tổng chi phí dữ liệu
               </Text>
             </HStack>
@@ -1340,7 +1386,7 @@ const ConditionItem = ({
       <HStack space="sm" alignItems="flex-start">
         {/* Number Badge */}
         <Box
-          bg={operatorColor}
+          bg={colors.primary}
           borderRadius="$full"
           w="$6"
           h="$6"
@@ -1348,7 +1394,11 @@ const ConditionItem = ({
           justifyContent="center"
           mt="$0.5"
         >
-          <Text fontSize="$2xs" fontWeight="$bold" color="#fff">
+          <Text
+            fontSize="$2xs"
+            fontWeight="$bold"
+            color={colors.primary_white_text}
+          >
             {index + 1}
           </Text>
         </Box>
@@ -1359,13 +1409,17 @@ const ConditionItem = ({
           <Box
             bg={colors.background}
             borderWidth={1}
-            borderColor={colors.border}
+            borderColor={colors.frame_border}
             borderRadius="$lg"
             p="$3"
           >
             <VStack space="xs">
               {/* Condition Summary */}
-              <Text fontSize="$sm" fontWeight="$bold" color={colors.text}>
+              <Text
+                fontSize="$sm"
+                fontWeight="$bold"
+                color={colors.primary_text}
+              >
                 {Utils.getAggregationLabel(condition.aggregation_function)}{" "}
                 {Utils.getOperatorLabel(condition.threshold_operator)}{" "}
                 {condition.threshold_value}
@@ -1374,13 +1428,13 @@ const ConditionItem = ({
               {/* Details Grid */}
               <VStack space="xs" mt="$1">
                 <HStack space="xs" alignItems="center">
-                  <Text fontSize="$xs" color={colors.textMuted}>
+                  <Text fontSize="$xs" color={colors.muted_text}>
                     Thời gian tổng hợp:
                   </Text>
                   <Text
                     fontSize="$xs"
                     fontWeight="$semibold"
-                    color={colors.text}
+                    color={colors.primary_text}
                   >
                     {condition.aggregation_window_days} ngày
                   </Text>
@@ -1406,7 +1460,7 @@ const ConditionItem = ({
                       color={colors.warning}
                       strokeWidth={2}
                     />
-                    <Text fontSize="$xs" color={colors.textSecondary}>
+                    <Text fontSize="$xs" color={colors.secondary_text}>
                       Cảnh báo sớm tại: {condition.early_warning_threshold}%
                     </Text>
                   </HStack>
@@ -1421,15 +1475,15 @@ const ConditionItem = ({
                 mt="$1"
                 pt="$2"
                 borderTopWidth={1}
-                borderTopColor={colors.border}
+                borderTopColor={colors.frame_border}
               >
                 <HStack space="xs" alignItems="center">
                   <Database
                     size={12}
-                    color={colors.textMuted}
+                    color={colors.muted_text}
                     strokeWidth={2}
                   />
-                  <Text fontSize="$2xs" color={colors.textMuted}>
+                  <Text fontSize="$2xs" color={colors.muted_text}>
                     Chi phí dữ liệu
                   </Text>
                 </HStack>
@@ -1458,7 +1512,7 @@ const ConditionItem = ({
   );
 };
 
-// 6. Important Notes Card
+// 6. Important Notes Card - ĐƠN GIẢN HÓA
 const ImportantNotesCard = ({
   policy,
   colors,
@@ -1466,28 +1520,38 @@ const ImportantNotesCard = ({
   policy: PublicBasePolicyResponse;
   colors: ColorSet;
 }) => {
-  // Kiểm tra và extract data an toàn
   const additionalInfo = policy.important_additional_information;
 
-  // Log để debug
-  console.log("Additional Info:", JSON.stringify(additionalInfo, null, 2));
+  // Nếu không có thông tin
+  if (!additionalInfo || additionalInfo.trim() === "") {
+    return (
+      <Box
+        bg={colors.card_surface}
+        borderWidth={1}
+        borderColor={colors.frame_border}
+        borderRadius="$xl"
+        p="$4"
+      >
+        <HStack space="xs" alignItems="center" justifyContent="center">
+          <Info size={16} color={colors.muted_text} strokeWidth={2} />
+          <Text fontSize="$sm" color={colors.muted_text}>
+            Không có thông tin bổ sung
+          </Text>
+        </HStack>
+      </Box>
+    );
+  }
 
-  const notes = additionalInfo?.notes || "";
-  const specialConditions =
-    (additionalInfo?.special_conditions as string[]) || [];
-
-  // Fallback: Kiểm tra cả exclusions và requirements (nếu có)
-  const exclusions = (additionalInfo?.exclusions as string[]) || [];
-  const requirements = (additionalInfo?.requirements as string[]) || [];
-
+  // Có thông tin - hiển thị trực tiếp
   return (
     <Box
-      bg={colors.card}
+      bg={colors.card_surface}
       borderWidth={2}
       borderColor={colors.warning}
       borderRadius="$xl"
       overflow="hidden"
     >
+      {/* Header */}
       <Box bg={colors.warningSoft} px="$4" py="$3">
         <HStack space="sm" alignItems="center">
           <AlertCircle size={20} color={colors.warning} strokeWidth={2} />
@@ -1497,136 +1561,12 @@ const ImportantNotesCard = ({
         </HStack>
       </Box>
 
-      <VStack space="sm" p="$4">
-        {/* Main Notes */}
-        {notes && (
-          <VStack space="xs">
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-              Lưu ý chung
-            </Text>
-            <Text fontSize="$sm" color={colors.text} lineHeight="$lg">
-              {notes}
-            </Text>
-          </VStack>
-        )}
-
-        {/* Special Conditions Section */}
-        {specialConditions.length > 0 && (
-          <>
-            {notes && <Divider bg={colors.border} my="$2" />}
-            <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                Điều kiện đặc biệt
-              </Text>
-              {specialConditions.map((condition: string, idx: number) => (
-                <HStack
-                  key={`special-${idx}`}
-                  space="xs"
-                  alignItems="flex-start"
-                >
-                  <Box mt="$0.5">
-                    <AlertCircle
-                      size={14}
-                      color={colors.warning}
-                      strokeWidth={2}
-                    />
-                  </Box>
-                  <Text
-                    fontSize="$sm"
-                    color={colors.text}
-                    flex={1}
-                    lineHeight="$md"
-                  >
-                    {condition}
-                  </Text>
-                </HStack>
-              ))}
-            </VStack>
-          </>
-        )}
-
-        {/* Exclusions Section (Fallback - nếu có) */}
-        {exclusions.length > 0 && (
-          <>
-            <Divider bg={colors.border} my="$2" />
-            <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                Các trường hợp loại trừ
-              </Text>
-              {exclusions.map((exclusion: string, idx: number) => (
-                <HStack
-                  key={`exclusion-${idx}`}
-                  space="xs"
-                  alignItems="flex-start"
-                >
-                  <Text fontSize="$sm" color={colors.error}>
-                    ✕
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    color={colors.textSecondary}
-                    flex={1}
-                    lineHeight="$md"
-                  >
-                    {exclusion}
-                  </Text>
-                </HStack>
-              ))}
-            </VStack>
-          </>
-        )}
-
-        {/* Requirements Section (Fallback - nếu có) */}
-        {requirements.length > 0 && (
-          <>
-            <Divider bg={colors.border} my="$2" />
-            <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.text}>
-                Yêu cầu bắt buộc
-              </Text>
-              {requirements.map((requirement: string, idx: number) => (
-                <HStack
-                  key={`requirement-${idx}`}
-                  space="xs"
-                  alignItems="flex-start"
-                >
-                  <CheckCircle2
-                    size={14}
-                    color={colors.success}
-                    strokeWidth={2}
-                  />
-                  <Text
-                    fontSize="$sm"
-                    color={colors.text}
-                    flex={1}
-                    lineHeight="$md"
-                  >
-                    {requirement}
-                  </Text>
-                </HStack>
-              ))}
-            </VStack>
-          </>
-        )}
-
-        {/* Empty State - Nếu không có thông tin gì */}
-        {!notes &&
-          specialConditions.length === 0 &&
-          exclusions.length === 0 &&
-          requirements.length === 0 && (
-            <HStack
-              space="xs"
-              alignItems="center"
-              justifyContent="center"
-              py="$2"
-            >
-              <Info size={16} color={colors.textMuted} strokeWidth={2} />
-              <Text fontSize="$sm" color={colors.textMuted}>
-                Không có thông tin bổ sung
-              </Text>
-            </HStack>
-          )}
-      </VStack>
+      {/* Content */}
+      <Box p="$4">
+        <Text fontSize="$sm" color={colors.primary_text} lineHeight="$lg">
+          {additionalInfo}
+        </Text>
+      </Box>
     </Box>
   );
 };
@@ -1653,9 +1593,9 @@ const InfoCard = ({
 }) => (
   <Box
     flex={flex}
-    bg={colors.card}
+    bg={colors.card_surface}
     borderWidth={1}
-    borderColor={colors.border}
+    borderColor={colors.frame_border}
     borderRadius="$xl"
     p="$3"
   >
@@ -1665,7 +1605,7 @@ const InfoCard = ({
       </Box>
       <Text
         fontSize="$2xs"
-        color={colors.textSecondary}
+        color={colors.secondary_text}
         flex={1}
         numberOfLines={2}
       >
@@ -1675,18 +1615,18 @@ const InfoCard = ({
     <Text
       fontSize="$lg"
       fontWeight="$bold"
-      color={colors.text}
+      color={colors.primary_text}
       numberOfLines={1}
     >
       {value}
     </Text>
-    <Text fontSize="$2xs" color={colors.textMuted} mt="$1" lineHeight="$xs">
+    <Text fontSize="$2xs" color={colors.muted_text} mt="$1" lineHeight="$xs">
       {subtext}
     </Text>
   </Box>
 );
 
-// Bottom CTA
+// Bottom CTA - CẬP NHẬT
 const BottomCTA = ({
   policy,
   onEnroll,
@@ -1701,9 +1641,9 @@ const BottomCTA = ({
     bottom={0}
     left={0}
     right={0}
-    bg={colors.card}
+    bg={colors.card_surface}
     borderTopWidth={1}
-    borderTopColor={colors.border}
+    borderTopColor={colors.frame_border}
     px="$4"
     py="$4"
     sx={{
@@ -1715,29 +1655,39 @@ const BottomCTA = ({
     }}
   >
     <VStack space="sm">
-      {/* Premium Display */}
+      {/* Premium & Payout Display - CẬP NHẬT */}
       <HStack justifyContent="space-between" alignItems="center">
         <VStack>
-          <Text fontSize="$xs" color={colors.textSecondary}>
+          <Text fontSize="$xs" color={colors.secondary_text}>
             Phí bảo hiểm
           </Text>
           <HStack space="xs" alignItems="baseline">
             <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
               {Utils.formatCurrency(policy.fix_premium_amount)}
             </Text>
-            <Text fontSize="$xs" color={colors.textMuted}>
+            <Text fontSize="$xs" color={colors.muted_text}>
               {policy.is_per_hectare ? "/ hecta" : ""}
             </Text>
           </HStack>
         </VStack>
 
         <VStack alignItems="flex-end">
-          <Text fontSize="$xs" color={colors.textSecondary}>
-            Bồi thường tối đa
+          <Text fontSize="$xs" color={colors.secondary_text}>
+            Bồi thường
           </Text>
-          <Text fontSize="$lg" fontWeight="$bold" color={colors.success}>
-            {Utils.formatCurrency(policy.payout_cap)}
-          </Text>
+          <VStack alignItems="flex-end" space="xs">
+            <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
+              {Utils.formatCurrency(policy.fix_payout_amount)}
+            </Text>
+            <HStack space="xs" alignItems="center">
+              <Text fontSize="$2xs" color={colors.muted_text}>
+                tối đa
+              </Text>
+              <Text fontSize="$md" fontWeight="$bold" color={colors.warning}>
+                {Utils.formatCurrency(policy.payout_cap)}
+              </Text>
+            </HStack>
+          </VStack>
         </VStack>
       </HStack>
 
@@ -1754,9 +1704,13 @@ const BottomCTA = ({
         }}
       >
         <HStack space="sm" alignItems="center">
-          <FileCheck size={22} color={colors.textWhiteButton} strokeWidth={2} />
+          <FileCheck
+            size={22}
+            color={colors.primary_white_text}
+            strokeWidth={2}
+          />
           <ButtonText
-            color={colors.textWhiteButton}
+            color={colors.primary_white_text}
             fontWeight="$bold"
             fontSize="$md"
           >
@@ -1825,3 +1779,4 @@ const StatusBadge = ({
     </Badge>
   );
 };
+

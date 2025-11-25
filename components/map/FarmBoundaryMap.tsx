@@ -336,10 +336,10 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
           <AlertCircle size={48} color={colors.secondary_text} strokeWidth={1.5} />
           <VStack space="xs" alignItems="center">
             <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
-              Chưa có thông tin ranh giới
+              Có lỗi khi tải bản đồ
             </Text>
             <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
-              Vui lòng nhập tọa độ ranh giới nông trại
+              Vui lòng nhập tọa độ trang trại. Nếu lỗi còn xảy ra, hãy liên hệ bộ phận hỗ trợ.
             </Text>
           </VStack>
         </VStack>

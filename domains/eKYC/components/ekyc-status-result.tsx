@@ -1,4 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import useAuthMe from "@/domains/auth/hooks/use-auth-me";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import {
@@ -21,6 +22,7 @@ import {
   IdCard,
   RefreshCw,
   ScanFace,
+  UserCheck,
   XCircle,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
@@ -32,27 +34,41 @@ export default function EKYCStatusResultScreen() {
   const [isRefetching, setIsRefetching] = useState(false);
 
   const { geteKYCStatusQuery } = useEkyc();
+  const { data: meData, refetch: refetchMe } = useAuthMe();
 
   // ✅ Thêm refetch function từ React Query
   const {
     data,
     isLoading,
     isError,
-    refetch, // 🔥 QUAN TRỌNG: Thêm refetch
-    dataUpdatedAt, // 🔥 Track thời gian update
+    refetch,
+    dataUpdatedAt,
   } = geteKYCStatusQuery(user?.id || "");
 
   const ekycData = data && "data" in data ? data.data : null;
+  const userData = meData;
+
+  // Kiểm tra bước 1: Định danh tài khoản từ /me
+  const isAccountIdentified = !!(
+    userData?.full_name &&
+    userData?.phone_number &&
+    userData?.email
+  );
+
   const isOCRDone = ekycData?.is_ocr_done || false;
   const isFaceVerified = ekycData?.is_face_verified || false;
-  const isFullyVerified = isOCRDone && isFaceVerified;
+  
+  // 3 bước: Account ID + OCR + Face
+  const isFullyVerified = isAccountIdentified && isOCRDone && isFaceVerified;
+  const completedSteps = (isAccountIdentified ? 1 : 0) + (isOCRDone ? 1 : 0) + (isFaceVerified ? 1 : 0);
+  const totalSteps = 3;
 
   // 🔥 NEW: Hàm manual refresh với loading state
   const handleManualRefresh = async () => {
     console.log("🔄 [eKYC Status] Manual refresh triggered");
     setIsRefetching(true);
     try {
-      await refetch();
+      await Promise.all([refetch(), refetchMe()]);
       console.log("✅ [eKYC Status] Manual refresh thành công");
     } catch (error) {
       console.error("❌ [eKYC Status] Manual refresh failed:", error);
@@ -66,6 +82,7 @@ export default function EKYCStatusResultScreen() {
     console.log("🚀 [eKYC Status] Component mounted - Auto fetching...");
     if (user?.id) {
       refetch();
+      refetchMe();
     }
   }, [user?.id]);
 
@@ -80,7 +97,7 @@ export default function EKYCStatusResultScreen() {
       const refreshOnFocus = async () => {
         if (user?.id) {
           try {
-            await refetch();
+            await Promise.all([refetch(), refetchMe()]);
             console.log("✅ [eKYC Status] Auto-refresh on focus thành công");
           } catch (error) {
             console.error(
@@ -130,16 +147,19 @@ export default function EKYCStatusResultScreen() {
   useEffect(() => {
     if (ekycData) {
       console.log("📊 [eKYC Status] Data updated:", {
+        isAccountIdentified,
         isOCRDone,
         isFaceVerified,
         isFullyVerified,
+        completedSteps,
+        totalSteps,
         cicNo: ekycData.cic_no,
         ocrDoneAt: ekycData.ocr_done_at,
         faceVerifiedAt: ekycData.face_verified_at,
         dataUpdatedAt: new Date(dataUpdatedAt).toLocaleString("vi-VN"),
       });
     }
-  }, [dataUpdatedAt, ekycData]);
+  }, [dataUpdatedAt, ekycData, userData]);
 
   // ✅ Early returns sau khi tất cả hooks đã được gọi
   if (isLoading && !ekycData) {
@@ -247,12 +267,18 @@ export default function EKYCStatusResultScreen() {
           {/* Description */}
           <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
             {isFullyVerified
-              ? "Bạn đã hoàn tất cả 2 bước xác thực"
-              : `Bạn đã hoàn tất ${(isOCRDone ? 1 : 0) + (isFaceVerified ? 1 : 0)}/2 bước`}
+              ? `Bạn đã hoàn tất cả ${totalSteps} bước xác thực`
+              : `Bạn đã hoàn tất ${completedSteps}/${totalSteps} bước`}
           </Text>
 
-          {/* Progress Dots */}
+          {/* Progress Dots - 3 steps */}
           <HStack space="sm" mt="$2">
+            <Box
+              w={10}
+              h={10}
+              borderRadius="$full"
+              bg={isAccountIdentified ? colors.success : colors.frame_border}
+            />
             <Box
               w={10}
               h={10}
@@ -267,16 +293,128 @@ export default function EKYCStatusResultScreen() {
             />
           </HStack>
         </VStack>
-
+        {/* CCCD Number - Simple */}
+        {ekycData?.cic_no && (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$xl"
+            p="$3"
+            mt="$2"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+          >
+            <HStack space="xs" alignItems="center" justifyContent="center">
+              <Text fontSize="$xs" color={colors.secondary_text}>
+                Số CCCD:
+              </Text>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
+                {ekycData.cic_no}
+              </Text>
+            </HStack>
+          </Box>
+        )}
         {/* Step Cards - Simple */}
-        <VStack space="md" mt="$4">
-          {/* Step 1: CCCD */}
+        <VStack space="md">
+          {/* Step 1: Account Identification */}
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$xl"
+            p="$4"
+            borderWidth={1}
+            borderColor={
+              isAccountIdentified ? colors.success : colors.frame_border
+            }
+          >
+            <HStack space="md" alignItems="center" mb="$3">
+              <Box
+                bg={isAccountIdentified ? colors.success : colors.primary}
+                borderRadius="$full"
+                p="$2.5"
+                w={40}
+                h={40}
+                alignItems="center"
+                justifyContent="center"
+              >
+                <UserCheck
+                  size={20}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+              </Box>
+
+              <VStack flex={1}>
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Định danh tài khoản
+                </Text>
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  Thông tin cơ bản
+                </Text>
+              </VStack>
+
+              {isAccountIdentified && (
+                <Box
+                  w={24}
+                  h={24}
+                  borderRadius="$full"
+                  bg={colors.successSoft}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <CheckCircle2
+                    size={16}
+                    color={colors.success}
+                    strokeWidth={3}
+                  />
+                </Box>
+              )}
+            </HStack>
+
+            {isAccountIdentified && userData && (
+              <VStack space="xs" mt="$1">
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  ✓ {userData.full_name}
+                </Text>
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  ✓ {userData.phone_number}
+                </Text>
+              </VStack>
+            )}
+
+            {!isAccountIdentified && (
+              <Button
+                mt="$3"
+                bg={colors.primary}
+                borderRadius="$lg"
+                onPress={() => router.push("/edit-profile")}
+                h="$11"
+              >
+                <ButtonText
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_white_text}
+                >
+                  Cập nhật thông tin
+                </ButtonText>
+              </Button>
+            )}
+          </Box>
+
+          {/* Step 2: CCCD */}
           <Box
             bg={colors.card_surface}
             borderRadius="$xl"
             p="$4"
             borderWidth={1}
             borderColor={isOCRDone ? colors.success : colors.frame_border}
+            opacity={isAccountIdentified ? 1 : 0.6}
           >
             <HStack space="md" alignItems="center" mb="$3">
               <Box
@@ -301,7 +439,7 @@ export default function EKYCStatusResultScreen() {
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Chụp CCCD
+                  Xác thực CCCD
                 </Text>
                 <Text fontSize="$xs" color={colors.secondary_text}>
                   Chụp 2 mặt căn cước
@@ -336,7 +474,25 @@ export default function EKYCStatusResultScreen() {
               </Text>
             )}
 
-            {!isOCRDone && (
+            {!isOCRDone && !isAccountIdentified && (
+              <Box
+                bg={colors.warningSoft}
+                borderRadius="$lg"
+                p="$2.5"
+                mt="$3"
+                borderWidth={1}
+                borderColor={colors.warning}
+              >
+                <HStack space="xs" alignItems="center">
+                  <AlertCircle size={14} color={colors.warning} />
+                  <Text fontSize="$xs" color={colors.warning}>
+                    Vui lòng định danh tài khoản trước
+                  </Text>
+                </HStack>
+              </Box>
+            )}
+
+            {!isOCRDone && isAccountIdentified && (
               <Button
                 mt="$3"
                 bg={colors.primary}
@@ -355,14 +511,14 @@ export default function EKYCStatusResultScreen() {
             )}
           </Box>
 
-          {/* Step 2: Face */}
+          {/* Step 3: Face */}
           <Box
             bg={colors.card_surface}
             borderRadius="$xl"
             p="$4"
             borderWidth={1}
             borderColor={isFaceVerified ? colors.success : colors.frame_border}
-            opacity={isOCRDone ? 1 : 0.6}
+            opacity={isAccountIdentified && isOCRDone ? 1 : 0.6}
           >
             <HStack space="md" alignItems="center" mb="$3">
               <Box
@@ -387,7 +543,7 @@ export default function EKYCStatusResultScreen() {
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Quét khuôn mặt
+                  Xác thực khuôn mặt
                 </Text>
                 <Text fontSize="$xs" color={colors.secondary_text}>
                   So khớp với ảnh CCCD
@@ -422,7 +578,7 @@ export default function EKYCStatusResultScreen() {
               </Text>
             )}
 
-            {!isFaceVerified && !isOCRDone && (
+            {!isFaceVerified && (!isAccountIdentified || !isOCRDone) && (
               <Box
                 bg={colors.warningSoft}
                 borderRadius="$lg"
@@ -434,13 +590,15 @@ export default function EKYCStatusResultScreen() {
                 <HStack space="xs" alignItems="center">
                   <AlertCircle size={14} color={colors.warning} />
                   <Text fontSize="$xs" color={colors.warning}>
-                    Vui lòng chụp CCCD trước
+                    {!isAccountIdentified
+                      ? "Vui lòng định danh tài khoản trước"
+                      : "Vui lòng xác thực CCCD trước"}
                   </Text>
                 </HStack>
               </Box>
             )}
 
-            {!isFaceVerified && isOCRDone && (
+            {!isFaceVerified && isAccountIdentified && isOCRDone && (
               <Button
                 mt="$3"
                 bg={colors.primary}
@@ -478,31 +636,6 @@ export default function EKYCStatusResultScreen() {
             >
               Về trang chủ sau {countdown}s
             </Text>
-          </Box>
-        )}
-
-        {/* CCCD Number - Simple */}
-        {ekycData?.cic_no && (
-          <Box
-            bg={colors.card_surface}
-            borderRadius="$xl"
-            p="$3"
-            mt="$2"
-            borderWidth={1}
-            borderColor={colors.frame_border}
-          >
-            <HStack space="xs" alignItems="center" justifyContent="center">
-              <Text fontSize="$xs" color={colors.secondary_text}>
-                Số CCCD:
-              </Text>
-              <Text
-                fontSize="$sm"
-                fontWeight="$semibold"
-                color={colors.primary_text}
-              >
-                {ekycData.cic_no}
-              </Text>
-            </HStack>
           </Box>
         )}
 

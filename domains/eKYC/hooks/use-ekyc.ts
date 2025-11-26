@@ -38,10 +38,10 @@ export const useEkyc = () => {
     },
     onSuccess: async (data: any) => {
       toast.success("Xác thực khuôn mặt thành công");
-      router.push("/settings/verify/ekyc-status");
+      router.push("/settings/verify/status");
     },
     onError: (error) => {
-      router.push("/settings/verify/ekyc-status");
+      router.push("/settings/verify/status");
       toast.error("Xác thực khuôn mặt thất bại");
       console.error(error);
     },

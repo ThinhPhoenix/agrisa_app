@@ -23,12 +23,12 @@ import {
 import { useMemo, useState } from "react";
 import { RefreshControl } from "react-native";
 
-type HistoryStatus = "rejected" | "pending" | "approved" | "all";
+type HistoryStatus = "rejected" | "pending" | "active" | "all";
 
 const STATUS_TABS: { key: HistoryStatus; label: string }[] = [
   { key: "all", label: "Tất cả" },
   { key: "pending", label: "Chờ duyệt" },
-  { key: "approved", label: "Chấp thuận" },
+  { key: "active", label: "Chấp thuận" },
   { key: "rejected", label: "Từ chối" },
 ];
 
@@ -47,21 +47,11 @@ export default function PolicyHistoryScreen() {
 
     switch (activeTab) {
       case "pending":
-        return policies.filter(
-          (p) =>
-            p.status === "pending_review" || p.underwriting_status === "pending"
-        );
-      case "approved":
-        return policies.filter(
-          (p) => p.status === "active" || p.underwriting_status === "approved"
-        );
+        return policies.filter((p) => p.underwriting_status === "pending");
+      case "active":
+        return policies.filter((p) => p.underwriting_status === "active");
       case "rejected":
-        return policies.filter(
-          (p) =>
-            p.status === "rejected" ||
-            p.status === "cancelled" ||
-            p.underwriting_status === "rejected"
-        );
+        return policies.filter((p) => p.underwriting_status === "rejected");
       case "all":
       default:
         return policies;
@@ -75,28 +65,24 @@ export default function PolicyHistoryScreen() {
     }
 
     const policies = data.data.policies;
-    
+
     return {
       all: policies.length,
       pending: policies.filter(
-        (p: RegisteredPolicy) =>
-          p.status === "pending_review" || p.underwriting_status === "pending"
+        (p: RegisteredPolicy) => p.underwriting_status === "pending"
       ).length,
       approved: policies.filter(
-        (p: RegisteredPolicy) => p.status === "active" || p.underwriting_status === "approved"
+        (p: RegisteredPolicy) => p.underwriting_status === "active"
       ).length,
       rejected: policies.filter(
-        (p: RegisteredPolicy) =>
-          p.status === "rejected" ||
-          p.status === "cancelled" ||
-          p.underwriting_status === "rejected"
+        (p: RegisteredPolicy) => p.underwriting_status === "rejected"
       ).length,
     };
   }, [data]);
 
   const getStatusIcon = (status: HistoryStatus) => {
     switch (status) {
-      case "approved":
+      case "active":
         return CheckCircle2;
       case "pending":
         return Clock;
@@ -109,7 +95,7 @@ export default function PolicyHistoryScreen() {
 
   const getStatusColor = (status: HistoryStatus) => {
     switch (status) {
-      case "approved":
+      case "active":
         return colors.success;
       case "pending":
         return colors.pending;
@@ -122,7 +108,7 @@ export default function PolicyHistoryScreen() {
 
   const getEmptyMessage = (status: HistoryStatus) => {
     switch (status) {
-      case "approved":
+      case "active":
         return "Chưa có đăng ký bảo hiểm nào được chấp thuận";
       case "pending":
         return "Chưa có đăng ký bảo hiểm nào đang chờ duyệt";

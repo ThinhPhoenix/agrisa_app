@@ -1,6 +1,6 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
-import { AuthUser } from "@/domains/auth/models/auth.models";
+import { AuthUser, UserProfile } from "@/domains/auth/models/auth.models";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import { useToast } from "@/domains/shared/hooks/useToast";
@@ -41,13 +41,21 @@ import { RefreshControl, ScrollView, Share, View } from "react-native";
  * - Pull-to-refresh
  */
 export default function ProfileScreen() {
-  const { user: storeUser, logout } = useAuthStore();
+  const {
+    user: storeUser,
+    userProfile: storeUserProfile,
+    logout,
+    fetchUserProfile,
+  } = useAuthStore();
   const { toast } = useToast();
   const { colors, isDark } = useAgrisaColors();
   const { toggleTheme } = useThemeStore();
   const { geteKYCStatusQuery } = useEkyc();
 
   const [user, setUser] = useState<AuthUser | null>(storeUser);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(
+    storeUserProfile
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isRefreshingRef = useRef(false);
@@ -68,9 +76,30 @@ export default function ProfileScreen() {
   const loadUserData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const userData = await secureStorage.getUser();
+      const [userData, profileData] = await Promise.all([
+        secureStorage.getUser(),
+        secureStorage.getUserProfile(),
+      ]);
+
       if (userData) {
         setUser(userData);
+      }
+
+      if (profileData) {
+        setUserProfile(profileData);
+      } else if (userData) {
+        // Nếu chưa có profile, thử fetch từ /me
+        try {
+          await fetchUserProfile();
+          const newProfile = await secureStorage.getUserProfile();
+          if (newProfile) {
+            setUserProfile(newProfile);
+          }
+        } catch (error) {
+          console.log(
+            "⚠️ [Profile] Không thể tải profile chi tiết, dùng dữ liệu cơ bản"
+          );
+        }
       }
     } catch (error) {
       console.error("❌ [Profile] Lỗi load user:", error);
@@ -78,7 +107,7 @@ export default function ProfileScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, fetchUserProfile]);
 
   // Refs for stable function references
   const loadUserDataRef = useRef(loadUserData);
@@ -318,7 +347,11 @@ export default function ProfileScreen() {
                     fontWeight="$bold"
                     color={colors.primary_text}
                   >
-                    {user?.email.split("@")[0]}
+                    {/* ✅ ƯU TIÊN: display_name/full_name từ UserProfile */}
+                    {userProfile?.display_name ||
+                      userProfile?.full_name ||
+                      user?.email?.split("@")[0] ||
+                      "Người dùng"}
                   </Text>
 
                   {/* Chấm trạng thái xác thực */}
@@ -496,7 +529,8 @@ export default function ProfileScreen() {
                         fontWeight="$semibold"
                         color={colors.primary_text}
                       >
-                        {user?.email}
+                        {/* ✅ ƯU TIÊN: email từ UserProfile */}
+                        {userProfile?.email || user?.email || "Chưa cập nhật"}
                       </Text>
                     </VStack>
 
@@ -548,12 +582,15 @@ export default function ProfileScreen() {
                         fontSize="$sm"
                         fontWeight="$semibold"
                         color={
-                          user?.phone_number
+                          userProfile?.primary_phone || user?.phone_number
                             ? colors.primary_text
                             : colors.muted_text
                         }
                       >
-                        {user?.phone_number || "Chưa cập nhật"}
+                        {/* ✅ ƯU TIÊN: phone từ UserProfile */}
+                        {userProfile?.primary_phone ||
+                          user?.phone_number ||
+                          "Chưa cập nhật"}
                       </Text>
                     </VStack>
 
@@ -657,7 +694,7 @@ export default function ProfileScreen() {
             <Box bg="$coolGray100" p="$3" borderRadius="$md">
               <Text fontSize="$xs" color="$coolGray600" fontFamily="$mono">
                 🐛 Debug Info
-                {"\n"}• User ID: {user?.id}
+                {"\n"}• User ID: {userProfile?.user_id || user?.id}
                 {"\n"}• Status: {user?.status}
                 {"\n"}• KYC Verified: {user?.kyc_verified ? "✅" : "❌"}
                 {"\n"}• Phone Verified: {user?.phone_verified ? "✅" : "❌"}

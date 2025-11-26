@@ -1,15 +1,16 @@
 import useAxios from "@/config/useAxios.config";
+import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useQuery } from "@tanstack/react-query";
 
 const useAuthMe = () => {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["auth-me"],
+    queryKey: [QueryKey.AUTH.ME],
     queryFn: async () => {
       const response = await useAxios.get("/auth/me");
-      return response.data; // Giả sử API trả về { user: {...} } hoặc trực tiếp user object
+      return response.data;
     },
-    enabled: false, // Không auto-run, sẽ trigger thủ công
-    retry: 1, // Retry 1 lần nếu lỗi
+    enabled: false,
+    retry: 1,
   });
 
   return { data, isLoading, error, refetch };

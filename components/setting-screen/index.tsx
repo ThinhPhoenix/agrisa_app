@@ -37,13 +37,18 @@ export default function SettingsScreen() {
     const router = useRouter();
     const { notifications, toggleNotification } = useSettingsStore();
 
-    const { user, refreshAuth, enableBiometric, disableBiometric } =
-        useAuthStore();
+    const {
+      user,
+      userProfile,
+      refreshAuth,
+      enableBiometric,
+      disableBiometric,
+    } = useAuthStore();
 
     const [biometricType, setBiometricType] = useState<string>("Face ID");
     const [hasBiometric, setHasBiometric] = useState(false);
     const [isBiometricEnabledForAccount, setIsBiometricEnabledForAccount] =
-        useState(false);
+      useState(false);
     const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     // ✅ State cho custom modal (Android)
@@ -53,139 +58,124 @@ export default function SettingsScreen() {
     // 🔄 REFRESH USER DATA KHI VÀO SCREEN
     // ============================================
     useFocusEffect(
-        useCallback(() => {
-            console.log(
-                "🔄 [Settings] Screen focused, refreshing user data..."
-            );
-            loadUserData();
-        }, [])
+      useCallback(() => {
+        console.log("🔄 [Settings] Screen focused, refreshing user data...");
+        loadUserData();
+      }, [])
     );
 
     const loadUserData = async () => {
-        try {
-            setIsLoadingUser(true);
-            console.log("📱 [Settings] Loading user data...");
+      try {
+        setIsLoadingUser(true);
+        console.log("📱 [Settings] Loading user data...");
 
-            // ✅ Refresh auth từ SecureStore
-            await refreshAuth();
+        // ✅ Refresh auth từ SecureStore
+        await refreshAuth();
 
-            // ✅ Lấy user mới nhất từ store
-            const currentUser = useAuthStore.getState().user;
-            console.log(
-                "👤 [Settings] Current user after refresh:",
-                currentUser
-            );
+        // ✅ Lấy user mới nhất từ store
+        const currentUser = useAuthStore.getState().user;
+        console.log("👤 [Settings] Current user after refresh:", currentUser);
 
-            if (currentUser) {
-                console.log("✅ [Settings] User found:", {
-                    id: currentUser.id,
-                    email: currentUser.email,
-                    phone: currentUser.phone_number,
-                });
-            } else {
-                console.log("⚠️ [Settings] No user found after refresh");
-            }
-        } catch (error) {
-            console.error("❌ [Settings] Error loading user data:", error);
-        } finally {
-            setIsLoadingUser(false);
+        if (currentUser) {
+          console.log("✅ [Settings] User found:", {
+            id: currentUser.id,
+            email: currentUser.email,
+            phone: currentUser.phone_number,
+          });
+        } else {
+          console.log("⚠️ [Settings] No user found after refresh");
         }
+      } catch (error) {
+        console.error("❌ [Settings] Error loading user data:", error);
+      } finally {
+        setIsLoadingUser(false);
+      }
     };
 
     // ============================================
     // 🔍 CHECK BIOMETRIC AVAILABILITY & STATUS
     // ============================================
     useEffect(() => {
-        checkBiometricAvailability();
+      checkBiometricAvailability();
     }, []);
 
     useEffect(() => {
-        if (user && !isLoadingUser) {
-            console.log(
-                "✅ [Settings] User available, checking biometric status"
-            );
-            checkBiometricStatus();
-        }
+      if (user && !isLoadingUser) {
+        console.log("✅ [Settings] User available, checking biometric status");
+        checkBiometricStatus();
+      }
     }, [user, isLoadingUser]);
 
     const checkBiometricAvailability = async () => {
-        try {
-            const compatible = await LocalAuthentication.hasHardwareAsync();
-            const enrolled = await LocalAuthentication.isEnrolledAsync();
-            setHasBiometric(compatible && enrolled);
+      try {
+        const compatible = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+        setHasBiometric(compatible && enrolled);
 
-            console.log("📱 [Settings] Biometric hardware check:", {
-                compatible,
-                enrolled,
-                available: compatible && enrolled,
-            });
+        console.log("📱 [Settings] Biometric hardware check:", {
+          compatible,
+          enrolled,
+          available: compatible && enrolled,
+        });
 
-            if (compatible) {
-                const types =
-                    await LocalAuthentication.supportedAuthenticationTypesAsync();
-                if (
-                    types.includes(
-                        LocalAuthentication.AuthenticationType
-                            .FACIAL_RECOGNITION
-                    )
-                ) {
-                    setBiometricType("Face ID");
-                } else if (
-                    types.includes(
-                        LocalAuthentication.AuthenticationType.FINGERPRINT
-                    )
-                ) {
-                    setBiometricType("Vân tay");
-                } else {
-                    setBiometricType("Sinh trắc học");
-                }
-            }
-        } catch (error) {
-            console.error("❌ [Settings] Lỗi check biometric:", error);
+        if (compatible) {
+          const types =
+            await LocalAuthentication.supportedAuthenticationTypesAsync();
+          if (
+            types.includes(
+              LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+            )
+          ) {
+            setBiometricType("Face ID");
+          } else if (
+            types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
+          ) {
+            setBiometricType("Vân tay");
+          } else {
+            setBiometricType("Sinh trắc học");
+          }
         }
+      } catch (error) {
+        console.error("❌ [Settings] Lỗi check biometric:", error);
+      }
     };
 
     const checkBiometricStatus = async () => {
-        try {
-            if (!user) {
-                console.log(
-                    "⚠️ [Settings] No user found in checkBiometricStatus"
-                );
-                return;
-            }
-
-            const identifier = user.email || user.phone_number;
-            if (!identifier) {
-                console.log("⚠️ [Settings] No identifier found");
-                return;
-            }
-
-            // ✅ Lấy device ID để debug
-            const deviceId = await secureStorage.getDeviceId();
-            console.log("📱 [Settings] Device ID:", deviceId);
-            console.log(
-                "👤 [Settings] Checking biometric for identifier:",
-                identifier
-            );
-
-            const enabled = await secureStorage.isBiometricEnabled(identifier);
-            setIsBiometricEnabledForAccount(enabled);
-
-            console.log(
-                `✅ [Settings] Biometric status for ${identifier}:`,
-                enabled
-            );
-
-            // ✅ Kiểm tra password có tồn tại không
-            const hasPassword =
-                await secureStorage.getBiometricPassword(identifier);
-            console.log(`🔑 [Settings] Has saved password:`, !!hasPassword);
-        } catch (error) {
-            console.error(
-                "❌ [Settings] Error checking biometric status:",
-                error
-            );
+      try {
+        if (!user) {
+          console.log("⚠️ [Settings] No user found in checkBiometricStatus");
+          return;
         }
+
+        const identifier = user.email || user.phone_number;
+        if (!identifier) {
+          console.log("⚠️ [Settings] No identifier found");
+          return;
+        }
+
+        // ✅ Lấy device ID để debug
+        const deviceId = await secureStorage.getDeviceId();
+        console.log("📱 [Settings] Device ID:", deviceId);
+        console.log(
+          "👤 [Settings] Checking biometric for identifier:",
+          identifier
+        );
+
+        const enabled = await secureStorage.isBiometricEnabled(identifier);
+        setIsBiometricEnabledForAccount(enabled);
+
+        console.log(
+          `✅ [Settings] Biometric status for ${identifier}:`,
+          enabled
+        );
+
+        // ✅ Kiểm tra password có tồn tại không
+        const hasPassword =
+          await secureStorage.getBiometricPassword(identifier);
+        console.log(`🔑 [Settings] Has saved password:`, !!hasPassword);
+      } catch (error) {
+        console.error("❌ [Settings] Error checking biometric status:", error);
+      }
     };
 
     // ============================================
@@ -195,65 +185,60 @@ export default function SettingsScreen() {
     /**
      * ✅ Xử lý enable biometric sau khi nhập password
      */
-    const handleEnableBiometricWithPassword = async (password: string) => {
-        console.log(
-            "🔑 [Settings] Password received, length:",
-            password?.length
+    const handleEnableBiometricWithPassword = async (password?: string) => {
+      console.log("🔑 [Settings] Password received, length:", password?.length);
+
+      if (!password || password.trim().length === 0) {
+        console.log("⚠️ [Settings] Empty password");
+        Alert.alert("Lỗi", "Vui lòng nhập mật khẩu");
+        return;
+      }
+
+      try {
+        console.log("👆 [Settings] Requesting biometric authentication...");
+
+        // Xác thực biometric trước
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: `Đăng nhập bằng ${biometricType}`,
+          fallbackLabel: "Hủy",
+        });
+
+        console.log("👆 [Settings] Biometric auth result:", result.success);
+
+        if (result.success) {
+          console.log("✅ [Settings] Calling enableBiometric...");
+
+          // Enable biometric trong auth store
+          await enableBiometric(password);
+
+          // Cập nhật UI state
+          setIsBiometricEnabledForAccount(true);
+
+          const identifier = user!.email || user!.phone_number;
+          const verified = await secureStorage.isBiometricEnabled(identifier!);
+          console.log(
+            "✅ [Settings] Biometric enabled successfully, verified:",
+            verified
+          );
+
+          Alert.alert("Thành công", `Đã bật xác thực ${biometricType}`);
+        } else {
+          console.log("❌ [Settings] Biometric authentication failed");
+          Alert.alert("Thất bại", "Xác thực không thành công");
+        }
+      } catch (error: any) {
+        console.error("❌ [Settings] Error enabling biometric:", error);
+        console.error("❌ [Settings] Error details:", {
+          message: error.message,
+          code: error.code,
+          stack: error.stack,
+        });
+
+        Alert.alert(
+          "Lỗi",
+          error.message || "Không thể kích hoạt " + biometricType
         );
-
-        if (!password) {
-            console.log("⚠️ [Settings] Empty password");
-            Alert.alert("Lỗi", "Vui lòng nhập mật khẩu");
-            return;
-        }
-
-        try {
-            console.log("👆 [Settings] Requesting biometric authentication...");
-
-            // Xác thực biometric trước
-            const result = await LocalAuthentication.authenticateAsync({
-                promptMessage: `Đăng nhập bằng ${biometricType}`,
-                fallbackLabel: "Hủy",
-            });
-
-            console.log("👆 [Settings] Biometric auth result:", result.success);
-
-            if (result.success) {
-                console.log("✅ [Settings] Calling enableBiometric...");
-
-                // Enable biometric trong auth store
-                await enableBiometric(password);
-
-                // Cập nhật UI state
-                setIsBiometricEnabledForAccount(true);
-
-                const identifier = user!.email || user!.phone_number;
-                const verified = await secureStorage.isBiometricEnabled(
-                    identifier!
-                );
-                console.log(
-                    "✅ [Settings] Biometric enabled successfully, verified:",
-                    verified
-                );
-
-                Alert.alert("Thành công", `Đã bật xác thực ${biometricType}`);
-            } else {
-                console.log("❌ [Settings] Biometric authentication failed");
-                Alert.alert("Thất bại", "Xác thực không thành công");
-            }
-        } catch (error: any) {
-            console.error("❌ [Settings] Error enabling biometric:", error);
-            console.error("❌ [Settings] Error details:", {
-                message: error.message,
-                code: error.code,
-                stack: error.stack,
-            });
-
-            Alert.alert(
-                "Lỗi",
-                error.message || "Không thể kích hoạt " + biometricType
-            );
-        }
+      }
     };
 
     const handleToggleBiometric = async () => {

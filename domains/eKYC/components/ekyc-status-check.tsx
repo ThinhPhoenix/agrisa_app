@@ -13,6 +13,7 @@ import { CheckCircle, IdCard, ScanFace, User } from "lucide-react-native";
 import React from "react";
 import { ScrollView } from "react-native";
 import { useEkyc } from "../hooks/use-ekyc";
+import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 
 /**
  * 🎯 Component hiển thị tiến trình xác thực eKYC
@@ -63,12 +64,13 @@ const StepIcon: React.FC<StepIconProps> = ({
 
 export const EKYCStatusCheck: React.FC = () => {
   const { colors } = useAgrisaColors();
-  const { user } = useAuthStore();
+  const { userId } = useUserInfo();
   const { geteKYCStatusQuery } = useEkyc();
   const { data: meData, refetch: refetchMe } = useAuthMe();
 
-  // Fetch eKYC status
-  const { data, isLoading, isError } = geteKYCStatusQuery(user?.id || "");
+    // Fetch eKYC status
+    
+  const { data, isLoading, isError } = geteKYCStatusQuery(userId || "");
 
   const ekycData = data?.data;
   const userData = meData;

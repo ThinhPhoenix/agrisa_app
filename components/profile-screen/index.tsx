@@ -17,6 +17,9 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import {
+  BadgeAlert,
+  BadgeCheck,
+  BadgeX,
   CheckCircle,
   ChevronRight,
   Edit,
@@ -24,6 +27,7 @@ import {
   Mail,
   Phone,
   Shield,
+  User,
   UserCircle,
 } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
@@ -193,7 +197,7 @@ export default function ProfileScreen() {
         text: "Bắt đầu xác thực",
         route: "/settings/verify/id-scan",
         disabled: false,
-        icon: Shield,
+        icon: BadgeX,
       };
     }
 
@@ -202,7 +206,7 @@ export default function ProfileScreen() {
         text: "Đã xác thực",
         route: null,
         disabled: true,
-        icon: CheckCircle,
+        icon: BadgeCheck,
       };
     }
 
@@ -211,7 +215,7 @@ export default function ProfileScreen() {
         text: "Tiếp tục xác thực khuôn mặt",
         route: "/settings/verify/face-scan",
         disabled: false,
-        icon: Shield,
+        icon: BadgeAlert,
       };
     }
 
@@ -219,7 +223,7 @@ export default function ProfileScreen() {
       text: "Bắt đầu xác thực",
       route: "/settings/verify/id-scan",
       disabled: false,
-      icon: Shield,
+      icon: BadgeX,
     };
   };
 
@@ -352,24 +356,7 @@ export default function ProfileScreen() {
                       userProfile?.full_name ||
                       user?.email?.split("@")[0] ||
                       "Người dùng"}
-                  </Text>
-
-                  {/* Chấm trạng thái xác thực */}
-                  <Box
-                    w={10}
-                    h={10}
-                    borderRadius="$full"
-                    bg={
-                      ekycStatus?.is_ocr_done && ekycStatus?.is_face_verified
-                        ? colors.success
-                        : ekycStatus?.is_ocr_done &&
-                            !ekycStatus?.is_face_verified
-                          ? colors.warning
-                          : colors.error
-                    }
-                    borderWidth={2}
-                    borderColor={colors.background}
-                  />
+                  </Text>                  
                 </HStack>
               </VStack>
             </VStack>
@@ -430,7 +417,7 @@ export default function ProfileScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("/edit-profile")}
+                onPress={() => router.push("/settings/profile")}
                 style={{ flex: 1 }}
               >
                 <Box
@@ -446,7 +433,7 @@ export default function ProfileScreen() {
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Edit
+                    <User
                       size={18}
                       color={colors.secondary_text}
                       strokeWidth={2.5}
@@ -456,168 +443,13 @@ export default function ProfileScreen() {
                       fontWeight="$bold"
                       color={colors.secondary_text}
                     >
-                      Chỉnh sửa
+                      Trang cá nhân
                     </Text>
                   </HStack>
                 </Box>
               </Pressable>
             </HStack>
           </Box>
-
-          {/* ============================================ */}
-          {/* 📞 THÔNG TIN CÁ NHÂN */}
-          {/* ============================================ */}
-          <Pressable onPress={() => router.push("/settings/profile")}>
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$2xl"
-              p="$5"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <HStack
-                alignItems="center"
-                justifyContent="space-between"
-                mb="$4"
-              >
-                <Text
-                  fontSize="$lg"
-                  fontWeight="$bold"
-                  color={colors.primary_text}
-                >
-                  Thông tin cá nhân
-                </Text>
-                <ChevronRight size={20} color={colors.muted_text} />
-              </HStack>
-
-              <VStack space="sm">
-                {/* Email Card */}
-                <Box
-                  bg={colors.background}
-                  borderRadius="$xl"
-                  p="$4"
-                  borderWidth={1}
-                  borderColor={colors.frame_border}
-                >
-                  <HStack space="md" alignItems="center">
-                    <Box
-                      bg={colors.primary}
-                      borderRadius="$full"
-                      p="$2.5"
-                      w={40}
-                      h={40}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Mail
-                        size={20}
-                        color={colors.primary_white_text}
-                        strokeWidth={2.5}
-                      />
-                    </Box>
-
-                    <VStack flex={1} space="xs">
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$medium"
-                        color={colors.muted_text}
-                      >
-                        Địa chỉ email
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        {/* ✅ ƯU TIÊN: email từ UserProfile */}
-                        {userProfile?.email || user?.email || "Chưa cập nhật"}
-                      </Text>
-                    </VStack>
-
-                    <Box
-                      w={10}
-                      h={10}
-                      borderRadius="$full"
-                      bg={colors.success}
-                      borderWidth={2}
-                      borderColor={colors.background}
-                    />
-                  </HStack>
-                </Box>
-
-                {/* Phone Card */}
-                <Box
-                  bg={colors.background}
-                  borderRadius="$xl"
-                  p="$4"
-                  borderWidth={1}
-                  borderColor={colors.frame_border}
-                >
-                  <HStack space="md" alignItems="center">
-                    <Box
-                      bg={colors.primary}
-                      borderRadius="$full"
-                      p="$2.5"
-                      w={40}
-                      h={40}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Phone
-                        size={20}
-                        color={colors.primary_white_text}
-                        strokeWidth={2.5}
-                      />
-                    </Box>
-
-                    <VStack flex={1} space="xs">
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$medium"
-                        color={colors.muted_text}
-                      >
-                        Số điện thoại
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={
-                          userProfile?.primary_phone || user?.phone_number
-                            ? colors.primary_text
-                            : colors.muted_text
-                        }
-                      >
-                        {/* ✅ ƯU TIÊN: phone từ UserProfile */}
-                        {userProfile?.primary_phone ||
-                          user?.phone_number ||
-                          "Chưa cập nhật"}
-                      </Text>
-                    </VStack>
-
-                    {user?.phone_verified ? (
-                      <Box
-                        w={10}
-                        h={10}
-                        borderRadius="$full"
-                        bg={colors.success}
-                        borderWidth={2}
-                        borderColor={colors.background}
-                      />
-                    ) : (
-                      <Box
-                        w={10}
-                        h={10}
-                        borderRadius="$full"
-                        bg={colors.muted_text}
-                        borderWidth={2}
-                        borderColor={colors.background}
-                      />
-                    )}
-                  </HStack>
-                </Box>
-              </VStack>
-            </Box>
-          </Pressable>
 
           {/* ============================================ */}
           {/* ⚙️ CÀI ĐẶT */}

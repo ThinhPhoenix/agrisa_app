@@ -84,13 +84,8 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
       phone: "",
       email: "",
       password: "",
+      confirmPassword: "",
       national_id: "",
-      user_profile: {
-        full_name: "",
-        date_of_birth: "",
-        gender: "male",
-        address: "",
-      },
     },
   });
 
@@ -241,7 +236,13 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
   // ============================================
   const handleSignUp = signUpForm.handleSubmit(async (data) => {
     try {
-      await signUpMutation.mutateAsync(data as SignUpPayload);
+      // Loại bỏ confirmPassword trước khi gửi lên API
+      const { confirmPassword, ...signUpPayload } = data;
+
+      logger.auth.authSuccess("Sign up attempt", {
+        phone: signUpPayload.phone,
+      });
+      await signUpMutation.mutateAsync(signUpPayload as SignUpPayload);
     } catch (error) {
       logger.auth.authError("Lỗi đăng ký", error);
     }

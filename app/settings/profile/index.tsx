@@ -4,17 +4,23 @@ import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import {
   Box,
   HStack,
+  Pressable,
   ScrollView,
   Spinner,
   Text,
   VStack,
 } from "@gluestack-ui/themed";
 import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 import {
   AlertCircle,
+  BadgeAlert,
+  BadgeCheck,
+  BadgeX,
   Calendar,
   CheckCircle2,
   Clock,
+  Edit,
   IdCard,
   Mail,
   MapPin,
@@ -65,7 +71,12 @@ export default function ProfileDetailScreen() {
 
   if (!user) {
     return (
-      <VStack flex={1} bg={colors.background} justifyContent="center" alignItems="center">
+      <VStack
+        flex={1}
+        bg={colors.background}
+        justifyContent="center"
+        alignItems="center"
+      >
         <Spinner size="large" color={colors.primary} />
         <Text fontSize="$sm" color={colors.secondary_text} mt="$3">
           Đang tải thông tin...
@@ -86,7 +97,7 @@ export default function ProfileDetailScreen() {
 
     if (ekycStatus.is_face_verified && ekycStatus.is_ocr_done) {
       return {
-        icon: CheckCircle2,
+        icon: BadgeCheck,
         text: "Đã xác thực",
         color: colors.success,
         bgColor: colors.successSoft,
@@ -95,7 +106,7 @@ export default function ProfileDetailScreen() {
 
     if (ekycStatus.is_ocr_done) {
       return {
-        icon: Clock,
+        icon: BadgeAlert,
         text: "Đang xác thực",
         color: colors.warning,
         bgColor: colors.warningSoft,
@@ -103,7 +114,7 @@ export default function ProfileDetailScreen() {
     }
 
     return {
-      icon: XCircle,
+      icon: BadgeX,
       text: "Chưa xác thực",
       color: colors.error,
       bgColor: colors.errorSoft,
@@ -173,33 +184,42 @@ export default function ProfileDetailScreen() {
               fontWeight="$bold"
               color={colors.primary_text}
             >
-              {user.email || "Chưa cập nhật"}
-            </Text>
-          </VStack>
-
-          {/* Verification Badge */}
-          <Box
-            bg={verificationStatus.bgColor}
-            borderRadius="$full"
-            px="$4"
-            py="$2"
-            borderWidth={1}
-            borderColor={verificationStatus.color}
-          >
-            <HStack space="xs" alignItems="center">
+              {user.email || "Chưa cập nhật"}{" "}
               <verificationStatus.icon
                 size={16}
                 color={verificationStatus.color}
               />
-              <Text
-                fontSize="$sm"
-                fontWeight="$semibold"
-                color={verificationStatus.color}
-              >
-                {verificationStatus.text}
-              </Text>
-            </HStack>
-          </Box>
+            </Text>
+          </VStack>
+
+          
+
+          {/* Edit Profile Button */}
+          <Pressable onPress={() => router.push("/edit-profile")}>
+            <Box
+              bg={colors.primary}
+              borderRadius="$xl"
+              py="$3"
+              px="$6"
+              borderWidth={1}
+              borderColor={colors.primary}
+            >
+              <HStack space="sm" alignItems="center" justifyContent="center">
+                <Edit
+                  size={18}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$bold"
+                  color={colors.primary_white_text}
+                >
+                  Chỉnh sửa thông tin
+                </Text>
+              </HStack>
+            </Box>
+          </Pressable>
         </VStack>
 
         {/* Personal Information */}

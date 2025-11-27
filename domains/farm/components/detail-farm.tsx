@@ -211,7 +211,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                   fontSize={16}
                   fontWeight="700"
                 >
-                  {farm.soil_type === "alluvial" ? "Phù sa" : farm.soil_type}
+                  {farm.soil_type}
                 </Text>
               </VStack>
             </HStack>
@@ -297,7 +297,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
             />
             <InfoRow
               label="Loại đất canh tác"
-              value={`Đất ${farm.soil_type === "alluvial" ? "phù sa" : farm.soil_type}`}
+              value={`${farm.soil_type}`}
             />
           </VStack>
         </Box>

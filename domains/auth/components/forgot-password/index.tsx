@@ -8,17 +8,34 @@ import {
   FormControlErrorText,
   FormControlLabel,
   FormControlLabelText,
+  Image,
   Input,
   InputField,
+  InputSlot,
   Text,
-  View,
+  VStack,
 } from "@gluestack-ui/themed";
-import { KeyRound, IdCard, Phone, ArrowLeft } from "lucide-react-native";
-import React, { useState } from "react";
-import { Dimensions, KeyboardAvoidingView, Platform } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { IdCard, KeyRound, Phone } from "lucide-react-native";
+import React from "react";
+import {
+  Dimensions,
+  ImageBackground,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { create } from "zustand";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
+const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.45)";
+const CARD_GRADIENT = [
+  "rgba(255,255,255,0.7)",
+  "rgba(255,237,237,0.7)",
+] as const;
 
 // Store cho forgot password với CCCD
 interface ForgotPasswordState {
@@ -141,96 +158,112 @@ const ForgotPasswordComponentUI = () => {
   // Render success screen
   if (step === "success") {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.background,
-          paddingHorizontal: 24,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={0}
       >
-        <Box
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            backgroundColor: colors.card,
-            borderRadius: 20,
-            padding: 32,
-            shadowColor: colors.shadow,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 12,
-            elevation: 8,
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Box
-            style={{
-              backgroundColor: colors.success,
-              padding: 20,
-              borderRadius: 50,
-              marginBottom: 24,
-            }}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ImageBackground
+            source={require("@/assets/images/Login/Agrisa-Auth.png")}
+            style={{ flex: 1 }}
+            resizeMode="cover"
           >
-            <KeyRound size={40} color="white" />
-          </Box>
-
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "bold",
-              color: colors.text,
-              textAlign: "center",
-              marginBottom: 16,
-            }}
-          >
-            Yêu cầu đã được gửi!
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              color: colors.textSecondary,
-              textAlign: "center",
-              lineHeight: 24,
-              marginBottom: 32,
-            }}
-          >
-            Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến số điện thoại{" "}
-            <Text style={{ fontWeight: "600", color: colors.text }}>
-              {phoneNumber}
-            </Text>
-            {"\n\n"}
-            Vui lòng kiểm tra tin nhắn và làm theo hướng dẫn.
-          </Text>
-
-          <Button
-            onPress={() => {
-              resetState();
-              // TODO: Navigate back to login
-            }}
-            size="md"
-            style={{
-              backgroundColor: colors.success,
-              borderRadius: 12,
-              width: "100%",
-            }}
-          >
-            <ButtonText
-              style={{
-                color: "white",
-                fontWeight: "700",
-                fontSize: 16,
-              }}
+            <LinearGradient
+              colors={["rgba(89, 172, 119, 0.3)", "rgba(89, 172, 119, 0.6)"]}
+              style={{ flex: 1 }}
             >
-              Về trang đăng nhập
-            </ButtonText>
-          </Button>
-        </Box>
-      </View>
+              <VStack flex={1} justifyContent="center" px="$5" space="lg">
+                {/* Logo */}
+                <Box alignItems="center">
+                  <Image
+                    source={require("@/assets/images/Logo/Agrisa_Logo.png")}
+                    alt="Agrisa Logo"
+                    style={{
+                      width: 100,
+                      height: 100,
+                    }}
+                    resizeMode="contain"
+                  />
+                </Box>
+
+                {/* Success Card */}
+                <LinearGradient
+                  colors={CARD_GRADIENT}
+                  style={{
+                    borderRadius: 20,
+                    borderWidth: 2,
+                    borderColor: CARD_BORDER_COLOR,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Box p="$5">
+                    <VStack space="md" alignItems="center">
+                      {/* Success Icon */}
+                      <Box
+                        bg={colors.success}
+                        p="$4"
+                        borderRadius="$full"
+                        mb="$2"
+                      >
+                        <KeyRound size={40} color="white" strokeWidth={2} />
+                      </Box>
+
+                      {/* Title */}
+                      <Text
+                        fontSize="$xl"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                        textAlign="center"
+                      >
+                        Yêu cầu đã được gửi!
+                      </Text>
+
+                      {/* Message */}
+                      <Text
+                        fontSize="$sm"
+                        color={colors.secondary_text}
+                        textAlign="center"
+                        lineHeight="$lg"
+                        px="$2"
+                      >
+                        Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến số điện thoại{" "}
+                        <Text fontWeight="$semibold" color={colors.primary_text}>
+                          {phoneNumber}
+                        </Text>
+                        {"\n\n"}
+                        Vui lòng kiểm tra tin nhắn và làm theo hướng dẫn.
+                      </Text>
+
+                      {/* Back to Login Button */}
+                      <Button
+                        onPress={() => {
+                          resetState();
+                          router.replace("/auth/sign-in");
+                        }}
+                        size="md"
+                        bg={colors.success}
+                        borderRadius="$lg"
+                        mt="$4"
+                        width="100%"
+                        $active-opacity={0.8}
+                      >
+                        <ButtonText
+                          color={colors.primary_white_text}
+                          fontWeight="$bold"
+                          fontSize="$sm"
+                        >
+                          Về trang đăng nhập
+                        </ButtonText>
+                      </Button>
+                    </VStack>
+                  </Box>
+                </LinearGradient>
+              </VStack>
+            </LinearGradient>
+          </ImageBackground>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     );
   }
 
@@ -239,284 +272,225 @@ const ForgotPasswordComponentUI = () => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
+      keyboardVerticalOffset={0}
     >
-      <View
-        style={{
-          flexGrow: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: colors.background,
-        }}
-      >
-        <Box
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            paddingHorizontal: 24,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ImageBackground
+          source={require("@/assets/images/Login/Agrisa-Auth.png")}
+          style={{ flex: 1 }}
+          resizeMode="cover"
         >
-          {/* Form quên mật khẩu */}
-          <Box
-            style={{
-              width: "100%",
-              backgroundColor: colors.card,
-              borderRadius: 20,
-              padding: 32,
-              shadowColor: colors.shadow,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.15,
-              shadowRadius: 12,
-              elevation: 8,
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: colors.border,
-            }}
+          <LinearGradient
+            colors={["rgba(89, 172, 119, 0.3)", "rgba(89, 172, 119, 0.6)"]}
+            style={{ flex: 1 }}
           >
-            {/* Header */}
-            <Box
-              style={{
-                alignItems: "center",
-                marginBottom: 32,
-                width: "100%",
-              }}
-            >
-              <Box
-                style={{
-                  backgroundColor: colors.warning,
-                  padding: 16,
-                  borderRadius: 20,
-                  marginBottom: 16,
-                }}
-              >
-                <KeyRound size={32} color="white" />
+            <VStack flex={1} justifyContent="center" px="$5" space="lg">
+              {/* Logo */}
+              <Box alignItems="center">
+                <Image
+                  source={require("@/assets/images/Logo/Agrisa_Logo.png")}
+                  alt="Agrisa Logo"
+                  style={{
+                    width: 100,
+                    height: 100,
+                  }}
+                  resizeMode="contain"
+                />
               </Box>
 
-              <Text
+              {/* Forgot Password Card */}
+              <LinearGradient
+                colors={CARD_GRADIENT}
                 style={{
-                  fontSize: 26,
-                  fontWeight: "bold",
-                  color: colors.text,
-                  textAlign: "center",
-                  marginBottom: 8,
+                  borderRadius: 20,
+                  borderWidth: 2,
+                  borderColor: CARD_BORDER_COLOR,
+                  overflow: "hidden",
                 }}
               >
-                Quên Mật Khẩu
-              </Text>
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: colors.textSecondary,
-                  textAlign: "center",
-                  lineHeight: 22,
-                }}
-              >
-                Nhập CCCD và số điện thoại để nhận hướng dẫn đặt lại mật khẩu
-              </Text>
-            </Box>
-
-            {/* Form fields */}
-            <Box style={{ width: "100%" }}>
-              {/* CCCD */}
-              <FormControl
-                isInvalid={!!errors.cccd}
-                style={{ marginBottom: 20 }}
-              >
-                <FormControlLabel>
-                  <FormControlLabelText
-                    style={{
-                      color: colors.text,
-                      fontWeight: "600",
-                      fontSize: 16,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Số CCCD/CMND
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Box style={{ position: "relative" }}>
-                  <Input
-                    variant="outline"
-                    size="md"
-                    style={{
-                      borderColor: errors.cccd ? colors.error : colors.border,
-                      borderRadius: 12,
-                      borderWidth: 2,
-                      backgroundColor: colors.surface,
-                    }}
-                  >
-                    <InputField
-                      value={cccd}
-                      onChangeText={setCCCD}
-                      placeholder="012345678901"
-                      placeholderTextColor={colors.textMuted}
-                      keyboardType="numeric"
-                      maxLength={12}
-                      style={{
-                        fontSize: 16,
-                        color: colors.text,
-                        paddingHorizontal: 16,
-                        paddingRight: 50,
-                      }}
-                    />
-                  </Input>
-                  <Box
-                    style={{
-                      position: "absolute",
-                      right: 16,
-                      top: "50%",
-                      transform: [{ translateY: -10 }],
-                    }}
-                  >
-                    <IdCard size={20} color={colors.textMuted} />
-                  </Box>
-                </Box>
-                {errors.cccd && (
-                  <FormControlError>
-                    <FormControlErrorText
-                      style={{
-                        color: colors.error,
-                        fontSize: 13,
-                        marginTop: 6,
-                        fontWeight: "500",
-                      }}
+                <Box p="$5">
+                  {/* Header */}
+                  <VStack space="xs" alignItems="center" mb="$4">
+                    <Text
+                      fontSize="$xl"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                      textAlign="center"
                     >
-                      {errors.cccd}
-                    </FormControlErrorText>
-                  </FormControlError>
-                )}
-              </FormControl>
-
-              {/* Số điện thoại */}
-              <FormControl
-                isInvalid={!!errors.phoneNumber}
-                style={{ marginBottom: 28 }}
-              >
-                <FormControlLabel>
-                  <FormControlLabelText
-                    style={{
-                      color: colors.text,
-                      fontWeight: "600",
-                      fontSize: 16,
-                      marginBottom: 8,
-                    }}
-                  >
-                    Số điện thoại đã đăng ký
-                  </FormControlLabelText>
-                </FormControlLabel>
-                <Box style={{ position: "relative" }}>
-                  <Input
-                    variant="outline"
-                    size="md"
-                    style={{
-                      borderColor: errors.phoneNumber
-                        ? colors.error
-                        : colors.border,
-                      borderRadius: 12,
-                      borderWidth: 2,
-                      backgroundColor: colors.surface,
-                    }}
-                  >
-                    <InputField
-                      value={phoneNumber}
-                      onChangeText={setPhoneNumber}
-                      placeholder="0987654321"
-                      placeholderTextColor={colors.textMuted}
-                      keyboardType="phone-pad"
-                      style={{
-                        fontSize: 16,
-                        color: colors.text,
-                        paddingHorizontal: 16,
-                        paddingRight: 50,
-                      }}
-                    />
-                  </Input>
-                  <Box
-                    style={{
-                      position: "absolute",
-                      right: 16,
-                      top: "50%",
-                      transform: [{ translateY: -10 }],
-                    }}
-                  >
-                    <Phone size={20} color={colors.textMuted} />
-                  </Box>
-                </Box>
-                {errors.phoneNumber && (
-                  <FormControlError>
-                    <FormControlErrorText
-                      style={{
-                        color: colors.error,
-                        fontSize: 13,
-                        marginTop: 6,
-                        fontWeight: "500",
-                      }}
+                      Quên mật khẩu
+                    </Text>
+                    <Text
+                      fontSize="$xs"
+                      color={colors.secondary_text}
+                      textAlign="center"
+                      lineHeight="$sm"
+                      px="$2"
                     >
-                      {errors.phoneNumber}
-                    </FormControlErrorText>
-                  </FormControlError>
-                )}
-              </FormControl>
+                      Nhập CCCD và số điện thoại để nhận hướng dẫn đặt lại mật khẩu
+                    </Text>
+                  </VStack>
 
-              {/* Nút gửi yêu cầu */}
-              <Button
-                onPress={sendResetRequest}
-                isDisabled={isLoading}
-                size="md"
-                style={{
-                  backgroundColor: colors.warning,
-                  borderRadius: 12,
-                  width: "100%",
-                  opacity: isLoading ? 0.8 : 1,
-                  shadowColor: colors.warning,
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 6,
-                }}
-              >
-                <ButtonText
-                  style={{
-                    color: "white",
-                    fontWeight: "700",
-                    fontSize: 17,
-                  }}
-                >
-                  {isLoading ? "Đang gửi..." : "Gửi yêu cầu"}
-                </ButtonText>
-              </Button>
-            </Box>
+                  {/* Form Fields */}
+                  <VStack space="sm">
+                    {/* CCCD Field */}
+                    <FormControl isInvalid={!!errors.cccd}>
+                      <FormControlLabel mb="$1">
+                        <FormControlLabelText
+                          fontSize="$xs"
+                          fontWeight="$semibold"
+                          color={colors.primary_text}
+                        >
+                          Số CCCD/CMND
+                        </FormControlLabelText>
+                      </FormControlLabel>
+                      <Input
+                        variant="outline"
+                        size="md"
+                        borderWidth={1.5}
+                        borderColor={
+                          errors.cccd
+                            ? colors.error
+                            : colors.frame_border
+                        }
+                        borderRadius="$lg"
+                        bg={colors.card_surface}
+                      >
+                        <InputSlot pl="$2.5">
+                          <IdCard
+                            size={18}
+                            color={colors.secondary_text}
+                            strokeWidth={2}
+                          />
+                        </InputSlot>
+                        <InputField
+                          value={cccd}
+                          onChangeText={setCCCD}
+                          placeholder="012345678901"
+                          placeholderTextColor={colors.muted_text}
+                          keyboardType="numeric"
+                          maxLength={12}
+                          returnKeyType="next"
+                          fontSize="$sm"
+                          color={colors.primary_text}
+                        />
+                      </Input>
+                      {errors.cccd && (
+                        <FormControlError mt="$0.5">
+                          <FormControlErrorText
+                            fontSize="$2xs"
+                            color={colors.error}
+                          >
+                            {errors.cccd}
+                          </FormControlErrorText>
+                        </FormControlError>
+                      )}
+                    </FormControl>
 
-            {/* Footer */}
-            <Box
-              style={{
-                marginTop: 24,
-                alignItems: "center",
-                width: "100%",
-              }}
-            >
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  fontSize: 14,
-                  textAlign: "center",
-                }}
-              >
-                Nhớ lại mật khẩu?{" "}
-                <Text
-                  style={{
-                    color: colors.success,
-                    fontWeight: "600",
-                  }}
-                >
-                  Đăng nhập ngay
-                </Text>
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-      </View>
+                    {/* Phone Number Field */}
+                    <FormControl isInvalid={!!errors.phoneNumber}>
+                      <FormControlLabel mb="$1">
+                        <FormControlLabelText
+                          fontSize="$xs"
+                          fontWeight="$semibold"
+                          color={colors.primary_text}
+                        >
+                          Số điện thoại đã đăng ký
+                        </FormControlLabelText>
+                      </FormControlLabel>
+                      <Input
+                        variant="outline"
+                        size="md"
+                        borderWidth={1.5}
+                        borderColor={
+                          errors.phoneNumber
+                            ? colors.error
+                            : colors.frame_border
+                        }
+                        borderRadius="$lg"
+                        bg={colors.card_surface}
+                      >
+                        <InputSlot pl="$2.5">
+                          <Phone
+                            size={18}
+                            color={colors.secondary_text}
+                            strokeWidth={2}
+                          />
+                        </InputSlot>
+                        <InputField
+                          value={phoneNumber}
+                          onChangeText={setPhoneNumber}
+                          placeholder="0987654321"
+                          placeholderTextColor={colors.muted_text}
+                          keyboardType="phone-pad"
+                          returnKeyType="done"
+                          onSubmitEditing={sendResetRequest}
+                          fontSize="$sm"
+                          color={colors.primary_text}
+                        />
+                      </Input>
+                      {errors.phoneNumber && (
+                        <FormControlError mt="$0.5">
+                          <FormControlErrorText
+                            fontSize="$2xs"
+                            color={colors.error}
+                          >
+                            {errors.phoneNumber}
+                          </FormControlErrorText>
+                        </FormControlError>
+                      )}
+                    </FormControl>
+
+                    {/* Submit Button */}
+                    <Button
+                      onPress={sendResetRequest}
+                      isDisabled={isLoading}
+                      size="md"
+                      bg={colors.primary}
+                      borderRadius="$lg"
+                      mt="$5"
+                      $active-opacity={0.8}
+                    >
+                      <ButtonText
+                        color={colors.primary_white_text}
+                        fontWeight="$bold"
+                        fontSize="$sm"
+                      >
+                        {isLoading ? "Đang gửi..." : "Gửi yêu cầu"}
+                      </ButtonText>
+                    </Button>
+                  </VStack>
+
+                  {/* Footer */}
+                  <VStack space="md" alignItems="center" mt="$6">
+                    <Box
+                      borderTopWidth={1}
+                      borderTopColor={colors.primary}
+                      width="100%"
+                      pt="$3"
+                    >
+                      <Text
+                        fontSize="$sm"
+                        color={colors.secondary_text}
+                        textAlign="center"
+                      >
+                        Nhớ lại mật khẩu?{" "}
+                        <Text
+                          fontSize="$sm"
+                          color={colors.success}
+                          fontWeight="$bold"
+                          onPress={() => router.replace("/auth/sign-in")}
+                        >
+                          Đăng nhập ngay
+                        </Text>
+                      </Text>
+                    </Box>
+                  </VStack>
+                </Box>
+              </LinearGradient>
+            </VStack>
+          </LinearGradient>
+        </ImageBackground>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 };

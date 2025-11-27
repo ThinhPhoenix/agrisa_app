@@ -1,5 +1,4 @@
 import { logger } from "@/domains/shared/utils/logger";
-import { AxiosError } from "axios";
 import React, {
   createContext,
   ReactNode,
@@ -8,7 +7,6 @@ import React, {
   useRef,
 } from "react";
 import { AppState, AppStateStatus } from "react-native";
-import useAuthMe from "../hooks/use-auth-me";
 import { AuthState } from "../models/auth.models";
 import { useAuthStore } from "../stores/auth.store";
 
@@ -24,12 +22,6 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const authStore = useAuthStore();
   const appState = useRef(AppState.currentState);
-  const {
-    data: userData,
-    isLoading: isAuthMeLoading,
-    error: authMeError,
-    refetch: refetchAuthMe,
-  } = useAuthMe();
 
   // ❌ BỎ useEffect này - Không auto check auth khi app start
   // useEffect(() => {
@@ -94,36 +86,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, [authStore.isAuthenticated, authStore]);
 
-  // ✅ MỚI: Chạy auth me khi app mở (provider mount)
+  // ✅ MỚI: Fetch user profile khi app mở (provider mount)
   useEffect(() => {
-    const runAuthMeOnAppOpen = async () => {
+    const fetchProfileOnAppOpen = async () => {
       if (authStore.isAuthenticated) {
         // Chỉ chạy nếu đã đăng nhập
-        logger.info("AuthProvider", "Running auth me on app open");
-        await refetchAuthMe();
+        logger.info("AuthProvider", "Fetching user profile on app open");
+        await authStore.fetchUserProfile();
       }
     };
-    runAuthMeOnAppOpen();
-  }, [authStore.isAuthenticated, authStore, refetchAuthMe]); // Chạy 1 lần khi mount
-
-  // ✅ MỚI: Xử lý kết quả từ auth me
-  useEffect(() => {
-    if (userData && !isAuthMeLoading) {
-      logger.auth.authSuccess("Auth me success, updating user data", userData);
-      // Cập nhật user trong store (giả sử userData là object user)
-      authStore.setAuth(authStore.accessToken!, userData); // Hoặc chỉ update user nếu cần
-    }
-    if (authMeError) {
-      logger.auth.authError("Auth me failed", authMeError);
-      // Nếu lỗi 401, trigger logout
-      if (
-        authMeError instanceof AxiosError &&
-        authMeError.response?.status === 401
-      ) {
-        authStore.logout();
-      }
-    }
-  }, [userData, isAuthMeLoading, authMeError, authStore]);
+    fetchProfileOnAppOpen();
+  }, [authStore.isAuthenticated]); // Chạy 1 lần khi authentication status thay đổi
 
   return (
     <AuthContext.Provider value={authStore}>{children}</AuthContext.Provider>

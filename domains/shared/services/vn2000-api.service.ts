@@ -5,7 +5,8 @@
  */
 
 import axios from 'axios';
-import vnMeridiansData from '../constants/vn-merdians.json';
+import Constants from "expo-constants";
+import vnMeridiansData from "../constants/vn-merdians.json";
 
 // ===== TYPES =====
 
@@ -31,7 +32,8 @@ interface ProvinceInfo {
 
 // ===== CONSTANTS =====
 
-const VN2000_API_BASE_URL = 'https://vn2000.vn/api';
+const VN2000_API_BASE_URL =
+  Constants.expoConfig?.extra?.vn2000ApiUrl;
 const DEFAULT_ZONE_WIDTH = 3; // Zone width luôn là 3 theo tiêu chuẩn VN2000
 
 // ===== PROVINCE MAPPING =====
@@ -39,7 +41,9 @@ const DEFAULT_ZONE_WIDTH = 3; // Zone width luôn là 3 theo tiêu chuẩn VN200
 /**
  * Lấy central meridian từ tên tỉnh
  */
-export function getCentralMeridianFromProvince(provinceName: string): number | null {
+export function getCentralMeridianFromProvince(
+  provinceName: string
+): number | null {
   if (!provinceName) return null;
 
   // Normalize province name (remove accents, lowercase)
@@ -48,27 +52,30 @@ export function getCentralMeridianFromProvince(provinceName: string): number | n
   // Tìm province trong data
   const province = vnMeridiansData.provinces.find((p: ProvinceInfo) => {
     const normalizedProvinceName = p.name.toLowerCase();
-    
+
     // Check exact match
     if (normalizedProvinceName === normalizedInput) {
       return true;
     }
-    
+
     // Check partial match (e.g., "Lâm Đồng" matches "Lam Dong")
-    if (normalizedProvinceName.includes(normalizedInput) || 
-        normalizedInput.includes(normalizedProvinceName)) {
+    if (
+      normalizedProvinceName.includes(normalizedInput) ||
+      normalizedInput.includes(normalizedProvinceName)
+    ) {
       return true;
     }
-    
+
     // Check merged provinces nếu có
     if (p.merged && p.merged_provinces) {
-      return p.merged_provinces.some(mp => 
-        mp.name.toLowerCase() === normalizedInput ||
-        mp.name.toLowerCase().includes(normalizedInput) ||
-        normalizedInput.includes(mp.name.toLowerCase())
+      return p.merged_provinces.some(
+        (mp) =>
+          mp.name.toLowerCase() === normalizedInput ||
+          mp.name.toLowerCase().includes(normalizedInput) ||
+          normalizedInput.includes(mp.name.toLowerCase())
       );
     }
-    
+
     return false;
   });
 
@@ -77,7 +84,9 @@ export function getCentralMeridianFromProvince(provinceName: string): number | n
     return province.meridian;
   }
 
-  console.warn(`⚠️ Province not found in mapping: ${provinceName}, using default 107.75°`);
+  console.warn(
+    `⚠️ Province not found in mapping: ${provinceName}, using default 107.75°`
+  );
   return 107.75; // Default meridian cho Lâm Đồng
 }
 
@@ -92,7 +101,7 @@ export function getAllProvinces(): ProvinceInfo[] {
 
 /**
  * Chuyển đổi tọa độ VN2000 sang WGS84 qua API
- * 
+ *
  * @param x - Tọa độ X từ sổ đỏ (Northing)
  * @param y - Tọa độ Y từ sổ đỏ (Easting)
  * @param province - Tên tỉnh/thành (VD: "Lâm Đồng")
@@ -114,11 +123,14 @@ export async function convertVn2000ToWgs84Api(
     // Xác định central meridian
     let meridian = centralMeridian;
     if (!meridian && province) {
-      meridian = getCentralMeridianFromProvince(province);
+      const provinceMeridian = getCentralMeridianFromProvince(province);
+      if (provinceMeridian !== null) {
+        meridian = provinceMeridian;
+      }
     }
-    
+
     if (!meridian) {
-      console.warn('⚠️ No meridian provided, using default 107.75°');
+      console.warn("⚠️ No meridian provided, using default 107.75°");
       meridian = 107.75;
     }
 
@@ -128,7 +140,7 @@ export async function convertVn2000ToWgs84Api(
       x: x.toString(),
       y: y.toString(),
       zone_width: DEFAULT_ZONE_WIDTH.toString(),
-      central_meridian: meridian.toString()
+      central_meridian: meridian.toString(),
     };
 
     console.log(`🌐 Calling VN2000 API:`, params);
@@ -140,13 +152,15 @@ export async function convertVn2000ToWgs84Api(
     }
 
     const { lat, lng } = response.data.data;
-    
-    console.log(`✅ VN2000 → WGS84 (API): X=${x}, Y=${y}, meridian=${meridian}° → [${lng.toFixed(6)}°E, ${lat.toFixed(6)}°N]`);
+
+    console.log(
+      `✅ VN2000 → WGS84 (API): X=${x}, Y=${y}, meridian=${meridian}° → [${lng.toFixed(6)}°E, ${lat.toFixed(6)}°N]`
+    );
 
     return { lat, lng };
   } catch (error: any) {
-    console.error('❌ VN2000 API conversion error:', error);
-    
+    console.error("❌ VN2000 API conversion error:", error);
+
     // Re-throw với message rõ ràng hơn
     if (axios.isAxiosError(error)) {
       throw new Error(`VN2000 API error: ${error.message}`);

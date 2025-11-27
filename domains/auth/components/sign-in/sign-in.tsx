@@ -53,7 +53,10 @@ import { useAuthStore } from "../../stores/auth.store";
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.45)";
-const CARD_GRADIENT = ["rgba(255,255,255,0.7)", "rgba(255,237,237,0.7)"];
+const CARD_GRADIENT = [
+  "rgba(255,255,255,0.7)",
+  "rgba(255,237,237,0.7)",
+] as const;
 
 const SignInComponentUI = () => {
   const { colors } = useAgrisaColors();
@@ -63,13 +66,22 @@ const SignInComponentUI = () => {
   const [isLoadingBiometric, setIsLoadingBiometric] = useState(false);
   const [biometricType, setBiometricType] = useState<string>("Vân tay");
 
-  const { setAuth } = useAuthStore();
+  const { setAuth, isAuthenticated } = useAuthStore();
 
   const { form, onSubmit, isLoading } = useAuthForm({
     type: "sign-in",
   });
 
   const signInFormControl = form.control as Control<SignInPayloadSchema>;
+
+  // ============================================
+  // 🚫 REDIRECT IF ALREADY AUTHENTICATED
+  // ============================================
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated]);
 
   // ============================================
   // 🔧 TRANSFORM IDENTIFIER TO PAYLOAD
@@ -310,7 +322,7 @@ const SignInComponentUI = () => {
 
       // Lấy password từ form
       const password = form.getValues("password");
-      
+
       if (!password) {
         Alert.alert("Lỗi", "Vui lòng nhập mật khẩu");
         return;
@@ -318,16 +330,12 @@ const SignInComponentUI = () => {
 
       // Set identifier vào form (để onSubmit có đủ data)
       form.setValue("identifier", cachedIdentifier);
-      
+
       // Gọi onSubmit từ useAuthForm (đã có handleSubmit bên trong)
       await onSubmit();
-
     } catch (error: any) {
       console.error("❌ [Sign-in] Error:", error);
-      Alert.alert(
-        "Lỗi",
-        error.message || "Có lỗi xảy ra. Vui lòng thử lại."
-      );
+      Alert.alert("Lỗi", error.message || "Có lỗi xảy ra. Vui lòng thử lại.");
     }
   };
 
@@ -349,7 +357,7 @@ const SignInComponentUI = () => {
         }}
       />
       <LinearGradient
-        colors={["rgba(255,255,255,0)", "rgba(163,20,42,0.45)"]}
+        colors={["rgba(89, 172, 119, 0.3)", "rgba(89, 172, 119, 0.6)"]}
         style={{
           position: "absolute",
           top: 0,

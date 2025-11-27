@@ -310,9 +310,7 @@ export const secureStorage = {
         throw new Error("Password không được để trống");
       }
 
-      console.log(
-        `🔐 [SecureStorage] Setting biometric for: ${identifier}`
-      );
+      console.log(`🔐 [SecureStorage] Setting biometric for: ${identifier}`);
 
       const key = await getBiometricKey(identifier);
 
@@ -379,15 +377,11 @@ export const secureStorage = {
       const currentDeviceId = await getDeviceId();
 
       if (biometricData.deviceId !== currentDeviceId) {
-        console.log(
-          `⚠️ [SecureStorage] Device mismatch for ${identifier}`
-        );
+        console.log(`⚠️ [SecureStorage] Device mismatch for ${identifier}`);
         return false;
       }
 
-      console.log(
-        `✅ [SecureStorage] Biometric enabled for ${identifier}`
-      );
+      console.log(`✅ [SecureStorage] Biometric enabled for ${identifier}`);
       return true;
     } catch (error) {
       console.error("❌ [SecureStorage] Error checking biometric:", error);
@@ -408,9 +402,7 @@ export const secureStorage = {
       const data = await SecureStore.getItemAsync(key);
 
       if (!data) {
-        console.log(
-          `ℹ️ [SecureStorage] No biometric data for ${identifier}`
-        );
+        console.log(`ℹ️ [SecureStorage] No biometric data for ${identifier}`);
         return null;
       }
 
@@ -446,10 +438,7 @@ export const secureStorage = {
 
       return parts[1];
     } catch (error) {
-      console.error(
-        "❌ [SecureStorage] Error getting password:",
-        error
-      );
+      console.error("❌ [SecureStorage] Error getting password:", error);
       return null;
     }
   },
@@ -472,22 +461,15 @@ export const secureStorage = {
 
       try {
         await SecureStore.deleteItemAsync(key);
-        console.log(
-          `✅ [SecureStorage] Biometric cleared for ${identifier}`
-        );
+        console.log(`✅ [SecureStorage] Biometric cleared for ${identifier}`);
       } catch (deleteError: any) {
         if (!deleteError.message?.includes("not found")) {
           throw deleteError;
         }
-        console.log(
-          `ℹ️ [SecureStorage] Key not found (already cleared)`
-        );
+        console.log(`ℹ️ [SecureStorage] Key not found (already cleared)`);
       }
     } catch (error) {
-      console.error(
-        "❌ [SecureStorage] Error clearing biometric:",
-        error
-      );
+      console.error("❌ [SecureStorage] Error clearing biometric:", error);
     }
   },
 
@@ -508,10 +490,7 @@ export const secureStorage = {
 
       console.log("✅ [SecureStorage] All biometric data cleared");
     } catch (error) {
-      console.error(
-        "❌ [SecureStorage] Error clearing all biometric:",
-        error
-      );
+      console.error("❌ [SecureStorage] Error clearing all biometric:", error);
     }
   },
 
@@ -555,6 +534,7 @@ export const secureStorage = {
         SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN),
         SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
         SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_IDENTIFIER),
+        SecureStore.deleteItemAsync(STORAGE_KEYS.USER_PROFILE),
         // Xóa biometric của account hiện tại
         savedIdentifier
           ? secureStorage.clearBiometric(savedIdentifier)
@@ -567,12 +547,38 @@ export const secureStorage = {
     }
   },
 
-  profileStore: async (profile: UserProfile): Promise<void> => {
+  // ============================================
+  // 👤 USER PROFILE
+  // ============================================
+
+  /**
+   * Lưu user profile chi tiết từ /me
+   */
+  setUserProfile: async (profile: UserProfile): Promise<void> => {
     try {
-      await SecureStore.setItemAsync(STORAGE_KEYS.USER_PROFILE, JSON.stringify(profile));
+      await SecureStore.setItemAsync(
+        STORAGE_KEYS.USER_PROFILE,
+        JSON.stringify(profile)
+      );
       console.log("✅ [SecureStorage] User profile stored");
     } catch (error) {
       console.error("❌ [SecureStorage] Error storing user profile:", error);
+      throw error;
     }
-  }
+  },
+
+  /**
+   * Lấy user profile đã lưu
+   */
+  getUserProfile: async (): Promise<UserProfile | null> => {
+    try {
+      const profileData = await SecureStore.getItemAsync(
+        STORAGE_KEYS.USER_PROFILE
+      );
+      return profileData ? JSON.parse(profileData) : null;
+    } catch (error) {
+      console.error("❌ [SecureStorage] Error getting user profile:", error);
+      return null;
+    }
+  },
 };

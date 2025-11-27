@@ -1,6 +1,6 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useThemeStore } from "@/domains/agrisa_theme/stores/themeStore";
-import { AuthUser } from "@/domains/auth/models/auth.models";
+import { AuthUser, UserProfile } from "@/domains/auth/models/auth.models";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import { useToast } from "@/domains/shared/hooks/useToast";
@@ -17,13 +17,13 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import {
+  BadgeAlert,
+  BadgeCheck,
+  BadgeX,
   CheckCircle,
-  ChevronRight,
-  Edit,
   LogOut,
-  Mail,
-  Phone,
   Shield,
+  User,
   UserCircle,
 } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
@@ -41,13 +41,21 @@ import { RefreshControl, ScrollView, Share, View } from "react-native";
  * - Pull-to-refresh
  */
 export default function ProfileScreen() {
-  const { user: storeUser, logout } = useAuthStore();
+  const {
+    user: storeUser,
+    userProfile: storeUserProfile,
+    logout,
+    fetchUserProfile,
+  } = useAuthStore();
   const { toast } = useToast();
   const { colors, isDark } = useAgrisaColors();
   const { toggleTheme } = useThemeStore();
   const { geteKYCStatusQuery } = useEkyc();
 
   const [user, setUser] = useState<AuthUser | null>(storeUser);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(
+    storeUserProfile
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const isRefreshingRef = useRef(false);
@@ -68,9 +76,30 @@ export default function ProfileScreen() {
   const loadUserData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const userData = await secureStorage.getUser();
+      const [userData, profileData] = await Promise.all([
+        secureStorage.getUser(),
+        secureStorage.getUserProfile(),
+      ]);
+
       if (userData) {
         setUser(userData);
+      }
+
+      if (profileData) {
+        setUserProfile(profileData);
+      } else if (userData) {
+        // Nếu chưa có profile, thử fetch từ /me
+        try {
+          await fetchUserProfile();
+          const newProfile = await secureStorage.getUserProfile();
+          if (newProfile) {
+            setUserProfile(newProfile);
+          }
+        } catch (error) {
+          console.log(
+            "⚠️ [Profile] Không thể tải profile chi tiết, dùng dữ liệu cơ bản"
+          );
+        }
       }
     } catch (error) {
       console.error("❌ [Profile] Lỗi load user:", error);
@@ -78,7 +107,7 @@ export default function ProfileScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, fetchUserProfile]);
 
   // Refs for stable function references
   const loadUserDataRef = useRef(loadUserData);
@@ -164,7 +193,7 @@ export default function ProfileScreen() {
         text: "Bắt đầu xác thực",
         route: "/settings/verify/id-scan",
         disabled: false,
-        icon: Shield,
+        icon: BadgeX,
       };
     }
 
@@ -173,7 +202,7 @@ export default function ProfileScreen() {
         text: "Đã xác thực",
         route: null,
         disabled: true,
-        icon: CheckCircle,
+        icon: BadgeCheck,
       };
     }
 
@@ -182,7 +211,7 @@ export default function ProfileScreen() {
         text: "Tiếp tục xác thực khuôn mặt",
         route: "/settings/verify/face-scan",
         disabled: false,
-        icon: Shield,
+        icon: BadgeAlert,
       };
     }
 
@@ -190,7 +219,7 @@ export default function ProfileScreen() {
       text: "Bắt đầu xác thực",
       route: "/settings/verify/id-scan",
       disabled: false,
-      icon: Shield,
+      icon: BadgeX,
     };
   };
 
@@ -318,25 +347,12 @@ export default function ProfileScreen() {
                     fontWeight="$bold"
                     color={colors.primary_text}
                   >
-                    {user?.email.split("@")[0]}
-                  </Text>
-
-                  {/* Chấm trạng thái xác thực */}
-                  <Box
-                    w={10}
-                    h={10}
-                    borderRadius="$full"
-                    bg={
-                      ekycStatus?.is_ocr_done && ekycStatus?.is_face_verified
-                        ? colors.success
-                        : ekycStatus?.is_ocr_done &&
-                            !ekycStatus?.is_face_verified
-                          ? colors.warning
-                          : colors.error
-                    }
-                    borderWidth={2}
-                    borderColor={colors.background}
-                  />
+                    {/* ✅ ƯU TIÊN: display_name/full_name từ UserProfile */}
+                    {userProfile?.display_name ||
+                      userProfile?.full_name ||
+                      user?.email?.split("@")[0] ||
+                      "Người dùng"}
+                  </Text>                  
                 </HStack>
               </VStack>
             </VStack>
@@ -397,7 +413,7 @@ export default function ProfileScreen() {
               </Pressable>
 
               <Pressable
-                onPress={() => router.push("/edit-profile")}
+                onPress={() => router.push("/settings/profile")}
                 style={{ flex: 1 }}
               >
                 <Box
@@ -413,7 +429,7 @@ export default function ProfileScreen() {
                     alignItems="center"
                     justifyContent="center"
                   >
-                    <Edit
+                    <User
                       size={18}
                       color={colors.secondary_text}
                       strokeWidth={2.5}
@@ -423,164 +439,13 @@ export default function ProfileScreen() {
                       fontWeight="$bold"
                       color={colors.secondary_text}
                     >
-                      Chỉnh sửa
+                      Trang cá nhân
                     </Text>
                   </HStack>
                 </Box>
               </Pressable>
             </HStack>
           </Box>
-
-          {/* ============================================ */}
-          {/* 📞 THÔNG TIN CÁ NHÂN */}
-          {/* ============================================ */}
-          <Pressable onPress={() => router.push("/settings/profile")}>
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$2xl"
-              p="$5"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <HStack
-                alignItems="center"
-                justifyContent="space-between"
-                mb="$4"
-              >
-                <Text
-                  fontSize="$lg"
-                  fontWeight="$bold"
-                  color={colors.primary_text}
-                >
-                  Thông tin cá nhân
-                </Text>
-                <ChevronRight size={20} color={colors.muted_text} />
-              </HStack>
-
-              <VStack space="sm">
-                {/* Email Card */}
-                <Box
-                  bg={colors.background}
-                  borderRadius="$xl"
-                  p="$4"
-                  borderWidth={1}
-                  borderColor={colors.frame_border}
-                >
-                  <HStack space="md" alignItems="center">
-                    <Box
-                      bg={colors.primary}
-                      borderRadius="$full"
-                      p="$2.5"
-                      w={40}
-                      h={40}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Mail
-                        size={20}
-                        color={colors.primary_white_text}
-                        strokeWidth={2.5}
-                      />
-                    </Box>
-
-                    <VStack flex={1} space="xs">
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$medium"
-                        color={colors.muted_text}
-                      >
-                        Địa chỉ email
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        {user?.email}
-                      </Text>
-                    </VStack>
-
-                    <Box
-                      w={10}
-                      h={10}
-                      borderRadius="$full"
-                      bg={colors.success}
-                      borderWidth={2}
-                      borderColor={colors.background}
-                    />
-                  </HStack>
-                </Box>
-
-                {/* Phone Card */}
-                <Box
-                  bg={colors.background}
-                  borderRadius="$xl"
-                  p="$4"
-                  borderWidth={1}
-                  borderColor={colors.frame_border}
-                >
-                  <HStack space="md" alignItems="center">
-                    <Box
-                      bg={colors.primary}
-                      borderRadius="$full"
-                      p="$2.5"
-                      w={40}
-                      h={40}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      <Phone
-                        size={20}
-                        color={colors.primary_white_text}
-                        strokeWidth={2.5}
-                      />
-                    </Box>
-
-                    <VStack flex={1} space="xs">
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$medium"
-                        color={colors.muted_text}
-                      >
-                        Số điện thoại
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={
-                          user?.phone_number
-                            ? colors.primary_text
-                            : colors.muted_text
-                        }
-                      >
-                        {user?.phone_number || "Chưa cập nhật"}
-                      </Text>
-                    </VStack>
-
-                    {user?.phone_verified ? (
-                      <Box
-                        w={10}
-                        h={10}
-                        borderRadius="$full"
-                        bg={colors.success}
-                        borderWidth={2}
-                        borderColor={colors.background}
-                      />
-                    ) : (
-                      <Box
-                        w={10}
-                        h={10}
-                        borderRadius="$full"
-                        bg={colors.muted_text}
-                        borderWidth={2}
-                        borderColor={colors.background}
-                      />
-                    )}
-                  </HStack>
-                </Box>
-              </VStack>
-            </Box>
-          </Pressable>
 
           {/* ============================================ */}
           {/* ⚙️ CÀI ĐẶT */}
@@ -657,7 +522,7 @@ export default function ProfileScreen() {
             <Box bg="$coolGray100" p="$3" borderRadius="$md">
               <Text fontSize="$xs" color="$coolGray600" fontFamily="$mono">
                 🐛 Debug Info
-                {"\n"}• User ID: {user?.id}
+                {"\n"}• User ID: {userProfile?.user_id || user?.id}
                 {"\n"}• Status: {user?.status}
                 {"\n"}• KYC Verified: {user?.kyc_verified ? "✅" : "❌"}
                 {"\n"}• Phone Verified: {user?.phone_verified ? "✅" : "❌"}

@@ -25,7 +25,7 @@ import {
   PhoneIcon,
   ShieldCheck,
 } from "lucide-react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Dimensions,
@@ -37,18 +37,22 @@ import {
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
+import { useAuthStore } from "../../stores/auth.store";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface UsernameFormData {
   identifier: string;
 }
-
 const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.45)";
-const CARD_GRADIENT = ["rgba(255,255,255,0.7)", "rgba(255,237,237,0.7)"];
+const CARD_GRADIENT = [
+  "rgba(255,255,255,0.7)",
+  "rgba(255,237,237,0.7)",
+] as const;
 
 const UsernameSignInComponent = () => {
   const { colors } = useAgrisaColors();
+  const { isAuthenticated } = useAuthStore();
   const { handleCheckIdentifier, isCheckingIdentifier } = useAuthForm({
     type: "sign-in",
   });
@@ -65,6 +69,15 @@ const UsernameSignInComponent = () => {
   });
 
   const watchIdentifier = watch("identifier");
+
+  // ============================================
+  // 🚫 REDIRECT IF ALREADY AUTHENTICATED
+  // ============================================
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated]);
 
   // ============================================
   // 🔄 HELPERS
@@ -175,7 +188,7 @@ const UsernameSignInComponent = () => {
         }}
       />
       <LinearGradient
-        colors={["rgba(255,255,255,0)", "rgba(163,20,42,0.45)"]}
+        colors={["rgba(89, 172, 119, 0.3)", "rgba(89, 172, 119, 0.6)"]}
         style={{
           position: "absolute",
           top: 0,

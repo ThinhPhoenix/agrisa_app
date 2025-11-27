@@ -220,9 +220,8 @@ export type RegisteredPolicyStatus =
  */
 export type UnderwritingStatus =
   | "pending"             // Đang chờ
-  | "approved"            // Đã duyệt
+  | "active"            // Đã duyệt
   | "rejected"            // Từ chối
-  | "under_review";       // Đang xem xét
 
 /**
  * Model cho một policy đã đăng ký

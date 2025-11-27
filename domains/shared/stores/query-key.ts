@@ -3,6 +3,7 @@ export const QueryKey = {
     SIGN_IN: "sign-in",
     SIGN_UP: "sign-up",
     CHECK_IDENTIFIER: "check-identifier",
+    ME: "auth-me",
   },
 
   EKYC: {

@@ -5,11 +5,10 @@ import { Box, HStack, Pressable, Text, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import {
   AlertCircle,
-  Calendar,
   CheckCircle2,
   Clock,
   Shield,
-  XCircle
+  XCircle,
 } from "lucide-react-native";
 import React from "react";
 
@@ -26,44 +25,76 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
   const { colors } = useAgrisaColors();
 
   const getPolicyStatusDisplay = () => {
-    // Ưu tiên hiển thị underwriting_status
-    if (policy.underwriting_status === "approved") {
-      return { label: "Đã duyệt", color: colors.success, icon: CheckCircle2 };
-    }
-    if (policy.underwriting_status === "rejected") {
-      return { label: "Từ chối", color: colors.error, icon: XCircle };
-    }
-    if (policy.underwriting_status === "pending") {
-      return { label: "Chờ duyệt", color: colors.pending, icon: Clock };
-    }
-
-    // Fallback sang status
-    switch (policy.status) {
-      case "active":
+    // ƯU TIÊN underwriting_status để filter chính xác
+    switch (policy.underwriting_status) {
+      case "active": // approved
         return {
-          label: "Đang hoạt động",
+          label: "Đã duyệt",
           color: colors.success,
+          bgColor: colors.successSoft,
           icon: CheckCircle2,
         };
       case "rejected":
-      case "cancelled":
-        return { label: "Đã hủy", color: colors.error, icon: XCircle };
-      case "pending_review":
-        return { label: "Chờ xét duyệt", color: colors.pending, icon: Clock };
-      case "suspended":
         return {
-          label: "Tạm ngưng",
+          label: "Từ chối",
+          color: colors.error,
+          bgColor: colors.errorSoft,
+          icon: XCircle,
+        };
+      case "pending":
+        return {
+          label: "Chờ duyệt",
           color: colors.warning,
-          icon: AlertCircle,
+          bgColor: colors.warningSoft,
+          icon: Clock,
         };
-      case "expired":
-        return { label: "Hết hạn", color: colors.muted_text, icon: XCircle };
       default:
-        return {
-          label: "Không xác định",
-          color: colors.muted_text,
-          icon: AlertCircle,
-        };
+        // Fallback sang status nếu underwriting_status không xác định
+        switch (policy.status) {
+          case "active":
+            return {
+              label: "Đang hoạt động",
+              color: colors.success,
+              bgColor: colors.successSoft,
+              icon: CheckCircle2,
+            };
+          case "rejected":
+          case "cancelled":
+            return {
+              label: "Đã hủy",
+              color: colors.error,
+              bgColor: colors.errorSoft,
+              icon: XCircle,
+            };
+          case "pending_review":
+            return {
+              label: "Chờ xét duyệt",
+              color: colors.warning,
+              bgColor: colors.warningSoft,
+              icon: Clock,
+            };
+          case "suspended":
+            return {
+              label: "Tạm ngưng",
+              color: colors.warning,
+              bgColor: colors.warningSoft,
+              icon: AlertCircle,
+            };
+          case "expired":
+            return {
+              label: "Hết hạn",
+              color: colors.muted_text,
+              bgColor: colors.background,
+              icon: XCircle,
+            };
+          default:
+            return {
+              label: "Không xác định",
+              color: colors.muted_text,
+              bgColor: colors.background,
+              icon: AlertCircle,
+            };
+        }
     }
   };
 
@@ -76,279 +107,127 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
     >
       {({ pressed }) => (
         <Box
-          bg={colors.background}
+          bg={colors.card_surface}
           borderRadius="$2xl"
-          borderWidth={1}
-          borderColor={colors.frame_border}
-          opacity={pressed ? 0.7 : 1}
+          borderWidth={2}
+          borderColor={statusDisplay.color}
+          opacity={pressed ? 0.8 : 1}
           overflow="hidden"
-          shadowColor="$black"
-          shadowOffset={{ width: 0, height: 2 }}
-          shadowOpacity={0.08}
-          shadowRadius={8}
         >
-          <VStack>
-            {/* Header Section - Green Background with Gradient Effect */}
-            <Box bg={colors.primary} p="$5">
-              <VStack space="lg">
-                {/* Policy Number & Status Row */}
-                <HStack
-                  justifyContent="space-between"
-                  alignItems="flex-start"
-                  space="md"
-                >
-                  <VStack flex={1} space="xs">
-                    <HStack space="sm" alignItems="center">
-                      <Box
-                        bg={colors.primary_white_text}
-                        p="$2.5"
-                        borderRadius="$lg"
-                        shadowColor="$black"
-                        shadowOffset={{ width: 0, height: 1 }}
-                        shadowOpacity={0.1}
-                        shadowRadius={3}
-                      >
-                        <Shield
-                          size={22}
-                          color={colors.primary}
-                          strokeWidth={2.5}
-                        />
-                      </Box>
-                      <VStack flex={1}>
-                        <Text
-                          fontSize="$xs"
-                          color={colors.primary_white_text}
-                          opacity={0.8}
-                          mb="$0.5"
-                        >
-                          Mã đăng ký
-                        </Text>
-                        <Text
-                          fontSize="$md"
-                          fontWeight="$bold"
-                          color={colors.primary_white_text}
-                          numberOfLines={1}
-                        >
-                          {policy.policy_number}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </VStack>
-
-                  {/* Status Badge - Floating Style */}
-                  <Box
-                    bg={statusDisplay.color}
-                    px="$3.5"
-                    py="$2"
-                    borderRadius="$full"
-                    shadowColor="$black"
-                    shadowOffset={{ width: 0, height: 2 }}
-                    shadowOpacity={0.15}
-                    shadowRadius={4}
-                  >
-                    <HStack space="xs" alignItems="center">
-                      <StatusIcon
-                        size={15}
-                        color={colors.primary_white_text}
-                        strokeWidth={2.5}
-                      />
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$bold"
-                        color={colors.primary_white_text}
-                      >
-                        {statusDisplay.label}
-                      </Text>
-                    </HStack>
-                  </Box>
-                </HStack>
-
-                {/* Coverage Amount - Hero Display */}
+          <VStack space="md" p="$4">
+            {/* Header: Số hợp đồng + Trạng thái */}
+            <HStack justifyContent="space-between" alignItems="center">
+              <HStack space="sm" alignItems="center" flex={1}>
                 <Box
-                  bg={colors.primary_white_text + "20"}
-                  borderRadius="$xl"
-                  p="$4"
-                  borderWidth={1}
-                  borderColor={colors.primary_white_text + "40"}
+                  bg={statusDisplay.color}
+                  p="$2"
+                  borderRadius="$lg"
+                  borderWidth={1.5}
+                  borderColor={colors.primary_white_text}
                 >
-                  <VStack space="xs">
-                    <HStack space="xs" alignItems="center">
-                      <Shield
-                        size={16}
-                        color={colors.primary_white_text}
-                        strokeWidth={2}
-                      />
-                      <Text
-                        fontSize="$xs"
-                        color={colors.primary_white_text}
-                        opacity={0.9}
-                        fontWeight="$medium"
-                      >
-                        Số tiền bảo hiểm
-                      </Text>
-                    </HStack>
-                    <Text
-                      fontSize="$2xl"
-                      fontWeight="$bold"
-                      color={colors.primary_white_text}
-                      letterSpacing="$sm"
-                    >
-                      {Utils.formatCurrency(policy.coverage_amount)}
-                    </Text>
-                  </VStack>
+                  <Shield
+                    size={18}
+                    color={colors.primary_white_text}
+                    strokeWidth={2.5}
+                  />
                 </Box>
-              </VStack>
-            </Box>
-
-            {/* Info Section - White Background */}
-            <VStack p="$5" space="md">
-              {/* Date Information - 2 Columns */}
-              <HStack space="md">
-                {/* Ngày đăng ký */}
-                <VStack flex={1} space="xs">
-                  <HStack space="xs" alignItems="center">
-                    <Calendar
-                      size={14}
-                      color={colors.secondary_text}
-                      strokeWidth={2}
-                    />
-                    <Text
-                      fontSize="$xs"
-                      color={colors.secondary_text}
-                      fontWeight="$medium"
-                    >
-                      Ngày đăng ký
-                    </Text>
-                  </HStack>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    {Utils.formatDateForMS(
-                      Math.floor(new Date(policy.created_at).getTime() / 1000)
-                    )}
+                <VStack flex={1}>
+                  <Text fontSize="$xs" color={colors.secondary_text} mb="$0.5">
+                    Số hợp đồng
                   </Text>
-                </VStack>
-
-                {/* Vertical Divider */}
-                <Box width={1} bg={colors.frame_border} />
-
-                {/* Ngày hết hạn */}
-                <VStack flex={1} space="xs">
-                  <HStack space="xs" alignItems="center">
-                    <Calendar
-                      size={14}
-                      color={colors.secondary_text}
-                      strokeWidth={2}
-                    />
-                    <Text
-                      fontSize="$xs"
-                      color={colors.secondary_text}
-                      fontWeight="$medium"
-                    >
-                      Hết hạn
-                    </Text>
-                  </HStack>
                   <Text
-                    fontSize="$sm"
+                    fontSize="$md"
                     fontWeight="$bold"
                     color={colors.primary_text}
+                    numberOfLines={1}
                   >
-                    {Utils.formatDateForMS(policy.coverage_end_date)}
+                    {policy.policy_number}
                   </Text>
                 </VStack>
               </HStack>
 
-              {/* Divider */}
-              <Box height={1} bg={colors.frame_border} width="100%" />
-
-              {/* Payment Breakdown Section */}
-              <VStack space="sm">
-                <Text
-                  fontSize="$xs"
-                  color={colors.secondary_text}
-                  fontWeight="$semibold"
-                  textTransform="uppercase"
-                  letterSpacing="$md"
-                  mb="$1"
-                >
-                  Chi tiết thanh toán
-                </Text>
-
-                {/* Premium Fee */}
-                <HStack justifyContent="space-between" alignItems="center">
-                  <Text
-                    fontSize="$sm"
-                    color={colors.primary_text}
-                    fontWeight="$medium"
-                  >
-                    Phí bảo hiểm
-                  </Text>
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    {Utils.formatCurrency(policy.total_farmer_premium)}
-                  </Text>
-                </HStack>
-
-                {/* Data Cost */}
-                <HStack justifyContent="space-between" alignItems="center">
-                  <Text
-                    fontSize="$sm"
-                    color={colors.primary_text}
-                    fontWeight="$medium"
-                  >
-                    Phí dữ liệu vệ tinh
-                  </Text>
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    {Utils.formatCurrency(policy.total_data_cost)}
-                  </Text>
-                </HStack>
-              </VStack>
-
-              {/* Divider */}
-              <Box height={1} bg={colors.frame_border} width="100%" />
-
-              {/* Total Payment - Highlighted */}
+              {/* Status Badge */}
               <Box
-                bg={colors.primary}
-                borderRadius="$xl"
-                p="$4"
-                shadowColor={colors.primary}
-                shadowOffset={{ width: 0, height: 4 }}
-                shadowOpacity={0.2}
-                shadowRadius={8}
+                bg={statusDisplay.bgColor}
+                px="$3"
+                py="$1.5"
+                borderRadius="$full"
+                borderWidth={1.5}
+                borderColor={statusDisplay.color}
               >
-                <HStack justifyContent="space-between" alignItems="center">
+                <HStack space="xs" alignItems="center">
+                  <StatusIcon
+                    size={14}
+                    color={statusDisplay.color}
+                    strokeWidth={2.5}
+                  />
                   <Text
-                    fontSize="$sm"
+                    fontSize="$xs"
                     fontWeight="$bold"
-                    color={colors.primary_white_text}
-                    textTransform="uppercase"
-                    letterSpacing="$md"
+                    color={statusDisplay.color}
                   >
-                    Tổng chi phí
-                  </Text>
-                  <Text
-                    fontSize="$2xl"
-                    fontWeight="$bold"
-                    color={colors.primary_white_text}
-                    letterSpacing="$sm"
-                  >
-                    {Utils.formatCurrency(
-                      policy.total_farmer_premium + policy.total_data_cost
-                    )}
+                    {statusDisplay.label}
                   </Text>
                 </HStack>
               </Box>
-            </VStack>
+            </HStack>
+
+            {/* Divider */}
+            <Box height={1} bg={colors.frame_border} width="100%" />
+
+            {/* Mã nhà bảo hiểm và Số tiền bảo hiểm - 2 cột */}
+            <HStack space="md">
+              <VStack flex={1} space="xs">
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  Mã nhà bảo hiểm
+                </Text>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_text}
+                >
+                  {policy.insurance_provider_id}
+                </Text>
+              </VStack>
+
+              <Box width={1} bg={colors.frame_border} />
+
+              <VStack flex={1} space="xs" alignItems="flex-end">
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  Số tiền bảo hiểm
+                </Text>
+                <Text
+                  fontSize="$lg"
+                  fontWeight="$bold"
+                  color={statusDisplay.color}
+                >
+                  {Utils.formatCurrency(policy.coverage_amount)}
+                </Text>
+              </VStack>
+            </HStack>
+
+            {/* Divider */}
+            <Box height={1} bg={colors.frame_border} width="100%" />
+
+            {/* Tổng chi phí thanh toán */}
+            <HStack justifyContent="space-between" alignItems="center">
+              <Text
+                fontSize="$sm"
+                color={colors.secondary_text}
+                fontWeight="$medium"
+              >
+                Tổng chi phí thanh toán
+              </Text>
+              <Text
+                fontSize="$lg"
+                fontWeight="$bold"
+                color={colors.primary_text}
+              >
+                {Utils.formatCurrency(
+                  policy.total_farmer_premium + policy.total_data_cost
+                )}
+              </Text>
+            </HStack>
           </VStack>
         </Box>
       )}

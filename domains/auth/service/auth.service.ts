@@ -1,6 +1,12 @@
 import useAxios from "@/config/useAxios.config";
-import { checkIdentifierPayload, checkIdentifierResponse, SignInPayload, SignInResponse, SignUpPayload } from "../models/auth.models";
-import { check } from "zod";
+import {
+  checkIdentifierPayload,
+  checkIdentifierResponse,
+  SignInPayload,
+  SignInResponse,
+  SignUpPayload,
+  UserProfile,
+} from "../models/auth.models";
 
 
 export const AuthServices = {
@@ -12,5 +18,11 @@ export const AuthServices = {
     },
     checkIdentifier: async (payload: checkIdentifierPayload): Promise<ApiResponse<checkIdentifierResponse>> => {
         return useAxios.post("/auth/public/verify-identifier", payload);
+    },
+    getUserProfile: async (): Promise<ApiResponse<UserProfile>> => {
+        return useAxios.get("/profile/protected/api/v1/me");
+    },
+    updateUserProfile: async (payload: Partial<UserProfile>): Promise<ApiResponse<void>> => {
+        return useAxios.put("/profile/protected/api/v1/me", payload);
     }
 }

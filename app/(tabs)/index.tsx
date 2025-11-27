@@ -12,6 +12,7 @@ import { Image, RefreshControl, ScrollView, Text, View } from "react-native";
 import InfoCards from "../../components/HomeScreen/InfoCards";
 import { NewPolicies } from "../../components/HomeScreen/NewPolicies";
 import QuickActions from "../../components/quick-actions";
+import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 
 const quickActionItems = [
   {
@@ -59,6 +60,8 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [refetch]);
 
+  const { fullName, email } = useUserInfo();
+
   if (!fontsLoaded) return null;
 
   return (
@@ -89,7 +92,7 @@ export default function HomeScreen() {
             >
               Xin chào,
             </Text>{" "}
-            Lai Chí Thịnh
+            {fullName ? fullName : email ? email.split("@")[0] : "Người dùng Agrisa"}
           </Text>
           <Image
             source={require("../../assets/images/Logo/Agrisa_Logo.png")}

@@ -9,13 +9,7 @@ export interface SignUpPayload {
   phone: string;
   email: string;
   password: string;
-  national_id: string;
-  user_profile: {
-    full_name: string;
-    date_of_birth: string;
-    gender: string;
-    address: string;
-  };
+  national_id: string;  
 }
 
 export type checkIdentifierPayload = {

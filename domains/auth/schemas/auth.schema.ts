@@ -69,48 +69,18 @@ export const signUpSchema = z
   .object({
     phone: z
       .string()
-      .regex(REGEX_PHONE_VN, "Chỉ hỗ trợ số điện thoại Việt Nam")
-      .optional(),
-    email: z.email("Email không hợp lệ").optional(),
-    password: z
-      .string()
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      // .regex(
-      //   REGEX_PASSWORD,
-      //   "Mật khẩu phải có ít nhất 1 chữ cái, 1 số và 1 ký tự đặc biệt"
-    // )
-    ,
-    national_id: z
-      .string()
-      .regex(REGEX_NATIONAL_ID, "CCCD phải có 12 số")
-      .optional(),
-    user_profile: z.object({
-      full_name: z
-        .string()
-        .min(2, "Họ tên phải có ít nhất 2 ký tự")
-        .max(100, "Họ tên không được quá 100 ký tự"),
-      date_of_birth: z
-        .string()
-        .regex(
-          /^\d{4}-\d{2}-\d{2}$/,
-          "Ngày sinh phải theo định dạng YYYY-MM-DD"
-        )
-        .refine((date) => {
-          const age = validateAge(date);
-          return age >= 18 && age <= 80;
-        }, "Tuổi phải từ 18 đến 80"),
-      gender: z.enum(["male", "female", "other"], {
-        message: "Giới tính phải là Nam, Nữ hoặc Khác",
-      }),
-      address: z
-        .string()
-        .min(10, "Địa chỉ phải có ít nhất 10 ký tự")
-        .max(500, "Địa chỉ không được quá 500 ký tự"),
-    }),
+      .regex(
+        REGEX_PHONE_VN,
+        "Số điện thoại Việt Nam không hợp lệ. VD: +84901234567"
+      ),
+    email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
+    password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự"),
+    confirmPassword: z.string().min(8, "Vui lòng nhập lại mật khẩu"),
+    national_id: z.string().regex(REGEX_NATIONAL_ID, "CCCD phải có đúng 12 số"),
   })
-  .refine((data) => data.phone || data.email, {
-    message: "Phải cung cấp ít nhất số điện thoại hoặc email",
-    path: ["phone"],
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu không khớp",
+    path: ["confirmPassword"],
   });
 
 export type SignInPayloadSchema = z.infer<typeof signInSchema>;

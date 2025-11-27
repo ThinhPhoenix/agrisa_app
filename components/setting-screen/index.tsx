@@ -391,7 +391,9 @@ export default function SettingsScreen() {
         // If turning on notifications, open browser with user_id
         if (newValue && user?.id) {
             const url = `https://agrisa-noti.phrimp.io.vn?user_id=${user.id}`;
-            try {
+          try {
+                console.log(url);
+            
                 const canOpen = await Linking.canOpenURL(url);
                 if (canOpen) {
                     await Linking.openURL(url);

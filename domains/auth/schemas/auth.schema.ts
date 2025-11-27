@@ -87,3 +87,46 @@ export type SignInPayloadSchema = z.infer<typeof signInSchema>;
 export type SignUpPayloadSchema = z.infer<typeof signUpSchema>;
 
 export type AuthPayload = SignInPayloadSchema & Partial<SignUpPayloadSchema>;
+
+// ============================================
+// USER PROFILE SCHEMA - Chỉnh sửa thông tin cá nhân
+// ============================================
+
+export const userProfileSchema = z.object({
+  // Thông tin cơ bản - BẮT BUỘC
+  full_name: z.string().min(2, "Họ tên phải có ít nhất 2 ký tự"),
+  display_name: z.string().min(2, "Tên hiển thị phải có ít nhất 2 ký tự"),
+  date_of_birth: z.string().min(1, "Vui lòng chọn ngày sinh"),
+  gender: z.enum(["M", "F"], { message: "Vui lòng chọn giới tính" }),
+  nationality: z.string().min(1, "Vui lòng nhập quốc tịch"),
+  
+  // Liên hệ - BẮT BUỘC
+  primary_phone: z
+    .string()
+    .regex(REGEX_PHONE_VN, "Số điện thoại không hợp lệ. VD: +84901234567"),
+  alternate_phone: z
+    .string()
+    .regex(REGEX_PHONE_VN, "Số điện thoại phụ không hợp lệ")
+    .optional()
+    .or(z.literal("")),
+  email: z
+    .string()
+    .email("Email không hợp lệ")
+    .optional()
+    .or(z.literal("")),
+  
+  // Địa chỉ - BẮT BUỘC
+  permanent_address: z.string().min(5, "Địa chỉ thường trú phải có ít nhất 5 ký tự"),
+  current_address: z.string().min(5, "Địa chỉ hiện tại phải có ít nhất 5 ký tự"),
+  
+  // Mã hành chính - BẮT BUỘC
+  province_code: z.string().min(1, "Vui lòng nhập mã tỉnh"),
+  province_name: z.string().min(1, "Vui lòng nhập tên tỉnh"),
+  district_code: z.string().min(1, "Vui lòng nhập mã quận/huyện"),
+  district_name: z.string().min(1, "Vui lòng nhập tên quận/huyện"),
+  ward_code: z.string().min(1, "Vui lòng nhập mã phường/xã"),
+  ward_name: z.string().min(1, "Vui lòng nhập tên phường/xã"),
+  postal_code: z.string().optional().or(z.literal("")),
+});
+
+export type UserProfileFormSchema = z.infer<typeof userProfileSchema>;

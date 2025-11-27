@@ -20,6 +20,9 @@ export const AuthServices = {
         return useAxios.post("/auth/public/verify-identifier", payload);
     },
     getUserProfile: async (): Promise<ApiResponse<UserProfile>> => {
-        return useAxios.get("/auth/me");
+        return useAxios.get("/profile/protected/api/v1/me");
+    },
+    updateUserProfile: async (payload: Partial<UserProfile>): Promise<ApiResponse<void>> => {
+        return useAxios.put("/profile/protected/api/v1/me", payload);
     }
 }

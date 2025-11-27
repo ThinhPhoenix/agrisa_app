@@ -256,7 +256,7 @@ export const CustomForm = forwardRef(function CustomForm(
     overflow: "hidden",
   } as const;
 
-  // ✅ Format date to DD/MM/YYYY
+  // ✅ Format date to DD/MM/YYYY or YYYY-MM-DD
   const formatDate = (date: Date, format: string = "DD/MM/YYYY"): string => {
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -268,17 +268,33 @@ export const CustomForm = forwardRef(function CustomForm(
       .replace("YYYY", year.toString());
   };
 
-  // ✅ Parse DD/MM/YYYY to Date - Xử lý an toàn hơn
+  // ✅ Parse DD/MM/YYYY hoặc YYYY-MM-DD to Date - Xử lý an toàn hơn
   const parseDate = (dateString: string | undefined | null): Date | null => {
     // Kiểm tra dateString có tồn tại và là string không
     if (!dateString || typeof dateString !== "string") return null;
 
-    const parts = dateString.split("/");
-    if (parts.length !== 3) return null;
+    let day: number, month: number, year: number;
 
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10) - 1;
-    const year = parseInt(parts[2], 10);
+    // Kiểm tra format YYYY-MM-DD (ISO format)
+    if (dateString.includes("-")) {
+      const parts = dateString.split("-");
+      if (parts.length !== 3) return null;
+
+      year = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10) - 1;
+      day = parseInt(parts[2], 10);
+    }
+    // Format DD/MM/YYYY
+    else if (dateString.includes("/")) {
+      const parts = dateString.split("/");
+      if (parts.length !== 3) return null;
+
+      day = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10) - 1;
+      year = parseInt(parts[2], 10);
+    } else {
+      return null;
+    }
 
     // Kiểm tra tính hợp lệ của ngày
     if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
@@ -337,6 +353,10 @@ export const CustomForm = forwardRef(function CustomForm(
                 borderColor: focusedFields[field.name]
                   ? themeColors.primary
                   : themeColors.frame_border,
+                opacity: field.disabled ? 0.6 : 1,
+                backgroundColor: field.disabled
+                  ? themeColors.muted_background
+                  : themeColors.background,
               }}
             >
               <InputField
@@ -415,6 +435,10 @@ export const CustomForm = forwardRef(function CustomForm(
                 borderColor: focusedFields[field.name]
                   ? themeColors.primary
                   : themeColors.frame_border,
+                opacity: field.disabled ? 0.6 : 1,
+                backgroundColor: field.disabled
+                  ? themeColors.muted_background
+                  : themeColors.background,
               }}
             >
               <InputField

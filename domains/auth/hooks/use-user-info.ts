@@ -26,9 +26,6 @@ export const useUserInfo = () => {
     // 👤 THÔNG TIN CƠ BẢN
     // ============================================
     
-    /** User ID - Ưu tiên từ userProfile */
-    userId: userProfile?.user_id || user?.id || null,
-    
     /** Tên đầy đủ - Ưu tiên từ userProfile */
     fullName: userProfile?.full_name || null,
     

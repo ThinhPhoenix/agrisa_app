@@ -2,18 +2,17 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import useAuthMe from "@/domains/auth/hooks/use-auth-me";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import {
-    Box,
-    Center,
-    HStack,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  Center,
+  HStack,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
-import { CheckCircle, IdCard, ScanFace, User } from "lucide-react-native";
+import { IdCard, ScanFace, User } from "lucide-react-native";
 import React from "react";
 import { ScrollView } from "react-native";
 import { useEkyc } from "../hooks/use-ekyc";
-import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 
 /**
  * 🎯 Component hiển thị tiến trình xác thực eKYC
@@ -64,13 +63,22 @@ const StepIcon: React.FC<StepIconProps> = ({
 
 export const EKYCStatusCheck: React.FC = () => {
   const { colors } = useAgrisaColors();
-  const { userId } = useUserInfo();
+  const { user, isAuthenticated } = useAuthStore();
   const { geteKYCStatusQuery } = useEkyc();
   const { data: meData, refetch: refetchMe } = useAuthMe();
 
-    // Fetch eKYC status
-    
-  const { data, isLoading, isError } = geteKYCStatusQuery(userId || "");
+  // 🔴 CRITICAL FIX: Validate userId trước khi fetch
+  // Đảm bảo không fetch với userId từ session cũ
+  const validUserId = isAuthenticated && user ? user.id : null;
+
+  console.log("🔍 [eKYC Status Check]", {
+    userId: validUserId,
+    isAuthenticated,
+    rawUserId: user?.id,
+  });
+
+  // 🔴 CRITICAL FIX: Chỉ fetch khi có validUserId
+  const { data, isLoading, isError } = geteKYCStatusQuery(user?.id || "");
 
   const ekycData = data?.data;
   const userData = meData;
@@ -102,6 +110,17 @@ export const EKYCStatusCheck: React.FC = () => {
     }
   }, [ekycData?.is_ocr_done, ekycData?.is_face_verified]);
 
+  // 🔴 CRITICAL FIX: Không render nếu chưa authenticated
+  if (!isAuthenticated || !validUserId) {
+    return (
+      <Center flex={1} backgroundColor={colors.background} padding={20}>
+        <Text fontSize="$lg" color={colors.error} textAlign="center">
+          ⚠️ Vui lòng đăng nhập để xem trạng thái xác thực
+        </Text>
+      </Center>
+    );
+  }
+
   if (isLoading) {
     return (
       <Center flex={1} backgroundColor={colors.background}>
@@ -119,7 +138,12 @@ export const EKYCStatusCheck: React.FC = () => {
         <Text fontSize="$lg" color={colors.error} textAlign="center">
           ⚠️ Không thể tải trạng thái xác thực
         </Text>
-        <Text fontSize="$sm" color={colors.secondary_text} marginTop={8} textAlign="center">
+        <Text
+          fontSize="$sm"
+          color={colors.secondary_text}
+          marginTop={8}
+          textAlign="center"
+        >
           Vui lòng thử lại sau
         </Text>
       </Center>
@@ -131,12 +155,16 @@ export const EKYCStatusCheck: React.FC = () => {
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={{ padding: 20 }}
     >
-      <VStack space="lg">        
+      <VStack space="lg">
         {/* CIC Number Card - Hiển thị đầu tiên */}
         {ekycData?.cic_no && (
           <Center>
             <VStack space="xs" alignItems="center">
-              <Text fontSize="$sm" fontWeight="$medium" color={colors.secondary_text}>
+              <Text
+                fontSize="$sm"
+                fontWeight="$medium"
+                color={colors.secondary_text}
+              >
                 Số định danh CCCD
               </Text>
               <Text fontSize="$2xl" fontWeight="$bold" color={colors.primary}>
@@ -157,7 +185,11 @@ export const EKYCStatusCheck: React.FC = () => {
           <VStack space="lg">
             {/* Header tiến độ */}
             <HStack justifyContent="space-between" alignItems="center">
-              <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
+              <Text
+                fontSize="$md"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 Tiến độ hoàn thành
               </Text>
               <Text fontSize="$xl" fontWeight="$bold" color={colors.success}>

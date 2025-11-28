@@ -208,7 +208,7 @@ export default function ProfileScreen() {
 
     if (ekycStatus.is_ocr_done && !ekycStatus.is_face_verified) {
       return {
-        text: "Tiếp tục xác thực khuôn mặt",
+        text: "Tiếp tục xác thực",
         route: "/settings/verify/face-scan",
         disabled: false,
         icon: BadgeAlert,

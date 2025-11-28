@@ -1,6 +1,7 @@
 import useAxios from "@/config/useAxios.config";
 import { logger } from "@/domains/shared/utils/logger";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
+import { queryClient } from "@/libs/query/QueryClientProvider";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import { create } from "zustand";
@@ -255,8 +256,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   clearAuth: async () => {
     try {
+      // 🔴 CRITICAL FIX: Clear SecureStorage
       await secureStorage.clearAuth();
 
+      // 🔴 CRITICAL FIX: Clear Zustand State
       set({
         accessToken: null,
         user: null,
@@ -264,7 +267,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         isLoading: false,
       });
-      console.log("✅ [Auth] Auth cleared");
+
+      // 🔴 CRITICAL FIX: Clear React Query Cache
+      queryClient.clear();
+
+      console.log("✅ [Auth] Auth cleared (including React Query cache)");
     } catch (error) {
       console.error("❌ [Auth] Error clearing auth:", error);
     }

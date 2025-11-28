@@ -20,9 +20,9 @@ export enum RegisteredPolicyStatus {
  * Trạng thái underwriting (thẩm định)
  */
 export enum UnderwritingStatus {
-  PENDING = "pending",           // Đang chờ
-  ACTIVE = "active",         // Đã duyệt
-  REJECTED = "rejected",         // Từ chối
+  PENDING = "pending", // Đang chờ
+  APPROVED = "approved", // Đã duyệt
+  REJECTED = "rejected", // Từ chối
   UNDER_REVIEW = "under_review", // Đang xem xét
 }
 
@@ -53,7 +53,7 @@ export const RegisteredPolicyStatusLabels: Record<RegisteredPolicyStatus, string
  */
 export const UnderwritingStatusLabels: Record<UnderwritingStatus, string> = {
   [UnderwritingStatus.PENDING]: "Chờ duyệt",
-  [UnderwritingStatus.ACTIVE]: "Đã duyệt",
+  [UnderwritingStatus.APPROVED]: "Đã duyệt",
   [UnderwritingStatus.REJECTED]: "Từ chối",
   [UnderwritingStatus.UNDER_REVIEW]: "Đang xem xét",
 };

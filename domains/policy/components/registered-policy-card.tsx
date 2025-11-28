@@ -27,7 +27,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
   const getPolicyStatusDisplay = () => {
     // ƯU TIÊN underwriting_status để filter chính xác
     switch (policy.underwriting_status) {
-      case "active": // approved
+      case "approved": // approved
         return {
           label: "Đã duyệt",
           color: colors.success,

@@ -220,7 +220,7 @@ export type RegisteredPolicyStatus =
  */
 export type UnderwritingStatus =
   | "pending"             // Đang chờ
-  | "active"            // Đã duyệt
+  | "approved"            // Đã duyệt
   | "rejected"            // Từ chối
 
 /**

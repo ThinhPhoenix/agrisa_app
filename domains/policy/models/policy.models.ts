@@ -208,20 +208,21 @@ export type RegisterPolicyPayload = {
  * Trạng thái của policy đã đăng ký
  */
 export type RegisteredPolicyStatus = 
+  | "draft"               // Bản nháp
   | "pending_review"      // Chờ xét duyệt
+  | "pending_payment"     // Chờ thanh toán
   | "active"              // Đang hoạt động
   | "expired"             // Hết hạn
   | "cancelled"           // Đã hủy
-  | "rejected"            // Bị từ chối
-  | "suspended";          // Tạm ngưng
+  | "rejected";           // Bị từ chối
 
 /**
  * Trạng thái underwriting (thẩm định)
  */
 export type UnderwritingStatus =
-  | "pending"             // Đang chờ
+  | "pending"             // Đang chờ thẩm định
   | "approved"            // Đã duyệt
-  | "rejected"            // Từ chối
+  | "rejected";           // Từ chối
 
 /**
  * Model cho một policy đã đăng ký

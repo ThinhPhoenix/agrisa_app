@@ -1,7 +1,9 @@
 import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useDataMonitor } from "@/domains/farm-data-monitor/hooks/use-data-monitor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -17,6 +19,7 @@ import {
   VStack,
 } from "@gluestack-ui/themed";
 import {
+  Activity,
   AlertCircle,
   Banknote,
   Building2,
@@ -61,6 +64,8 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   // Fetch thông tin farm dựa trên farm_id
   const { getDetailFarm } = useFarm();
   const { getInsurancePartnerDetail } = useInsurancePartner();
+  const { getDetailBasePolicy } = usePolicy();
+  const { getPolicyDataMonitor } = useDataMonitor();
 
   // Lấy thông tin insurance partner
   const { data: partnerData, isLoading: partnerLoading } =
@@ -68,6 +73,16 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const { data: farmData, isLoading: farmLoading } = getDetailFarm(
     policy.farm_id
   );
+
+  // Lấy thông tin base policy
+  const { data: basePolicyData, isLoading: basePolicyLoading } =
+    getDetailBasePolicy(policy.base_policy_id);
+  const basePolicy = basePolicyData?.data?.base_policy;
+
+  // Lấy dữ liệu monitoring nếu policy đã active
+  const shouldFetchMonitoring = policy.status === "active";
+  const { data: monitoringData, isLoading: monitoringLoading } =
+    getPolicyDataMonitor(shouldFetchMonitoring ? policy.farm_id : "");
 
   const farm = farmData?.success ? farmData.data : null;
 
@@ -750,6 +765,270 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           </VStack>
         </Box>
 
+        {/* ========== THÔNG TIN CHƯƠNG TRÌNH BẢO HIỂM ========== */}
+        {basePolicyLoading ? (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            p="$5"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+          >
+            <HStack space="sm" alignItems="center" justifyContent="center">
+              <Spinner size="small" color={colors.primary} />
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Đang tải thông tin chương trình bảo hiểm...
+              </Text>
+            </HStack>
+          </Box>
+        ) : basePolicy ? (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            p="$5"
+          >
+            <VStack space="md">
+              <HStack alignItems="center" space="sm" justifyContent="center">
+                <Shield size={16} color={colors.primary} strokeWidth={2} />
+                <Text
+                  fontSize="$lg"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Thông tin chương trình bảo hiểm
+                </Text>
+              </HStack>
+
+              <Box height={1} bg={colors.frame_border} width="100%" />
+
+              <VStack space="sm">
+                <VStack space="xs">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Tên chương trình
+                  </Text>
+                  <Text
+                    fontSize="$md"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
+                    {basePolicy.product_name}
+                  </Text>
+                </VStack>
+
+                <VStack space="xs">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Mô tả
+                  </Text>
+                  <Text
+                    fontSize="$sm"
+                    color={colors.primary_text}
+                    lineHeight="$lg"
+                  >
+                    {basePolicy.product_description}
+                  </Text>
+                </VStack>
+
+                <HStack space="md">
+                  <VStack flex={1} space="xs">
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Thời hạn bảo hiểm
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {basePolicy.coverage_duration_days} ngày
+                    </Text>
+                  </VStack>
+
+                  <VStack flex={1} space="xs">
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Tự động gia hạn
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={
+                        basePolicy.auto_renewal
+                          ? colors.success
+                          : colors.muted_text
+                      }
+                    >
+                      {basePolicy.auto_renewal ? "Có" : "Không"}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </VStack>
+            </VStack>
+          </Box>
+        ) : null}
+
+        {/* ========== GIÁM SÁT DỮ LIỆU VÀ PHÂN TÍCH RỦI RO ========== */}
+        {shouldFetchMonitoring && (
+          <>
+            {monitoringLoading ? (
+              <Box
+                bg={colors.card_surface}
+                borderRadius="$2xl"
+                p="$5"
+                borderWidth={1}
+                borderColor={colors.frame_border}
+              >
+                <HStack space="sm" alignItems="center" justifyContent="center">
+                  <Spinner size="small" color={colors.primary} />
+                  <Text fontSize="$sm" color={colors.secondary_text}>
+                    Đang tải dữ liệu giám sát...
+                  </Text>
+                </HStack>
+              </Box>
+            ) : monitoringData?.data ? (
+              <Box
+                bg={colors.card_surface}
+                borderRadius="$2xl"
+                borderWidth={1}
+                borderColor={colors.frame_border}
+                p="$5"
+              >
+                <VStack space="md">
+                  <HStack
+                    alignItems="center"
+                    space="sm"
+                    justifyContent="center"
+                  >
+                    <Activity size={16} color={colors.info} strokeWidth={2} />
+                    <Text
+                      fontSize="$lg"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      Giám sát và Phân tích
+                    </Text>
+                  </HStack>
+
+                  <Box height={1} bg={colors.frame_border} width="100%" />
+
+                  <VStack space="xs">
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Tổng số điểm dữ liệu
+                      </Text>
+                      <Text
+                        fontSize="$md"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
+                        {monitoringData.data.count}
+                      </Text>
+                    </HStack>
+
+                    <Text fontSize="$xs" color={colors.muted_text} mt="$2">
+                      Hệ thống đang theo dõi tình trạng nông trại của bạn qua dữ
+                      liệu vệ tinh và các cảm biến. Dữ liệu được cập nhật liên
+                      tục để phát hiện sớm các rủi ro.
+                    </Text>
+
+                    {monitoringData.data.monitoring_data?.length > 0 && (
+                      <VStack space="xs" mt="$2">
+                        <Text
+                          fontSize="$xs"
+                          fontWeight="$bold"
+                          color={colors.primary_text}
+                        >
+                          Điểm dữ liệu mới nhất:
+                        </Text>
+                        {monitoringData.data.monitoring_data
+                          .slice(0, 3)
+                          .map((item: any, index: number) => (
+                            <Box
+                              key={item.id || index}
+                              bg={colors.background}
+                              borderRadius="$lg"
+                              p="$3"
+                              borderWidth={1}
+                              borderColor={
+                                item.data_quality === "good"
+                                  ? colors.success
+                                  : item.data_quality === "poor"
+                                    ? colors.error
+                                    : colors.warning
+                              }
+                            >
+                              <HStack
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <VStack flex={1}>
+                                  <Text
+                                    fontSize="$xs"
+                                    color={colors.muted_text}
+                                  >
+                                    {item.parameter_name}
+                                  </Text>
+                                  <Text
+                                    fontSize="$sm"
+                                    fontWeight="$bold"
+                                    color={colors.primary_text}
+                                  >
+                                    {item.measured_value} {item.unit}
+                                  </Text>
+                                  <Text
+                                    fontSize="$2xs"
+                                    color={colors.muted_text}
+                                  >
+                                    {Utils.formatVietnameseDate(
+                                      new Date(
+                                        item.measurement_timestamp * 1000
+                                      )
+                                    )}
+                                  </Text>
+                                </VStack>
+                                <VStack alignItems="flex-end">
+                                  <Text
+                                    fontSize="$2xs"
+                                    color={colors.muted_text}
+                                  >
+                                    Chất lượng
+                                  </Text>
+                                  <Text
+                                    fontSize="$xs"
+                                    fontWeight="$bold"
+                                    color={
+                                      item.data_quality === "good"
+                                        ? colors.success
+                                        : item.data_quality === "poor"
+                                          ? colors.error
+                                          : colors.warning
+                                    }
+                                  >
+                                    {item.data_quality === "good"
+                                      ? "Tốt"
+                                      : item.data_quality === "poor"
+                                        ? "Kém"
+                                        : "Trung bình"}
+                                  </Text>
+                                  <Text
+                                    fontSize="$2xs"
+                                    color={colors.muted_text}
+                                  >
+                                    Độ tin cậy:{" "}
+                                    {(item.confidence_score * 100).toFixed(0)}%
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            </Box>
+                          ))}
+                      </VStack>
+                    )}
+                  </VStack>
+                </VStack>
+              </Box>
+            ) : null}
+          </>
+        )}
+
         {/* ========== LINK TÀI LIỆU HỢP ĐỒNG ========== */}
         {policy.signed_policy_document_url && (
           <Pressable
@@ -895,6 +1174,15 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
               fontWeight="$semibold"
             >
               Mọi thắc mắc xin liên hệ bộ phận chăm sóc khách hàng
+            </Text>
+            <Text
+              fontSize="$2xs"
+              color={colors.muted_text}
+              textAlign="center"
+              mt="$2"
+            >
+              Cập nhật lần cuối:{" "}
+              {Utils.formatVietnameseDate(new Date(policy.updated_at))}
             </Text>
           </VStack>
         </Box>

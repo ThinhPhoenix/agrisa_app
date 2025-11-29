@@ -1,4 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
 import { useToast } from "@/domains/shared/hooks/useToast";
 import { Utils } from "@/libs/utils/utils"; // ✅ THÊM IMPORT
 import {
@@ -14,6 +15,7 @@ import {
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import {
+  Building2,
   Calendar,
   CheckCircle2,
   ChevronRight,
@@ -156,6 +158,12 @@ const PolicyCard = ({
   policy: PublicBasePolicyResponse;
   colors: ColorSet;
 }) => {
+  const { getInsurancePartnerDetail } = useInsurancePartner();
+
+  // Lấy thông tin insurance partner
+  const { data: partnerData, isLoading: partnerLoading } =
+    getInsurancePartnerDetail(policy.insurance_provider_id);
+
   const handlePress = () => {
     router.push({
       pathname: "/(farmer)/form-policy/[id]",
@@ -208,7 +216,7 @@ const PolicyCard = ({
                 >
                   {policy.product_name}
                 </Text>
-                {/* Crop Type - Subtle */}
+                {/* Crop Type */}
                 <HStack space="xs" alignItems="center">
                   <Leaf size={14} color={colors.success} strokeWidth={2} />
                   <Text
@@ -218,6 +226,23 @@ const PolicyCard = ({
                   >
                     {Utils.getCropLabel(policy.crop_type)}
                   </Text>
+                </HStack>
+                {/* Insurance Partner */}
+                <HStack space="xs" alignItems="center">
+                  <Building2 size={14} color={colors.primary} strokeWidth={2} />
+                  {partnerLoading ? (
+                    <Spinner size="small" color={colors.primary} />
+                  ) : (
+                    <Text
+                      fontSize="$xs"
+                      color={colors.muted_text}
+                      fontWeight="$medium"
+                      numberOfLines={1}
+                    >
+                      {partnerData?.data?.partner_display_name ||
+                        policy.insurance_provider_id}
+                    </Text>
+                  )}
                 </HStack>
               </VStack>
               <StatusBadge status={policy.status} colors={colors} />

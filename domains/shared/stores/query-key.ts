@@ -6,6 +6,11 @@ export const QueryKey = {
     ME: "auth-me",
   },
 
+  INSURANCE_PARTNER: {
+    VIEW_ALL: "insurance-partners",
+    DETAIL: "insurance-partner-detail",
+  },
+
   EKYC: {
     STATUS: "ekyc-status",
     OCR_ID: "ekyc-ocr-id",
@@ -29,6 +34,15 @@ export const QueryKey = {
 
   STATS: {
     OVERVIEW: "stats-overview",
+  },
+
+  DATA_SOURCE: {
+    DETAIL: "data-source-detail",
+  },
+
+  DATA_MONITOR: {
+    POLICY_MONITOR: "policy-data-monitor",
+    DETAIL_POLICY_MONITOR: "detail-policy-data-monitor",  
   },
 
   TEST: "test",

@@ -80,12 +80,51 @@ export const Utils = {
 
   getFrequencyLabel: (unit: string): string => {
     const labels: Record<string, string> = {
+      hourly: "Mỗi giờ",
       hour: "giờ",
+      daily: "Mỗi ngày",
       day: "ngày",
+      weekly: "Mỗi tuần",
       week: "tuần",
+      monthly: "Mỗi tháng",
       month: "tháng",
     };
     return labels[unit] || unit;
+  },
+
+  // Formatting cho Condition trong Policy Detail
+  formatAggregationLabel: (func: string): string => {
+    const labels: Record<string, string> = {
+      sum: "Tổng cộng",
+      avg: "Trung bình",
+      min: "Giá trị nhỏ nhất",
+      max: "Giá trị lớn nhất",
+      median: "Trung vị",
+    };
+    return labels[func] || func;
+  },
+
+  formatThresholdOperator: (op: string): string => {
+    const labels: Record<string, string> = {
+      "<": "Nhỏ hơn",
+      ">": "Lớn hơn",
+      "<=": "Nhỏ hơn hoặc bằng",
+      ">=": "Lớn hơn hoặc bằng",
+      "==": "Bằng",
+      "!=": "Khác",
+    };
+    return labels[op] || op;
+  },
+
+  formatBaselineFunction: (func: string): string => {
+    const labels: Record<string, string> = {
+      avg: "Trung bình",
+      median: "Trung vị",
+      min: "Giá trị thấp nhất",
+      max: "Giá trị cao nhất",
+      sum: "Tổng",
+    };
+    return labels[func] || func;
   },
 
   convertImageToBase64: async (uri: string): Promise<string> => {

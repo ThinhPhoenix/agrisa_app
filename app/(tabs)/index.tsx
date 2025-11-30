@@ -48,10 +48,6 @@ export default function HomeScreen() {
   const { refetch } = getPublicBasePolicy();
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const sendNotification = usePushNoti({
-    title: "Thông báo từ Agrisa",
-    body: "Bạn vừa chạm vào xem ngay!",
-  });
 
   // Handle pull to refresh
   const onRefresh = React.useCallback(async () => {

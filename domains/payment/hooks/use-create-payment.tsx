@@ -1,7 +1,7 @@
 import useAxios from "@/config/useAxios.config";
 import { useMutation } from "@tanstack/react-query";
-import { router } from "expo-router";
 import * as Linking from "expo-linking";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { CreatePaymentSchema } from "../schemas/create-payment.schema";
 

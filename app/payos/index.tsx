@@ -1,8 +1,8 @@
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { router, useLocalSearchParams } from "expo-router";
 import React from "react";
-import { View, ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { WebView } from "react-native-webview";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 
 export default function PayOS() {
   const params = useLocalSearchParams();

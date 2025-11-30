@@ -1,14 +1,14 @@
 import { useResultStatus } from "@/components/result-status/useResultStatus";
-import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 /**
  * Màn hình Payment Success
- * 
+ *
  * Deep link: agrisa://payment/success
- * 
+ *
  * Handle khi thanh toán thành công từ PayOS
  * Hiển thị thông báo success và tự động redirect về danh sách policy
  */
@@ -25,7 +25,8 @@ export default function PaymentSuccessScreen() {
     resultStatus.showSuccess({
       title: "Thanh toán thành công!",
       message: "Hợp đồng bảo hiểm của bạn đã được kích hoạt",
-      subMessage: "Bạn có thể xem chi tiết hợp đồng trong mục 'Bảo hiểm của tôi'",
+      subMessage:
+        "Bạn có thể xem chi tiết hợp đồng trong mục 'Bảo hiểm của tôi'",
       showHomeButton: true,
       lockNavigation: true,
       homeRoute: "/(tabs)/",

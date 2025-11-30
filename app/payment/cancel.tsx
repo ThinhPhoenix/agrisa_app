@@ -1,14 +1,14 @@
 import { useResultStatus } from "@/components/result-status/useResultStatus";
-import { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 /**
  * Màn hình Payment Cancel
- * 
+ *
  * Deep link: agrisa://payment/cancel
- * 
+ *
  * Handle khi người dùng hủy thanh toán từ PayOS
  * Hiển thị thông báo warning và tự động redirect về danh sách policy
  */

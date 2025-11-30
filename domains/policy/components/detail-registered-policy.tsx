@@ -3,9 +3,7 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useDataMonitor } from "@/domains/farm-data-monitor/hooks/use-data-monitor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
-import { PaymentInfoScreen } from "@/domains/payment/components/PaymentInfoScreen";
 import useCreatePayment from "@/domains/payment/hooks/use-create-payment";
-import { PaymentResponse } from "@/domains/payment/models/payment.model";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { MonitorDataHelper } from "@/domains/policy/utils/monitor-data-helper";
 import { Utils } from "@/libs/utils/utils";
@@ -69,8 +67,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const { colors } = useAgrisaColors();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedDataSharing, setAcceptedDataSharing] = useState(false);
-  const [paymentData, setPaymentData] = useState<PaymentResponse | null>(null);
-  const [showPaymentInfo, setShowPaymentInfo] = useState(false);
 
   // Fetch thông tin farm dựa trên farm_id
   const { getDetailFarm } = useFarm();
@@ -267,32 +263,15 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
     createPayment(paymentRequest, {
       onSuccess: (data) => {
         console.log("✅ Payment created successfully:", data);
-        setPaymentData(data);
-        setShowPaymentInfo(true);
+        console.log("🔄 Navigating to PayOS WebView...");
+        // Hook useCreatePayment sẽ tự động navigate đến /payos
       },
       onError: (error) => {
         console.error("❌ Payment creation failed:", error);
+        // TODO: Show error toast/modal
       },
     });
   };
-
-  // Nếu đang hiển thị payment info, render PaymentInfoScreen
-  if (showPaymentInfo && paymentData) {
-    return (
-      <PaymentInfoScreen
-        paymentData={paymentData}
-        onPaymentSuccess={() => {
-          setShowPaymentInfo(false);
-          setPaymentData(null);
-          onRefresh?.();
-        }}
-        onPaymentCancel={() => {
-          setShowPaymentInfo(false);
-          setPaymentData(null);
-        }}
-      />
-    );
-  }
 
   return (
     <ScrollView

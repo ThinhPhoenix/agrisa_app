@@ -18,7 +18,7 @@
         "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng"
 
       },
-      "bundleIdentifier": "com.tnhaan.agrisa"
+      "bundleIdentifier": "com.agrisa.Agrisa"
     },
     "android": {
       "adaptiveIcon": {
@@ -35,8 +35,20 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
-      "package": "com.tnhaan.agrisa",
-      
+      "package": "com.agrisa.Agrisa",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "agrisa",
+              "host": "payment"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",

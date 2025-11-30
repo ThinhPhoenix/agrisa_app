@@ -235,6 +235,7 @@ export type RegisteredPolicy = {
   farm_id: string;
   farmer_id: string;
   coverage_amount: number;
+  coverage_start_date: number; // Ngày bắt đầu bảo hiểm (timestamp)
   coverage_end_date: number;
   planting_date: number;
   area_multiplier: number;

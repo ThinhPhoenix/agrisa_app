@@ -1,15 +1,32 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { Box, HStack, ScrollView, Text, VStack } from "@gluestack-ui/themed";
+import { ActivePolicyCard } from "@/domains/policy/components/active-policy-card";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { RegisteredPolicy } from "@/domains/policy/models/policy.models";
+import { Box, HStack, ScrollView, Spinner, Text, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import { FileText, Info } from "lucide-react-native";
+import { useMemo } from "react";
 import { RefreshControl } from "react-native";
 
 export default function MyPoliciesScreen() {
   const { colors } = useAgrisaColors();
 
-  // TODO: Implement actual data fetching
-  // const { data, isLoading, isFetching, refetch } = useMyPolicies();
+  // Lấy danh sách registered policies
+  const { getRegisteredPolicy } = usePolicy();
+  const { data, isLoading, isFetching, refetch } = getRegisteredPolicy();
+
+  // Lọc chỉ các policy active & approved
+  const activePolicies = useMemo(() => {
+    if (!data?.success || !data?.data?.policies) {
+      return [];
+    }
+
+    return data.data.policies.filter(
+      (policy: RegisteredPolicy) =>
+        policy.status === "active" && policy.underwriting_status === "approved"
+    );
+  }, [data]);
 
   return (
     <VStack flex={1} bg={colors.background}>
@@ -24,8 +41,8 @@ export default function MyPoliciesScreen() {
         bg={colors.background}
         refreshControl={
           <RefreshControl
-            refreshing={false}
-            onRefresh={() => {}}
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
             colors={[colors.success]}
             tintColor={colors.success}
           />
@@ -68,40 +85,90 @@ export default function MyPoliciesScreen() {
                 Quản lý các hợp đồng bảo hiểm đang hoạt động của bạn.
               </Text>
             </VStack>
-          </Box>{" "}
-          {/* Empty State - TODO: Replace with actual policy list */}
-          <Box
-            borderWidth={1}
-            borderColor={colors.frame_border}
-            borderRadius="$xl"
-            p="$6"
-            bg={colors.card_surface}
-            alignItems="center"
-            mt="$4"
-          >
-            <FileText
-              size={48}
-              color={colors.secondary_text}
-              strokeWidth={1.5}
-            />
-            <Text
-              fontSize="$lg"
-              fontWeight="$semibold"
-              color={colors.primary_text}
-              mt="$3"
-            >
-              Chưa có bảo hiểm
-            </Text>
-            <Text
-              fontSize="$sm"
-              color={colors.secondary_text}
-              textAlign="center"
-              mt="$1"
-            >
-              Bạn chưa đăng ký bảo hiểm nào. Hãy khám phá các chương trình bảo
-              hiểm tại trang Trang chủ.
-            </Text>
           </Box>
+
+          {/* Summary Stats */}
+          {!isLoading && activePolicies.length > 0 && (
+            <Box
+              bg={colors.successSoft}
+              borderWidth={1}
+              borderColor={colors.success}
+              p="$3"
+              borderRadius="$lg"
+            >
+              <HStack justifyContent="space-around" alignItems="center">
+                <VStack alignItems="center" flex={1}>
+                  <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
+                    {activePolicies.length}
+                  </Text>
+                  <Text fontSize="$xs" color={colors.secondary_text} textAlign="center">
+                    Hợp đồng đang hoạt động
+                  </Text>
+                </VStack>
+                
+                <Box width={1} bg={colors.success} height={40} opacity={0.3} />
+                
+                <VStack alignItems="center" flex={1}>
+                  <Text fontSize="$xl" fontWeight="$bold" color={colors.success}>
+                    {activePolicies.reduce(
+                      (sum, p) => sum + p.coverage_amount,
+                      0
+                    ).toLocaleString("vi-VN")}đ
+                  </Text>
+                  <Text fontSize="$xs" color={colors.secondary_text} textAlign="center">
+                    Tổng giá trị bảo hiểm
+                  </Text>
+                </VStack>
+              </HStack>
+            </Box>
+          )}
+
+          {/* Content */}
+          {isLoading ? (
+            <Box py="$10" alignItems="center">
+              <Spinner size="large" color={colors.primary} />
+              <Text fontSize="$sm" color={colors.secondary_text} mt="$3">
+                Đang tải danh sách bảo hiểm...
+              </Text>
+            </Box>
+          ) : activePolicies.length === 0 ? (
+            <Box
+              borderWidth={1}
+              borderColor={colors.frame_border}
+              borderRadius="$xl"
+              p="$6"
+              bg={colors.card_surface}
+              alignItems="center"
+              mt="$4"
+            >
+              <FileText
+                size={48}
+                color={colors.secondary_text}
+                strokeWidth={1.5}
+              />
+              <Text
+                fontSize="$lg"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+                mt="$3"
+              >
+                Chưa có bảo hiểm đang hoạt động
+              </Text>
+              <Text
+                fontSize="$sm"
+                color={colors.secondary_text}
+                textAlign="center"
+                mt="$1"
+              >
+                Bạn chưa có hợp đồng bảo hiểm nào đang hoạt động. Hãy khám phá các chương trình bảo
+                hiểm tại trang Trang chủ.
+              </Text>
+            </Box>
+          ) : (
+            activePolicies.map((policy: RegisteredPolicy) => (
+              <ActivePolicyCard key={policy.id} policy={policy} />
+            ))
+          )}
         </VStack>
       </ScrollView>
     </VStack>

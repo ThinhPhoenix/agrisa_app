@@ -253,7 +253,7 @@ export const RiskAnalysisDisplay: React.FC<RiskAnalysisDisplayProps> = ({
               flex={1}
               textAlign="right"
             >
-              {summary.type === "manual" ? "Đánh giá thủ công" : "AI Analyzer"}
+              {summary.type === "manual" ? "Đối tác đánh giá thủ công" : latestAnalysis.analysis_source}
             </Text>
           </HStack>
 

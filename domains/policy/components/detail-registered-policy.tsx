@@ -770,7 +770,11 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
             <VStack space="sm" alignItems="center">
               <HStack space="xs" alignItems="center">
                 <Shield size={16} color={colors.primary} strokeWidth={2} />
-                <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text}>
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
                   Số tiền bảo hiểm tối đa
                 </Text>
               </HStack>
@@ -812,7 +816,9 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                     fontWeight="$bold"
                     color={colors.primary_text}
                   >
-                    {Utils.formatDateForMS(basePolicy?.insurance_valid_from_day)}
+                    {Utils.formatDateForMS(
+                      basePolicy?.insurance_valid_from_day
+                    )}
                   </Text>
                 </VStack>
 

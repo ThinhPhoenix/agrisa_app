@@ -74,8 +74,6 @@ export const PolicyStatusColors = {
   [RegisteredPolicyStatus.EXPIRED]: "muted_text",
   [RegisteredPolicyStatus.CANCELLED]: "error",
   [RegisteredPolicyStatus.REJECTED]: "error",
-
   [UnderwritingStatus.PENDING]: "pending",
   [UnderwritingStatus.APPROVED]: "success",
-  [UnderwritingStatus.REJECTED]: "error",
 } as const;

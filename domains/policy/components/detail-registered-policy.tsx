@@ -3,7 +3,11 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useDataMonitor } from "@/domains/farm-data-monitor/hooks/use-data-monitor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
+import { PaymentInfoScreen } from "@/domains/payment/components/PaymentInfoScreen";
+import useCreatePayment from "@/domains/payment/hooks/use-create-payment";
+import { PaymentResponse } from "@/domains/payment/models/payment.model";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { MonitorDataHelper } from "@/domains/policy/utils/monitor-data-helper";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -26,13 +30,18 @@ import {
   Calendar,
   Check,
   CheckCircle2,
+  Cloud,
+  CloudSun,
   CreditCard,
+  Droplets,
   FileCheck,
   FileText,
   MapPin,
   Scale,
   Shield,
   Sprout,
+  Sun,
+  TriangleAlert,
   User,
   View,
 } from "lucide-react-native";
@@ -60,12 +69,16 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const { colors } = useAgrisaColors();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedDataSharing, setAcceptedDataSharing] = useState(false);
+  const [paymentData, setPaymentData] = useState<PaymentResponse | null>(null);
+  const [showPaymentInfo, setShowPaymentInfo] = useState(false);
 
   // Fetch thông tin farm dựa trên farm_id
   const { getDetailFarm } = useFarm();
   const { getInsurancePartnerDetail } = useInsurancePartner();
   const { getDetailBasePolicy } = usePolicy();
   const { getPolicyDataMonitor } = useDataMonitor();
+  const { mutate: createPayment, isPending: isCreatingPayment } =
+    useCreatePayment();
 
   // Lấy thông tin insurance partner
   const { data: partnerData, isLoading: partnerLoading } =
@@ -77,26 +90,41 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   // Lấy thông tin base policy
   const { data: basePolicyData, isLoading: basePolicyLoading } =
     getDetailBasePolicy(policy.base_policy_id);
-  const basePolicy = basePolicyData?.data?.base_policy;
+  const basePolicy = basePolicyData?.success
+    ? basePolicyData.data?.base_policy
+    : null;
 
-  // Lấy dữ liệu monitoring nếu policy đã active
-  const shouldFetchMonitoring = policy.status === "active";
+  // Lấy dữ liệu monitoring nếu underwriting_status là approved hoặc rejected
+  const shouldFetchMonitoring = Utils.shouldShowMonitorData(
+    policy.underwriting_status
+  );
   const { data: monitoringData, isLoading: monitoringLoading } =
     getPolicyDataMonitor(shouldFetchMonitoring ? policy.farm_id : "");
 
   const farm = farmData?.success ? farmData.data : null;
 
-  /**
-   * Xác định trạng thái hiển thị theo ma trận hợp lệ
-   * Ma trận hợp lệ:
-   * - draft + pending: Bản nháp
-   * - pending_review + pending: Chờ thẩm định
-   * - pending_payment + approved: Chờ thanh toán (hiển thị payment section)
-   * - active + approved: Đang hoạt động
-   * - rejected + rejected: Bị từ chối
-   * - expired + approved: Hết hạn
-   * - cancelled + approved: Đã hủy
-   */
+  // Validate monitor data với policy number - kiểm tra toàn bộ monitoring items
+  const monitorData = monitoringData?.success ? monitoringData.data : null;
+  const validationResult = MonitorDataHelper.validateMonitorData(
+    monitorData,
+    policy.policy_number
+  );
+
+  // Lấy các items đã được filter theo policy number
+  const filteredMonitorItems = validationResult.matchedItems;
+
+  // Kiểm tra xem có nên hiển thị monitoring section không
+  const shouldDisplayMonitoring = MonitorDataHelper.shouldDisplayMonitoring(
+    validationResult,
+    policy.underwriting_status
+  );
+
+  // Lấy thống kê monitoring data
+  const monitoringStats = MonitorDataHelper.getMonitoringStats(
+    monitorData,
+    policy.policy_number
+  );
+
   const getPolicyStatusDisplay = () => {
     // Trường hợp đặc biệt: pending_payment (chỜ thanh toán sau khi duyệt)
     if (
@@ -203,6 +231,68 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
       console.error("Error opening PDF:", error);
     }
   };
+
+  // Hàm xử lý thanh toán
+  const handlePayment = () => {
+    if (!acceptedTerms || !acceptedDataSharing) {
+      console.warn("⚠️ User chưa đồng ý điều khoản");
+      return;
+    }
+
+    if (!basePolicy) {
+      console.error("❌ Không có thông tin base policy");
+      return;
+    }
+
+    console.log("💳 Tạo payment request...");
+
+    const paymentRequest = {
+      amount: policy.total_farmer_premium,
+      description: Utils.generatePaymentDescription(policy.policy_number),
+      return_url: "https://agrisa-api.phrimp.io.vn/success",
+      cancel_url: "https://agrisa-api.phrimp.io.vn/cancel",
+      type: "policy_registration_payment",
+      items: [
+        {
+          item_id: policy.id,
+          name: basePolicy.product_name,
+          price: policy.total_farmer_premium,
+          quantity: 1,
+        },
+      ],
+    };
+
+    console.log("📦 Payment request:", paymentRequest);
+
+    createPayment(paymentRequest, {
+      onSuccess: (data) => {
+        console.log("✅ Payment created successfully:", data);
+        setPaymentData(data);
+        setShowPaymentInfo(true);
+      },
+      onError: (error) => {
+        console.error("❌ Payment creation failed:", error);
+      },
+    });
+  };
+
+  // Nếu đang hiển thị payment info, render PaymentInfoScreen
+  if (showPaymentInfo && paymentData) {
+    return (
+      <PaymentInfoScreen
+        paymentData={paymentData}
+        onPaymentSuccess={() => {
+          setShowPaymentInfo(false);
+          setPaymentData(null);
+          onRefresh?.();
+        }}
+        onPaymentCancel={() => {
+          setShowPaymentInfo(false);
+          setPaymentData(null);
+        }}
+      />
+    );
+  }
 
   return (
     <ScrollView
@@ -343,8 +433,9 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                         color={colors.primary_text}
                         textAlign="center"
                       >
-                        {partnerData?.data?.partner_display_name ||
-                          policy.insurance_provider_id}
+                        {partnerData?.success
+                          ? partnerData.data?.partner_display_name
+                          : policy.insurance_provider_id}
                       </Text>
                     )}
                   </VStack>
@@ -884,7 +975,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                   </Text>
                 </HStack>
               </Box>
-            ) : monitoringData?.data ? (
+            ) : shouldDisplayMonitoring ? (
               <Box
                 bg={colors.card_surface}
                 borderRadius="$2xl"
@@ -920,28 +1011,64 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                         fontWeight="$bold"
                         color={colors.primary_text}
                       >
-                        {monitoringData.data.count}
+                        {validationResult.matchCount}
+                      </Text>
+                    </HStack>
+
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Độ tin cậy trung bình
+                      </Text>
+                      <Text
+                        fontSize="$md"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
+                        {(monitoringStats.avgConfidence * 100).toFixed(0)}%
                       </Text>
                     </HStack>
 
                     <Text fontSize="$xs" color={colors.muted_text} mt="$2">
                       Hệ thống đang theo dõi tình trạng nông trại của bạn qua dữ
-                      liệu vệ tinh và các cảm biến. Dữ liệu được cập nhật liên
-                      tục để phát hiện sớm các rủi ro.
+                      liệu vệ tinh. Dữ liệu được cập nhật định kỳ để phát hiện
+                      sớm các rủi ro.
                     </Text>
 
-                    {monitoringData.data.monitoring_data?.length > 0 && (
+                    {filteredMonitorItems.length > 0 && (
                       <VStack space="xs" mt="$2">
                         <Text
                           fontSize="$xs"
                           fontWeight="$bold"
                           color={colors.primary_text}
                         >
-                          Điểm dữ liệu mới nhất:
+                          Các điểm dữ liệu mới nhất:
                         </Text>
-                        {monitoringData.data.monitoring_data
-                          .slice(0, 3)
-                          .map((item: any, index: number) => (
+                        {filteredMonitorItems.slice(0, 3).map((item, index) => {
+                          // Sử dụng MonitorDataHelper để format item
+                          const formatted =
+                            MonitorDataHelper.formatMonitorItem(item);
+                          const { ndmiStatus, confidenceInfo } = formatted;
+
+                          // Dynamic icons
+                          const NDMIIcon =
+                            ndmiStatus.iconName === "droplets"
+                              ? Droplets
+                              : ndmiStatus.iconName === "sprout"
+                                ? Sprout
+                                : ndmiStatus.iconName === "alert-triangle"
+                                  ? AlertCircle
+                                  : ndmiStatus.iconName === "triangle-alert"
+                                    ? TriangleAlert
+                                    : AlertCircle;
+
+                          const ConfidenceIcon =
+                            confidenceInfo.iconName === "sun"
+                              ? Sun
+                              : confidenceInfo.iconName === "cloud-sun"
+                                ? CloudSun
+                                : Cloud;
+
+                          return (
                             <Box
                               key={item.id || index}
                               bg={colors.background}
@@ -949,77 +1076,116 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                               p="$3"
                               borderWidth={1}
                               borderColor={
-                                item.data_quality === "good"
-                                  ? colors.success
-                                  : item.data_quality === "poor"
-                                    ? colors.error
-                                    : colors.warning
+                                colors[ndmiStatus.color as keyof typeof colors]
                               }
                             >
-                              <HStack
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <VStack flex={1}>
-                                  <Text
-                                    fontSize="$xs"
-                                    color={colors.muted_text}
-                                  >
-                                    {item.parameter_name}
-                                  </Text>
-                                  <Text
-                                    fontSize="$sm"
-                                    fontWeight="$bold"
-                                    color={colors.primary_text}
-                                  >
-                                    {item.measured_value} {item.unit}
-                                  </Text>
-                                  <Text
-                                    fontSize="$2xs"
-                                    color={colors.muted_text}
-                                  >
-                                    {Utils.formatVietnameseDate(
-                                      new Date(
-                                        item.measurement_timestamp * 1000
-                                      )
-                                    )}
-                                  </Text>
-                                </VStack>
-                                <VStack alignItems="flex-end">
-                                  <Text
-                                    fontSize="$2xs"
-                                    color={colors.muted_text}
-                                  >
-                                    Chất lượng
-                                  </Text>
-                                  <Text
-                                    fontSize="$xs"
-                                    fontWeight="$bold"
-                                    color={
-                                      item.data_quality === "good"
-                                        ? colors.success
-                                        : item.data_quality === "poor"
-                                          ? colors.error
-                                          : colors.warning
+                              <VStack space="xs">
+                                {/* Header với NDMI Icon */}
+                                <HStack
+                                  justifyContent="space-between"
+                                  alignItems="center"
+                                >
+                                  <HStack space="xs" alignItems="center">
+                                    <NDMIIcon
+                                      size={14}
+                                      color={
+                                        colors[
+                                          ndmiStatus.color as keyof typeof colors
+                                        ]
+                                      }
+                                    />
+                                    <Text
+                                      fontSize="$xs"
+                                      color={colors.muted_text}
+                                    >
+                                      {item.parameter_name}
+                                    </Text>
+                                  </HStack>
+                                  <HStack space="xs" alignItems="center">
+                                    <ConfidenceIcon
+                                      size={12}
+                                      color={
+                                        colors[
+                                          confidenceInfo.color as keyof typeof colors
+                                        ]
+                                      }
+                                    />
+                                    <Text
+                                      fontSize="$2xs"
+                                      color={
+                                        colors[
+                                          confidenceInfo.color as keyof typeof colors
+                                        ]
+                                      }
+                                    >
+                                      {confidenceInfo.message}
+                                    </Text>
+                                  </HStack>
+                                </HStack>
+
+                                {/* NDMI Value và Status */}
+                                <HStack
+                                  justifyContent="space-between"
+                                  alignItems="center"
+                                >
+                                  <VStack flex={1}>
+                                    <Text
+                                      fontSize="$sm"
+                                      fontWeight="$bold"
+                                      color={colors.primary_text}
+                                    >
+                                      {formatted.formattedValue}
+                                    </Text>
+                                    <Text
+                                      fontSize="$xs"
+                                      fontWeight="$semibold"
+                                      color={
+                                        colors[
+                                          ndmiStatus.color as keyof typeof colors
+                                        ]
+                                      }
+                                    >
+                                      {ndmiStatus.label}
+                                    </Text>
+                                  </VStack>
+                                  <Box
+                                    bg={
+                                      ndmiStatus.color === "info"
+                                        ? colors.infoSoft
+                                        : ndmiStatus.color === "success"
+                                          ? colors.successSoft
+                                          : ndmiStatus.color === "pending"
+                                            ? colors.primarySoft
+                                            : ndmiStatus.color === "warning"
+                                              ? colors.warningSoft
+                                              : colors.errorSoft
                                     }
+                                    px="$2"
+                                    py="$1"
+                                    borderRadius="$md"
                                   >
-                                    {item.data_quality === "good"
-                                      ? "Tốt"
-                                      : item.data_quality === "poor"
-                                        ? "Kém"
-                                        : "Trung bình"}
-                                  </Text>
-                                  <Text
-                                    fontSize="$2xs"
-                                    color={colors.muted_text}
-                                  >
-                                    Độ tin cậy:{" "}
-                                    {(item.confidence_score * 100).toFixed(0)}%
-                                  </Text>
-                                </VStack>
-                              </HStack>
+                                    <Text
+                                      fontSize="$2xs"
+                                      color={
+                                        colors[
+                                          ndmiStatus.color as keyof typeof colors
+                                        ]
+                                      }
+                                      fontWeight="$medium"
+                                    >
+                                      {ndmiStatus.advice}
+                                    </Text>
+                                  </Box>
+                                </HStack>
+
+                                {/* Timestamp */}
+                                <Text fontSize="$2xs" color={colors.muted_text}>
+                                  {formatted.formattedTimestamp}
+                                </Text>
+                              </VStack>
                             </Box>
-                          ))}
+                          );
+                        })}
                       </VStack>
                     )}
                   </VStack>
@@ -1111,16 +1277,21 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
               <Pressable
                 onPress={() => {
                   if (acceptedTerms && acceptedDataSharing) {
-                    console.log("Proceeding to payment...");
-                    // TODO: Navigate to payment screen
+                    handlePayment();
                   }
                 }}
-                opacity={acceptedTerms && acceptedDataSharing ? 1 : 0.5}
-                disabled={!acceptedTerms || !acceptedDataSharing}
+                opacity={
+                  acceptedTerms && acceptedDataSharing && !isCreatingPayment
+                    ? 1
+                    : 0.5
+                }
+                disabled={
+                  !acceptedTerms || !acceptedDataSharing || isCreatingPayment
+                }
               >
                 <Box
                   bg={
-                    acceptedTerms && acceptedDataSharing
+                    acceptedTerms && acceptedDataSharing && !isCreatingPayment
                       ? colors.success
                       : colors.muted_text
                   }
@@ -1142,7 +1313,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                       fontWeight="$bold"
                       color={colors.primary_white_text}
                     >
-                      Thanh toán
+                      {isCreatingPayment ? "Đang xử lý..." : "Thanh toán"}
                     </Text>
                   </HStack>
                 </Box>

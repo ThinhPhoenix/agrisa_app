@@ -1,11 +1,10 @@
 import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { useDataMonitor } from "@/domains/farm-data-monitor/hooks/use-data-monitor";
+import { RiskAnalysisDisplay } from "@/domains/farm-data-monitor/components/RiskAnalysisDisplay";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
 import useCreatePayment from "@/domains/payment/hooks/use-create-payment";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
-import { MonitorDataHelper } from "@/domains/policy/utils/monitor-data-helper";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -21,25 +20,19 @@ import {
   VStack,
 } from "@gluestack-ui/themed";
 import {
-  Activity,
   AlertCircle,
   Banknote,
   Building2,
   Calendar,
   Check,
   CheckCircle2,
-  Cloud,
-  CloudSun,
   CreditCard,
-  Droplets,
   FileCheck,
   FileText,
   MapPin,
   Scale,
   Shield,
   Sprout,
-  Sun,
-  TriangleAlert,
   User,
   View,
 } from "lucide-react-native";
@@ -72,7 +65,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const { getDetailFarm } = useFarm();
   const { getInsurancePartnerDetail } = useInsurancePartner();
   const { getDetailBasePolicy } = usePolicy();
-  const { getPolicyDataMonitor } = useDataMonitor();
   const { mutate: createPayment, isPending: isCreatingPayment } =
     useCreatePayment();
 
@@ -90,36 +82,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
     ? basePolicyData.data?.base_policy
     : null;
 
-  // Lấy dữ liệu monitoring nếu underwriting_status là approved hoặc rejected
-  const shouldFetchMonitoring = Utils.shouldShowMonitorData(
-    policy.underwriting_status
-  );
-  const { data: monitoringData, isLoading: monitoringLoading } =
-    getPolicyDataMonitor(shouldFetchMonitoring ? policy.farm_id : "");
-
   const farm = farmData?.success ? farmData.data : null;
-
-  // Validate monitor data với policy number - kiểm tra toàn bộ monitoring items
-  const monitorData = monitoringData?.success ? monitoringData.data : null;
-  const validationResult = MonitorDataHelper.validateMonitorData(
-    monitorData,
-    policy.policy_number
-  );
-
-  // Lấy các items đã được filter theo policy number
-  const filteredMonitorItems = validationResult.matchedItems;
-
-  // Kiểm tra xem có nên hiển thị monitoring section không
-  const shouldDisplayMonitoring = MonitorDataHelper.shouldDisplayMonitoring(
-    validationResult,
-    policy.underwriting_status
-  );
-
-  // Lấy thống kê monitoring data
-  const monitoringStats = MonitorDataHelper.getMonitoringStats(
-    monitorData,
-    policy.policy_number
-  );
 
   const getPolicyStatusDisplay = () => {
     // Trường hợp đặc biệt: pending_payment (chỜ thanh toán sau khi duyệt)
@@ -456,6 +419,130 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           </VStack>
         </Box>
 
+        {/* Ngày đăng ký và ký kết hợp đồng */}
+        <Box
+          bg={colors.card_surface}
+          borderRadius="$xl"
+          p="$4"
+          borderWidth={1}
+          borderColor={colors.frame_border}
+        >
+          <VStack space="sm" alignItems="center">
+            <HStack space="xs" alignItems="center">
+              <Calendar size={14} color={colors.success} strokeWidth={2} />
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Ngày đăng ký và ký kết hợp đồng
+              </Text>
+            </HStack>
+            <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
+              {Utils.formatDateForMS(
+                Math.floor(new Date(policy.created_at).getTime() / 1000)
+              )}
+            </Text>
+          </VStack>
+        </Box>
+
+        {/* ========== THÔNG TIN CHƯƠNG TRÌNH BẢO HIỂM ========== */}
+        {basePolicyLoading ? (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            p="$5"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+          >
+            <HStack space="sm" alignItems="center" justifyContent="center">
+              <Spinner size="small" color={colors.primary} />
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Đang tải thông tin chương trình bảo hiểm...
+              </Text>
+            </HStack>
+          </Box>
+        ) : basePolicy ? (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            p="$5"
+          >
+            <VStack space="md">
+              <HStack alignItems="center" space="sm" justifyContent="center">
+                <Shield size={16} color={colors.primary} strokeWidth={2} />
+                <Text
+                  fontSize="$lg"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Thông tin chương trình bảo hiểm
+                </Text>
+              </HStack>
+
+              <Box height={1} bg={colors.frame_border} width="100%" />
+
+              <VStack space="sm">
+                <VStack space="xs">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Tên chương trình
+                  </Text>
+                  <Text
+                    fontSize="$md"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
+                    {basePolicy.product_name}
+                  </Text>
+                </VStack>
+
+                <VStack space="xs">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Mô tả
+                  </Text>
+                  <Text
+                    fontSize="$sm"
+                    color={colors.primary_text}
+                    lineHeight="$lg"
+                  >
+                    {basePolicy.product_description}
+                  </Text>
+                </VStack>
+
+                <HStack space="md">
+                  <VStack flex={1} space="xs">
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Thời hạn bảo hiểm
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {basePolicy.coverage_duration_days} ngày
+                    </Text>
+                  </VStack>
+
+                  <VStack flex={1} space="xs">
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Tự động gia hạn
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={
+                        basePolicy.auto_renewal
+                          ? colors.success
+                          : colors.muted_text
+                      }
+                    >
+                      {basePolicy.auto_renewal ? "Có" : "Không"}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </VStack>
+            </VStack>
+          </Box>
+        ) : null}
+
         {/* ========== THÔNG TIN NÔNG TRẠI ========== */}
         {farmLoading && (
           <Box
@@ -670,102 +757,104 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           </Box>
         )}
 
-        {/* ========== SỐ TIỀN BẢO HIỂM ========== */}
+        {/* ========== SỐ TIỀN BẢO HIỂM & THỜI HẠN ========== */}
         <Box
           bg={colors.card_surface}
-          borderRadius="$xl"
-          p="$4"
+          borderRadius="$2xl"
           borderWidth={1}
           borderColor={colors.frame_border}
+          p="$5"
         >
-          <VStack space="sm" alignItems="center">
-            <HStack space="xs" alignItems="center">
-              <Shield size={14} color={colors.primary} strokeWidth={2} />
-              <Text fontSize="$sm" color={colors.secondary_text}>
-                Số tiền bảo hiểm tối đa
+          <VStack space="md">
+            {/* Số tiền bảo hiểm tối đa */}
+            <VStack space="sm" alignItems="center">
+              <HStack space="xs" alignItems="center">
+                <Shield size={16} color={colors.primary} strokeWidth={2} />
+                <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text}>
+                  Số tiền bảo hiểm tối đa
+                </Text>
+              </HStack>
+              <Text fontSize="$3xl" fontWeight="$bold" color={colors.success}>
+                {Utils.formatCurrency(policy.coverage_amount)}
               </Text>
-            </HStack>
-            <Text fontSize="$3xl" fontWeight="$bold" color={colors.success}>
-              {Utils.formatCurrency(policy.coverage_amount)}
-            </Text>
-            <Text
-              fontSize="$xs"
-              color={colors.secondary_text}
-              textAlign="center"
-              px="$2"
-            >
-              Số tiền tối đa được chi trả khi xảy ra thiệt hại
-            </Text>
-          </VStack>
-        </Box>
-
-        {/* ========== THỜI HẠN BẢO HIỂM ========== */}
-        <Box
-          bg={colors.card_surface}
-          borderRadius="$xl"
-          p="$4"
-          borderWidth={1}
-          borderColor={colors.frame_border}
-        >
-          <VStack space="sm">
-            <HStack alignItems="center" space="sm" justifyContent="center">
-              <Calendar size={14} color={colors.primary} strokeWidth={2} />
               <Text
-                fontSize="$md"
-                fontWeight="$bold"
-                color={colors.primary_text}
+                fontSize="$xs"
+                color={colors.secondary_text}
+                textAlign="center"
+                px="$2"
               >
-                Thời hạn bảo hiểm
+                Số tiền tối đa được chi trả khi xảy ra thiệt hại
               </Text>
-            </HStack>
+            </VStack>
 
-            <HStack space="md">
-              <VStack flex={1} space="xs" alignItems="center">
-                <Text fontSize="$xs" color={colors.secondary_text}>
-                  Ngày đăng ký bảo hiểm
-                </Text>
+            <Box height={1} bg={colors.frame_border} width="100%" />
+
+            {/* Thời hạn bảo hiểm */}
+            <VStack space="sm">
+              <HStack alignItems="center" space="sm" justifyContent="center">
+                <Calendar size={14} color={colors.primary} strokeWidth={2} />
                 <Text
-                  fontSize="$sm"
+                  fontSize="$md"
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  {Utils.formatDateForMS(
-                    Math.floor(new Date(policy.created_at).getTime() / 1000)
-                  )}
+                  Thời hạn bảo hiểm
                 </Text>
-              </VStack>
+              </HStack>
 
-              <Box width={1} bg={colors.frame_border} />
+              <HStack space="md">
+                <VStack flex={1} space="xs" alignItems="center">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Ngày bắt đầu
+                  </Text>
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
+                    {Utils.formatDateForMS(basePolicy?.insurance_valid_from_day)}
+                  </Text>
+                </VStack>
 
-              <VStack flex={1} space="xs" alignItems="center">
-                <Text fontSize="$xs" color={colors.secondary_text}>
-                  Ngày bảo hiểm hết hạn
-                </Text>
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$bold"
-                  color={colors.primary_text}
-                >
-                  {Utils.formatDateForMS(policy.coverage_end_date)}
-                </Text>
-              </VStack>
-            </HStack>
+                <Box width={1} bg={colors.frame_border} />
+
+                <VStack flex={1} space="xs" alignItems="center">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Ngày hết hạn
+                  </Text>
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                  >
+                    {Utils.formatDateForMS(policy.coverage_end_date)}
+                  </Text>
+                </VStack>
+              </HStack>
+            </VStack>
           </VStack>
         </Box>
+
+        {/* ========== PHÂN TÍCH RỦI RO ========== */}
+        <RiskAnalysisDisplay
+          policyId={policy.id}
+          policyStatus={policy.status}
+          underwritingStatus={policy.underwriting_status}
+        />
 
         {/* ========== CHI PHÍ BẢO HIỂM ========== */}
         <Box
           bg={colors.card_surface}
-          borderRadius="$xl"
-          p="$4"
+          borderRadius="$2xl"
           borderWidth={1}
           borderColor={colors.frame_border}
+          p="$5"
         >
           <VStack space="md">
             <HStack alignItems="center" space="sm" justifyContent="center">
-              <Banknote size={14} color={colors.primary} strokeWidth={2} />
+              <Banknote size={16} color={colors.primary} strokeWidth={2} />
               <Text
-                fontSize="$md"
+                fontSize="$lg"
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
@@ -834,345 +923,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
             </Box>
           </VStack>
         </Box>
-
-        {/* ========== THÔNG TIN CHƯƠNG TRÌNH BẢO HIỂM ========== */}
-        {basePolicyLoading ? (
-          <Box
-            bg={colors.card_surface}
-            borderRadius="$2xl"
-            p="$5"
-            borderWidth={1}
-            borderColor={colors.frame_border}
-          >
-            <HStack space="sm" alignItems="center" justifyContent="center">
-              <Spinner size="small" color={colors.primary} />
-              <Text fontSize="$sm" color={colors.secondary_text}>
-                Đang tải thông tin chương trình bảo hiểm...
-              </Text>
-            </HStack>
-          </Box>
-        ) : basePolicy ? (
-          <Box
-            bg={colors.card_surface}
-            borderRadius="$2xl"
-            borderWidth={1}
-            borderColor={colors.frame_border}
-            p="$5"
-          >
-            <VStack space="md">
-              <HStack alignItems="center" space="sm" justifyContent="center">
-                <Shield size={16} color={colors.primary} strokeWidth={2} />
-                <Text
-                  fontSize="$lg"
-                  fontWeight="$bold"
-                  color={colors.primary_text}
-                >
-                  Thông tin chương trình bảo hiểm
-                </Text>
-              </HStack>
-
-              <Box height={1} bg={colors.frame_border} width="100%" />
-
-              <VStack space="sm">
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.secondary_text}>
-                    Tên chương trình
-                  </Text>
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    {basePolicy.product_name}
-                  </Text>
-                </VStack>
-
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.secondary_text}>
-                    Mô tả
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    color={colors.primary_text}
-                    lineHeight="$lg"
-                  >
-                    {basePolicy.product_description}
-                  </Text>
-                </VStack>
-
-                <HStack space="md">
-                  <VStack flex={1} space="xs">
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      Thời hạn bảo hiểm
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      {basePolicy.coverage_duration_days} ngày
-                    </Text>
-                  </VStack>
-
-                  <VStack flex={1} space="xs">
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      Tự động gia hạn
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={
-                        basePolicy.auto_renewal
-                          ? colors.success
-                          : colors.muted_text
-                      }
-                    >
-                      {basePolicy.auto_renewal ? "Có" : "Không"}
-                    </Text>
-                  </VStack>
-                </HStack>
-              </VStack>
-            </VStack>
-          </Box>
-        ) : null}
-
-        {/* ========== GIÁM SÁT DỮ LIỆU VÀ PHÂN TÍCH RỦI RO ========== */}
-        {shouldFetchMonitoring && (
-          <>
-            {monitoringLoading ? (
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$2xl"
-                p="$5"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-              >
-                <HStack space="sm" alignItems="center" justifyContent="center">
-                  <Spinner size="small" color={colors.primary} />
-                  <Text fontSize="$sm" color={colors.secondary_text}>
-                    Đang tải dữ liệu giám sát...
-                  </Text>
-                </HStack>
-              </Box>
-            ) : shouldDisplayMonitoring ? (
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$2xl"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-                p="$5"
-              >
-                <VStack space="md">
-                  <HStack
-                    alignItems="center"
-                    space="sm"
-                    justifyContent="center"
-                  >
-                    <Activity size={16} color={colors.info} strokeWidth={2} />
-                    <Text
-                      fontSize="$lg"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      Giám sát và Phân tích
-                    </Text>
-                  </HStack>
-
-                  <Box height={1} bg={colors.frame_border} width="100%" />
-
-                  <VStack space="xs">
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$sm" color={colors.secondary_text}>
-                        Tổng số điểm dữ liệu
-                      </Text>
-                      <Text
-                        fontSize="$md"
-                        fontWeight="$bold"
-                        color={colors.primary_text}
-                      >
-                        {validationResult.matchCount}
-                      </Text>
-                    </HStack>
-
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$sm" color={colors.secondary_text}>
-                        Độ tin cậy trung bình
-                      </Text>
-                      <Text
-                        fontSize="$md"
-                        fontWeight="$bold"
-                        color={colors.primary_text}
-                      >
-                        {(monitoringStats.avgConfidence * 100).toFixed(0)}%
-                      </Text>
-                    </HStack>
-
-                    <Text fontSize="$xs" color={colors.muted_text} mt="$2">
-                      Hệ thống đang theo dõi tình trạng nông trại của bạn qua dữ
-                      liệu vệ tinh. Dữ liệu được cập nhật định kỳ để phát hiện
-                      sớm các rủi ro.
-                    </Text>
-
-                    {filteredMonitorItems.length > 0 && (
-                      <VStack space="xs" mt="$2">
-                        <Text
-                          fontSize="$xs"
-                          fontWeight="$bold"
-                          color={colors.primary_text}
-                        >
-                          Các điểm dữ liệu mới nhất:
-                        </Text>
-                        {filteredMonitorItems.slice(0, 3).map((item, index) => {
-                          // Sử dụng MonitorDataHelper để format item
-                          const formatted =
-                            MonitorDataHelper.formatMonitorItem(item);
-                          const { ndmiStatus, confidenceInfo } = formatted;
-
-                          // Dynamic icons
-                          const NDMIIcon =
-                            ndmiStatus.iconName === "droplets"
-                              ? Droplets
-                              : ndmiStatus.iconName === "sprout"
-                                ? Sprout
-                                : ndmiStatus.iconName === "alert-triangle"
-                                  ? AlertCircle
-                                  : ndmiStatus.iconName === "triangle-alert"
-                                    ? TriangleAlert
-                                    : AlertCircle;
-
-                          const ConfidenceIcon =
-                            confidenceInfo.iconName === "sun"
-                              ? Sun
-                              : confidenceInfo.iconName === "cloud-sun"
-                                ? CloudSun
-                                : Cloud;
-
-                          return (
-                            <Box
-                              key={item.id || index}
-                              bg={colors.background}
-                              borderRadius="$lg"
-                              p="$3"
-                              borderWidth={1}
-                              borderColor={
-                                colors[ndmiStatus.color as keyof typeof colors]
-                              }
-                            >
-                              <VStack space="xs">
-                                {/* Header với NDMI Icon */}
-                                <HStack
-                                  justifyContent="space-between"
-                                  alignItems="center"
-                                >
-                                  <HStack space="xs" alignItems="center">
-                                    <NDMIIcon
-                                      size={14}
-                                      color={
-                                        colors[
-                                          ndmiStatus.color as keyof typeof colors
-                                        ]
-                                      }
-                                    />
-                                    <Text
-                                      fontSize="$xs"
-                                      color={colors.muted_text}
-                                    >
-                                      {item.parameter_name}
-                                    </Text>
-                                  </HStack>
-                                  <HStack space="xs" alignItems="center">
-                                    <ConfidenceIcon
-                                      size={12}
-                                      color={
-                                        colors[
-                                          confidenceInfo.color as keyof typeof colors
-                                        ]
-                                      }
-                                    />
-                                    <Text
-                                      fontSize="$2xs"
-                                      color={
-                                        colors[
-                                          confidenceInfo.color as keyof typeof colors
-                                        ]
-                                      }
-                                    >
-                                      {confidenceInfo.message}
-                                    </Text>
-                                  </HStack>
-                                </HStack>
-
-                                {/* NDMI Value và Status */}
-                                <HStack
-                                  justifyContent="space-between"
-                                  alignItems="center"
-                                >
-                                  <VStack flex={1}>
-                                    <Text
-                                      fontSize="$sm"
-                                      fontWeight="$bold"
-                                      color={colors.primary_text}
-                                    >
-                                      {formatted.formattedValue}
-                                    </Text>
-                                    <Text
-                                      fontSize="$xs"
-                                      fontWeight="$semibold"
-                                      color={
-                                        colors[
-                                          ndmiStatus.color as keyof typeof colors
-                                        ]
-                                      }
-                                    >
-                                      {ndmiStatus.label}
-                                    </Text>
-                                  </VStack>
-                                  <Box
-                                    bg={
-                                      ndmiStatus.color === "info"
-                                        ? colors.infoSoft
-                                        : ndmiStatus.color === "success"
-                                          ? colors.successSoft
-                                          : ndmiStatus.color === "pending"
-                                            ? colors.primarySoft
-                                            : ndmiStatus.color === "warning"
-                                              ? colors.warningSoft
-                                              : colors.errorSoft
-                                    }
-                                    px="$2"
-                                    py="$1"
-                                    borderRadius="$md"
-                                  >
-                                    <Text
-                                      fontSize="$2xs"
-                                      color={
-                                        colors[
-                                          ndmiStatus.color as keyof typeof colors
-                                        ]
-                                      }
-                                      fontWeight="$medium"
-                                    >
-                                      {ndmiStatus.advice}
-                                    </Text>
-                                  </Box>
-                                </HStack>
-
-                                {/* Timestamp */}
-                                <Text fontSize="$2xs" color={colors.muted_text}>
-                                  {formatted.formattedTimestamp}
-                                </Text>
-                              </VStack>
-                            </Box>
-                          );
-                        })}
-                      </VStack>
-                    )}
-                  </VStack>
-                </VStack>
-              </Box>
-            ) : null}
-          </>
-        )}
 
         {/* ========== LINK TÀI LIỆU HỢP ĐỒNG ========== */}
         {policy.signed_policy_document_url && (

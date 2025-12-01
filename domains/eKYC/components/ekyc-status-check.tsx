@@ -4,7 +4,6 @@ import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import {
   Box,
   Button,
-  ButtonIcon,
   ButtonText,
   Center,
   HStack,

@@ -64,7 +64,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   // Fetch thông tin farm dựa trên farm_id
   const { getDetailFarm } = useFarm();
   const { getInsurancePartnerDetail } = useInsurancePartner();
-  const { getDetailBasePolicy } = usePolicy();
+  const { getDetailBasePolicy, getUnderwritingPolicy } = usePolicy();
   const { mutate: createPayment, isPending: isCreatingPayment } =
     useCreatePayment();
 
@@ -81,6 +81,14 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const basePolicy = basePolicyData?.success
     ? basePolicyData.data?.base_policy
     : null;
+
+  // Lấy thông tin underwriting (thẩm định)
+  const { data: underwritingData, isLoading: underwritingLoading } =
+    getUnderwritingPolicy(policy.id);
+  const underwriting =
+    underwritingData?.success && underwritingData.data?.length > 0
+      ? underwritingData.data[0]
+      : null;
 
   const farm = farmData?.success ? farmData.data : null;
 
@@ -847,6 +855,280 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           policyStatus={policy.status}
           underwritingStatus={policy.underwriting_status}
         />
+
+        {/* ========== THÔNG TIN THẨM ĐỊNH (UNDERWRITING) ========== */}
+        {underwritingLoading && (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            p="$5"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+          >
+            <HStack space="sm" alignItems="center" justifyContent="center">
+              <Spinner size="small" color={colors.primary} />
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Đang tải thông tin thẩm định...
+              </Text>
+            </HStack>
+          </Box>
+        )}
+
+        {!underwritingLoading && underwriting && (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            borderWidth={1}
+            borderColor={
+              underwriting.underwriting_status === "approved"
+                ? colors.success
+                : underwriting.underwriting_status === "rejected"
+                  ? colors.error
+                  : colors.warning
+            }
+            p="$5"
+          >
+            <VStack space="md">
+              {/* Header */}
+              <HStack alignItems="center" space="sm" justifyContent="center">
+                <FileCheck size={16} color={colors.primary} strokeWidth={2} />
+                <Text
+                  fontSize="$lg"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Kết quả kiểm duyệt bảo hiểm
+                </Text>
+              </HStack>
+
+              <Box height={1} bg={colors.frame_border} width="100%" />
+
+              {/* Trạng thái thẩm định */}
+              <Box
+                bg={
+                  underwriting.underwriting_status === "approved"
+                    ? colors.successSoft
+                    : underwriting.underwriting_status === "rejected"
+                      ? colors.errorSoft
+                      : colors.warningSoft
+                }
+                borderRadius="$lg"
+                p="$3"
+              >
+                <VStack space="xs" alignItems="center">
+                  <Text fontSize="$xs" color={colors.secondary_text}>
+                    Trạng thái kiểm duyệt
+                  </Text>
+                  <Text
+                    fontSize="$lg"
+                    fontWeight="$bold"
+                    color={
+                      underwriting.underwriting_status === "approved"
+                        ? colors.success
+                        : underwriting.underwriting_status === "rejected"
+                          ? colors.error
+                          : colors.warning
+                    }
+                  >
+                    {underwriting.underwriting_status === "approved"
+                      ? "ĐÃ PHÊ DUYỆT"
+                      : underwriting.underwriting_status === "rejected"
+                        ? "TỪ CHỐI"
+                        : "ĐANG XỬ LÝ"}
+                  </Text>
+                </VStack>
+              </Box>
+
+              {/* Lý do và ghi chú */}
+              <VStack space="sm">
+                <VStack space="xs">
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$semibold"
+                    color={colors.primary_text}
+                  >
+                    Lý do đánh giá
+                  </Text>
+                  <Text
+                    fontSize="$sm"
+                    color={colors.secondary_text}
+                    lineHeight="$lg"
+                  >
+                    {underwriting.reason}
+                  </Text>
+                </VStack>
+
+                {underwriting.validation_notes && (
+                  <VStack space="xs">
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      Ghi chú kiểm duyệt
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      color={colors.secondary_text}
+                      lineHeight="$lg"
+                    >
+                      {underwriting.validation_notes}
+                    </Text>
+                  </VStack>
+                )}
+              </VStack>
+
+              {/* Phân tích rủi ro */}
+              <Box bg={colors.background} borderRadius="$lg" p="$3">
+                <VStack space="sm">
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$semibold"
+                    color={colors.primary_text}
+                  >
+                    Phân tích rủi ro
+                  </Text>
+
+                  <HStack space="md">
+                    <VStack flex={1} space="xs">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        Mức độ rủi ro
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                        color={
+                          underwriting.reason_evidence.risk_level === "low"
+                            ? colors.success
+                            : underwriting.reason_evidence.risk_level === "high"
+                              ? colors.error
+                              : colors.warning
+                        }
+                      >
+                        {underwriting.reason_evidence.risk_level === "low"
+                          ? "Thấp"
+                          : underwriting.reason_evidence.risk_level === "high"
+                            ? "Cao"
+                            : "Trung bình"}
+                      </Text>
+                    </VStack>
+
+                    <VStack flex={1} space="xs">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        Điểm rủi ro
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
+                        {(
+                          underwriting.reason_evidence.risk_score * 100
+                        ).toFixed(1)}
+                        %
+                      </Text>
+                    </VStack>
+                  </HStack>
+
+                  <HStack space="md">
+                    <VStack flex={1} space="xs">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        Lịch sử nông trại
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {underwriting.reason_evidence.farm_history === "clean"
+                          ? "Tốt"
+                          : underwriting.reason_evidence.farm_history ===
+                              "minor_issues"
+                            ? "Có vấn đề"
+                            : "Chưa rõ"}
+                      </Text>
+                    </VStack>
+
+                    <VStack flex={1} space="xs">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        Ngày kiểm duyệt
+                      </Text>
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$medium"
+                        color={colors.primary_text}
+                      >
+                        {Utils.formatDateForMS(
+                          underwriting.validation_timestamp
+                        )}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </VStack>
+              </Box>
+
+              {/* Đề xuất */}
+              <Box borderRadius="$lg" p="$3">
+                <VStack space="sm">
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$bold"
+                  >
+                    Đề xuất của công ty bảo hiểm
+                  </Text>
+
+                  <HStack space="md">
+                    <VStack flex={1} space="xs">
+                      <Text
+                        fontSize="$xs"
+                        color={colors.primary_text}
+                        opacity={0.8}
+                      >
+                        Điều chỉnh phí
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {underwriting.recommendations.premium_adjustment ===
+                        "none"
+                          ? "Không thay đổi"
+                          : underwriting.recommendations.premium_adjustment ===
+                              "increase"
+                            ? "Tăng phí"
+                            : "Giảm phí"}
+                      </Text>
+                    </VStack>
+
+                    <VStack flex={1} space="xs">
+                      <Text
+                        fontSize="$xs"
+                        color={colors.primary_text}
+                        opacity={0.8}
+                      >
+                        Mức bảo hiểm đề xuất
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {underwriting.recommendations.suggested_coverage ===
+                        "full"
+                          ? "Toàn bộ"
+                          : underwriting.recommendations.suggested_coverage ===
+                              "partial"
+                            ? "Một phần"
+                            : "Tối thiểu"}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </VStack>
+              </Box>
+            </VStack>
+          </Box>
+        )}
 
         {/* ========== CHI PHÍ BẢO HIỂM ========== */}
         <Box

@@ -26,7 +26,12 @@ const MeComponentUI: React.FC = () => {
     onSubmit: handleFormSubmit,
     isSubmitting,
     loadProfileData,
+    isDirty,
+    dirtyFields,
   } = useMeForm();
+
+  // Watch form values để detect changes
+  const formValues = form.watch();
 
   // State để track đã load data chưa
   const [dataLoaded, setDataLoaded] = React.useState(false);
@@ -131,7 +136,7 @@ const MeComponentUI: React.FC = () => {
       label: "Họ và tên",
       type: "input",
       placeholder: "Nguyễn Văn A",
-      required: true,
+      required: false,
       helperText: "Họ tên đầy đủ theo CMND/CCCD",
     },
     {
@@ -139,7 +144,7 @@ const MeComponentUI: React.FC = () => {
       label: "Tên hiển thị",
       type: "input",
       placeholder: "Tên gọi của bạn",
-      required: true,
+      required: false,
       helperText: "Tên bạn muốn hiển thị trong ứng dụng",
     },
     {
@@ -147,7 +152,7 @@ const MeComponentUI: React.FC = () => {
       label: "Ngày sinh",
       type: "datepicker",
       placeholder: "Chọn ngày sinh",
-      required: true,
+      required: false,
       dateFormat: "DD/MM/YYYY",
       maxDate: new Date(),
       helperText: "Định dạng: Ngày/Tháng/Năm",
@@ -157,7 +162,7 @@ const MeComponentUI: React.FC = () => {
       label: "Giới tính",
       type: "combobox",
       placeholder: "Chọn giới tính",
-      required: true,
+      required: false,
       options: [
         { label: "Nam", value: "M" },
         { label: "Nữ", value: "F" },
@@ -169,7 +174,7 @@ const MeComponentUI: React.FC = () => {
       label: "Quốc tịch",
       type: "input",
       placeholder: "Việt Nam",
-      required: true,
+      required: false,
     },
 
     // ============================================
@@ -180,7 +185,7 @@ const MeComponentUI: React.FC = () => {
       label: "Số điện thoại chính",
       type: "input",
       placeholder: "0987654321 hoặc +84987654321",
-      required: true,
+      required: false,
       helperText: "Số điện thoại để xác thực và nhận thông báo",
     },
     {
@@ -209,7 +214,7 @@ const MeComponentUI: React.FC = () => {
       label: "Địa chỉ thường trú",
       type: "input",
       placeholder: "Số nhà, tên đường, thôn/xóm...",
-      required: true,
+      required: false,
       helperText: "Địa chỉ theo CMND/CCCD",
     },
     {
@@ -217,7 +222,7 @@ const MeComponentUI: React.FC = () => {
       label: "Địa chỉ hiện tại",
       type: "input",
       placeholder: "Số nhà, tên đường, thôn/xóm...",
-      required: true,
+      required: false,
       helperText: "Nơi bạn đang sinh sống",
     },
     {
@@ -225,7 +230,7 @@ const MeComponentUI: React.FC = () => {
       label: "Mã tỉnh/thành",
       type: "input",
       placeholder: "VD: 01, 79...",
-      required: true,
+      required: false,
       helperText: "Mã hành chính tỉnh/thành phố",
     },
     {
@@ -233,14 +238,14 @@ const MeComponentUI: React.FC = () => {
       label: "Tên tỉnh/thành",
       type: "input",
       placeholder: "VD: Hà Nội, TP Hồ Chí Minh...",
-      required: true,
+      required: false,
     },
     {
       name: "district_code",
       label: "Mã quận/huyện",
       type: "input",
       placeholder: "VD: 001, 002...",
-      required: true,
+      required: false,
       helperText: "Mã hành chính quận/huyện",
     },
     {
@@ -248,14 +253,14 @@ const MeComponentUI: React.FC = () => {
       label: "Tên quận/huyện",
       type: "input",
       placeholder: "VD: Quận 1, Huyện Củ Chi...",
-      required: true,
+      required: false,
     },
     {
       name: "ward_code",
       label: "Mã phường/xã",
       type: "input",
       placeholder: "VD: 00001, 00002...",
-      required: true,
+      required: false,
       helperText: "Mã hành chính phường/xã",
     },
     {
@@ -263,7 +268,7 @@ const MeComponentUI: React.FC = () => {
       label: "Tên phường/xã",
       type: "input",
       placeholder: "VD: Phường Bến Nghé, Xã Tân Thông Hội...",
-      required: true,
+      required: false,
     },
     {
       name: "postal_code",
@@ -281,7 +286,7 @@ const MeComponentUI: React.FC = () => {
       label: isSubmitting ? "Đang cập nhật..." : "Cập nhật thông tin",
       type: "button",
       isSubmit: true,
-      disabled: isSubmitting,
+      disabled: isSubmitting || !isDirty, // Chỉ enable khi có thay đổi
       loading: isSubmitting,
     },
     {
@@ -295,6 +300,9 @@ const MeComponentUI: React.FC = () => {
 
   // Handle submit với sync từ CustomForm sang react-hook-form
   const onSubmit = async (values: Record<string, any>) => {
+    console.log("📝 Form values từ CustomForm:", values);
+    console.log("🔍 Dirty fields:", dirtyFields);
+
     // Format phone numbers
     if (values.primary_phone) {
       values.primary_phone = formatPhoneNumber(values.primary_phone);
@@ -303,9 +311,12 @@ const MeComponentUI: React.FC = () => {
       values.alternate_phone = formatPhoneNumber(values.alternate_phone);
     }
 
-    // Sync values to react-hook-form
+    // Sync values to react-hook-form với dirty marking
     Object.keys(values).forEach((key) => {
-      form.setValue(key as any, values[key]);
+      form.setValue(key as any, values[key], {
+        shouldDirty: true, // Đánh dấu là dirty
+        shouldValidate: true, // Validate field
+      });
     });
 
     // Call original submit

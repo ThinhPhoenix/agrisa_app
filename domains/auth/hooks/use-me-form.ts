@@ -67,15 +67,41 @@ export const useMeForm = () => {
   };
 
   /**
-   * Submit form - Cập nhật profile
+   * Submit form - Cập nhật profile (chỉ gửi các field đã thay đổi)
    */
   const onSubmit = form.handleSubmit(async (data) => {
     try {
-      // Gọi API update
-      await updateProfile(data as Partial<UserProfile>);
+      // Lấy các field đã thay đổi (dirty fields)
+      const dirtyFields = form.formState.dirtyFields;
+      const changedData: Partial<UserProfile> = {};
+
+      // Chỉ gửi các field đã thay đổi
+      Object.keys(dirtyFields).forEach((key) => {
+        if (dirtyFields[key as keyof typeof dirtyFields]) {
+          changedData[key as keyof UserProfile] = data[
+            key as keyof typeof data
+          ] as any;
+        }
+      });
+
+      // Nếu không có thay đổi, không gửi request
+      if (Object.keys(changedData).length === 0) {
+        Alert.alert("Thông báo", "Không có thông tin nào thay đổi!", [
+          { text: "OK" },
+        ]);
+        return;
+      }
+
+      console.log("📤 Đang gửi dữ liệu đã thay đổi:", changedData);
+
+      // Gọi API update với chỉ các field đã thay đổi
+      await updateProfile(changedData);
 
       // Refresh profile trong auth store
       await fetchUserProfile();
+
+      // Reset dirty state sau khi update thành công
+      form.reset(data);
 
       // Thông báo thành công
       Alert.alert("Thành công", "Cập nhật thông tin cá nhân thành công!", [
@@ -101,5 +127,7 @@ export const useMeForm = () => {
     onSubmit,
     isSubmitting: isUpdating,
     loadProfileData,
+    isDirty: form.formState.isDirty, // Có thay đổi hay không
+    dirtyFields: form.formState.dirtyFields, // Các field đã thay đổi
   };
 };

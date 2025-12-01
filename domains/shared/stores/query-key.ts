@@ -26,6 +26,7 @@ export const QueryKey = {
     REGISTER: "policy-register",
     REGISTERED_POLICIES: "registered-policies",
     REGISTERED_POLICY_DETAIL: "registered-policy-detail",
+    UNDERWRITING: "underwriting-policy",
   },
 
   FARM: {

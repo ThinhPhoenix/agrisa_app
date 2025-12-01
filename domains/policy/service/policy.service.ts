@@ -5,6 +5,7 @@ import {
   RegisteredPoliciesResponse,
   RegisteredPolicyDetailResponse,
   RegisterPolicyPayload,
+  UnderwritingData,
 } from "../models/policy.models";
 
 export const policyServices = {
@@ -40,6 +41,13 @@ export const policyServices = {
     ): Promise<ApiResponse<RegisteredPolicyDetailResponse>> => {
       return useAxios.get(
         `/policy/protected/api/v2/policies/read-own/detail/${policy_id}`
+      );
+    },
+    getUnderwritingPolicy: async (
+      policy_id: string
+    ): Promise<ApiResponse<UnderwritingData>> => {
+      return useAxios.get(
+        `/policy/protected/api/v2/policies/read-own/underwriting/${policy_id}`
       );
     },
   },

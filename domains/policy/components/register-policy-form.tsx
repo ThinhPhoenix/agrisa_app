@@ -518,27 +518,6 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                         {Utils.formatCurrency(totalPremium)}
                       </Text>
                     </HStack>
-
-                    <Box h={1} bg={colors.frame_border} />
-
-                    {/* Phí dữ liệu vệ tinh */}
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <VStack flex={1}>
-                        <Text fontSize="$xs" color={colors.muted_text}>
-                          Phí dữ liệu vệ tinh
-                        </Text>
-                        <Text fontSize="$xs" color={colors.secondary_text}>
-                          Chi phí thu thập & xử lý
-                        </Text>
-                      </VStack>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$bold"
-                        color={colors.primary_text}
-                      >
-                        {Utils.formatCurrency(totalDataCost)}
-                      </Text>
-                    </HStack>
                   </VStack>
                 </Box>
               </VStack>
@@ -620,7 +599,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
             </VStack>
             <VStack alignItems="flex-end">
               <Text fontSize="$xs" color={colors.secondary_text} mb="$0.5">
-                Đã bao gồm hệ số base rate
+                Đã bao gồm hệ số bảo hiểm cơ bản
               </Text>
               <Text
                 fontSize="$sm"

@@ -32,14 +32,13 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
   const { getDetailBasePolicy } = usePolicy();
   const { data: basePolicyData, isLoading: basePolicyLoading } =
     getDetailBasePolicy(policy.base_policy_id);
-  const basePolicy = basePolicyData?.data;
+  const basePolicy = basePolicyData?.data?.base_policy;
 
   // Lấy thông tin insurance partner
   const { getInsurancePartnerDetail } = useInsurancePartner();
   const { data: partnerData, isLoading: partnerLoading } =
     getInsurancePartnerDetail(policy.insurance_provider_id);
-  const partnerName =
-    partnerData?.data?.partner_display_name || "Đang tải...";
+  const partnerName = partnerData?.data?.partner_display_name || "Đang tải...";
 
   // Lấy thông tin farm
   const { getDetailFarm } = useFarm();
@@ -58,7 +57,14 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
     return daysLeft > 0 ? daysLeft : 0;
   };
 
+  // Kiểm tra policy đã có hiệu lực chưa
+  const isPolicyEffective = () => {
+    const now = Math.floor(Date.now() / 1000);
+    return now >= policy.coverage_start_date;
+  };
+
   const daysRemaining = getDaysRemaining();
+  const isEffective = isPolicyEffective();
 
   return (
     <Pressable
@@ -124,7 +130,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                       fontWeight="$bold"
                       color={colors.success}
                     >
-                      Đang hoạt động
+                      {isEffective ? "Có hiệu lực" : "Chờ hiệu lực"}
                     </Text>
                   </HStack>
                 </Box>
@@ -168,134 +174,42 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
               </Box>
             ) : (
               <>
-                {/* Nhà bảo hiểm */}
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.secondary_text}>
-                    Nhà bảo hiểm
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    {partnerName}
-                  </Text>
-                </VStack>
+                {/* Nhà bảo hiểm & Chương trình bảo hiểm */}
+                <HStack space="md">
+                  <VStack flex={1} space="xs">
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Nhà bảo hiểm
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                      numberOfLines={2}
+                    >
+                      {partnerName}
+                    </Text>
+                  </VStack>
 
-                <Box height={1} bg={colors.frame_border} width="100%" />
+                  {basePolicy && (
+                    <>
+                      <Box width={1} bg={colors.frame_border} />
 
-                {/* Thông tin nông trại */}
-                {farm && (
-                  <VStack space="sm">
-                    <HStack space="xs" alignItems="center">
-                      <MapPin
-                        size={14}
-                        color={colors.primary}
-                        strokeWidth={2}
-                      />
-                      <Text fontSize="$xs" color={colors.secondary_text}>
-                        Thông tin nông trại
-                      </Text>
-                    </HStack>
-
-                    <HStack space="md">
                       <VStack flex={1} space="xs">
                         <Text fontSize="$xs" color={colors.secondary_text}>
-                          Tên nông trại
+                          Chương trình
                         </Text>
                         <Text
                           fontSize="$sm"
-                          fontWeight="$semibold"
+                          fontWeight="$bold"
                           color={colors.primary_text}
                           numberOfLines={2}
                         >
-                          {farm.farm_name}
+                          {basePolicy.product_name}
                         </Text>
                       </VStack>
-
-                      <Box width={1} bg={colors.frame_border} />
-
-                      <VStack flex={1} space="xs" alignItems="flex-end">
-                        <Text fontSize="$xs" color={colors.secondary_text}>
-                          Diện tích
-                        </Text>
-                        <HStack space="xs" alignItems="baseline">
-                          <Text
-                            fontSize="$lg"
-                            fontWeight="$bold"
-                            color={colors.primary}
-                          >
-                            {farm.area_sqm}
-                          </Text>
-                          <Text
-                            fontSize="$xs"
-                            color={colors.secondary_text}
-                            fontWeight="$medium"
-                          >
-                            héc-ta
-                          </Text>
-                        </HStack>
-                      </VStack>
-                    </HStack>
-
-                    {/* Loại cây trồng */}
-                    {farm.crop_type && (
-                      <HStack
-                        space="sm"
-                        alignItems="center"
-                        bg={colors.background}
-                        p="$2"
-                        borderRadius="$md"
-                      >
-                        <Sprout
-                          size={14}
-                          color={colors.success}
-                          strokeWidth={2}
-                        />
-                        <Text
-                          fontSize="$xs"
-                          color={colors.secondary_text}
-                          flex={1}
-                        >
-                          Loại cây trồng:
-                        </Text>
-                        <Text
-                          fontSize="$sm"
-                          fontWeight="$semibold"
-                          color={colors.primary_text}
-                        >
-                          {farm.crop_type === "rice"
-                            ? "Lúa"
-                            : farm.crop_type === "coffee"
-                              ? "Cà phê"
-                              : farm.crop_type}
-                        </Text>
-                      </HStack>
-                    )}
-                  </VStack>
-                )}
-
-                <Box height={1} bg={colors.frame_border} width="100%" />
-
-                {/* Số tiền bảo hiểm */}
-                <VStack
-                  space="sm"
-                  alignItems="center"
-                  bg={colors.background}
-                  p="$3"
-                  borderRadius="$lg"
-                >
-                  <Text fontSize="$xs" color={colors.secondary_text}>
-                    Số tiền bảo hiểm tối đa
-                  </Text>
-                  <Text
-                    fontSize="$2xl"
-                    fontWeight="$bold"
-                    color={colors.success}
-                  >
-                    {Utils.formatCurrency(policy.coverage_amount)}
-                  </Text>
-                </VStack>
+                    </>
+                  )}
+                </HStack>
 
                 <Box height={1} bg={colors.frame_border} width="100%" />
 
@@ -341,25 +255,116 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                   </HStack>
                 </VStack>
 
-                {/* Chương trình bảo hiểm */}
-                {basePolicy && (
+                <Box height={1} bg={colors.frame_border} width="100%" />
+
+                {/* Thông tin nông trại */}
+                {farm && (
                   <>
-                    <Box height={1} bg={colors.frame_border} width="100%" />
-                    <VStack space="xs">
-                      <Text fontSize="$xs" color={colors.secondary_text}>
-                        Chương trình bảo hiểm
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                        numberOfLines={2}
-                      >
-                        {basePolicy.product_name}
-                      </Text>
+                    <VStack space="sm">
+                      <HStack space="xs" alignItems="center">
+                        <MapPin
+                          size={14}
+                          color={colors.primary}
+                          strokeWidth={2}
+                        />
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          Thông tin nông trại
+                        </Text>
+                      </HStack>
+
+                      <HStack space="md">
+                        <VStack flex={1} space="xs">
+                          <Text fontSize="$xs" color={colors.secondary_text}>
+                            Tên nông trại
+                          </Text>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                            numberOfLines={2}
+                          >
+                            {farm.farm_name}
+                          </Text>
+                        </VStack>
+
+                        <Box width={1} bg={colors.frame_border} />
+
+                        <VStack flex={1} space="xs" alignItems="flex-end">
+                          <Text fontSize="$xs" color={colors.secondary_text}>
+                            Diện tích
+                          </Text>
+                          <HStack space="xs" alignItems="baseline">
+                            <Text
+                              fontSize="$lg"
+                              fontWeight="$bold"
+                              color={colors.primary}
+                            >
+                              {farm.area_sqm}
+                            </Text>
+                            <Text
+                              fontSize="$xs"
+                              color={colors.secondary_text}
+                              fontWeight="$medium"
+                            >
+                              héc-ta
+                            </Text>
+                          </HStack>
+                        </VStack>
+                      </HStack>
+
+                      {/* Loại cây trồng */}
+                      {farm.crop_type && (
+                        <HStack
+                          space="sm"
+                          alignItems="center"
+                          bg={colors.background}
+                          p="$2"
+                          borderRadius="$md"
+                        >
+                          <Sprout
+                            size={14}
+                            color={colors.success}
+                            strokeWidth={2}
+                          />
+                          <Text
+                            fontSize="$xs"
+                            color={colors.secondary_text}
+                            flex={1}
+                          >
+                            Loại cây trồng:
+                          </Text>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {Utils.getCropLabel(farm.crop_type)}
+                          </Text>
+                        </HStack>
+                      )}
                     </VStack>
+
+                    <Box height={1} bg={colors.frame_border} width="100%" />
                   </>
                 )}
+
+                {/* Số tiền bồi thường tối đa */}
+                <VStack space="xs" alignItems="center">
+                  <Text
+                    fontSize="$xs"
+                    color={colors.secondary_text}
+                    fontWeight="$medium"
+                  >
+                    Số tiền bồi thường tối đa
+                  </Text>
+                  <Text
+                    fontSize="$4xl"
+                    fontWeight="$bold"
+                    color={colors.success}
+                  >
+                    {Utils.formatCurrency(policy.coverage_amount)}
+                  </Text>
+                </VStack>
               </>
             )}
           </VStack>

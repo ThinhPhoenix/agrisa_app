@@ -1,6 +1,6 @@
 import { AgrisaColors } from '@/domains/shared/constants/AgrisaColors';
 import { Tabs } from 'expo-router';
-import { FileText, History, Home } from 'lucide-react-native';
+import { FileText, HelpCircle, History, Home } from 'lucide-react-native';
 import React from 'react';
 import { Animated, Pressable, SafeAreaView, Text, View } from 'react-native';
 
@@ -192,22 +192,35 @@ export default function PolicyTabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Trang chủ',
+          title: "Trang chủ",
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="my-policies"
         options={{
-          title: 'Bảo hiểm của tôi',
-          tabBarIcon: ({ color, size }) => <FileText size={size} color={color} />,
+          title: "Bảo hiểm của tôi",
+          tabBarIcon: ({ color, size }) => (
+            <FileText size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="history"
         options={{
-          title: 'Lịch sử đăng ký',
-          tabBarIcon: ({ color, size }) => <History size={size} color={color} />,
+          title: "Lịch sử đăng ký",
+          tabBarIcon: ({ color, size }) => (
+            <History size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="faq"
+        options={{
+          title: "Câu hỏi",
+          tabBarIcon: ({ color, size }) => (
+            <HelpCircle size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

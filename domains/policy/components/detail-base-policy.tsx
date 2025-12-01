@@ -265,15 +265,6 @@ export default function DetailBasePolicyScreen() {
               </VStack>
             )}
 
-            {/* CÂU HỎI THƯỜNG GẶP */}
-            <VStack space="md">
-              <SectionTitle
-                title="Câu hỏi thường gặp"
-                icon={HelpCircle}
-                colors={colors}
-              />
-              <FAQSection policy={base_policy} colors={colors} />
-            </VStack>
           </VStack>
         </ScrollView>
 

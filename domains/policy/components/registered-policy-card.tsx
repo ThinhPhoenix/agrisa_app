@@ -64,7 +64,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
         switch (policy.status) {
           case "active":
             return {
-              label: "Đang hoạt động",
+              label: "Có hiệu lực",
               color: colors.success,
               bgColor: colors.successSoft,
               icon: CheckCircle2,
@@ -111,9 +111,9 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           };
         }
         return {
-          label: "Chờ thẩm định",
+          label: "Chờ duyệt",
           color: colors.pending,
-          bgColor: colors.warningSoft,
+          bgColor: "",
           icon: Clock,
         };
 
@@ -233,6 +233,40 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
                   color={statusDisplay.color}
                 >
                   {Utils.formatCurrency(policy.coverage_amount)}
+                </Text>
+              </VStack>
+            </HStack>
+
+            {/* Divider */}
+            <Box height={1} bg={colors.frame_border} width="100%" />
+
+            {/* Thời gian tạo đơn và cập nhật - 2 cột */}
+            <HStack space="md">
+              <VStack flex={1} space="xs">
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  Ngày tạo đơn
+                </Text>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_text}
+                >
+                  {Utils.formatStringVietnameseDate(policy.created_at)}
+                </Text>
+              </VStack>
+
+              <Box width={1} bg={colors.frame_border} />
+
+              <VStack flex={1} space="xs" alignItems="flex-end">
+                <Text fontSize="$xs" color={colors.secondary_text}>
+                  Cập nhật lần cuối
+                </Text>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_text}
+                >
+                  {Utils.formatStringVietnameseDate(policy.updated_at)}
                 </Text>
               </VStack>
             </HStack>

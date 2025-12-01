@@ -318,8 +318,8 @@ export const RISK_LEVEL_LABELS = {
  * Nhãn tiếng Việt cho trạng thái phân tích
  */
 export const ANALYSIS_STATUS_LABELS = {
-  passed: "Đạt",
-  failed: "Không đạt",
+  passed: "Đạt yêu cầu",
+  failed: "Không đạt yêu cầu",
   pending: "Đang chờ",
   under_review: "Đang xem xét",
 };

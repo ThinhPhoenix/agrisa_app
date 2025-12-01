@@ -12,12 +12,10 @@ import useAuthMe from "./use-auth-me";
  * - Validation với Zod schema
  * - Submit với API update
  * - Đồng bộ với auth store
- * - Redirect vào eKYC workflow nếu cần
  */
-export const useMeForm = (options?: { isFromEkyc?: boolean }) => {
+export const useMeForm = () => {
   const { updateProfile, isUpdating } = useAuthMe();
   const { fetchUserProfile } = useAuthStore();
-  const isFromEkyc = options?.isFromEkyc || false;
 
   // Form với validation
   const form = useForm<UserProfileFormSchema>({
@@ -80,30 +78,19 @@ export const useMeForm = (options?: { isFromEkyc?: boolean }) => {
       await fetchUserProfile();
 
       // Thông báo thành công
-      Alert.alert(
-        "Thành công",
-        "Cập nhật thông tin cá nhân thành công!",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              if (isFromEkyc) {
-                // Nếu đến từ eKYC workflow, redirect đến id-scan
-                router.replace("/settings/verify/id-scan");
-              } else {
-                // Nếu không, quay lại trang trước
-                router.back();
-              }
-            },
-          },
-        ]
-      );
+      Alert.alert("Thành công", "Cập nhật thông tin cá nhân thành công!", [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
     } catch (error: any) {
       console.error("❌ Lỗi cập nhật profile:", error);
-      
+
       Alert.alert(
         "Lỗi",
-        error?.response?.data?.message || "Không thể cập nhật thông tin. Vui lòng thử lại.",
+        error?.response?.data?.message ||
+          "Không thể cập nhật thông tin. Vui lòng thử lại.",
         [{ text: "OK" }]
       );
     }

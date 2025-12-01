@@ -578,43 +578,13 @@ export default function SettingsScreen() {
                         <VStack space="xs">
                             {/* Nhận thông báo */}
                             {renderSwitchItem(
-                                "Nhận thông báo",
+                                "Nhận thông báo từ Agrisa",
                                 notifications.enabled,
                                 handleToggleNotifications,
                                 Bell
                             )}
 
-                            {/* Thông báo thời tiết */}
-                            {renderSwitchItem(
-                                "Dự báo thời tiết",
-                                notifications.weather,
-                                () => toggleNotification("weather"),
-                                CloudRain
-                            )}
-
-                            {/* Thông báo tình trạng thửa ruộng */}
-                            {renderSwitchItem(
-                                "Tình trạng thửa ruộng",
-                                notifications.farmStatus,
-                                () => toggleNotification("farmStatus"),
-                                Sprout
-                            )}
-
-                            {/* Thông báo yêu cầu bồi thường */}
-                            {renderSwitchItem(
-                                "Yêu cầu bồi thường",
-                                notifications.claims,
-                                () => toggleNotification("claims"),
-                                FileText
-                            )}
-
-                            {/* Thông báo hệ thống */}
-                            {renderSwitchItem(
-                                "Thông báo hệ thống",
-                                notifications.system,
-                                () => toggleNotification("system"),
-                                SettingsIcon
-                            )}
+                            
                         </VStack>
                     </Box>
                 </VStack>

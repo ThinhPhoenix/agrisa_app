@@ -12,21 +12,21 @@ import { useMeForm } from "../../hooks/use-me-form";
  * - Tất cả các field đều bắt buộc để xác thực danh tính
  * - Validation với Zod schema
  * - Auto-load dữ liệu từ profile hiện tại
- * - Hỗ trợ eKYC workflow redirect
  * - Sử dụng CustomForm với tối ưu hóa cho người Việt
  */
-interface MeComponentUIProps {
-  isFromEkyc?: boolean;
-}
-
-const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => {
+const MeComponentUI: React.FC = () => {
   const { colors } = useAgrisaColors();
   const { userProfile } = useAuthStore();
   const { data: profileData, refetch } = useAuthMe();
   const formRef = useRef<any>(null);
 
   // Form data state từ useMeForm
-  const { form, onSubmit: handleFormSubmit, isSubmitting, loadProfileData } = useMeForm({ isFromEkyc });
+  const {
+    form,
+    onSubmit: handleFormSubmit,
+    isSubmitting,
+    loadProfileData,
+  } = useMeForm();
 
   // State để track đã load data chưa
   const [dataLoaded, setDataLoaded] = React.useState(false);
@@ -35,7 +35,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
   useEffect(() => {
     const loadData = async () => {
       const data = profileData || userProfile;
-      
+
       if (data) {
         loadProfileData(data);
         // Auto-fill vào CustomForm
@@ -319,12 +319,16 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
     display_name: data?.display_name || form.getValues("display_name") || "",
     date_of_birth: data?.date_of_birth || form.getValues("date_of_birth") || "",
     gender: data?.gender || form.getValues("gender") || "",
-    nationality: data?.nationality || form.getValues("nationality") || "Việt Nam",
+    nationality:
+      data?.nationality || form.getValues("nationality") || "Việt Nam",
     primary_phone: data?.primary_phone || form.getValues("primary_phone") || "",
-    alternate_phone: data?.alternate_phone || form.getValues("alternate_phone") || "",
+    alternate_phone:
+      data?.alternate_phone || form.getValues("alternate_phone") || "",
     email: data?.email || form.getValues("email") || "",
-    permanent_address: data?.permanent_address || form.getValues("permanent_address") || "",
-    current_address: data?.current_address || form.getValues("current_address") || "",
+    permanent_address:
+      data?.permanent_address || form.getValues("permanent_address") || "",
+    current_address:
+      data?.current_address || form.getValues("current_address") || "",
     province_code: data?.province_code || form.getValues("province_code") || "",
     province_name: data?.province_name || form.getValues("province_name") || "",
     district_code: data?.district_code || form.getValues("district_code") || "",
@@ -343,9 +347,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
             Thông tin cá nhân
           </Text>
           <Text fontSize="$sm" color={colors.secondary_text} mt="$1">
-            {isFromEkyc 
-              ? "Vui lòng điền đầy đủ thông tin để xác thực danh tính"
-              : "Cập nhật thông tin cá nhân của bạn"}
+            Cập nhật thông tin cá nhân của bạn
           </Text>
         </Box>
 
@@ -356,8 +358,8 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
           initialValues={initialValues}
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
-          formStyle={{ 
-            padding: 16, 
+          formStyle={{
+            padding: 16,
             backgroundColor: colors.card_surface,
             borderRadius: 16,
           }}

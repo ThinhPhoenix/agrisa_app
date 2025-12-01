@@ -15,6 +15,9 @@ export const QueryKey = {
     STATUS: "ekyc-status",
     OCR_ID: "ekyc-ocr-id",
     FACE_SCAN: "ekyc-face-scan",
+    CARD_INFO: "ekyc-card-info",
+    CONFIRM_CARD_INFO: "ekyc-confirm-card-info",
+    RESET_EKYC: "ekyc-reset",
   },
 
   POLICY: {
@@ -42,7 +45,7 @@ export const QueryKey = {
 
   DATA_MONITOR: {
     POLICY_MONITOR: "policy-data-monitor",
-    DETAIL_POLICY_MONITOR: "detail-policy-data-monitor",  
+    DETAIL_POLICY_MONITOR: "detail-policy-data-monitor",
   },
 
   TEST: "test",

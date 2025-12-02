@@ -49,5 +49,9 @@ export const QueryKey = {
     DETAIL_POLICY_MONITOR: "detail-policy-data-monitor",
   },
 
+  PAYMENT: {
+    GET_ALL_PAYMENT: "get-all-payment",
+  },
+
   TEST: "test",
 };

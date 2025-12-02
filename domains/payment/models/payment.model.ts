@@ -59,3 +59,70 @@ export enum PaymentMethod {
   BANK_TRANSFER = "bank_transfer", // Chuyển khoản thủ công
   CHECKOUT_URL = "checkout_url",  // Thanh toán web
 }
+
+/**
+ * Payment Transaction Item - Giao dịch thanh toán
+ */
+export interface PaymentTransaction {
+  id: string;
+  amount: number;
+  description: string;
+  status: PaymentTransactionStatus;
+  user_id: string;
+  checkout_url: string | null;
+  type: PaymentType;
+  order_code: string;
+  created_at: string;              // ISO timestamp
+  updated_at: string;              // ISO timestamp
+  deleted_at: string | null;       // ISO timestamp
+  paid_at: string | null;          // ISO timestamp
+  expired_at: string;              // ISO timestamp
+}
+
+/**
+ * Trạng thái giao dịch thanh toán
+ */
+export interface PaymentTransactionStatus {
+  code: PaymentStatusCode;
+  label: string;
+}
+
+/**
+ * Mã trạng thái thanh toán
+ */
+export enum PaymentStatusCode {
+  COMPLETED = "completed",
+  EXPIRED = "expired",
+  PENDING = "pending",
+  CANCELLED = "cancelled",
+}
+
+/**
+ * Loại thanh toán
+ */
+export enum PaymentType {
+  POLICY_REGISTRATION = "policy_registration_payment",
+  CONTRACT = "hopdong",
+}
+
+/**
+ * Metadata phân trang
+ */
+export interface PaymentListMetadata {
+  page: number;
+  limit: number;
+  total_items: number;
+  total_pages: number;
+  next: boolean;
+  previous: boolean;
+  timestamp: string;              // ISO timestamp
+}
+
+/**
+ * Response danh sách giao dịch thanh toán
+ */
+export interface PaymentListResponse {
+    items: PaymentTransaction[];
+}
+
+

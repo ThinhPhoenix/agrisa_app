@@ -13,7 +13,15 @@ export const usePayment = () => {
     });
   };
 
+  const getDetailPayment = (payment_id: string) => {
+    return useQuery({
+      queryKey: [QueryKey.PAYMENT.GET_DETAIL_PAYMENT, payment_id],
+      queryFn: () => paymentService.get.getDetailPayment(payment_id),
+    });
+  };
+
   return {
     getAllPayment,
+    getDetailPayment,
   };
 };

@@ -573,4 +573,18 @@ export const Utils = {
 
     return { hours, minutes, color, message };
   },
+
+  /**
+   * 💳 Lấy nhãn loại thanh toán
+   * @param type - Loại payment (policy_registration_payment, hopdong, etc.)
+   * @returns Nhãn tiếng Việt
+   */
+  getPaymentTypeLabel: (type: string): string => {
+    const typeMap: Record<string, string> = {
+      policy_registration_payment: "Thanh toán phí bảo hiểm",
+      hopdong: "Thanh toán hợp đồng",
+      contract: "Thanh toán hợp đồng",
+    };
+    return typeMap[type] || "Thanh toán";
+  },
 };

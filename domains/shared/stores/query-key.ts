@@ -51,6 +51,7 @@ export const QueryKey = {
 
   PAYMENT: {
     GET_ALL_PAYMENT: "get-all-payment",
+    GET_DETAIL_PAYMENT: "get-detail-payment",
   },
 
   TEST: "test",

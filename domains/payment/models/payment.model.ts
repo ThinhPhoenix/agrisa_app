@@ -126,3 +126,30 @@ export interface PaymentListResponse {
 }
 
 
+export interface PaymentDetailResponse {
+  id: string;
+  amount: string;
+  description: string;
+  status: string;
+  user_id: string;
+  checkout_url: string;
+  order_code: string;
+  type: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null;
+  paid_at: string;
+  expired_at: string;
+  orderItems: OrderItem[];
+}
+
+export interface OrderItem {
+  id: string;
+  item_id: string;
+  name: string;
+  price: string;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: null;
+}

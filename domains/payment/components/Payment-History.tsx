@@ -1,21 +1,22 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Utils } from "@/libs/utils/utils";
 import {
-    Box,
-    HStack,
-    Pressable,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
+import { useRouter } from "expo-router";
 import {
-    ArrowDownLeft,
-    ArrowUpRight,
-    Clock,
-    Receipt,
-    TrendingUp,
-    Wallet
+  ArrowDownLeft,
+  ArrowUpRight,
+  Clock,
+  Receipt,
+  TrendingUp,
+  Wallet,
 } from "lucide-react-native";
 import { useState } from "react";
 import { RefreshControl } from "react-native";
@@ -26,10 +27,15 @@ interface PaymentHistoryProps {
   onRefresh?: () => void;
 }
 
-export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => {
+export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
+  onRefresh,
+}) => {
   const { colors } = useAgrisaColors();
-  const [selectedTab, setSelectedTab] = useState<'all' | 'premium' | 'compensation' | 'expired'>('all');
-  
+  const router = useRouter();
+  const [selectedTab, setSelectedTab] = useState<
+    "all" | "premium" | "compensation" | "expired"
+  >("all");
+
   const { getAllPayment } = usePayment();
   const { data, isLoading, refetch, isRefetching } = getAllPayment();
 
@@ -41,27 +47,37 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
   };
 
   // Lọc transactions theo tab
-  const filteredPayments = payments.filter(p => {
-    if (selectedTab === 'all') return true;
-    if (selectedTab === 'premium') return p.type === 'policy_registration_payment';
-    if (selectedTab === 'compensation') return p.type !== 'policy_registration_payment' && p.status.code === PaymentStatusCode.COMPLETED;
-    if (selectedTab === 'expired') return p.status.code === PaymentStatusCode.EXPIRED;
+  const filteredPayments = payments.filter((p) => {
+    if (selectedTab === "all") return true;
+    if (selectedTab === "premium")
+      return p.type === "policy_registration_payment";
+    if (selectedTab === "compensation")
+      return (
+        p.type !== "policy_registration_payment" &&
+        p.status.code === PaymentStatusCode.COMPLETED
+      );
+    if (selectedTab === "expired")
+      return p.status.code === PaymentStatusCode.EXPIRED;
     return true;
   });
 
   // Tính tổng phí bảo hiểm (tiền ra)
   const totalPremium = payments
-    .filter(p => p.type === 'policy_registration_payment')
+    .filter((p) => p.type === "policy_registration_payment")
     .reduce((sum, p) => sum + p.amount, 0);
-  
+
   // Tính tổng bồi thường (tiền vào - chưa có trong data hiện tại)
   const totalCompensation = payments
-    .filter(p => p.type !== 'policy_registration_payment' && p.status.code === PaymentStatusCode.COMPLETED)
+    .filter(
+      (p) =>
+        p.type !== "policy_registration_payment" &&
+        p.status.code === PaymentStatusCode.COMPLETED
+    )
     .reduce((sum, p) => sum + p.amount, 0);
 
   const getCategoryIcon = (payment: PaymentTransaction) => {
     // Nếu là phí bảo hiểm (tiền ra)
-    if (payment.type === 'policy_registration_payment') {
+    if (payment.type === "policy_registration_payment") {
       return Receipt;
     }
     // Nếu là hết hạn
@@ -78,20 +94,39 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
 
   const renderPayment = (payment: PaymentTransaction, index: number) => {
     // Phí bảo hiểm = tiền ra (màu cam), Bồi thường = tiền vào (màu xanh), Hết hạn (màu xám)
-    const isPremium = payment.type === 'policy_registration_payment';
+    const isPremium = payment.type === "policy_registration_payment";
     const isExpired = payment.status.code === PaymentStatusCode.EXPIRED;
     const isExpense = isPremium; // Phí bảo hiểm là chi phí
     const IconComponent = getCategoryIcon(payment);
-    const TransactionDirectionIcon = isExpired ? Clock : (isExpense ? ArrowUpRight : ArrowDownLeft);
-    
+    const TransactionDirectionIcon = isExpired
+      ? Clock
+      : isExpense
+        ? ArrowUpRight
+        : ArrowDownLeft;
+
     // Màu sắc theo loại giao dịch
-    const bgColor = isExpired ? colors.errorSoft : (isExpense ? colors.warningSoft : colors.successSoft);
-    const iconColor = isExpired ? colors.muted_text : (isExpense ? colors.warning : colors.success);
-    const textColor = isExpired ? colors.muted_text : (isExpense ? colors.warning : colors.success);
+    const bgColor = isExpired
+      ? colors.errorSoft
+      : isExpense
+        ? colors.warningSoft
+        : colors.successSoft;
+    const iconColor = isExpired
+      ? colors.muted_text
+      : isExpense
+        ? colors.warning
+        : colors.success;
+    const textColor = isExpired
+      ? colors.muted_text
+      : isExpense
+        ? colors.warning
+        : colors.success;
 
     return (
       <Box key={payment.id}>
-        <Pressable py="$4">
+        <Pressable
+          py="$4"
+          onPress={() => router.push(`/payment/${payment.id}`)}
+        >
           <HStack space="md" alignItems="center">
             <Box position="relative">
               <Box
@@ -103,11 +138,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
                 alignItems="center"
                 justifyContent="center"
               >
-                <IconComponent 
-                  size={20} 
-                  color={iconColor} 
-                  strokeWidth={2.5} 
-                />
+                <IconComponent size={20} color={iconColor} strokeWidth={2.5} />
               </Box>
               <Box
                 position="absolute"
@@ -117,15 +148,11 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
                 borderRadius="$full"
                 p="$0.5"
               >
-                <Box
-                  bg={iconColor}
-                  borderRadius="$full"
-                  p="$1"
-                >
-                  <TransactionDirectionIcon 
-                    size={10} 
-                    color={colors.primary_white_text} 
-                    strokeWidth={3} 
+                <Box bg={iconColor} borderRadius="$full" p="$1">
+                  <TransactionDirectionIcon
+                    size={10}
+                    color={colors.primary_white_text}
+                    strokeWidth={3}
                   />
                 </Box>
               </Box>
@@ -137,39 +164,25 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                {isPremium ? 'Thanh toán phí bảo hiểm' : payment.status.label}
+                {isPremium ? "Thanh toán phí bảo hiểm" : payment.status.label}
               </Text>
-             
+
               <HStack space="sm" alignItems="center">
                 <Text fontSize="$xs" color={colors.muted_text}>
-                  {isExpired 
+                  {isExpired
                     ? Utils.formatStringVietnameseDate(payment.expired_at)
-                    : Utils.formatStringVietnameseDate(payment.paid_at)
-                  }
+                    : Utils.formatStringVietnameseDate(payment.paid_at)}
                 </Text>
-                
               </HStack>
             </VStack>
 
             <VStack alignItems="flex-end" space="xs">
-              <Text
-                fontSize="$md"
-                fontWeight="$bold"
-                color={textColor}
-              >
-                {isExpired ? '' : (isExpense ? '-' : '+')}{Utils.formatCurrency(payment.amount)}
+              <Text fontSize="$md" fontWeight="$bold" color={textColor}>
+                {isExpired ? "" : isExpense ? "-" : "+"}
+                {Utils.formatCurrency(payment.amount)}
               </Text>
-              <Box
-                bg={bgColor}
-                borderRadius="$md"
-                px="$2"
-                py="$1"
-              >
-                <Text
-                  fontSize="$2xs"
-                  fontWeight="$semibold"
-                  color={textColor}
-                >
+              <Box bg={bgColor} borderRadius="$md" px="$2" py="$1">
+                <Text fontSize="$2xs" fontWeight="$semibold" color={textColor}>
                   {payment.status.label}
                 </Text>
               </Box>
@@ -218,7 +231,11 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
           >
             <HStack space="xs" alignItems="center" mb="$2">
               <Receipt size={16} color={colors.warning} strokeWidth={2.5} />
-              <Text fontSize="$xs" fontWeight="$semibold" color={colors.warning}>
+              <Text
+                fontSize="$xs"
+                fontWeight="$semibold"
+                color={colors.warning}
+              >
                 Phí bảo hiểm
               </Text>
             </HStack>
@@ -226,7 +243,11 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
               {Utils.formatCurrency(totalPremium)}
             </Text>
             <Text fontSize="$2xs" color={colors.warning} mt="$1">
-              {payments.filter(p => p.type === 'policy_registration_payment').length} giao dịch
+              {
+                payments.filter((p) => p.type === "policy_registration_payment")
+                  .length
+              }{" "}
+              giao dịch
             </Text>
           </Box>
 
@@ -239,8 +260,16 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
             borderColor={colors.success}
           >
             <HStack space="xs" alignItems="center" mb="$2">
-              <ArrowDownLeft size={16} color={colors.success} strokeWidth={2.5} />
-              <Text fontSize="$xs" fontWeight="$semibold" color={colors.success}>
+              <ArrowDownLeft
+                size={16}
+                color={colors.success}
+                strokeWidth={2.5}
+              />
+              <Text
+                fontSize="$xs"
+                fontWeight="$semibold"
+                color={colors.success}
+              >
                 Bồi thường
               </Text>
             </HStack>
@@ -248,7 +277,14 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
               {Utils.formatCurrency(totalCompensation)}
             </Text>
             <Text fontSize="$2xs" color={colors.success} mt="$1">
-              {payments.filter(p => p.type !== 'policy_registration_payment' && p.status.code === PaymentStatusCode.COMPLETED).length} giao dịch
+              {
+                payments.filter(
+                  (p) =>
+                    p.type !== "policy_registration_payment" &&
+                    p.status.code === PaymentStatusCode.COMPLETED
+                ).length
+              }{" "}
+              giao dịch
             </Text>
           </Box>
         </HStack>
@@ -256,84 +292,128 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
         {/* Filter Tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <HStack space="sm">
-            <Pressable onPress={() => setSelectedTab('all')}>
+            <Pressable onPress={() => setSelectedTab("all")}>
               <Box
-                bg={selectedTab === 'all' ? colors.primary : colors.card_surface}
+                bg={
+                  selectedTab === "all" ? colors.primary : colors.card_surface
+                }
                 borderRadius="$full"
                 py="$2"
                 px="$4"
                 borderWidth={1}
-                borderColor={selectedTab === 'all' ? colors.primary : colors.frame_border}
+                borderColor={
+                  selectedTab === "all" ? colors.primary : colors.frame_border
+                }
                 alignItems="center"
                 minWidth={90}
               >
                 <Text
                   fontSize="$sm"
                   fontWeight="$semibold"
-                  color={selectedTab === 'all' ? colors.primary_white_text : colors.secondary_text}
+                  color={
+                    selectedTab === "all"
+                      ? colors.primary_white_text
+                      : colors.secondary_text
+                  }
                 >
                   Tất cả ({payments.length})
                 </Text>
               </Box>
             </Pressable>
 
-            <Pressable onPress={() => setSelectedTab('premium')}>
+            <Pressable onPress={() => setSelectedTab("premium")}>
               <Box
-                bg={selectedTab === 'premium' ? colors.primary : colors.card_surface}
+                bg={
+                  selectedTab === "premium"
+                    ? colors.primary
+                    : colors.card_surface
+                }
                 borderRadius="$full"
                 py="$2"
                 px="$4"
                 borderWidth={1}
-                borderColor={selectedTab === 'premium' ? colors.primary : colors.frame_border}
+                borderColor={
+                  selectedTab === "premium"
+                    ? colors.primary
+                    : colors.frame_border
+                }
                 alignItems="center"
                 minWidth={120}
               >
                 <Text
                   fontSize="$sm"
                   fontWeight="$semibold"
-                  color={selectedTab === 'premium' ? colors.primary_white_text : colors.secondary_text}
+                  color={
+                    selectedTab === "premium"
+                      ? colors.primary_white_text
+                      : colors.secondary_text
+                  }
                 >
                   Phí bảo hiểm
                 </Text>
               </Box>
             </Pressable>
 
-            <Pressable onPress={() => setSelectedTab('compensation')}>
+            <Pressable onPress={() => setSelectedTab("compensation")}>
               <Box
-                bg={selectedTab === 'compensation' ? colors.primary : colors.card_surface}
+                bg={
+                  selectedTab === "compensation"
+                    ? colors.primary
+                    : colors.card_surface
+                }
                 borderRadius="$full"
                 py="$2"
                 px="$4"
                 borderWidth={1}
-                borderColor={selectedTab === 'compensation' ? colors.primary : colors.frame_border}
+                borderColor={
+                  selectedTab === "compensation"
+                    ? colors.primary
+                    : colors.frame_border
+                }
                 alignItems="center"
                 minWidth={110}
               >
                 <Text
                   fontSize="$sm"
                   fontWeight="$semibold"
-                  color={selectedTab === 'compensation' ? colors.primary_white_text : colors.secondary_text}
+                  color={
+                    selectedTab === "compensation"
+                      ? colors.primary_white_text
+                      : colors.secondary_text
+                  }
                 >
                   Bồi thường
                 </Text>
               </Box>
             </Pressable>
 
-            <Pressable onPress={() => setSelectedTab('expired')}>
+            <Pressable onPress={() => setSelectedTab("expired")}>
               <Box
-                bg={selectedTab === 'expired' ? colors.primary : colors.card_surface}
+                bg={
+                  selectedTab === "expired"
+                    ? colors.primary
+                    : colors.card_surface
+                }
                 borderRadius="$full"
                 py="$2"
                 px="$4"
                 borderWidth={1}
-                borderColor={selectedTab === 'expired' ? colors.primary : colors.frame_border}
+                borderColor={
+                  selectedTab === "expired"
+                    ? colors.primary
+                    : colors.frame_border
+                }
                 alignItems="center"
                 minWidth={100}
               >
                 <Text
                   fontSize="$sm"
                   fontWeight="$semibold"
-                  color={selectedTab === 'expired' ? colors.primary_white_text : colors.secondary_text}
+                  color={
+                    selectedTab === "expired"
+                      ? colors.primary_white_text
+                      : colors.secondary_text
+                  }
                 >
                   Hết hạn
                 </Text>
@@ -352,7 +432,9 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
             px="$4"
             mt="$2"
           >
-            {filteredPayments.map((payment, index) => renderPayment(payment, index))}
+            {filteredPayments.map((payment, index) =>
+              renderPayment(payment, index)
+            )}
           </Box>
         ) : (
           <Box
@@ -364,26 +446,33 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ onRefresh }) => 
             mt="$2"
             alignItems="center"
           >
-            <Box
-              bg={colors.primary}
-              borderRadius="$full"
-              p="$4"
-              mb="$3"
-            >
-              <Wallet size={32} color={colors.primary_white_text} strokeWidth={1.5} />
+            <Box bg={colors.primary} borderRadius="$full" p="$4" mb="$3">
+              <Wallet
+                size={32}
+                color={colors.primary_white_text}
+                strokeWidth={1.5}
+              />
             </Box>
-            <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text} mb="$1">
+            <Text
+              fontSize="$md"
+              fontWeight="$bold"
+              color={colors.primary_text}
+              mb="$1"
+            >
               Chưa có giao dịch
             </Text>
-            <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
-              {selectedTab === 'all' 
-                ? 'Lịch sử giao dịch của bạn sẽ hiển thị tại đây'
-                : selectedTab === 'premium'
-                ? 'Chưa có giao dịch phí bảo hiểm'
-                : selectedTab === 'compensation'
-                ? 'Chưa có giao dịch bồi thường'
-                : 'Chưa có giao dịch hết hạn'
-              }
+            <Text
+              fontSize="$sm"
+              color={colors.secondary_text}
+              textAlign="center"
+            >
+              {selectedTab === "all"
+                ? "Lịch sử giao dịch của bạn sẽ hiển thị tại đây"
+                : selectedTab === "premium"
+                  ? "Chưa có giao dịch phí bảo hiểm"
+                  : selectedTab === "compensation"
+                    ? "Chưa có giao dịch bồi thường"
+                    : "Chưa có giao dịch hết hạn"}
             </Text>
           </Box>
         )}

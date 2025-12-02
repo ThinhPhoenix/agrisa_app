@@ -1,4 +1,6 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { Utils } from "@/libs/utils/utils";
 import {
     Box,
@@ -25,11 +27,26 @@ interface PaymentDetailProps {
 export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
   const { colors } = useAgrisaColors();
   const { getDetailPayment } = usePayment();
+  const { getRegisteredPolicyDetail } = usePolicy();
+  const { getInsurancePartnerDetail } = useInsurancePartner();
+  
   const { data, isLoading, isError } = getDetailPayment(paymentId);
 
   const payment = data?.success ? data.data : null;
 
-  if (isLoading) {
+  // Lấy policy_id từ orderItems[0].item_id (vì item_id chính là policy_id)
+  const policyId = payment?.orderItems?.[0]?.item_id;
+  
+  // Fetch policy detail để lấy insurance_provider_id
+  const { data: policyData, isLoading: isPolicyLoading } = getRegisteredPolicyDetail(policyId || '');
+  const policy = policyData?.success ? policyData.data : null;
+  
+  // Fetch insurance partner detail
+  const insuranceProviderId = policy?.insurance_provider_id;
+  const { data: insurancePartnerData, isLoading: isPartnerLoading } = getInsurancePartnerDetail(insuranceProviderId || '');
+  const insurancePartner = insurancePartnerData?.data;
+
+  if (isLoading || isPolicyLoading || isPartnerLoading) {
     return (
       <Box flex={1} alignItems="center" justifyContent="center" py="$20">
         <Spinner size="large" color={colors.primary} />
@@ -69,9 +86,9 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
 
   // Màu sắc theo loại giao dịch
   const statusColor = isExpired ? colors.muted_text : (isCompleted ? colors.success : colors.warning);
-  const statusBgColor = isExpired ? colors.muted : (isCompleted ? colors.successSoft : colors.warningSoft);
+  const statusBgColor = isExpired ? colors.frame_border : (isCompleted ? colors.successSoft : colors.warningSoft);
   const amountColor = isExpired ? colors.muted_text : (isExpense ? colors.warning : colors.success);
-  const amountBgColor = isExpired ? colors.muted : (isExpense ? colors.warningSoft : colors.successSoft);
+  const amountBgColor = isExpired ? colors.frame_border : (isExpense ? colors.warningSoft : colors.successSoft);
 
   // Label trạng thái
   const statusLabel = payment.status === 'completed' ? 'Thành công' 
@@ -110,7 +127,8 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
                 {Utils.getPaymentTypeLabel(payment.type)}
               </Text>
               <Text fontSize="$2xl" fontWeight="$bold" color={amountColor}>
-                {isExpired ? '' : (isExpense ? '-' : '+')}{Utils.formatCurrency(Number(payment.amount))}
+                {isExpired ? "" : isExpense ? "-" : "+"}
+                {Utils.formatCurrency(Number(payment.amount))}
               </Text>
             </VStack>
           </HStack>
@@ -130,12 +148,7 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
               <Text fontSize="$sm" color={colors.secondary_text}>
                 Trạng thái
               </Text>
-              <Box
-                bg={statusBgColor}
-                borderRadius="$md"
-                px="$3"
-                py="$1.5"
-              >
+              <Box bg={statusBgColor} borderRadius="$md" px="$3" py="$1.5">
                 <Text fontSize="$xs" fontWeight="$semibold" color={statusColor}>
                   {statusLabel}
                 </Text>
@@ -149,11 +162,14 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
               <Text fontSize="$sm" color={colors.secondary_text}>
                 Thời gian
               </Text>
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-                {isExpired 
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
+                {isExpired
                   ? Utils.formatStringVietnameseDate(payment.expired_at)
-                  : Utils.formatStringVietnameseDate(payment.paid_at)
-                }
+                  : Utils.formatStringVietnameseDate(payment.paid_at)}
               </Text>
             </HStack>
 
@@ -164,7 +180,11 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
               <Text fontSize="$sm" color={colors.secondary_text}>
                 Cập nhật cuối
               </Text>
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 {Utils.formatStringVietnameseDate(payment.updated_at)}
               </Text>
             </HStack>
@@ -176,7 +196,11 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
               <Text fontSize="$sm" color={colors.secondary_text}>
                 Mô tả
               </Text>
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 {payment.description}
               </Text>
             </HStack>
@@ -188,7 +212,11 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
               <Text fontSize="$sm" color={colors.secondary_text}>
                 Tổng phí
               </Text>
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
                 Miễn phí
               </Text>
             </HStack>
@@ -196,7 +224,11 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
             <Box h={1} bg={colors.frame_border} />
 
             {/* Danh mục */}
-            <HStack justifyContent="space-between" alignItems="flex-start" py="$2">
+            <HStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              py="$2"
+            >
               <Text fontSize="$sm" color={colors.secondary_text}>
                 Danh mục
               </Text>
@@ -219,34 +251,71 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
             borderColor={colors.frame_border}
             p="$4"
           >
-            <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text} mb="$3">
-              Thông tin bảo hiểm
+            <Text
+              fontSize="$md"
+              fontWeight="$bold"
+              color={colors.primary_text}
+              mb="$3"
+            >
+              Thông tin đơn đăng kí bảo hiểm
             </Text>
 
             <VStack space="sm">
               {payment.orderItems.map((item, index) => (
                 <Box key={item.id}>
                   {/* Tên bảo hiểm */}
-                  <HStack justifyContent="space-between" alignItems="center" py="$2">
+                  <HStack
+                    justifyContent="space-between"
+                    alignItems="center"
+                    py="$2"
+                  >
                     <Text fontSize="$sm" color={colors.secondary_text}>
                       Tên bảo hiểm
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary}>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                    >
                       {item.name}
                     </Text>
                   </HStack>
 
                   <Box h={1} bg={colors.frame_border} />
 
-                  {/* Mã bảo hiểm */}
-                  <HStack justifyContent="space-between" alignItems="center" py="$2">
+                  {/* Công ty bảo hiểm */}
+                  <HStack
+                    justifyContent="space-between"
+                    alignItems="center"
+                    py="$2"
+                  >
                     <Text fontSize="$sm" color={colors.secondary_text}>
-                      Mã bảo hiểm
+                      Công ty bảo hiểm
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                    <HStack space="xs" alignItems="center">
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                      >
+                        {insurancePartner?.partner_display_name ||
+                          "Đang tải..."}
+                      </Text>
+                    </HStack>
+                  </HStack>
+                  <Box h={1} bg={colors.frame_border} />
+
+                  {/* Mã bảo hiểm */}
+                  <VStack py="$2" space="xs">
+                    <Text fontSize="$sm" color={colors.secondary_text}>
+                      Mã đơn bảo hiểm
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
                       {item.item_id}
                     </Text>
-                  </HStack>
+                  </VStack>
 
                   {index < payment.orderItems.length - 1 && (
                     <Box h={1} bg={colors.frame_border} my="$2" />

@@ -375,13 +375,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* Hidden screens - không hiển thị trong tab bar */}
-      <Tabs.Screen
-        name="transaction-history/[id]"
-        options={{
-          href: null, // Ẩn khỏi tab bar
-        }}
-      />
+     
     </Tabs>
   );
 }

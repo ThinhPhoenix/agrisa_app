@@ -7,6 +7,16 @@ export const Utils = {
     return `${day}/${month}/${year}`;
   },
 
+  formatDateTimeForMS: (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  },
+
   formatVietnameseDate: (date: Date): string => {
     const day = String(date.getUTCDate()).padStart(2, "0");
     const month = String(date.getUTCMonth() + 1).padStart(2, "0");

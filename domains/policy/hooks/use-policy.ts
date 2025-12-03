@@ -15,11 +15,15 @@ export const usePolicy = () => {
     });
   };
 
-  const getDetailBasePolicy = (base_policy_id: string) => {
+  const getDetailBasePolicy = (
+    base_policy_id: string,
+    options?: { enabled?: boolean }
+  ) => {
     return useQuery({
       queryKey: [QueryKey.POLICY.DETAIL, base_policy_id],
       queryFn: () => policyServices.get.detail_policy(base_policy_id),
-      enabled: !!base_policy_id,
+      enabled:
+        options?.enabled !== undefined ? options.enabled : !!base_policy_id,
     });
   };
 
@@ -38,11 +42,14 @@ export const usePolicy = () => {
     });
   };
 
-  const getRegisteredPolicyDetail = (policy_id: string) => {
+  const getRegisteredPolicyDetail = (
+    policy_id: string,
+    options?: { enabled?: boolean }
+  ) => {
     return useQuery({
       queryKey: [QueryKey.POLICY.REGISTERED_POLICY_DETAIL, policy_id],
       queryFn: () => policyServices.get.get_registered_policy_detail(policy_id),
-      enabled: !!policy_id,
+      enabled: options?.enabled !== undefined ? options.enabled : !!policy_id,
     });
   };
 

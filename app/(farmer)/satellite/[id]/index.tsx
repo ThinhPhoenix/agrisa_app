@@ -1,62 +1,193 @@
 import { AgrisaHeader } from "@/components/Header";
-import { FullscreenImageViewer } from "@/components/image-viewer";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { MonitorChart } from "@/domains/farm-data-monitor/components/MonitorChart";
+import { ParameterFilter } from "@/domains/farm-data-monitor/components/ParameterFilter";
+import {
+  getTimeRangeTimestamps,
+  TimeRange,
+  TimeRangeSelector,
+} from "@/domains/farm-data-monitor/components/TimeRangeSelector";
+import { useDataMonitor } from "@/domains/farm-data-monitor/hooks/use-data-monitor";
+import { MonitoringDataItem } from "@/domains/farm-data-monitor/models/data-monitor.model";
+import {
+  getParameterColor,
+  getParameterLabel,
+} from "@/domains/farm-data-monitor/utils/parameterUtils";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { Utils } from "@/libs/utils/utils";
 import {
   Box,
+  Divider,
+  Heading,
   HStack,
-  Pressable,
   ScrollView,
   Spinner,
   Text,
   VStack,
 } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
-import { AlertCircle } from "lucide-react-native";
-import React, { useState } from "react";
-import { Image } from "react-native";
+import {
+  AlertCircle,
+  Building2,
+  Calendar,
+  Droplets,
+  FileText,
+  Info,
+  MapPin,
+  Mountain,
+  Satellite,
+} from "lucide-react-native";
+import React, { useMemo, useState } from "react";
+import { RefreshControl } from "react-native";
 
 /**
- * Màn hình chi tiết ảnh vệ tinh
- * Chỉ hiển thị ảnh vệ tinh, không có thông tin khác
+ * Màn hình chi tiết theo dõi dữ liệu vệ tinh
+ * Hiển thị biểu đồ chỉ số theo phong cách chứng khoán
  */
 export default function SatelliteDetailScreen() {
   const { colors } = useAgrisaColors();
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { getDetailFarm } = useFarm();
-  const { data, isLoading, error } = getDetailFarm(id || "");
+  const { id, policy_id, mode } = useLocalSearchParams<{
+    id: string;
+    policy_id?: string;
+    mode?: "farm" | "policy";
+  }>();
 
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+  const [selectedParameter, setSelectedParameter] = useState<string | null>(
     null
   );
+  const [timeRange, setTimeRange] = useState<TimeRange>("1m");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const farm = data?.success ? data.data : null;
-  const photos = farm?.farm_photos || [];
+  // Xác định mode: nếu có policy_id hoặc mode=policy thì là policy mode
+  const viewMode = mode || (policy_id ? "policy" : "farm");
 
-  // Helper: Fix photo URL by adding https:// if missing
-  const getPhotoUrl = (url: string) => {
-    if (!url) return "";
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
+  // Get policy detail để lấy data source info và farm_id (chỉ khi ở policy mode)
+  const {
+    getRegisteredPolicyDetail,
+    getDetailBasePolicy,
+    getRegisteredPolicy,
+  } = usePolicy();
+
+  // Get all registered policies for farm mode
+  const { data: allPoliciesData, isLoading: isAllPoliciesLoading } =
+    getRegisteredPolicy();
+  const {
+    data: policyData,
+    isLoading: isPolicyLoading,
+    error: policyError,
+  } = getRegisteredPolicyDetail(policy_id || "", {
+    enabled: viewMode === "policy" && !!policy_id,
+  });
+
+  const registeredPolicy = policyData?.success ? policyData.data : null;
+  const basePolicyId = registeredPolicy?.base_policy_id;
+  const farmIdFromPolicy = registeredPolicy?.farm_id;
+
+  // Get farm detail
+  // - Farm mode: id chính là farm_id
+  // - Policy mode: lấy farm_id từ registered policy
+  const { getDetailFarm } = useFarm();
+  const farmIdToFetch = viewMode === "farm" ? id : farmIdFromPolicy;
+  const {
+    data: farmData,
+    isLoading: isFarmLoading,
+    error: farmError,
+  } = getDetailFarm(farmIdToFetch || "", {
+    enabled: !!farmIdToFetch,
+  });
+
+  const farmDetail = farmData?.success ? farmData.data : null;
+
+  const {
+    data: basePolicyData,
+    isLoading: isBasePolicyLoading,
+    error: basePolicyError,
+  } = getDetailBasePolicy(basePolicyId || "", {
+    enabled: viewMode === "policy" && !!basePolicyId,
+  });
+
+  const basePolicy = basePolicyData?.success ? basePolicyData.data : null;
+
+  // Get monitoring data
+  const timeRangeParams = getTimeRangeTimestamps(timeRange);
+  const { getPolicyDataMonitor } = useDataMonitor();
+
+  // Build params dựa trên mode
+  const monitorParams = useMemo(() => {
+    // Farm mode: cho phép filter theo parameter đã chọn
+    if (viewMode === "farm") {
+      return {
+        parameter_name: selectedParameter || undefined,
+        ...timeRangeParams,
+      };
     }
-    return `https://${url}`;
-  };
 
-  // Open fullscreen image viewer
-  const openImageViewer = (index: number) => {
-    setSelectedImageIndex(index);
-  };
+    // Policy mode: không filter vì đã được base policy xác định
+    return {
+      ...timeRangeParams,
+    };
+  }, [viewMode, selectedParameter, timeRangeParams]);
 
-  // Close fullscreen image viewer
-  const closeImageViewer = () => {
-    setSelectedImageIndex(null);
-  };
+  const {
+    data: monitorData,
+    isLoading: isMonitorLoading,
+    error: monitorError,
+    refetch,
+  } = getPolicyDataMonitor(id || "", monitorParams);
+
+  const monitoringData = monitorData?.success ? monitorData.data : null;
+
+  // Group data by parameter
+  const groupedData = useMemo(() => {
+    if (!monitoringData?.monitoring_data) return {};
+
+    const grouped: Record<string, MonitoringDataItem[]> = {};
+
+    monitoringData.monitoring_data.forEach((item) => {
+      const param = item.parameter_name;
+      if (!grouped[param]) {
+        grouped[param] = [];
+      }
+      grouped[param].push(item);
+    });
+
+    return grouped;
+  }, [monitoringData]);
+
+  // Get data for selected parameter or all
+  const displayData = useMemo(() => {
+    if (selectedParameter && groupedData[selectedParameter]) {
+      return { [selectedParameter]: groupedData[selectedParameter] };
+    }
+    return groupedData;
+  }, [selectedParameter, groupedData]);
+
+  // Handle refresh
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  }, [refetch]);
+
+  const isLoading =
+    (viewMode === "policy"
+      ? isPolicyLoading || isBasePolicyLoading || isFarmLoading
+      : isFarmLoading) || isMonitorLoading;
+  const hasError =
+    (viewMode === "policy"
+      ? policyError || basePolicyError || farmError
+      : farmError) || monitorError;
 
   return (
     <Box flex={1} bg={colors.background}>
       {/* Header */}
       <AgrisaHeader
-        title={farm?.farm_name || "Ảnh vệ tinh"}
+        title={
+          viewMode === "farm"
+            ? "Dữ liệu vệ tinh nông trại"
+            : "Dữ liệu vệ tinh hợp đồng"
+        }
         onBack={() => router.back()}
       />
 
@@ -64,20 +195,28 @@ export default function SatelliteDetailScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
-        <Box p="$4">
+        <VStack space="lg" p="$4">
           {/* Loading */}
           {isLoading && (
             <Box py="$8" alignItems="center">
               <Spinner size="large" color={colors.primary} />
               <Text fontSize="$sm" color={colors.secondary_text} mt="$4">
-                Đang tải ảnh...
+                Đang tải dữ liệu vệ tinh...
               </Text>
             </Box>
           )}
 
           {/* Error */}
-          {error && (
+          {hasError && (
             <Box
               bg={colors.error + "20"}
               borderRadius="$lg"
@@ -88,113 +227,519 @@ export default function SatelliteDetailScreen() {
               <HStack space="sm" alignItems="center">
                 <AlertCircle size={20} color={colors.error} strokeWidth={2} />
                 <Text fontSize="$sm" color={colors.error} flex={1}>
-                  Không thể tải ảnh. Vui lòng thử lại.
+                  Không thể tải dữ liệu. Vui lòng thử lại.
                 </Text>
               </HStack>
             </Box>
           )}
 
-          {/* Empty state */}
-          {!isLoading && photos.length === 0 && (
-            <Box py="$8" alignItems="center">
-              <AlertCircle
-                size={64}
-                color={colors.secondary_text}
-                strokeWidth={1}
-              />
-              <Text
-                fontSize="$md"
-                fontWeight="$semibold"
-                color={colors.primary_text}
-                mt="$4"
-              >
-                Chưa có ảnh vệ tinh
-              </Text>
-              <Text
-                fontSize="$sm"
-                color={colors.secondary_text}
-                textAlign="center"
-                mt="$2"
-              >
-                Nông trại này chưa có ảnh vệ tinh
-              </Text>
-            </Box>
-          )}
-
-          {/* Satellite Images Grid */}
-          {photos.length > 0 && (
-            <VStack space="md">
-              {/* Photo count info */}
-              <Box
-                bg={colors.primary + "20"}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.primary}
-              >
+          {!isLoading && !hasError && (
+            <>
+              {/* Info banner */}
+              {farmDetail && (
                 <Text
                   fontSize="$sm"
-                  fontWeight="$semibold"
-                  color={colors.primary}
+                  color={colors.secondary_text}
                   textAlign="center"
                 >
-                  Tổng cộng: {photos.length} ảnh vệ tinh
+                  {viewMode === "policy"
+                    ? `Bạn đang xem dữ liệu vệ tinh của nông trại ${farmDetail.farm_name}`
+                    : `Bạn đang xem dữ liệu vệ tinh của nông trại ${farmDetail.farm_name}`}
                 </Text>
-              </Box>
+              )}
 
-              {photos.map((photo: any, index: number) => (
-                <Pressable
-                  key={photo.id}
-                  onPress={() => openImageViewer(index)}
+              {/* Time range selector */}
+              <TimeRangeSelector selected={timeRange} onSelect={setTimeRange} />
+
+              {/* Parameter filter - CHỈ hiện khi ở FARM mode để chọn parameter */}
+              {viewMode === "farm" && Object.keys(groupedData).length > 0 && (
+                <ParameterFilter
+                  selected={selectedParameter}
+                  onSelect={setSelectedParameter}
+                  options={Object.keys(groupedData).map((param) => ({
+                    value: param,
+                    label: getParameterLabel(param),
+                    color: getParameterColor(param, colors.primary),
+                  }))}
+                />
+              )}
+
+              {/* Hướng dẫn sử dụng */}
+              {Object.keys(displayData).length > 0 && (
+                <Box
+                  bg={colors.card_surface}
+                  borderRadius="$lg"
+                  p="$3"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
                 >
+                  <HStack space="sm" alignItems="center">
+                    <Info
+                      size={14}
+                      color={colors.secondary_text}
+                      strokeWidth={2}
+                    />
+                    <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                      Nhấn vào điểm trên biểu đồ để xem chi tiết dữ liệu đo
+                    </Text>
+                  </HStack>
+                </Box>
+              )}
+
+              {/* Charts */}
+              {Object.keys(displayData).length === 0 ? (
+                <Box py="$8" px="$4" alignItems="center">
                   <Box
-                    borderRadius="$xl"
-                    overflow="hidden"
+                    bg={colors.card_surface}
+                    p="$8"
+                    borderRadius="$2xl"
+                    mb="$4"
                     borderWidth={1}
                     borderColor={colors.frame_border}
                   >
-                    <Image
-                      source={{ uri: getPhotoUrl(photo.photo_url) }}
-                      style={{
-                        width: "100%",
-                        aspectRatio: 16 / 9,
-                      }}
-                      resizeMode="cover"
+                    <Satellite
+                      size={48}
+                      color={colors.secondary_text}
+                      strokeWidth={1.5}
                     />
-
-                    {/* Image number badge */}
-                    <Box
-                      position="absolute"
-                      bottom="$3"
-                      right="$3"
-                      bg="rgba(0,0,0,0.7)"
-                      borderRadius="$md"
-                      px="$3"
-                      py="$1"
-                    >
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$semibold"
-                        color={colors.primary_white_text}
-                      >
-                        {index + 1}/{photos.length}
-                      </Text>
-                    </Box>
                   </Box>
-                </Pressable>
-              ))}
-            </VStack>
-          )}
-        </Box>
-      </ScrollView>
+                  <Text
+                    fontSize="$lg"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                    textAlign="center"
+                    mb="$2"
+                  >
+                    Chưa có dữ liệu
+                  </Text>
+                  <Text
+                    fontSize="$sm"
+                    color={colors.secondary_text}
+                    textAlign="center"
+                    lineHeight={20}
+                    maxWidth={280}
+                  >
+                    Hãy đăng ký bảo hiểm để nhận dữ liệu vệ tinh theo dõi nông trại
+                  </Text>
+                </Box>
+              ) : (
+                <VStack space="xl">
+                  {Object.entries(displayData).map(([param, items]) => {
+                    // Tìm unit từ item đầu tiên
+                    const unit = items[0]?.unit || "";
 
-      {/* Fullscreen Image Viewer */}
-      <FullscreenImageViewer
-        images={photos.map((photo: any) => getPhotoUrl(photo.photo_url))}
-        selectedIndex={selectedImageIndex}
-        onClose={closeImageViewer}
-        onIndexChange={setSelectedImageIndex}
-      />
+                    return (
+                      <Box key={param}>
+                        <MonitorChart
+                          data={items}
+                          parameterName={param}
+                          unit={unit}
+                        />
+                      </Box>
+                    );
+                  })}
+                </VStack>
+              )}
+
+              {/* Farm info - Hiện ở dưới cùng */}
+              {farmDetail && (
+                <Box
+                  bg={colors.card_surface}
+                  borderRadius="$lg"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <VStack space="md">
+                    {/* Heading H1 */}
+                    <Heading size="lg" color={colors.primary_text}>
+                      Thông tin nông trại
+                    </Heading>
+
+                    {/* Divider */}
+                    <Divider bg={colors.frame_border} />
+
+                    {/* Farm name */}
+                    <HStack space="sm" alignItems="center">
+                      <VStack flex={1}>
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          Tên nông trại
+                        </Text>
+                        <Text
+                          fontSize="$md"
+                          fontWeight="$bold"
+                          color={colors.primary_text}
+                        >
+                          {farmDetail.farm_name}
+                        </Text>
+                      </VStack>
+                    </HStack>
+
+                    {/* Farm details grid */}
+                    <VStack space="sm">
+                      <HStack space="xs" alignItems="center">
+                        <MapPin
+                          size={14}
+                          color={colors.secondary_text}
+                          strokeWidth={2}
+                        />
+                        <Text fontSize="$sm" color={colors.secondary_text}>
+                          {farmDetail.province}, {farmDetail.district}
+                        </Text>
+                      </HStack>
+
+                      <HStack space="md">
+                        <VStack flex={1}>
+                          <Text fontSize="$xs" color={colors.secondary_text}>
+                            Diện tích
+                          </Text>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {farmDetail.area_sqm} ha
+                          </Text>
+                        </VStack>
+                        <VStack flex={1}>
+                          <Text fontSize="$xs" color={colors.secondary_text}>
+                            Loại cây
+                          </Text>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {Utils.getCropLabel(farmDetail.crop_type)}
+                          </Text>
+                        </VStack>
+                      </HStack>
+
+                      {/* Thông tin ngày trồng và thu hoạch */}
+                      <HStack space="md">
+                        <VStack flex={1}>
+                          <HStack space="xs" alignItems="center" mb="$1">
+                            <Calendar size={12} color={colors.secondary_text} />
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Ngày gieo trồng
+                            </Text>
+                          </HStack>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {Utils.formatDateForMS(farmDetail.planting_date)}
+                          </Text>
+                        </VStack>
+                        <VStack flex={1}>
+                          <HStack space="xs" alignItems="center" mb="$1">
+                            <Calendar size={12} color={colors.secondary_text} />
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Dự kiến thu hoạch
+                            </Text>
+                          </HStack>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {Utils.formatDateForMS(
+                              farmDetail.expected_harvest_date
+                            )}
+                          </Text>
+                        </VStack>
+                      </HStack>
+
+                      {/* Thông tin hệ thống tưới và loại đất */}
+                      <HStack space="md">
+                        <VStack flex={1}>
+                          <HStack space="xs" alignItems="center" mb="$1">
+                            <Droplets size={12} color={colors.secondary_text} />
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Hệ thống tưới
+                            </Text>
+                          </HStack>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {farmDetail.has_irrigation ? farmDetail.irrigation_type : "Không có"}
+                          </Text>
+                        </VStack>
+                        <VStack flex={1}>
+                          <HStack space="xs" alignItems="center" mb="$1">
+                            <Mountain size={12} color={colors.secondary_text} />
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Loại đất
+                            </Text>
+                          </HStack>
+                          <Text
+                            fontSize="$sm"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                          >
+                            {farmDetail.soil_type}
+                          </Text>
+                        </VStack>
+                      </HStack>
+                    </VStack>
+
+                    {/* Registered policies for farm mode */}
+                    {viewMode === "farm" && allPoliciesData?.success && (
+                      <>
+                        <Divider bg={colors.frame_border} my="$3" />
+
+                        <VStack space="sm">
+                          <HStack space="xs" alignItems="center">
+                            <FileText
+                              size={16}
+                              color={colors.primary}
+                              strokeWidth={2}
+                            />
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$bold"
+                              color={colors.primary_text}
+                            >
+                              Bảo hiểm đã đăng ký (
+                              {
+                                allPoliciesData.data.policies.filter(
+                                  (p: any) =>
+                                    p.farm_id === farmDetail.id &&
+                                    p.status === "active"
+                                ).length
+                              }
+                              )
+                            </Text>
+                          </HStack>
+
+                          {allPoliciesData.data.policies
+                            .filter(
+                              (p: any) =>
+                                p.farm_id === farmDetail.id &&
+                                p.status === "active"
+                            )
+                            .map((policy: any) => (
+                              <Box
+                                key={policy.id}
+                                bg={colors.background}
+                                borderRadius="$md"
+                                p="$3"
+                                borderWidth={1}
+                                borderColor={colors.frame_border}
+                              >
+                                <VStack space="xs">
+                                  <HStack justifyContent="space-between">
+                                    <Text
+                                      fontSize="$xs"
+                                      color={colors.secondary_text}
+                                    >
+                                      Số hợp đồng:
+                                    </Text>
+                                    <Text
+                                      fontSize="$xs"
+                                      fontWeight="$bold"
+                                      color={colors.primary}
+                                    >
+                                      {policy.policy_number}
+                                    </Text>
+                                  </HStack>
+                                  <HStack justifyContent="space-between">
+                                    <Text
+                                      fontSize="$xs"
+                                      color={colors.secondary_text}
+                                    >
+                                      Trạng thái:
+                                    </Text>
+                                    <Text
+                                      fontSize="$xs"
+                                      fontWeight="$semibold"
+                                      color={colors.success}
+                                    >
+                                      Đang có hiệu lực
+                                    </Text>
+                                  </HStack>
+                                  {Object.keys(groupedData).length > 0 && (
+                                    <HStack
+                                      justifyContent="space-between"
+                                      alignItems="center"
+                                      mt="$1"
+                                    >
+                                      <Text
+                                        fontSize="$2xs"
+                                        color={colors.secondary_text}
+                                      >
+                                        Chỉ số theo dõi:
+                                      </Text>
+                                      <HStack flexWrap="wrap" gap="$1">
+                                        {Object.keys(groupedData).map(
+                                          (param) => (
+                                            <Box
+                                              key={param}
+                                              bg={
+                                                getParameterColor(
+                                                  param,
+                                                  colors.primary
+                                                ) + "15"
+                                              }
+                                              px="$2"
+                                              py="$1"
+                                              borderRadius="$sm"
+                                            >
+                                              <Text
+                                                fontSize="$2xs"
+                                                fontWeight="$semibold"
+                                                color={getParameterColor(
+                                                  param,
+                                                  colors.primary
+                                                )}
+                                              >
+                                                {getParameterLabel(param)}
+                                              </Text>
+                                            </Box>
+                                          )
+                                        )}
+                                      </HStack>
+                                    </HStack>
+                                  )}
+                                </VStack>
+                              </Box>
+                            ))}
+                        </VStack>
+                      </>
+                    )}
+
+                    {/* Policy info if in policy mode */}
+                    {viewMode === "policy" &&
+                      registeredPolicy &&
+                      basePolicy && (
+                        <>
+                          <Divider bg={colors.frame_border} my="$3" />
+
+                          <VStack space="sm">
+                            <HStack space="xs" alignItems="center">
+                              <Building2
+                                size={16}
+                                color={colors.primary}
+                                strokeWidth={2}
+                              />
+                              <Text
+                                fontSize="$sm"
+                                fontWeight="$bold"
+                                color={colors.primary_text}
+                              >
+                                Thông tin hợp đồng
+                              </Text>
+                            </HStack>
+
+                            <Box
+                              bg={colors.background}
+                              borderRadius="$md"
+                              p="$3"
+                              borderWidth={1}
+                              borderColor={colors.primary + "30"}
+                            >
+                              <VStack space="xs">
+                                <HStack justifyContent="space-between">
+                                  <Text
+                                    fontSize="$xs"
+                                    color={colors.secondary_text}
+                                  >
+                                    Số hợp đồng:
+                                  </Text>
+                                  <Text
+                                    fontSize="$xs"
+                                    fontWeight="$bold"
+                                    color={colors.primary}
+                                  >
+                                    {registeredPolicy.policy_number}
+                                  </Text>
+                                </HStack>
+                                <HStack justifyContent="space-between">
+                                  <Text
+                                    fontSize="$xs"
+                                    color={colors.secondary_text}
+                                  >
+                                    Tên bảo hiểm:
+                                  </Text>
+                                  <Text
+                                    fontSize="$xs"
+                                    fontWeight="$semibold"
+                                    color={colors.primary_text}
+                                  >
+                                    {basePolicy.base_policy.product_name}
+                                  </Text>
+                                </HStack>
+                                <HStack justifyContent="space-between">
+                                  <Text
+                                    fontSize="$xs"
+                                    color={colors.secondary_text}
+                                  >
+                                    Nhà bảo hiểm:
+                                  </Text>
+                                  <Text
+                                    fontSize="$xs"
+                                    fontWeight="$semibold"
+                                    color={colors.primary_text}
+                                  >
+                                    {
+                                      basePolicy.base_policy
+                                        .insurance_provider_id
+                                    }
+                                  </Text>
+                                </HStack>
+                                <HStack justifyContent="space-between">
+                                  <Text
+                                    fontSize="$xs"
+                                    color={colors.secondary_text}
+                                  >
+                                    Trạng thái:
+                                  </Text>
+                                  <Text
+                                    fontSize="$xs"
+                                    fontWeight="$semibold"
+                                    color={
+                                      registeredPolicy.status === "active"
+                                        ? colors.success
+                                        : registeredPolicy.status ===
+                                              "pending_review" ||
+                                            registeredPolicy.status ===
+                                              "pending_payment"
+                                          ? colors.warning
+                                          : colors.error
+                                    }
+                                  >
+                                    {registeredPolicy.status === "active"
+                                      ? "Đang có hiệu lực"
+                                      : registeredPolicy.status ===
+                                          "pending_review"
+                                        ? "Chờ xét duyệt"
+                                        : registeredPolicy.status ===
+                                            "pending_payment"
+                                          ? "Chờ thanh toán"
+                                          : registeredPolicy.status ===
+                                              "rejected"
+                                            ? "Từ chối"
+                                            : registeredPolicy.status ===
+                                                "cancelled"
+                                              ? "Đã hủy"
+                                              : "Hết hạn"}
+                                  </Text>
+                                </HStack>
+                              </VStack>
+                            </Box>
+                          </VStack>
+                        </>
+                      )}
+                  </VStack>
+                </Box>
+              )}
+            </>
+          )}
+        </VStack>
+      </ScrollView>
     </Box>
   );
 }

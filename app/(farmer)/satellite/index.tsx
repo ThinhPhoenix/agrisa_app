@@ -1,6 +1,8 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { Utils } from "@/libs/utils/utils";
 import {
   Box,
   HStack,
@@ -11,45 +13,109 @@ import {
   VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import { AlertCircle, MapPin, Satellite } from "lucide-react-native";
-import React from "react";
-import { Image, RefreshControl } from "react-native";
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
+  Leaf,
+  MapPin,
+  ReceiptText,
+  Satellite,
+} from "lucide-react-native";
+import React, { useState } from "react";
+import { RefreshControl } from "react-native";
+
+type ViewMode = "farm" | "policy";
 
 /**
- * Màn hình danh sách nông trại với ảnh vệ tinh
- * Hiển thị preview ảnh vệ tinh của từng farm
+ * Màn hình danh sách để theo dõi dữ liệu vệ tinh
+ * 2 tabs: Xem theo Farm hoặc xem theo Policy
  */
 export default function SatelliteListScreen() {
   const { colors } = useAgrisaColors();
-  const { getListFarm } = useFarm();
-  const { data, isLoading, error, refetch } = getListFarm();
+  const [viewMode, setViewMode] = useState<ViewMode>("farm");
   const [refreshing, setRefreshing] = React.useState(false);
+
+  // Get farms
+  const { getListFarm } = useFarm();
+  const {
+    data: farmsData,
+    isLoading: isFarmsLoading,
+    error: farmsError,
+    refetch: refetchFarms,
+  } = getListFarm();
+
+  // Get policies
+  const { getRegisteredPolicy } = usePolicy();
+  const {
+    data: policiesData,
+    isLoading: isPoliciesLoading,
+    error: policiesError,
+    refetch: refetchPolicies,
+  } = getRegisteredPolicy();
 
   // Handle pull to refresh
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  }, [refetch]);
-
-  // Helper: Fix photo URL by adding https:// if missing
-  const getPhotoUrl = (url: string) => {
-    if (!url) return "";
-    if (url.startsWith("http://") || url.startsWith("https://")) {
-      return url;
+    if (viewMode === "farm") {
+      await refetchFarms();
+    } else {
+      await refetchPolicies();
     }
-    return `https://${url}`;
+    setRefreshing(false);
+  }, [viewMode, refetchFarms, refetchPolicies]);
+
+  // Parse data
+  const farms = farmsData?.success ? farmsData.data : [];
+  const policies = policiesData?.success ? policiesData.data.policies : [];
+
+  // Lọc policies có thể xem monitor data
+  const activePolicies = policies?.filter(
+    (policy: any) =>
+      Utils.shouldShowMonitorData(policy.underwriting_status) &&
+      policy.status === "active"
+  );
+
+  // Helper: Get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return colors.success;
+      case "pending_payment":
+        return colors.warning;
+      case "pending_review":
+        return colors.info;
+      default:
+        return colors.secondary_text;
+    }
   };
 
-  // Filter farms có ảnh vệ tinh
-  const farms = data?.success ? data.data : [];
-  const farmsWithSatellite = farms?.filter(
-    (farm: any) => farm.farm_photos && farm.farm_photos.length > 0
-  );
+  // Helper: Get status label
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "active":
+        return "Đang hoạt động";
+      case "pending_payment":
+        return "Chờ thanh toán";
+      case "pending_review":
+        return "Chờ duyệt";
+      case "expired":
+        return "Hết hạn";
+      case "cancelled":
+        return "Đã hủy";
+      default:
+        return status;
+    }
+  };
+
+  const isLoading = viewMode === "farm" ? isFarmsLoading : isPoliciesLoading;
+  const error = viewMode === "farm" ? farmsError : policiesError;
+  const isEmpty =
+    viewMode === "farm" ? farms?.length === 0 : activePolicies?.length === 0;
 
   return (
     <Box flex={1} bg={colors.background}>
-      <AgrisaHeader title="Ảnh vệ tinh" />
+      <AgrisaHeader title="Theo dõi dữ liệu vệ tinh" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -63,7 +129,126 @@ export default function SatelliteListScreen() {
           />
         }
       >
-        <VStack space="md" p="$4">
+        <VStack space="lg" p="$4">
+          {/* Info banner */}
+          <Box
+            bg={colors.primarySoft}
+            borderRadius="$xl"
+            p="$4"
+            borderWidth={1}
+            borderColor={colors.primary}
+          >
+            <HStack space="sm" alignItems="flex-start">
+              <Activity size={20} color={colors.primary} strokeWidth={2} />
+              <VStack flex={1} space="xs">
+                <Text fontSize="$sm" fontWeight="$bold" color={colors.primary}>
+                  Theo dõi chỉ số vệ tinh
+                </Text>
+                <Text
+                  fontSize="$xs"
+                  color={colors.primary_text}
+                  lineHeight="$lg"
+                >
+                  Xem biểu đồ và phân tích các chỉ số NDVI, NDMI, NDWI... của
+                  nông trại được theo dõi bởi vệ tinh 24/7
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+
+          {/* Tabs */}
+          <HStack space="sm">
+            <Pressable flex={1} onPress={() => setViewMode("farm")}>
+              {({ pressed }) => (
+                <Box
+                  bg={
+                    viewMode === "farm" ? colors.primary : colors.card_surface
+                  }
+                  borderWidth={1}
+                  borderColor={
+                    viewMode === "farm" ? colors.primary : colors.frame_border
+                  }
+                  borderRadius="$xl"
+                  px="$4"
+                  py="$3"
+                  opacity={pressed ? 0.7 : 1}
+                >
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Leaf
+                      size={18}
+                      color={
+                        viewMode === "farm"
+                          ? colors.primary_white_text
+                          : colors.secondary_text
+                      }
+                      strokeWidth={2}
+                    />
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={
+                        viewMode === "farm"
+                          ? colors.primary_white_text
+                          : colors.secondary_text
+                      }
+                    >
+                      Theo Nông trại
+                    </Text>
+                  </HStack>
+                </Box>
+              )}
+            </Pressable>
+
+            <Pressable flex={1} onPress={() => setViewMode("policy")}>
+              {({ pressed }) => (
+                <Box
+                  bg={
+                    viewMode === "policy" ? colors.primary : colors.card_surface
+                  }
+                  borderWidth={1}
+                  borderColor={
+                    viewMode === "policy" ? colors.primary : colors.frame_border
+                  }
+                  borderRadius="$xl"
+                  px="$4"
+                  py="$3"
+                  opacity={pressed ? 0.7 : 1}
+                >
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <ReceiptText
+                      size={18}
+                      color={
+                        viewMode === "policy"
+                          ? colors.primary_white_text
+                          : colors.secondary_text
+                      }
+                      strokeWidth={2}
+                    />
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={
+                        viewMode === "policy"
+                          ? colors.primary_white_text
+                          : colors.secondary_text
+                      }
+                    >
+                      Theo Hợp đồng
+                    </Text>
+                  </HStack>
+                </Box>
+              )}
+            </Pressable>
+          </HStack>
+
           {/* Loading */}
           {isLoading && (
             <Box py="$8" alignItems="center">
@@ -93,7 +278,7 @@ export default function SatelliteListScreen() {
           )}
 
           {/* Empty state */}
-          {!isLoading && !error && farmsWithSatellite?.length === 0 && (
+          {!isLoading && !error && isEmpty && (
             <Box py="$12" px="$6" alignItems="center">
               <Box bg={colors.primarySoft} p="$6" borderRadius="$full" mb="$4">
                 <Satellite size={64} color={colors.primary} strokeWidth={1.5} />
@@ -105,7 +290,7 @@ export default function SatelliteListScreen() {
                 textAlign="center"
                 mb="$2"
               >
-                Chưa có ảnh vệ tinh
+                Chưa có dữ liệu theo dõi
               </Text>
               <Text
                 fontSize="$sm"
@@ -114,136 +299,301 @@ export default function SatelliteListScreen() {
                 lineHeight={22}
                 mb="$6"
               >
-                {farms?.length === 0
-                  ? "Bạn chưa có nông trại nào. Hãy đăng ký nông trại để xem ảnh vệ tinh."
-                  : "Các nông trại của bạn chưa có ảnh vệ tinh. Hệ thống sẽ tự động cập nhật khi có dữ liệu mới."}
+                {viewMode === "farm"
+                  ? "Bạn chưa có nông trại nào. Hãy đăng ký nông trại để bắt đầu theo dõi."
+                  : "Bạn chưa có hợp đồng bảo hiểm nào đang hoạt động. Đăng ký bảo hiểm để bắt đầu theo dõi dữ liệu vệ tinh."}
               </Text>
             </Box>
           )}
 
-          {/* Farm list with satellite photos */}
-          {farmsWithSatellite?.map((farm: any) => (
-            <Pressable
-              key={farm.id}
-              onPress={() => router.push(`/(farmer)/satellite/${farm.id}`)}
-            >
-              <Box
-                bg={colors.background}
-                borderRadius="$xl"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-                overflow="hidden"
-              >
-                {/* Satellite Image Preview */}
-                <Box width="100%" aspectRatio={16 / 9} bg={colors.overlay}>
-                  {farm.farm_photos[0]?.photo_url ? (
-                    <Image
-                      source={{
-                        uri: getPhotoUrl(farm.farm_photos[0].photo_url),
-                      }}
-                      style={{ width: "100%", height: "100%" }}
-                      resizeMode="cover"
-                    />
-                  ) : (
+          {/* Farm list */}
+          {!isLoading && !error && viewMode === "farm" && farms?.length > 0 && (
+            <VStack space="md">
+              {farms.map((farm: any) => (
+                <Pressable
+                  key={farm.id}
+                  onPress={() =>
+                    router.push(`/(farmer)/satellite/${farm.id}?mode=farm`)
+                  }
+                >
+                  {({ pressed }) => (
                     <Box
-                      flex={1}
-                      justifyContent="center"
-                      alignItems="center"
-                      bg={colors.overlay}
+                      bg={colors.card_surface}
+                      borderRadius="$xl"
+                      borderWidth={2}
+                      borderColor={colors.frame_border}
+                      overflow="hidden"
+                      opacity={pressed ? 0.7 : 1}
                     >
-                      <Satellite
-                        size={48}
-                        color={colors.secondary_text}
-                        strokeWidth={1}
-                      />
+                      {/* Header */}
+                      <Box
+                        bg={colors.success + "10"}
+                        px="$4"
+                        py="$3"
+                        borderBottomWidth={1}
+                        borderBottomColor={colors.frame_border}
+                      >
+                        <HStack
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <HStack space="sm" alignItems="center" flex={1}>
+                            <Leaf
+                              size={20}
+                              color={colors.success}
+                              strokeWidth={2}
+                            />
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$bold"
+                              color={colors.success}
+                              numberOfLines={1}
+                              flex={1}
+                            >
+                              {farm.farm_name}
+                            </Text>
+                          </HStack>
+                        </HStack>
+                      </Box>
+
+                      {/* Body */}
+                      <VStack space="sm" p="$4">
+                        {/* Farm info */}
+                        <HStack space="xs" alignItems="center">
+                          <MapPin
+                            size={14}
+                            color={colors.secondary_text}
+                            strokeWidth={2}
+                          />
+                          <Text
+                            fontSize="$sm"
+                            color={colors.secondary_text}
+                            flex={1}
+                          >
+                            {farm.province}
+                          </Text>
+                        </HStack>
+
+                        <HStack justifyContent="space-between">
+                          <VStack flex={1}>
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Diện tích
+                            </Text>
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$semibold"
+                              color={colors.primary_text}
+                            >
+                              {farm.area_sqm} ha
+                            </Text>
+                          </VStack>
+                          <VStack flex={1} alignItems="flex-end">
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Loại cây
+                            </Text>
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$semibold"
+                              color={colors.primary_text}
+                            >
+                              {Utils.getCropLabel(farm.crop_type)}
+                            </Text>
+                          </VStack>
+                        </HStack>
+
+                        {/* Footer - View data button */}
+                        <Box
+                          bg={colors.success}
+                          borderRadius="$lg"
+                          px="$4"
+                          py="$3"
+                          mt="$2"
+                        >
+                          <HStack
+                            space="sm"
+                            alignItems="center"
+                            justifyContent="center"
+                          >
+                            <Satellite
+                              size={16}
+                              color={colors.primary_white_text}
+                              strokeWidth={2}
+                            />
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$bold"
+                              color={colors.primary_white_text}
+                            >
+                              Xem dữ liệu theo dõi
+                            </Text>
+                          </HStack>
+                        </Box>
+                      </VStack>
                     </Box>
                   )}
+                </Pressable>
+              ))}
+            </VStack>
+          )}
 
-                  {/* Photo count badge */}
-                  {farm.farm_photos.length > 1 && (
-                    <Box
-                      position="absolute"
-                      top="$3"
-                      right="$3"
-                      bg="rgba(0,0,0,0.7)"
-                      borderRadius="$md"
-                      px="$3"
-                      py="$1"
-                    >
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$semibold"
-                        color={colors.primary_white_text}
-                      >
-                        {farm.farm_photos.length} ảnh
-                      </Text>
-                    </Box>
-                  )}
-                </Box>
-
-                {/* Farm info */}
-                <Box p="$4">
-                  <VStack space="xs">
-                    <Text
-                      fontSize="$lg"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                      numberOfLines={1}
-                    >
-                      {farm.farm_name}
-                    </Text>
-
-                    <HStack space="xs" alignItems="center">
-                      <MapPin
-                        size={14}
-                        color={colors.secondary_text}
-                        strokeWidth={2}
-                      />
-                      <Text
-                        fontSize="$sm"
-                        color={colors.secondary_text}
-                        numberOfLines={1}
-                        flex={1}
-                      >
-                        {farm.province}
-                      </Text>
-                    </HStack>
-
-                    <HStack space="xs" alignItems="center" mt="$2">
+          {/* Policy list */}
+          {!isLoading &&
+            !error &&
+            viewMode === "policy" &&
+            activePolicies?.length > 0 && (
+              <VStack space="md">
+                {activePolicies.map((policy: any) => (
+                  <Pressable
+                    key={policy.id}
+                    onPress={() =>
+                      router.push(
+                        `/(farmer)/satellite/${policy.farm_id}?mode=policy&policy_id=${policy.id}`
+                      )
+                    }
+                  >
+                    {({ pressed }) => (
                       <Box
-                        bg={colors.success + "20"}
-                        borderRadius="$sm"
-                        px="$2"
-                        py="$1"
+                        bg={colors.card_surface}
+                        borderRadius="$xl"
+                        borderWidth={2}
+                        borderColor={colors.frame_border}
+                        overflow="hidden"
+                        opacity={pressed ? 0.7 : 1}
                       >
-                        <Text
-                          fontSize="$xs"
-                          fontWeight="$semibold"
-                          color={colors.success}
+                        {/* Header */}
+                        <Box
+                          bg={colors.primary + "10"}
+                          px="$4"
+                          py="$3"
+                          borderBottomWidth={1}
+                          borderBottomColor={colors.frame_border}
                         >
-                          {farm.area_sqm} ha
-                        </Text>
+                          <HStack
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <HStack space="sm" alignItems="center" flex={1}>
+                              <BarChart3
+                                size={20}
+                                color={colors.primary}
+                                strokeWidth={2}
+                              />
+                              <Text
+                                fontSize="$sm"
+                                fontWeight="$bold"
+                                color={colors.primary}
+                                numberOfLines={1}
+                                flex={1}
+                              >
+                                {policy.policy_number}
+                              </Text>
+                            </HStack>
+                            <Box
+                              bg={getStatusColor(policy.status) + "20"}
+                              px="$2"
+                              py="$1"
+                              borderRadius="$md"
+                            >
+                              <Text
+                                fontSize="$xs"
+                                fontWeight="$bold"
+                                color={getStatusColor(policy.status)}
+                              >
+                                {getStatusLabel(policy.status)}
+                              </Text>
+                            </Box>
+                          </HStack>
+                        </Box>
+
+                        {/* Body */}
+                        <VStack space="sm" p="$4">
+                          {/* Coverage info */}
+                          <HStack justifyContent="space-between">
+                            <VStack flex={1}>
+                              <Text
+                                fontSize="$xs"
+                                color={colors.secondary_text}
+                              >
+                                Bắt đầu
+                              </Text>
+                              <Text
+                                fontSize="$sm"
+                                fontWeight="$semibold"
+                                color={colors.primary_text}
+                              >
+                                {Utils.formatDateForMS(
+                                  policy.coverage_start_date
+                                )}
+                              </Text>
+                            </VStack>
+                            <VStack flex={1} alignItems="center">
+                              <Text
+                                fontSize="$xs"
+                                color={colors.secondary_text}
+                              >
+                                Kết thúc
+                              </Text>
+                              <Text
+                                fontSize="$sm"
+                                fontWeight="$semibold"
+                                color={colors.primary_text}
+                              >
+                                {Utils.formatDateForMS(
+                                  policy.coverage_end_date
+                                )}
+                              </Text>
+                            </VStack>
+                            <VStack flex={1} alignItems="flex-end">
+                              <Text
+                                fontSize="$xs"
+                                color={colors.secondary_text}
+                              >
+                                Giá trị BH
+                              </Text>
+                              <Text
+                                fontSize="$sm"
+                                fontWeight="$bold"
+                                color={colors.success}
+                              >
+                                {Utils.formatCurrency(policy.coverage_amount)}
+                              </Text>
+                            </VStack>
+                          </HStack>
+
+                          {/* Footer - View data button */}
+                          <Box
+                            bg={colors.primary}
+                            borderRadius="$lg"
+                            px="$4"
+                            py="$3"
+                            mt="$2"
+                          >
+                            <HStack
+                              space="sm"
+                              alignItems="center"
+                              justifyContent="center"
+                            >
+                              <Satellite
+                                size={16}
+                                color={colors.primary_white_text}
+                                strokeWidth={2}
+                              />
+                              <Text
+                                fontSize="$sm"
+                                fontWeight="$bold"
+                                color={colors.primary_white_text}
+                              >
+                                Xem dữ liệu theo dõi
+                              </Text>
+                            </HStack>
+                          </Box>
+                        </VStack>
                       </Box>
-                      <Box
-                        bg={colors.primary + "20"}
-                        borderRadius="$sm"
-                        px="$2"
-                        py="$1"
-                      >
-                        <Text
-                          fontSize="$xs"
-                          fontWeight="$semibold"
-                          color={colors.primary}
-                        >
-                          {farm.crop_type === "rice" ? "Lúa" : "Cà phê"}
-                        </Text>
-                      </Box>
-                    </HStack>
-                  </VStack>
-                </Box>
-              </Box>
-            </Pressable>
-          ))}
+                    )}
+                  </Pressable>
+                ))}
+              </VStack>
+            )}
         </VStack>
       </ScrollView>
     </Box>

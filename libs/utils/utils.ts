@@ -9,11 +9,13 @@ export const Utils = {
 
   formatDateTimeForMS: (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const year = date.getUTCFullYear();
-    const hours = String(date.getUTCHours()).padStart(2, "0");
-    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    // Chuyển sang GMT+7 (Việt Nam)
+    const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    const day = String(vietnamTime.getUTCDate()).padStart(2, "0");
+    const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, "0");
+    const year = vietnamTime.getUTCFullYear();
+    const hours = String(vietnamTime.getUTCHours()).padStart(2, "0");
+    const minutes = String(vietnamTime.getUTCMinutes()).padStart(2, "0");
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   },
 

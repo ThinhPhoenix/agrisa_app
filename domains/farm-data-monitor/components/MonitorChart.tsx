@@ -158,7 +158,7 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                 Cao nhất
               </Text>
               <Text fontSize="$md" fontWeight="$bold" color={colors.success}>
-                {maxValue.toFixed(2)}
+                {maxValue}
               </Text>
             </VStack>
             
@@ -176,7 +176,7 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                 Thấp nhất
               </Text>
               <Text fontSize="$md" fontWeight="$bold" color={colors.error}>
-                {minValue.toFixed(2)}
+                {minValue}
               </Text>
             </VStack>
             

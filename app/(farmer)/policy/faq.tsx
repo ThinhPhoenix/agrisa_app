@@ -74,6 +74,16 @@ export default function FAQScreen() {
       color: "#10b981",
     },
     {
+      id: "contract-coverage-period",
+      category: "general",
+      question:
+        "Khi nào hợp đồng có hiệu lực và khi nào tôi được nhận bồi thường?",
+      answer:
+        "Hợp đồng bảo hiểm có 2 mốc thời gian quan trọng bạn cần lưu ý:\n\n📅 THỜI GIAN BẮT ĐẦU HỢP ĐỒNG:\n• Tính từ ngày thanh toán thành công\n• Hợp đồng chính thức có hiệu lực\n• Bạn có thể theo dõi dữ liệu vệ tinh ngay lập tức\n• Xem các chỉ số NDVI, NDMI, NDWI của nông trại\n\n⏰ THỜI GIAN BẮT ĐẦU BẢO VỆ (Waiting Period):\n• Thường sau 7-14 ngày kể từ ngày thanh toán\n• Chỉ từ thời điểm này mới được nhận bồi thường\n• Thời gian cụ thể tùy theo loại cây trồng và gói bảo hiểm\n\n🎯 Ví dụ minh họa:\n\n📆 Ngày 1/1: Thanh toán hợp đồng\n→ Hợp đồng có hiệu lực ✅\n→ Bắt đầu theo dõi dữ liệu ✅\n→ CHƯA được bồi thường ❌\n\n📆 Ngày 8/1: Bắt đầu thời gian bảo vệ\n→ Được nhận bồi thường nếu có thiệt hại ✅\n\n💡 Tại sao có thời gian chờ:\n• Tránh trường hợp mua bảo hiểm khi đã biết thiệt hại sắp xảy ra\n• Đảm bảo tính công bằng cho tất cả nông dân\n• Phù hợp với thông lệ quốc tế\n\n✨ Trong thời gian chờ:\n• Hợp đồng vẫn hợp lệ\n• Vẫn được theo dõi dữ liệu vệ tinh\n• Nhận cảnh báo và thông báo\n• Chỉ chưa được chi trả bồi thường\n\n📱 Kiểm tra trên app:\nBạn có thể xem chính xác thời gian bắt đầu bảo vệ trong phần chi tiết hợp đồng của mình.",
+      icon: Clock,
+      color: "#f59e0b",
+    },
+    {
       id: "growth-stage",
       category: "general",
       question: "Giai đoạn sinh trưởng ảnh hưởng gì đến bảo hiểm?",
@@ -141,7 +151,7 @@ export default function FAQScreen() {
       category: "technical",
       question: "Trigger (Bộ kích hoạt) là gì?",
       answer:
-        "Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả bồi thường.\n\n🎯 Cách hiểu đơn giản:\nGiống như \"công tắc tự động\" - khi tất cả điều kiện đều đạt, hệ thống sẽ tự động bật và chi tiền.\n\n📋 Đặc điểm:\n• Mỗi gói bảo hiểm có nhiều trigger\n• Mỗi trigger áp dụng cho giai đoạn khác nhau\n• VD: Trigger cho giai đoạn nảy mầm, trigger cho giai đoạn ra hoa...\n\n✅ Khi nào kích hoạt:\nKhi TẤT CẢ các điều kiện trong trigger được đáp ứng đồng thời, hệ thống sẽ tự động chi trả bồi thường cho bạn.",
+        'Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả bồi thường.\n\n🎯 Cách hiểu đơn giản:\nGiống như "công tắc tự động" - khi tất cả điều kiện đều đạt, hệ thống sẽ tự động bật và chi tiền.\n\n📋 Đặc điểm:\n• Mỗi gói bảo hiểm có nhiều trigger\n• Mỗi trigger áp dụng cho giai đoạn khác nhau\n• VD: Trigger cho giai đoạn nảy mầm, trigger cho giai đoạn ra hoa...\n\n✅ Khi nào kích hoạt:\nKhi TẤT CẢ các điều kiện trong trigger được đáp ứng đồng thời, hệ thống sẽ tự động chi trả bồi thường cho bạn.',
       icon: Shield,
       color: "#10b981",
     },

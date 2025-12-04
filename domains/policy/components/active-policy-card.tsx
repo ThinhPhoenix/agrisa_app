@@ -1,6 +1,7 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
+import { RegisteredPolicyStatus } from "@/domains/policy/enums/policy-status.enum";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { RegisteredPolicy } from "@/domains/policy/models/policy.models";
 import { Utils } from "@/libs/utils/utils";
@@ -9,9 +10,9 @@ import { router } from "expo-router";
 import {
   Calendar,
   CheckCircle2,
-  MapPin,
+  Clock,
   Shield,
-  Sprout,
+  Sprout
 } from "lucide-react-native";
 import React from "react";
 
@@ -57,6 +58,14 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
     return daysLeft > 0 ? daysLeft : 0;
   };
 
+  // Tính số ngày đến khi có hiệu lực
+  const getDaysUntilEffective = () => {
+    const now = Math.floor(Date.now() / 1000);
+    const startDate = policy.coverage_start_date;
+    const daysUntil = Math.ceil((startDate - now) / 86400);
+    return daysUntil > 0 ? daysUntil : 0;
+  };
+
   // Kiểm tra policy đã có hiệu lực chưa
   const isPolicyEffective = () => {
     const now = Math.floor(Date.now() / 1000);
@@ -64,7 +73,13 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
   };
 
   const daysRemaining = getDaysRemaining();
+  const daysUntilEffective = getDaysUntilEffective();
   const isEffective = isPolicyEffective();
+  const isExpired = policy.status === RegisteredPolicyStatus.EXPIRED;
+
+  // Xác định màu chính cho card dựa trên trạng thái
+  const cardColor = isExpired ? colors.muted_text : colors.success;
+  const cardSoftColor = isExpired ? colors.muted_text + "20" : colors.successSoft;
 
   return (
     <Pressable
@@ -75,22 +90,18 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
           bg={colors.card_surface}
           borderRadius="$2xl"
           borderWidth={2}
-          borderColor={colors.success}
+          borderColor={cardColor}
           opacity={pressed ? 0.8 : 1}
           overflow="hidden"
         >
           {/* Header với gradient */}
-          <Box bg={colors.success} p="$4">
+          <Box bg={cardColor} p="$4">
             <VStack space="sm">
               {/* Số hợp đồng + Badge đang hoạt động */}
               <HStack justifyContent="space-between" alignItems="center">
                 <HStack space="sm" alignItems="center" flex={1}>
                   <Box bg={colors.primary_white_text} p="$2" borderRadius="$lg">
-                    <Shield
-                      size={20}
-                      color={colors.success}
-                      strokeWidth={2.5}
-                    />
+                    <Shield size={20} color={cardColor} strokeWidth={2.5} />
                   </Box>
                   <VStack flex={1}>
                     <Text
@@ -99,7 +110,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                       opacity={0.9}
                       mb="$0.5"
                     >
-                      Số hợp đồng
+                      Mã số hợp đồng
                     </Text>
                     <Text
                       fontSize="$md"
@@ -112,25 +123,30 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                   </VStack>
                 </HStack>
 
-                {/* Active Badge */}
+                {/* Status Badge */}
                 <Box
                   bg={colors.primary_white_text}
                   px="$3"
                   py="$1.5"
                   borderRadius="$full"
+                  borderColor={cardColor}
                 >
                   <HStack space="xs" alignItems="center">
-                    <CheckCircle2
-                      size={14}
-                      color={colors.success}
-                      strokeWidth={2.5}
-                    />
-                    <Text
-                      fontSize="$xs"
-                      fontWeight="$bold"
-                      color={colors.success}
-                    >
-                      {isEffective ? "Có hiệu lực" : "Chờ hiệu lực"}
+                    {isExpired ? (
+                      <Clock size={14} color={cardColor} strokeWidth={2.5} />
+                    ) : (
+                      <CheckCircle2
+                        size={14}
+                        color={cardColor}
+                        strokeWidth={2.5}
+                      />
+                    )}
+                    <Text fontSize="$xs" fontWeight="$bold" color={cardColor}>
+                      {isExpired
+                        ? "Hết hạn"
+                        : isEffective
+                          ? "Có hiệu lực"
+                          : "Chờ hiệu lực"}
                     </Text>
                   </HStack>
                 </Box>
@@ -144,20 +160,48 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                 alignItems="center"
               >
                 <HStack space="sm" alignItems="center">
-                  <Calendar size={16} color={colors.success} strokeWidth={2} />
-                  <Text fontSize="$sm" color={colors.secondary_text}>
-                    Còn lại:
-                  </Text>
-                  <Text
-                    fontSize="$xl"
-                    fontWeight="$bold"
-                    color={colors.success}
-                  >
-                    {daysRemaining}
-                  </Text>
-                  <Text fontSize="$sm" color={colors.secondary_text}>
-                    ngày
-                  </Text>
+                  <Calendar size={16} color={cardColor} strokeWidth={2} />
+                  {isExpired ? (
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.muted_text}
+                    >
+                      Bảo hiểm đã hết hạn
+                    </Text>
+                  ) : isEffective ? (
+                    <>
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Còn lại:
+                      </Text>
+                      <Text
+                        fontSize="$xl"
+                        fontWeight="$bold"
+                        color={colors.success}
+                      >
+                        {daysRemaining}
+                      </Text>
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        ngày
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Còn:
+                      </Text>
+                      <Text
+                        fontSize="$xl"
+                        fontWeight="$bold"
+                        color={colors.warning}
+                      >
+                        {daysUntilEffective}
+                      </Text>
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        ngày đến khi có hiệu lực
+                      </Text>
+                    </>
+                  )}
                 </HStack>
               </Box>
             </VStack>
@@ -212,7 +256,33 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                 </HStack>
 
                 <Box height={1} bg={colors.frame_border} width="100%" />
+                {/* Thời gian đăng ký */}
+                <Box
+                  bg={colors.background}
+                  borderRadius="$md"
+                  p="$3"
+                  alignItems="center"
+                >
+                  <HStack space="sm" alignItems="center">
+                    <Calendar
+                      size={14}
+                      color={colors.primary}
+                      strokeWidth={2}
+                    />
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Đăng ký vào:
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      {Utils.formatStringVietnameseDate(policy.created_at)}
+                    </Text>
+                  </HStack>
+                </Box>
 
+                <Box height={1} bg={colors.frame_border} width="100%" />
                 {/* Thời hạn bảo hiểm */}
                 <VStack space="sm">
                   <Text
@@ -225,7 +295,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                   <HStack space="md">
                     <VStack flex={1} space="xs" alignItems="center">
                       <Text fontSize="$xs" color={colors.secondary_text}>
-                        Bắt đầu
+                        Bắt đầu hiệu lực
                       </Text>
                       <Text
                         fontSize="$sm"
@@ -241,7 +311,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
 
                     <VStack flex={1} space="xs" alignItems="center">
                       <Text fontSize="$xs" color={colors.secondary_text}>
-                        Kết thúc
+                        Kết thúc hiệu lực
                       </Text>
                       <Text
                         fontSize="$sm"
@@ -261,16 +331,13 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                 {farm && (
                   <>
                     <VStack space="sm">
-                      <HStack space="xs" alignItems="center">
-                        <MapPin
-                          size={14}
-                          color={colors.primary}
-                          strokeWidth={2}
-                        />
-                        <Text fontSize="$xs" color={colors.secondary_text}>
-                          Thông tin nông trại
-                        </Text>
-                      </HStack>
+                      <Text
+                        fontSize="$xs"
+                        textAlign="center"
+                        color={colors.secondary_text}
+                      >
+                        Thông tin nông trại
+                      </Text>
 
                       <HStack space="md">
                         <VStack flex={1} space="xs">
@@ -349,22 +416,18 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                 )}
 
                 {/* Số tiền bồi thường tối đa */}
-                <VStack space="xs" alignItems="center">
+                <HStack space="sm" alignItems="center" justifyContent="center">
                   <Text
-                    fontSize="$xs"
+                    fontSize="$sm"
                     color={colors.secondary_text}
                     fontWeight="$medium"
                   >
-                    Số tiền bồi thường tối đa
+                    Số tiền bồi thường tối đa:
                   </Text>
-                  <Text
-                    fontSize="$4xl"
-                    fontWeight="$bold"
-                    color={colors.success}
-                  >
+                  <Text fontSize="$2xl" fontWeight="$bold" color={cardColor}>
                     {Utils.formatCurrency(policy.coverage_amount)}
                   </Text>
-                </VStack>
+                </HStack>
               </>
             )}
           </VStack>

@@ -810,7 +810,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Thời hạn bảo hiểm
+                  Thời hạn bảo hiểm hiệu lực
                 </Text>
               </HStack>
 
@@ -824,7 +824,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                     fontWeight="$bold"
                     color={colors.primary_text}
                   >
-                    {Utils.formatDateForMS(
+                    {Utils.formatDateTimeForMS(
                       basePolicy?.insurance_valid_from_day
                     )}
                   </Text>
@@ -841,7 +841,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                     fontWeight="$bold"
                     color={colors.primary_text}
                   >
-                    {Utils.formatDateForMS(policy.coverage_end_date)}
+                    {Utils.formatDateTimeForMS(policy.coverage_end_date)}
                   </Text>
                 </VStack>
               </HStack>
@@ -1070,10 +1070,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
               {/* Đề xuất */}
               <Box borderRadius="$lg" p="$3">
                 <VStack space="sm">
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$bold"
-                  >
+                  <Text fontSize="$sm" fontWeight="$bold">
                     Đề xuất của công ty bảo hiểm
                   </Text>
 

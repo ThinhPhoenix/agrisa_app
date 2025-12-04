@@ -17,7 +17,7 @@ import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 const quickActionItems = [
   {
     key: "farm",
-    name: "Trang trại",
+    name: "Quản lý trang trại",
     icon: Wheat,
     color: "#059669",
   },
@@ -29,7 +29,7 @@ const quickActionItems = [
   },
   {
     key: "satellite",
-    name: "Vệ tinh",
+    name: "Dữ liệu vệ tinh",
     icon: Satellite,
     color: "#59AC77",
   },
@@ -64,7 +64,7 @@ export default function HomeScreen() {
     <VStack className="flex-1 bg-white">
       {/* Cover Policy Image - Extended Background */}
       <Image
-        source={require("../../assets/images/Cover/Agrisa-Cover-Policy.png")}
+        source={require("../../assets/images/Cover/Agrisa-Cover-Home.png")}
         style={{
           position: "absolute",
           top: 0,
@@ -73,7 +73,6 @@ export default function HomeScreen() {
           height: 350, // Kéo dài xuống để phủ cả phần Quick Actions
           width: "100%",
           resizeMode: "cover",
-          opacity: 0.25,
           zIndex: 0,
         }}
       />
@@ -84,7 +83,7 @@ export default function HomeScreen() {
           <Text className="text-black text-lg">
             <Text
               style={{ fontFamily: "DancingScript_400Regular" }}
-              className="text-emerald-700 text-xl"
+              className="text-emerald-700 text-3xl"
             >
               Xin chào,
             </Text>{" "}
@@ -94,7 +93,7 @@ export default function HomeScreen() {
             source={require("../../assets/images/Logo/Agrisa_Logo.png")}
             style={{
               width: 80,
-              height: 40,
+              height: 50,
               resizeMode: "contain",
             }}
           />

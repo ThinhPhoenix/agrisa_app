@@ -1,9 +1,11 @@
 export const Utils = {
   formatDateForMS: (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const year = date.getUTCFullYear();
+    // Chuyển sang GMT+7 (Việt Nam)
+    const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    const day = String(vietnamTime.getUTCDate()).padStart(2, "0");
+    const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, "0");
+    const year = vietnamTime.getUTCFullYear();
     return `${day}/${month}/${year}`;
   },
 
@@ -27,6 +29,15 @@ export const Utils = {
   },
 
   formatStringVietnameseDate: (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+
+    return `${day}/${month}/${year}`;
+  },
+
+  formatStringVietnameseDateTime: (dateString: string): string => {
     const date = new Date(dateString);
     const day = String(date.getUTCDate()).padStart(2, "0");
     const month = String(date.getUTCMonth() + 1).padStart(2, "0");

@@ -7,6 +7,7 @@ import {
   Button,
   ButtonText,
   HStack,
+  Image,
   ScrollView,
   Text,
   VStack,
@@ -65,13 +66,15 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
       case "rice":
         return {
           icon: Wheat,
+          isImage: false,
           color: colors.success,
           label: "Lúa",
           bg: colors.successSoft,
         };
       case "coffee":
         return {
-          icon: Coffee,
+          icon: require("@/assets/images/Icon/Coffea-Icon.png"),
+          isImage: true,
           color: "#8B4513",
           label: "Cà phê",
           bg: "#FFF8DC",
@@ -79,6 +82,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
       default:
         return {
           icon: Sprout,
+          isImage: false,
           color: "#8B4513",
           label: "Cây trồng khác",
           bg: "#FFF8DC",
@@ -87,7 +91,6 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
   };
 
   const cropConfig = getCropConfig(farm.crop_type);
-  const CropIcon = cropConfig.icon;
 
   return (
     <ScrollView
@@ -142,11 +145,21 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                 shadowOpacity={0.3}
                 shadowRadius={4}
               >
-                <CropIcon
-                  size={28}
-                  color={colors.primary_white_text}
-                  strokeWidth={2.5}
-                />
+                {cropConfig.isImage ? (
+                  <Image
+                    source={cropConfig.icon}
+                    alt="Crop icon"
+                    w={28}
+                    h={28}
+                    tintColor={colors.primary_white_text}
+                  />
+                ) : (
+                  <cropConfig.icon
+                    size={28}
+                    color={colors.primary_white_text}
+                    strokeWidth={2.5}
+                  />
+                )}
               </Box>
             </HStack>
           </Box>

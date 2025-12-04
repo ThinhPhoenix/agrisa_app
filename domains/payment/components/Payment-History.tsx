@@ -170,8 +170,8 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
               <HStack space="sm" alignItems="center">
                 <Text fontSize="$xs" color={colors.muted_text}>
                   {isExpired
-                    ? Utils.formatStringVietnameseDate(payment.expired_at)
-                    : Utils.formatStringVietnameseDate(payment.paid_at)}
+                    ? Utils.formatStringVietnameseDateTime(payment.expired_at)
+                    : Utils.formatStringVietnameseDateTime(payment.paid_at)}
                 </Text>
               </HStack>
             </VStack>

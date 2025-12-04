@@ -7,11 +7,13 @@ import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
 import { Box, Button, ButtonText, HStack, Text, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import { Info, Plus } from "lucide-react-native";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
+import { Animated, ImageBackground } from "react-native";
 
 export default function FarmsListScreen() {
   const { colors } = useAgrisaColors();
   const { getListFarm } = useFarm();
+  const [scrollY] = useState(new Animated.Value(0));
 
   // Fetch danh sách farms từ API
   const { data: farmsResponse, isLoading, refetch, isRefetching } = getListFarm();
@@ -46,75 +48,125 @@ export default function FarmsListScreen() {
     });
   }, []);
 
+  // Cover Image Component with Parallax Effect
+  const CoverImage = () => {
+    // Scale tăng khi scroll xuống (từ 1.0 -> 1.3) - CHỈ CHO ẢNH
+    const imageScale = scrollY.interpolate({
+      inputRange: [-200, 0],
+      outputRange: [1.3, 1.0],
+      extrapolate: "clamp",
+    });
+
+    return (
+      <Box overflow="hidden" mb="$4" mx={-16} position="relative">
+        {/* Ảnh nền với Parallax Effect */}
+        <Animated.View
+          style={{
+            transform: [{ scale: imageScale }],
+            width: "100%",
+          }}
+        >
+          <ImageBackground
+            source={require("@/assets/images/Cover/Agrisa-Cover-Farm.png")}
+            style={{ width: "100%", aspectRatio: 16 / 9 }}
+            resizeMode="cover"
+          />
+        </Animated.View>
+
+        {/* Overlay Text - KHÔNG BỊ PARALLAX */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="rgba(0, 0, 0, 0.5)"
+          justifyContent="flex-end"
+          p="$4"
+        >
+          <VStack space="xs">
+            <Box flexDirection="row" alignItems="center" mb="$1">
+              <Box
+                bg={colors.primary}
+                p="$1.5"
+                borderRadius="$sm"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Info
+                  size={14}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+              </Box>
+              <Text
+                fontSize="$sm"
+                fontWeight="$bold"
+                color={colors.primary_white_text}
+                ml="$2"
+              >
+                Quản lý trang trại
+              </Text>
+            </Box>
+            <Text
+              fontSize="$xs"
+              color={colors.primary_white_text}
+              lineHeight="$md"
+            >
+              Đăng ký và quản lý thông tin các trang trại của bạn để sử dụng 
+              dịch vụ bảo hiểm nông nghiệp.
+            </Text>
+          </VStack>
+        </Box>
+      </Box>
+    );
+  };
+
   return (
     <Box flex={1} bg={colors.background}>
       {/* Header */}
       <AgrisaHeader title="Trang trại của tôi" showBackButton={true} />
 
-      {/* Mô tả trang */}
-      <Box px="$4" pt="$4" pb="$3">
-        <HStack
-          space="sm"
-          alignItems="flex-start"
-          bg={AgrisaColors.light.infoSoft}
-          borderRadius={12}
-          p="$3"
-          borderWidth={1}
-          borderColor={AgrisaColors.light.info}
-        >
-          <Box mt="$0.5">
-            <Info size={18} color={AgrisaColors.light.info} strokeWidth={2.5} />
-          </Box>
-          <VStack flex={1} space="xs">
-            <Text
-              color={AgrisaColors.light.primary_text}
-              fontSize={14}
-              fontWeight="700"
-            >
-              Quản lý thông tin trang trại
-            </Text>
-            <Text
-              color={AgrisaColors.light.secondary_text}
-              fontSize={12}
-              lineHeight={18}
-            >
-              Đăng ký và quản lý thông tin các trang trại của bạn. Thông tin này
-              sẽ được dùng để đăng ký bảo hiểm và theo dõi tình trạng cây trồng.
-            </Text>
-          </VStack>
-        </HStack>
-      </Box>
-
-      {/* Register Button */}
-      <Box px="$4" pb="$2">
-        <Button
-          onPress={handleRegisterFarm}
-          backgroundColor={AgrisaColors.light.primary}
-          borderRadius={12}
-          $active={{
-            backgroundColor: AgrisaColors.light.success,
-          }}
-        >
-          <HStack space="sm" alignItems="center">
-            <Plus size={20} color={AgrisaColors.light.primary_white_text} />
-            <ButtonText
-              color={AgrisaColors.light.primary_white_text}
-              fontSize={16}
-              fontWeight="600"
-            >
-              Đăng ký trang trại mới
-            </ButtonText>
-          </HStack>
-        </Button>
-      </Box>
-
-      {/* Farm List */}
+      {/* Farm List with Cover Image */}
       <PublicFarmList
         farms={farms}
         isLoading={isLoading}
         isRefreshing={isRefetching}
         onRefresh={handleRefresh}
         onFarmPress={handleFarmPress}
+        headerComponent={
+          <>
+            {/* Cover Image với Parallax */}
+            <CoverImage />
+
+            {/* Register Button */}
+            <Box pb="$4">
+              <Button
+                onPress={handleRegisterFarm}
+                backgroundColor={AgrisaColors.light.primary}
+                borderRadius={12}
+                $active={{
+                  backgroundColor: AgrisaColors.light.success,
+                }}
+              >
+                <HStack space="sm" alignItems="center">
+                  <Plus size={20} color={AgrisaColors.light.primary_white_text} />
+                  <ButtonText
+                    color={AgrisaColors.light.primary_white_text}
+                    fontSize={16}
+                    fontWeight="600"
+                  >
+                    Đăng ký trang trại mới
+                  </ButtonText>
+                </HStack>
+              </Button>
+            </Box>
+          </>
+        }
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
       />
     </Box>
   );

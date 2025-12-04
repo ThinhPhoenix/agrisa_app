@@ -184,7 +184,7 @@ export const NewPolicies: React.FC<NewPoliciesProps> = ({ onRefresh }) => {
                         Loại cây:
                       </Text>
                       <Box
-                        bg={colors.primarySoft}
+                        bg={colors.successSoft}
                         px="$2"
                         py="$0.5"
                         borderRadius="$md"
@@ -209,7 +209,6 @@ export const NewPolicies: React.FC<NewPoliciesProps> = ({ onRefresh }) => {
                         Thời hạn BH:
                       </Text>
                       <HStack space="xs" alignItems="center">
-                        <Calendar size={12} color={colors.info} />
                         <Text
                           fontSize="$xs"
                           fontWeight="$semibold"

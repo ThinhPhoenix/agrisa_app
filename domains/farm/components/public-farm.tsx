@@ -7,6 +7,7 @@ import {
   Button,
   ButtonText,
   HStack,
+  Image,
   Pressable,
   Spinner,
   Text,
@@ -22,7 +23,7 @@ import {
   Wheat,
 } from "lucide-react-native";
 import React from "react";
-import { FlatList, Image, RefreshControl, StyleSheet } from "react-native";
+import { Animated, FlatList, RefreshControl, StyleSheet } from "react-native";
 
 interface PublicFarmListProps {
   farms: Farm[];
@@ -30,6 +31,8 @@ interface PublicFarmListProps {
   isRefreshing?: boolean;
   onRefresh?: () => void;
   onFarmPress?: (farm: Farm) => void;
+  headerComponent?: React.ReactElement;
+  onScroll?: (event: any) => void;
 }
 
 export const PublicFarmList: React.FC<PublicFarmListProps> = ({
@@ -38,6 +41,8 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
   isRefreshing = false,
   onRefresh,
   onFarmPress,
+  headerComponent,
+  onScroll,
 }) => {
   const { colors } = useAgrisaColors();
 
@@ -50,10 +55,10 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
         isImage: false,
       };
     }
-    return { 
-      icon: require("@/assets/images/Icon/Coffea-Icon.png"), 
-      color: colors.primary, // Coffee brown
-      bgColor: "#FFF5E6", // Light cream
+    return {
+      icon: require("@/assets/images/Icon/Coffea-Icon.png"),
+      color: "#8B4513", // Coffee brown
+      bgColor: "#FFF8DC", // Light cream
       isImage: true,
     };
   };
@@ -120,10 +125,12 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                 shadowRadius={4}
               >
                 {isImage ? (
-                  <Image 
-                    source={CropIcon} 
-                    style={{ width: 24, height: 24 }}
-                    resizeMode="contain"
+                  <Image
+                    source={CropIcon}
+                    alt="Crop icon"
+                    w={24}
+                    h={24}
+                    tintColor={AgrisaColors.light.primary_white_text}
                   />
                 ) : (
                   <CropIcon
@@ -182,7 +189,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                   fontSize={14}
                   fontWeight="600"
                 >
-                  {farm.soil_type === "alluvial" ? "Phù sa" : farm.soil_type}
+                  {farm.soil_type}
                 </Text>
               </VStack>
             </HStack>
@@ -206,7 +213,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                     fontSize={12}
                     flex={1}
                   >
-                    Ngày trồng:{" "}
+                    Ngày dự kiến trồng:{" "}
                     <Text fontWeight="600">
                       {Utils.formatDateForMS(farm.planting_date)}
                     </Text>
@@ -226,7 +233,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                     numberOfLines={1}
                     flex={1}
                   >
-                    Sổ đỏ:{" "}
+                    Số CN quyền sở hữu đất:{" "}
                     <Text fontWeight="600">{farm.land_certificate_number}</Text>
                   </Text>
                   {farm.land_ownership_verified && (
@@ -287,13 +294,16 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
 
   return (
     <Box flex={1} bg={AgrisaColors.light.background}>
-      <FlatList
+      <Animated.FlatList
         data={farms}
         renderItem={renderFarmCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={headerComponent}
         ListEmptyComponent={renderEmptyState()}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -307,5 +317,5 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
 };
 
 const styles = StyleSheet.create({
-  list: { padding: 16 },
+  list: { paddingHorizontal: 16, paddingBottom: 16 },
 });

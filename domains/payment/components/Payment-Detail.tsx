@@ -160,7 +160,7 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
             {/* Thời gian */}
             <HStack justifyContent="space-between" alignItems="center" py="$2">
               <Text fontSize="$sm" color={colors.secondary_text}>
-                Thời gian
+                Thời gian thanh toán
               </Text>
               <Text
                 fontSize="$sm"
@@ -168,8 +168,8 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
                 color={colors.primary_text}
               >
                 {isExpired
-                  ? Utils.formatStringVietnameseDate(payment.expired_at)
-                  : Utils.formatStringVietnameseDate(payment.paid_at)}
+                  ? Utils.formatStringVietnameseDateTime(payment.expired_at)
+                  : Utils.formatStringVietnameseDateTime(payment.paid_at)}
               </Text>
             </HStack>
 
@@ -185,7 +185,7 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
                 fontWeight="$semibold"
                 color={colors.primary_text}
               >
-                {Utils.formatStringVietnameseDate(payment.updated_at)}
+                {Utils.formatStringVietnameseDateTime(payment.updated_at)}
               </Text>
             </HStack>
 
@@ -266,7 +266,7 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
                   {/* Tên bảo hiểm */}
                   <HStack
                     justifyContent="space-between"
-                    alignItems="center"
+                    alignItems="flex-start"
                     py="$2"
                   >
                     <Text fontSize="$sm" color={colors.secondary_text}>
@@ -275,6 +275,9 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
                     <Text
                       fontSize="$sm"
                       fontWeight="$bold"
+                      textAlign="right"
+                      flex={1}
+                      ml="$4"
                     >
                       {item.name}
                     </Text>
@@ -292,10 +295,7 @@ export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
                       Công ty bảo hiểm
                     </Text>
                     <HStack space="xs" alignItems="center">
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                      >
+                      <Text fontSize="$sm" fontWeight="$semibold">
                         {insurancePartner?.partner_display_name ||
                           "Đang tải..."}
                       </Text>

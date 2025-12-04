@@ -4,8 +4,6 @@ import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
-  Button,
-  ButtonText,
   HStack,
   Image,
   Pressable,
@@ -23,7 +21,7 @@ import {
   Wheat,
 } from "lucide-react-native";
 import React from "react";
-import { Animated, FlatList, RefreshControl, StyleSheet } from "react-native";
+import { Animated, RefreshControl, StyleSheet } from "react-native";
 
 interface PublicFarmListProps {
   farms: Farm[];

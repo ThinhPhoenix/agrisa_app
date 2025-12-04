@@ -3,18 +3,14 @@ import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insur
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { Utils } from "@/libs/utils/utils";
 import {
-    Box,
-    HStack,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
-import {
-    FileText,
-    Package,
-    Receipt
-} from "lucide-react-native";
+import { FileText, Package, Receipt } from "lucide-react-native";
 import { usePayment } from "../hooks/use-payment";
 
 interface PaymentDetailProps {

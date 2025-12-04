@@ -54,5 +54,12 @@ export const QueryKey = {
     GET_DETAIL_PAYMENT: "get-detail-payment",
   },
 
+  CLAIM_EVENT: {
+    LIST: "claim-event-list",
+    DETAIL: "claim-event-detail",
+    BY_POLICY: "claim-event-by-policy",
+    BY_FARM: "claim-event-by-farm",
+  },
+
   TEST: "test",
 };

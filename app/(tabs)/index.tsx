@@ -17,7 +17,7 @@ import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 const quickActionItems = [
   {
     key: "farm",
-    name: "Quản lý trang trại",
+    name: "Trang trại của tôi",
     icon: Wheat,
     color: "#059669",
   },
@@ -34,8 +34,8 @@ const quickActionItems = [
     color: "#59AC77",
   },
   {
-    key: "documents",
-    name: "Quản lý giấy tờ",
+    key: "claim",
+    name: "Quản lý bồi thường",
     icon: Scroll,
     color: "#C1856D",
   },

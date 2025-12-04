@@ -13,7 +13,6 @@ import {
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import {
-  Activity,
   AlertCircle,
   BarChart3,
   Info,

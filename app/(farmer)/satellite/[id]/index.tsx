@@ -21,6 +21,7 @@ import {
   Divider,
   Heading,
   HStack,
+  Pressable,
   ScrollView,
   Spinner,
   Text,
@@ -31,8 +32,10 @@ import {
   AlertCircle,
   Building2,
   Calendar,
+  ChevronRight,
   Droplets,
   FileText,
+  ImageIcon,
   Info,
   MapPin,
   Mountain,
@@ -98,6 +101,14 @@ export default function SatelliteDetailScreen() {
   });
 
   const farmDetail = farmData?.success ? farmData.data : null;
+
+  // Đếm số lượng ảnh vệ tinh từ farm_photos
+  const satelliteImagesCount = useMemo(() => {
+    if (!farmDetail?.farm_photos) return 0;
+    return farmDetail.farm_photos.filter(
+      (photo) => photo.photo_url && photo.photo_url.trim()
+    ).length;
+  }, [farmDetail]);
 
   const {
     data: basePolicyData,
@@ -319,7 +330,8 @@ export default function SatelliteDetailScreen() {
                     lineHeight={20}
                     maxWidth={280}
                   >
-                    Hãy đăng ký bảo hiểm để nhận dữ liệu vệ tinh theo dõi nông trại
+                    Hãy đăng ký bảo hiểm để nhận dữ liệu vệ tinh theo dõi nông
+                    trại
                   </Text>
                 </Box>
               ) : (
@@ -465,7 +477,9 @@ export default function SatelliteDetailScreen() {
                             fontWeight="$semibold"
                             color={colors.primary_text}
                           >
-                            {farmDetail.has_irrigation ? farmDetail.irrigation_type : "Không có"}
+                            {farmDetail.has_irrigation
+                              ? farmDetail.irrigation_type
+                              : "Không có"}
                           </Text>
                         </VStack>
                         <VStack flex={1}>
@@ -733,6 +747,83 @@ export default function SatelliteDetailScreen() {
                           </VStack>
                         </>
                       )}
+
+                    {/* Section Hình ảnh vệ tinh - Dẫn đến trang riêng */}
+                    <Divider bg={colors.frame_border} my="$3" />
+
+                    <Pressable
+                      onPress={() => {
+                        router.push({
+                          pathname: "/(farmer)/satellite/[id]/images",
+                          params: {
+                            id: farmIdToFetch || id,
+                            policy_id: policy_id || "",
+                            mode: viewMode,
+                          },
+                        });
+                      }}
+                    >
+                      <HStack
+                        justifyContent="space-between"
+                        alignItems="center"
+                        bg={colors.background}
+                        borderRadius="$lg"
+                        p="$4"
+                        borderWidth={1}
+                        borderColor={colors.frame_border}
+                      >
+                        <HStack space="sm" alignItems="center" flex={1}>
+                          <Box
+                            bg={colors.primary + "15"}
+                            p="$2"
+                            borderRadius="$full"
+                          >
+                            <ImageIcon
+                              size={20}
+                              color={colors.primary}
+                              strokeWidth={2}
+                            />
+                          </Box>
+                          <VStack flex={1}>
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$bold"
+                              color={colors.primary_text}
+                            >
+                              Hình ảnh vệ tinh
+                            </Text>
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              {satelliteImagesCount > 0
+                                ? `${satelliteImagesCount} ảnh có sẵn`
+                                : "Chưa có ảnh"}
+                            </Text>
+                          </VStack>
+                        </HStack>
+                        <HStack space="sm" alignItems="center">
+                          {satelliteImagesCount > 0 && (
+                            <Box
+                              bg={colors.primary}
+                              borderRadius="$full"
+                              px="$2"
+                              py="$0.5"
+                            >
+                              <Text
+                                fontSize="$2xs"
+                                fontWeight="$bold"
+                                color={colors.primary_white_text}
+                              >
+                                {satelliteImagesCount}
+                              </Text>
+                            </Box>
+                          )}
+                          <ChevronRight
+                            size={20}
+                            color={colors.secondary_text}
+                            strokeWidth={2}
+                          />
+                        </HStack>
+                      </HStack>
+                    </Pressable>
                   </VStack>
                 </Box>
               )}

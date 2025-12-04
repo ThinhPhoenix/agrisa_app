@@ -1,12 +1,10 @@
 import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useDataSource } from "@/domains/farm-data-monitor/hooks/use-data-source";
+import { getParameterLabel } from "@/domains/farm-data-monitor/utils/parameterUtils";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
-import { useDataSource } from "@/domains/farm-data-monitor/hooks/use-data-source";
-import { getParameterLabel } from "@/domains/farm-data-monitor/utils/parameterUtils";
-import { ClaimEvent, ClaimEvidenceCondition } from "../models/claim-event-data.models";
-import { ClaimStatus } from "../enums/claim-status.enum";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -35,6 +33,11 @@ import {
 } from "lucide-react-native";
 import React from "react";
 import { RefreshControl } from "react-native";
+import { ClaimStatus } from "../enums/claim-status.enum";
+import {
+  ClaimEvent,
+  ClaimEvidenceCondition,
+} from "../models/claim-event-data.models";
 
 interface ClaimEventDetailProps {
   claim: ClaimEvent;

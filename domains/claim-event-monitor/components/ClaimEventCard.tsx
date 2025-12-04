@@ -1,6 +1,4 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { ClaimEvent } from "../models/claim-event-data.models";
-import { ClaimStatus } from "../enums/claim-status.enum";
 import { Utils } from "@/libs/utils/utils";
 import { Box, HStack, Pressable, Text, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
@@ -15,6 +13,8 @@ import {
   Zap,
 } from "lucide-react-native";
 import React from "react";
+import { ClaimStatus } from "../enums/claim-status.enum";
+import { ClaimEvent } from "../models/claim-event-data.models";
 
 interface ClaimEventCardProps {
   claim: ClaimEvent;
@@ -81,9 +81,7 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
   const StatusIcon = statusDisplay.icon;
 
   return (
-    <Pressable
-      onPress={() => router.push(`/(farmer)/claim/${claim.id}`)}
-    >
+    <Pressable onPress={() => router.push(`/(farmer)/claim/${claim.id}`)}>
       {({ pressed }) => (
         <Box
           bg={colors.card_surface}
@@ -174,7 +172,11 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
                     </>
                   ) : (
                     <>
-                      <Shield size={14} color={colors.primary} strokeWidth={2.5} />
+                      <Shield
+                        size={14}
+                        color={colors.primary}
+                        strokeWidth={2.5}
+                      />
                       <Text
                         fontSize="$sm"
                         fontWeight="$semibold"
@@ -279,27 +281,28 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
             </HStack>
 
             {/* Auto approval deadline nếu còn chờ duyệt */}
-            {claim.status === ClaimStatus.PENDING_PARTNER_REVIEW && claim.auto_approval_deadline && (
-              <>
-                <Box height={1} bg={colors.frame_border} width="100%" />
-                <HStack justifyContent="space-between" alignItems="center">
-                  <Text
-                    fontSize="$sm"
-                    color={colors.secondary_text}
-                    fontWeight="$medium"
-                  >
-                    Tự động duyệt lúc
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$bold"
-                    color={colors.warning}
-                  >
-                    {Utils.formatDateTimeForMS(claim.auto_approval_deadline)}
-                  </Text>
-                </HStack>
-              </>
-            )}
+            {claim.status === ClaimStatus.PENDING_PARTNER_REVIEW &&
+              claim.auto_approval_deadline && (
+                <>
+                  <Box height={1} bg={colors.frame_border} width="100%" />
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <Text
+                      fontSize="$sm"
+                      color={colors.secondary_text}
+                      fontWeight="$medium"
+                    >
+                      Tự động duyệt lúc
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.warning}
+                    >
+                      {Utils.formatDateTimeForMS(claim.auto_approval_deadline)}
+                    </Text>
+                  </HStack>
+                </>
+              )}
           </VStack>
         </Box>
       )}

@@ -1,12 +1,9 @@
 // ============= CLAIM EVENT MODELS =============
 
-import {
-  ClaimStatus,
-  ClaimGenerationMethod,
-} from "../enums/claim-status.enum";
+import { ClaimGenerationMethod, ClaimStatus } from "../enums/claim-status.enum";
 
 // Re-export enums để backward compatible
-export { ClaimStatus, ClaimGenerationMethod };
+export { ClaimGenerationMethod, ClaimStatus };
 
 /**
  * Điều kiện kích hoạt trong evidence

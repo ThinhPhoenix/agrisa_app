@@ -4,7 +4,7 @@ import { ClaimEventDetail } from "@/domains/claim-event-monitor/components";
 import { useClaim } from "@/domains/claim-event-monitor/hooks/use-claim";
 import { Box, Text, VStack } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
-import { AlertCircle, FileWarning, Loader } from "lucide-react-native";
+import { AlertCircle, FileWarning } from "lucide-react-native";
 import React from "react";
 
 export default function ClaimDetailScreen() {

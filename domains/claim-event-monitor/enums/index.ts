@@ -3,10 +3,11 @@
  */
 
 export {
-  ClaimStatus,
   ClaimGenerationMethod,
+  ClaimStatus,
   ClaimStatusLabel,
   ClaimStatusTabs,
 } from "./claim-status.enum";
 
 export type { ClaimStatusTabKey } from "./claim-status.enum";
+

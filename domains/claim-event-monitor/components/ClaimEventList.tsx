@@ -1,20 +1,20 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { ClaimEvent } from "../models/claim-event-data.models";
-import { ClaimStatus, ClaimStatusTabs, ClaimStatusTabItem } from "../enums/claim-status.enum";
 import { Box, HStack, Pressable, Text, VStack } from "@gluestack-ui/themed";
-import { Animated, RefreshControl } from "react-native";
-import React, { useState, useMemo } from "react";
-import { ClaimEventCard } from "./ClaimEventCard";
 import {
+  Ban,
+  Banknote,
   CheckCircle2,
   Clock,
   FileText,
-  Inbox,
   FileWarning,
+  Inbox,
   XCircle,
-  Banknote,
-  Ban,
 } from "lucide-react-native";
+import React, { useMemo, useState } from "react";
+import { Animated, RefreshControl } from "react-native";
+import { ClaimStatus, ClaimStatusTabs } from "../enums/claim-status.enum";
+import { ClaimEvent } from "../models/claim-event-data.models";
+import { ClaimEventCard } from "./ClaimEventCard";
 
 interface ClaimEventListProps {
   /** Danh sách claims */
@@ -112,13 +112,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
    * Component hiển thị khi không có claims
    */
   const EmptyState = () => (
-    <Box
-      flex={1}
-      justifyContent="center"
-      alignItems="center"
-      py="$16"
-      px="$4"
-    >
+    <Box flex={1} justifyContent="center" alignItems="center" py="$16" px="$4">
       <Box
         bg={colors.primarySoft || colors.background}
         p="$6"

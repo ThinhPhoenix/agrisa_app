@@ -4,7 +4,7 @@ import { ClaimEventList } from "@/domains/claim-event-monitor/components";
 import { useClaim } from "@/domains/claim-event-monitor/hooks/use-claim";
 import { Box, Text, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import { AlertTriangle, Info } from "lucide-react-native";
+import { Info } from "lucide-react-native";
 import { useState } from "react";
 import { Animated, ImageBackground } from "react-native";
 

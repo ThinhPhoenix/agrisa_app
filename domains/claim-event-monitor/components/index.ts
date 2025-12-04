@@ -3,5 +3,6 @@
  */
 
 export { ClaimEventCard } from "./ClaimEventCard";
-export { ClaimEventList } from "./ClaimEventList";
 export { ClaimEventDetail } from "./ClaimEventDetail";
+export { ClaimEventList } from "./ClaimEventList";
+

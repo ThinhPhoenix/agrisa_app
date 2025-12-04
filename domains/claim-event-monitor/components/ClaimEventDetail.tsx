@@ -30,7 +30,6 @@ import {
   DollarSign,
   FileText,
   MapPin,
-  MessageSquare,
   Scale,
   Shield,
   Sprout,
@@ -43,12 +42,12 @@ import {
 import React, { useState } from "react";
 import { Alert, RefreshControl } from "react-native";
 import { ClaimStatus } from "../enums/claim-status.enum";
-import { useClaim } from "../hooks/use-claim";
+import { usePayout } from "../hooks/use-payout";
 import {
   ClaimEvent,
   ClaimEvidenceCondition,
-  ConfirmPayoutPayload,
 } from "../models/claim-event-data.models";
+import { ConfirmPayoutPayload } from "../models/payout.model";
 
 interface ClaimEventDetailProps {
   claim: ClaimEvent;
@@ -71,8 +70,14 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
   const [rating, setRating] = useState<number>(0);
   const [feedback, setFeedback] = useState<string>("");
 
-  // Mutation xác nhận nhận tiền
-  const { useConfirmPayout } = useClaim();
+  // Lấy thông tin payout theo claim_id
+  const { getPayoutByClaimId, useConfirmPayout } = usePayout();
+  const { data: payoutData, isLoading: payoutLoading } = getPayoutByClaimId(
+    claim.id
+  );
+  const payout = payoutData?.success ? payoutData.data : null;
+
+  // Mutation xác nhận nhận tiền - sử dụng payout_id
   const confirmPayoutMutation = useConfirmPayout();
 
   // Fetch thông tin liên quan
@@ -200,6 +205,26 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
   // Xử lý xác nhận nhận tiền
   const handleConfirmPayout = () => {
+    // Kiểm tra có payout không
+    if (!payout) {
+      Alert.alert(
+        "Lỗi",
+        "Không tìm thấy thông tin chi trả. Vui lòng thử lại sau.",
+        [{ text: "Đóng" }]
+      );
+      return;
+    }
+
+    // Kiểm tra payout status phải là "paid" mới cho phép xác nhận
+    if (payout.status !== "paid") {
+      Alert.alert(
+        "Chưa thể xác nhận",
+        "Tiền bồi thường đang được xử lý. Vui lòng chờ đến khi đối tác hoàn tất chi trả.",
+        [{ text: "Đã hiểu" }]
+      );
+      return;
+    }
+
     if (rating === 0) {
       Alert.alert(
         "Thiếu đánh giá",
@@ -218,14 +243,16 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
           text: "Xác nhận",
           style: "default",
           onPress: () => {
+            // Payload theo format mới với PascalCase
             const payload: ConfirmPayoutPayload = {
-              farmer_confirmed: true,
-              farmer_rating: rating,
-              farmer_feedback: feedback.trim() || undefined,
+              FarmerConfirmed: true,
+              FarmerRating: rating,
+              FarmerFeedback: feedback.trim() || undefined,
             };
 
+            // Sử dụng payout.id thay vì claim.id
             confirmPayoutMutation.mutate(
-              { claimId: claim.id, payload },
+              { payoutId: payout.id, payload },
               {
                 onSuccess: () => {
                   Alert.alert(
@@ -1432,8 +1459,49 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
               <Box height={1} bg={colors.frame_border} width="100%" />
 
-              {/* Nếu đã xác nhận - hiển thị trạng thái đã xác nhận */}
-              {claim.farmer_confirmed ? (
+              {/* Loading payout data */}
+              {payoutLoading ? (
+                <HStack
+                  space="sm"
+                  alignItems="center"
+                  justifyContent="center"
+                  py="$4"
+                >
+                  <Spinner size="small" color={colors.primary} />
+                  <Text fontSize="$sm" color={colors.secondary_text}>
+                    Đang tải thông tin chi trả...
+                  </Text>
+                </HStack>
+              ) : !payout ? (
+                /* Không tìm thấy payout */
+                <Box
+                  bg={colors.warningSoft || colors.background}
+                  borderRadius="$lg"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.warning}
+                >
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <AlertCircle
+                      size={20}
+                      color={colors.warning}
+                      strokeWidth={2}
+                    />
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$medium"
+                      color={colors.warning}
+                    >
+                      Chưa có thông tin chi trả
+                    </Text>
+                  </HStack>
+                </Box>
+              ) : payout.farmer_confirmed ? (
+                /* Nếu đã xác nhận - hiển thị trạng thái đã xác nhận */
                 <VStack space="md">
                   {/* Thông báo đã xác nhận */}
                   <Box
@@ -1463,74 +1531,183 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     </HStack>
                   </Box>
 
-                  {/* Đánh giá của nông dân */}
-                  {claim.farmer_rating && (
-                    <VStack space="xs">
+                  {/* Thông tin chi trả đã xác nhận */}
+                  <VStack space="sm">
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Số tiền đã nhận
+                      </Text>
                       <Text
                         fontSize="$sm"
-                        color={colors.secondary_text}
-                        textAlign="center"
+                        fontWeight="$bold"
+                        color={colors.success}
                       >
-                        Đánh giá của bạn
+                        {formatAmount(payout.payout_amount)}
                       </Text>
-                      <HStack space="xs" justifyContent="center">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            size={24}
-                            color={
-                              star <= claim.farmer_rating!
-                                ? colors.warning
-                                : colors.muted_text
-                            }
-                            fill={
-                              star <= claim.farmer_rating!
-                                ? colors.warning
-                                : "transparent"
-                            }
-                            strokeWidth={1.5}
-                          />
-                        ))}
-                      </HStack>
-                    </VStack>
-                  )}
+                    </HStack>
+                  </VStack>
+                </VStack>
+              ) : payout.status === "processing" ? (
+                /* Payout đang xử lý - chưa cho phép xác nhận */
+                <VStack space="md">
+                  {/* Thông báo đang xử lý */}
+                  <Box
+                    bg={
+                      colors.infoSoft || colors.primarySoft || colors.background
+                    }
+                    borderRadius="$lg"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor={colors.info || colors.primary}
+                  >
+                    <HStack space="sm" alignItems="flex-start">
+                      <Clock
+                        size={20}
+                        color={colors.info || colors.primary}
+                        strokeWidth={2}
+                        style={{ marginTop: 2 }}
+                      />
+                      <VStack flex={1} space="xs">
+                        <Text
+                          fontSize="$sm"
+                          fontWeight="$bold"
+                          color={colors.info || colors.primary}
+                        >
+                          Đang xử lý chi trả
+                        </Text>
+                        <Text
+                          fontSize="$sm"
+                          color={colors.primary_text}
+                          lineHeight="$lg"
+                        >
+                          Đối tác bảo hiểm đang tiến hành chuyển tiền bồi
+                          thường. Vui lòng chờ đến khi tiền được chuyển vào tài
+                          khoản của bạn.
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </Box>
 
-                  {/* Phản hồi của nông dân */}
-                  {claim.farmer_feedback && (
-                    <VStack space="xs">
-                      <Text fontSize="$xs" color={colors.secondary_text}>
-                        Phản hồi của bạn
+                  {/* Thông tin chi trả */}
+                  <VStack space="sm">
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Số tiền chi trả
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                        color={colors.success}
+                      >
+                        {formatAmount(payout.payout_amount)}
+                      </Text>
+                    </HStack>
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Trạng thái
                       </Text>
                       <Box
-                        bg={colors.background}
-                        borderRadius="$lg"
-                        p="$3"
-                        borderWidth={1}
-                        borderColor={colors.frame_border}
+                        bg={colors.warningSoft}
+                        px="$2"
+                        py="$1"
+                        borderRadius="$full"
                       >
-                        <HStack space="sm" alignItems="flex-start">
-                          <MessageSquare
-                            size={14}
-                            color={colors.primary}
-                            strokeWidth={2}
-                            style={{ marginTop: 2 }}
-                          />
-                          <Text
-                            fontSize="$sm"
-                            color={colors.primary_text}
-                            lineHeight="$lg"
-                            flex={1}
-                          >
-                            {claim.farmer_feedback}
-                          </Text>
-                        </HStack>
+                        <Text
+                          fontSize="$xs"
+                          fontWeight="$semibold"
+                          color={colors.warning}
+                        >
+                          Đang xử lý
+                        </Text>
                       </Box>
-                    </VStack>
-                  )}
+                    </HStack>
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Thời điểm khởi tạo
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {Utils.formatDateTimeForMS(payout.initiated_at)}
+                      </Text>
+                    </HStack>
+                  </VStack>
                 </VStack>
-              ) : (
-                /* Nếu chưa xác nhận - hiển thị form */
+              ) : payout.status === "paid" ? (
+                /* Payout đã thanh toán - hiển thị form xác nhận */
                 <VStack space="md">
+                  {/* Thông báo đã chi trả */}
+                  <Box
+                    bg={colors.successSoft}
+                    borderRadius="$lg"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor={colors.success}
+                  >
+                    <HStack space="sm" alignItems="flex-start">
+                      <CheckCircle2
+                        size={20}
+                        color={colors.success}
+                        strokeWidth={2}
+                        style={{ marginTop: 2 }}
+                      />
+                      <VStack flex={1} space="xs">
+                        <Text
+                          fontSize="$sm"
+                          fontWeight="$bold"
+                          color={colors.success}
+                        >
+                          Đã chi trả thành công
+                        </Text>
+                        <Text
+                          fontSize="$sm"
+                          color={colors.primary_text}
+                          lineHeight="$lg"
+                        >
+                          Đối tác bảo hiểm đã hoàn tất chi trả. Vui lòng kiểm
+                          tra tài khoản và xác nhận đã nhận tiền.
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </Box>
+
+                  {/* Thông tin chi trả */}
+                  <VStack space="sm">
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Số tiền chi trả
+                      </Text>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                        color={colors.success}
+                      >
+                        {formatAmount(payout.payout_amount)}
+                      </Text>
+                    </HStack>
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text fontSize="$sm" color={colors.secondary_text}>
+                        Trạng thái
+                      </Text>
+                      <Box
+                        bg={colors.successSoft}
+                        px="$2"
+                        py="$1"
+                        borderRadius="$full"
+                      >
+                        <Text
+                          fontSize="$xs"
+                          fontWeight="$semibold"
+                          color={colors.success}
+                        >
+                          Đã thanh toán
+                        </Text>
+                      </Box>
+                    </HStack>
+                  </VStack>
+
                   {/* Cảnh báo quan trọng */}
                   <Box
                     bg={colors.warningSoft || colors.background}
@@ -1647,6 +1824,34 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     )}
                   </Button>
                 </VStack>
+              ) : (
+                /* Payout status khác (failed, cancelled, etc.) */
+                <Box
+                  bg={colors.errorSoft || colors.background}
+                  borderRadius="$lg"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.error}
+                >
+                  <HStack
+                    space="sm"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <XCircle size={20} color={colors.error} strokeWidth={2} />
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$medium"
+                      color={colors.error}
+                    >
+                      {payout.status === "failed"
+                        ? "Chi trả thất bại. Vui lòng liên hệ hỗ trợ."
+                        : payout.status === "cancelled"
+                          ? "Chi trả đã bị hủy."
+                          : "Trạng thái chi trả không xác định."}
+                    </Text>
+                  </HStack>
+                </Box>
               )}
             </VStack>
           </Box>

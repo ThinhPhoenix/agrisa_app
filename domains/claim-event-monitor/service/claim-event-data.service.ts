@@ -3,23 +3,11 @@ import {
   ClaimDetailResponse,
   ClaimsByFarmResponse,
   ClaimsByPolicyResponse,
-  ConfirmPayoutPayload,
   FarmerClaimsListResponse,
 } from "../models/claim-event-data.models";
 
 export const claimDataServices = {
-  put: {
-    confirmPayout: async (
-      id: string,
-      payload: ConfirmPayoutPayload
-    ): Promise<ApiResponse<any>> => {
-      return useAxios.put(
-        `/policy/protected/api/v2/payouts/update/confirm/${id}`,
-        payload
-      );
-    },
-    //
-  },
+  // Note: confirmPayout đã được chuyển sang payout.service.ts
   get: {
     claimEventData: async (): Promise<
       ApiResponse<FarmerClaimsListResponse>

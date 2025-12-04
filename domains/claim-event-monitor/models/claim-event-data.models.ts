@@ -60,14 +60,8 @@ export type ClaimEvent = {
 
 // ============= REQUEST PAYLOAD MODELS =============
 
-/**
- * Payload cho API xác nhận nhận tiền bồi thường
- */
-export type ConfirmPayoutPayload = {
-  farmer_confirmed: boolean;
-  farmer_rating?: number; // 1-5 sao (optional)
-  farmer_feedback?: string; // Phản hồi từ nông dân (optional)
-};
+// Note: ConfirmPayoutPayload đã được chuyển sang payout.model.ts
+// Import từ đó nếu cần sử dụng
 
 // ============= RESPONSE MODELS =============
 

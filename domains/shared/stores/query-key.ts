@@ -61,5 +61,9 @@ export const QueryKey = {
     BY_FARM: "claim-event-by-farm",
   },
 
+  PAYOUT: {
+    GET_PAYOUT_BY_CLAIM_ID: "get-payout-by-claim-id",
+  },
+
   TEST: "test",
 };

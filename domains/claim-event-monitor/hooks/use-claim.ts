@@ -1,11 +1,8 @@
 import { QueryKey } from "@/domains/shared/stores/query-key";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ConfirmPayoutPayload } from "../models/claim-event-data.models";
+import { useQuery } from "@tanstack/react-query";
 import { claimDataServices } from "../service/claim-event-data.service";
 
 export const useClaim = () => {
-  const queryClient = useQueryClient();
-
   const getAllClaimData = () => {
     return useQuery({
       queryKey: [QueryKey.CLAIM_EVENT.LIST],
@@ -35,35 +32,12 @@ export const useClaim = () => {
     });
   };
 
-  /**
-   * Mutation để xác nhận đã nhận tiền bồi thường
-   */
-  const useConfirmPayout = () => {
-    return useMutation({
-      mutationFn: ({
-        claimId,
-        payload,
-      }: {
-        claimId: string;
-        payload: ConfirmPayoutPayload;
-      }) => claimDataServices.put.confirmPayout(claimId, payload),
-      onSuccess: (_, variables) => {
-        // Invalidate queries để refresh data
-        queryClient.invalidateQueries({
-          queryKey: [QueryKey.CLAIM_EVENT.LIST],
-        });
-        queryClient.invalidateQueries({
-          queryKey: [QueryKey.CLAIM_EVENT.DETAIL, variables.claimId],
-        });
-      },
-    });
-  };
+  // Note: useConfirmPayout đã được chuyển sang usePayout hook trong use-payout.ts
 
   return {
     getAllClaimData,
     getDetailClaim,
     getClaimsByRegisteredPolicy,
     getClaimsByFarm,
-    useConfirmPayout,
   };
 };

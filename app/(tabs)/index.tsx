@@ -1,6 +1,6 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
-import usePushNoti from "@/domains/shared/hooks/usePushNoti";
 import {
   DancingScript_400Regular,
   useFonts,
@@ -10,9 +10,9 @@ import { ReceiptText, Satellite, Scroll, Wheat } from "lucide-react-native";
 import React from "react";
 import { Image, RefreshControl, ScrollView, Text, View } from "react-native";
 import InfoCards from "../../components/HomeScreen/InfoCards";
+import { InsurancePartners } from "../../components/HomeScreen/Insurance-Partner";
 import { NewPolicies } from "../../components/HomeScreen/NewPolicies";
 import QuickActions from "../../components/quick-actions";
-import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 
 const quickActionItems = [
   {
@@ -47,7 +47,6 @@ export default function HomeScreen() {
   const { getPublicBasePolicy } = usePolicy();
   const { refetch } = getPublicBasePolicy();
   const [refreshing, setRefreshing] = React.useState(false);
-
 
   // Handle pull to refresh
   const onRefresh = React.useCallback(async () => {
@@ -87,7 +86,11 @@ export default function HomeScreen() {
             >
               Xin chào,
             </Text>{" "}
-            {fullName ? fullName : email ? email.split("@")[0] : "Người dùng Agrisa"}
+            {fullName
+              ? fullName
+              : email
+                ? email.split("@")[0]
+                : "Người dùng Agrisa"}
           </Text>
           <Image
             source={require("../../assets/images/Logo/Agrisa_Logo.png")}
@@ -123,6 +126,9 @@ export default function HomeScreen() {
 
           {/* New Policies List */}
           <NewPolicies />
+
+          {/* Đối tác bảo hiểm */}
+          <InsurancePartners />
         </ScrollView>
       </View>
     </VStack>

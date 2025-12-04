@@ -330,8 +330,7 @@ export default function SatelliteDetailScreen() {
                     lineHeight={20}
                     maxWidth={280}
                   >
-                    Hãy đăng ký bảo hiểm để nhận dữ liệu vệ tinh theo dõi nông
-                    trại
+                    Đang cập nhật dữ liệu vệ tinh cho nông trại của bạn. Vui lòng quay lại sau.
                   </Text>
                 </Box>
               ) : (

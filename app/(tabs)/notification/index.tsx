@@ -1,11 +1,17 @@
 import { AgrisaHeader } from '@/components/Header';
 import { useAgrisaColors } from '@/domains/agrisa_theme/hooks/useAgrisaColor';
-import { Utils } from '@/libs/utils/utils';
+import { useNotification } from "@/domains/notification/hooks/use-notification";
+import {
+  getNotificationDisplayType,
+  NotificationItem,
+} from "@/domains/notification/models/notification.model";
+import { Utils } from "@/libs/utils/utils";
 import {
   Box,
   HStack,
   Pressable,
   ScrollView,
+  Spinner,
   Text,
   VStack,
 } from "@gluestack-ui/themed";
@@ -16,112 +22,87 @@ import {
   Shield,
   XCircle,
 } from "lucide-react-native";
-import React, { useState } from 'react';
-import { RefreshControl } from 'react-native';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'success' | 'error' | 'warning' | 'info';
-  timestamp: number;
-  isRead: boolean;
-}
+import React from "react";
+import { RefreshControl } from "react-native";
 
 export default function NotificationScreen() {
   const { colors } = useAgrisaColors();
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Thanh toán thành công',
-      message: 'Phí bảo hiểm 500.000đ cho gói "Bảo hiểm lúa" đã được thanh toán.',
-      type: 'success',
-      timestamp: Date.now() / 1000 - 3600,
-      isRead: false,
-    },
-    {
-      id: '2',
-      title: 'Hợp đồng được duyệt',
-      message: 'Hợp đồng bảo hiểm cho trang trại "Lúa Đồng Tháp" đã được phê duyệt.',
-      type: 'success',
-      timestamp: Date.now() / 1000 - 86400,
-      isRead: false,
-    },
-    {
-      id: '3',
-      title: 'Cảnh báo thời tiết',
-      message: 'Dự báo mưa lớn trong 3 ngày tới tại khu vực của bạn.',
-      type: 'warning',
-      timestamp: Date.now() / 1000 - 172800,
-      isRead: true,
-    },
-    {
-      id: '4',
-      title: 'Yêu cầu xác thực',
-      message: 'Vui lòng hoàn tất xác thực khuôn mặt để kích hoạt tài khoản.',
-      type: 'info',
-      timestamp: Date.now() / 1000 - 259200,
-      isRead: true,
-    },
-    {
-      id: '5',
-      title: 'Nhận bồi thường',
-      message: 'Bạn đã nhận khoản bồi thường 2.500.000đ từ gói bảo hiểm.',
-      type: 'success',
-      timestamp: Date.now() / 1000 - 345600,
-      isRead: true,
-    },
-  ]);
+  // Sử dụng hook để lấy dữ liệu thông báo từ API
+  const { getNotifcationList } = useNotification();
+  const {
+    data: notificationData,
+    isLoading,
+    isRefetching,
+    refetch,
+  } = getNotifcationList();
 
+  // Lấy danh sách notifications từ response (check success trước)
+  const notifications: NotificationItem[] = notificationData?.success
+    ? (notificationData.data?.notifications ?? [])
+    : [];
+
+  // Refresh handler
   const handleRefresh = async () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 1500);
+    await refetch();
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return { Icon: CheckCircle2, color: colors.success, bg: colors.successSoft };
-      case 'error':
+      case "success":
+        return {
+          Icon: CheckCircle2,
+          color: colors.success,
+          bg: colors.successSoft,
+        };
+      case "error":
         return { Icon: XCircle, color: colors.error, bg: colors.errorSoft };
-      case 'warning':
-        return { Icon: AlertCircle, color: colors.warning, bg: colors.warningSoft };
-      case 'info':
+      case "warning":
+        return {
+          Icon: AlertCircle,
+          color: colors.warning,
+          bg: colors.warningSoft,
+        };
+      case "info":
         return { Icon: Shield, color: colors.info, bg: colors.infoSoft };
       default:
-        return { Icon: Bell, color: colors.muted_text, bg: colors.card_surface };
+        return {
+          Icon: Bell,
+          color: colors.muted_text,
+          bg: colors.card_surface,
+        };
     }
   };
 
-  const renderNotificationItem = (item: Notification, index: number) => {
-    const { Icon, color, bg } = getNotificationIcon(item.type);
+  const renderNotificationItem = (item: NotificationItem, index: number) => {
+    // Sử dụng helper để map notification type sang display type
+    const displayType = getNotificationDisplayType(item.type);
+    const { Icon, color, bg } = getNotificationIcon(displayType);
 
     return (
       <Box key={item.id}>
         <Pressable
           onPress={() => {
-            const updatedNotifications = notifications.map(n => 
-              n.id === item.id ? { ...n, isRead: true } : n
-            );
-            setNotifications(updatedNotifications);
+            // TODO: Call API để đánh dấu đã đọc
+            // Có thể thêm navigation đến chi tiết nếu cần
           }}
           py="$4"
         >
           <HStack space="md" alignItems="flex-start">
-            <Box 
-              bg={color} 
-              borderRadius="$full" 
+            <Box
+              bg={color}
+              borderRadius="$full"
               p="$2.5"
               w={40}
               h={40}
               alignItems="center"
               justifyContent="center"
             >
-              <Icon size={20} color={colors.primary_white_text} strokeWidth={2.5} />
+              <Icon
+                size={20}
+                color={colors.primary_white_text}
+                strokeWidth={2.5}
+              />
             </Box>
             <VStack flex={1} space="xs">
               <HStack justifyContent="space-between" alignItems="flex-start">
@@ -134,7 +115,7 @@ export default function NotificationScreen() {
                 >
                   {item.title}
                 </Text>
-                {!item.isRead && (
+                {!item.is_read && (
                   <Box w={8} h={8} borderRadius="$full" bg={colors.primary} />
                 )}
               </HStack>
@@ -143,10 +124,12 @@ export default function NotificationScreen() {
                 color={colors.secondary_text}
                 lineHeight="$lg"
               >
-                {item.message}
+                {item.body}
               </Text>
               <Text fontSize="$xs" color={colors.muted_text} mt="$1">
-                {Utils.formatDateForMS(item.timestamp)}
+                {Utils.formatDateForMS(
+                  new Date(item.created_at).getTime() / 1000
+                )}
               </Text>
             </VStack>
           </HStack>
@@ -158,14 +141,19 @@ export default function NotificationScreen() {
     );
   };
 
+  // Loading state
+  const renderLoadingState = () => (
+    <Box flex={1} alignItems="center" justifyContent="center" py="$20">
+      <Spinner size="large" color={colors.primary} />
+      <Text fontSize="$sm" color={colors.secondary_text} mt="$4">
+        Đang tải thông báo...
+      </Text>
+    </Box>
+  );
+
   const renderEmptyState = () => (
     <Box flex={1} alignItems="center" justifyContent="center" py="$20">
-      <Box
-        bg={colors.card_surface}
-        borderRadius="$full"
-        p="$6"
-        mb="$4"
-      >
+      <Box bg={colors.card_surface} borderRadius="$full" p="$6" mb="$4">
         <Bell size={48} color={colors.muted_text} strokeWidth={1.5} />
       </Box>
       <Text
@@ -176,11 +164,7 @@ export default function NotificationScreen() {
       >
         Chưa có thông báo
       </Text>
-      <Text
-        fontSize="$sm"
-        color={colors.secondary_text}
-        textAlign="center"
-      >
+      <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
         Thông báo mới sẽ hiển thị tại đây
       </Text>
     </Box>
@@ -189,33 +173,41 @@ export default function NotificationScreen() {
   return (
     <Box flex={1} bg={colors.background}>
       <AgrisaHeader title="Thông báo" showBackButton={false} />
-      <ScrollView
-        px="$4"
-        pt="$4"
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-      >
-        {notifications.length > 0 ? (
-          <Box
-            bg={colors.card_surface}
-            borderRadius="$xl"
-            borderWidth={1}
-            borderColor={colors.frame_border}
-            px="$4"
-            mb="$6"
-          >
-            {notifications.map((notification, index) => renderNotificationItem(notification, index))}
-          </Box>
-        ) : (
-          renderEmptyState()
-        )}
-      </ScrollView>
+
+      {/* Hiển thị loading khi đang tải lần đầu */}
+      {isLoading ? (
+        renderLoadingState()
+      ) : (
+        <ScrollView
+          px="$4"
+          pt="$4"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={handleRefresh}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
+        >
+          {notifications.length > 0 ? (
+            <Box
+              bg={colors.card_surface}
+              borderRadius="$xl"
+              borderWidth={1}
+              borderColor={colors.frame_border}
+              px="$4"
+              mb="$6"
+            >
+              {notifications.map((notification, index) =>
+                renderNotificationItem(notification, index)
+              )}
+            </Box>
+          ) : (
+            renderEmptyState()
+          )}
+        </ScrollView>
+      )}
     </Box>
   );
 }

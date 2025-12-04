@@ -65,5 +65,10 @@ export const QueryKey = {
     GET_PAYOUT_BY_CLAIM_ID: "get-payout-by-claim-id",
   },
 
+  NOTIFICATION: {
+    GET_ALL: "get-all-notification",
+    GET_COUNT: "get-notification-count",
+  },
+
   TEST: "test",
 };

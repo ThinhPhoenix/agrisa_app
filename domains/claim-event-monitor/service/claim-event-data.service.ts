@@ -1,9 +1,29 @@
 import useAxios from "@/config/useAxios.config";
-import { ClaimDetailResponse, ClaimsByFarmResponse, ClaimsByPolicyResponse, FarmerClaimsListResponse } from "../models/claim-event-data.models";
+import {
+  ClaimDetailResponse,
+  ClaimsByFarmResponse,
+  ClaimsByPolicyResponse,
+  ConfirmPayoutPayload,
+  FarmerClaimsListResponse,
+} from "../models/claim-event-data.models";
 
 export const claimDataServices = {
+  put: {
+    confirmPayout: async (
+      id: string,
+      payload: ConfirmPayoutPayload
+    ): Promise<ApiResponse<any>> => {
+      return useAxios.put(
+        `/policy/protected/api/v2/payouts/update/confirm/${id}`,
+        payload
+      );
+    },
+    //
+  },
   get: {
-    claimEventData: async (): Promise<ApiResponse<FarmerClaimsListResponse>> => {
+    claimEventData: async (): Promise<
+      ApiResponse<FarmerClaimsListResponse>
+    > => {
       return useAxios.get(`/policy/protected/api/v2/claims/read-own/list`);
     },
     claimEventDetailData: async (

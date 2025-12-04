@@ -7,16 +7,13 @@ import { Dimensions, ScrollView } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { MonitoringDataItem } from "../models/data-monitor.model";
 import {
-    analyzeCloudCover,
-    analyzeConfidence,
-    analyzeDataQuality,
-    analyzeMeasurementSource,
-    analyzeRange,
+  analyzeCloudCover,
+  analyzeConfidence,
+  analyzeDataQuality,
+  analyzeMeasurementSource,
+  analyzeRange,
 } from "../utils/dataAnalysisUtils";
-import {
-    getParameterColor,
-    getParameterLabel,
-} from "../utils/parameterUtils";
+import { getParameterColor, getParameterLabel } from "../utils/parameterUtils";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 

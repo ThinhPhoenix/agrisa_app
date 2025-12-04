@@ -58,6 +58,17 @@ export type ClaimEvent = {
   updated_at: string; // ISO timestamp
 };
 
+// ============= REQUEST PAYLOAD MODELS =============
+
+/**
+ * Payload cho API xác nhận nhận tiền bồi thường
+ */
+export type ConfirmPayoutPayload = {
+  farmer_confirmed: boolean;
+  farmer_rating?: number; // 1-5 sao (optional)
+  farmer_feedback?: string; // Phản hồi từ nông dân (optional)
+};
+
 // ============= RESPONSE MODELS =============
 
 /**

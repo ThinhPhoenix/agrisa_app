@@ -63,6 +63,10 @@ const MeComponentUI: React.FC = () => {
             ward_code: data.ward_code || "",
             ward_name: data.ward_name || "",
             postal_code: data.postal_code || "",
+            // Thông tin ngân hàng
+            account_number: data.account_number || "",
+            account_name: data.account_name || "",
+            bank_code: data.bank_code || "",
           });
         }
         setDataLoaded(true);
@@ -90,6 +94,10 @@ const MeComponentUI: React.FC = () => {
               ward_code: fetchedData.ward_code || "",
               ward_name: fetchedData.ward_name || "",
               postal_code: fetchedData.postal_code || "",
+              // Thông tin ngân hàng
+              account_number: fetchedData.account_number || "",
+              account_name: fetchedData.account_name || "",
+              bank_code: fetchedData.bank_code || "",
             });
           }
           setDataLoaded(true);
@@ -279,6 +287,34 @@ const MeComponentUI: React.FC = () => {
     },
 
     // ============================================
+    // THÔNG TIN NGÂN HÀNG
+    // ============================================
+    {
+      name: "account_number",
+      label: "Số tài khoản ngân hàng",
+      type: "input",
+      placeholder: "VD: 28083101117776",
+      required: false,
+      helperText: "Số tài khoản để nhận bồi thường bảo hiểm",
+    },
+    {
+      name: "account_name",
+      label: "Tên chủ tài khoản",
+      type: "input",
+      placeholder: "VD: NGUYEN VAN A",
+      required: false,
+      helperText: "Tên chủ tài khoản (viết hoa, không dấu)",
+    },
+    {
+      name: "bank_code",
+      label: "Mã ngân hàng",
+      type: "input",
+      placeholder: "VD: 970422 (MB Bank)",
+      required: false,
+      helperText: "Mã NAPAS của ngân hàng (6 số)",
+    },
+
+    // ============================================
     // SUBMIT BUTTONS
     // ============================================
     {
@@ -347,6 +383,11 @@ const MeComponentUI: React.FC = () => {
     ward_code: data?.ward_code || form.getValues("ward_code") || "",
     ward_name: data?.ward_name || form.getValues("ward_name") || "",
     postal_code: data?.postal_code || form.getValues("postal_code") || "",
+    // Thông tin ngân hàng
+    account_number:
+      data?.account_number || form.getValues("account_number") || "",
+    account_name: data?.account_name || form.getValues("account_name") || "",
+    bank_code: data?.bank_code || form.getValues("bank_code") || "",
   };
 
   return (

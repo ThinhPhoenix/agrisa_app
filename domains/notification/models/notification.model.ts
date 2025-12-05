@@ -51,8 +51,6 @@ export interface NotificationItem {
  */
 export interface NotificationHistoryResponse {
   notifications: NotificationItem[];
-  total: number;
-  unread_count: number;
 }
 
 /**

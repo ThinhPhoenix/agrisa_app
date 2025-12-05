@@ -28,7 +28,7 @@ export type Payout = {
  * Gửi lên server với payout_id
  */
 export type ConfirmPayoutPayload = {
-  FarmerConfirmed: boolean;
-  FarmerRating?: number; // 1-5 sao (optional)
-  FarmerFeedback?: string; // Phản hồi từ nông dân (optional)
+  farmer_confirmed: boolean;
+  farmer_rating?: number; // 1-5 sao (optional)
+  farmer_feedback?: string; // Phản hồi từ nông dân (optional)
 };

@@ -38,6 +38,10 @@ export const useMeForm = () => {
       ward_code: "",
       ward_name: "",
       postal_code: "",
+      // Thông tin ngân hàng
+      account_number: "",
+      account_name: "",
+      bank_code: "",
     },
   });
 
@@ -63,6 +67,10 @@ export const useMeForm = () => {
       ward_code: profile.ward_code || "",
       ward_name: profile.ward_name || "",
       postal_code: profile.postal_code || "",
+      // Thông tin ngân hàng
+      account_number: profile.account_number || "",
+      account_name: profile.account_name || "",
+      bank_code: profile.bank_code || "",
     });
   };
 

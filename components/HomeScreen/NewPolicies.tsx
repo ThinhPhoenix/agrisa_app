@@ -88,16 +88,6 @@ export const NewPolicies: React.FC<NewPoliciesProps> = ({ onRefresh }) => {
     );
   }
 
-  if (policies.length === 0) {
-    return (
-      <Box py="$4" px="$4" alignItems="center">
-        <Text fontSize="$sm" color={colors.secondary_text}>
-          Chưa có gói bảo hiểm nào
-        </Text>
-      </Box>
-    );
-  }
-
   return (
     <VStack space="sm" px="$2" pt="$3" pb="$4">
       {/* Header */}
@@ -115,7 +105,16 @@ export const NewPolicies: React.FC<NewPoliciesProps> = ({ onRefresh }) => {
         </Pressable>
       </HStack>
 
-      {/* Policy List - Không cần ScrollView ở đây vì đã có ở parent */}
+      {/* Empty State */}
+      {policies.length === 0 ? (
+        <Box py="$6" px="$4" alignItems="center">
+          <Shield size={40} color={colors.muted_text} />
+          <Text fontSize="$sm" color={colors.secondary_text} mt="$2" textAlign="center">
+            Các gói bảo hiểm mới nhất sẽ hiển thị ở đây
+          </Text>
+        </Box>
+      ) : (
+      /* Policy List - Không cần ScrollView ở đây vì đã có ở parent */
       <VStack space="sm" px="$4">
         {policies.map((policy) => (
           <Pressable
@@ -269,6 +268,7 @@ export const NewPolicies: React.FC<NewPoliciesProps> = ({ onRefresh }) => {
           </Pressable>
         ))}
       </VStack>
+      )}
     </VStack>
   );
 };

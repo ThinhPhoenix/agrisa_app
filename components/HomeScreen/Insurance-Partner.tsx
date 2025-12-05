@@ -72,16 +72,6 @@ export const InsurancePartners: React.FC = () => {
     );
   }
 
-  if (partners.length === 0) {
-    return (
-      <Box py="$4" px="$4" alignItems="center">
-        <Text fontSize="$sm" color={colors.secondary_text}>
-          Chưa có công ty bảo hiểm nào
-        </Text>
-      </Box>
-    );
-  }
-
   return (
     <VStack space="sm" px="$2" pt="$3" pb="$4">
       {/* Header */}
@@ -93,7 +83,16 @@ export const InsurancePartners: React.FC = () => {
         </HStack>
       </HStack>
 
-      {/* Partner List - Horizontal Scroll */}
+      {/* Empty State */}
+      {partners.length === 0 ? (
+        <Box py="$6" px="$4" alignItems="center">
+          <Building2 size={40} color={colors.muted_text} />
+          <Text fontSize="$sm" color={colors.secondary_text} mt="$2" textAlign="center">
+            Các đối tác bảo hiểm sẽ hiển thị ở đây
+          </Text>
+        </Box>
+      ) : (
+      /* Partner List - Horizontal Scroll */
       <Box px="$4">
         <HStack space="md" flexWrap="wrap">
           {partners.map((partner) => (
@@ -181,6 +180,7 @@ export const InsurancePartners: React.FC = () => {
           ))}
         </HStack>
       </Box>
+      )}
     </VStack>
   );
 };

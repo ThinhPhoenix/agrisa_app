@@ -4,6 +4,7 @@ import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Alert } from "react-native";
+import { AuthErrorCode, getAuthErrorMessage } from "../enums/auth-error.enum";
 import { SignInPayload, SignUpPayload } from "../models/auth.models";
 import { AuthServices } from "../service/auth.service";
 import { useAuthStore } from "../stores/auth.store";
@@ -12,6 +13,7 @@ export const useAuth = () => {
   const { toast } = useToast();
   const { setAuth } = useAuthStore();
   const notification = useGlobalNotification();
+
   const signUpMutation = useMutation({
     mutationKey: [QueryKey.AUTH.SIGN_UP],
     mutationFn: async (payload: SignUpPayload) => {
@@ -19,11 +21,15 @@ export const useAuth = () => {
     },
     onSuccess: () => {
       notification.success("Đăng ký thành công");
-      router.push("/auth/sign-in");
+      router.replace("/auth/username-sign-in");
     },
-    onError: (error) => {
-      toast.error("Đăng ký thất bại");
-      console.error(error);
+    onError: (error: any) => {
+      // Lấy error code từ response nếu có
+      const errorCode = error?.response?.data?.error?.code || error?.code;
+      const errorMessage = getAuthErrorMessage(errorCode);
+      
+      notification.error(errorMessage);
+      console.error("Sign up error:", error);
     },
   });
 
@@ -36,12 +42,13 @@ export const useAuth = () => {
       await setAuth(data.data.access_token, data.data.user);
       router.replace("/(tabs)");
     },
-    onError: (error) => {
-      Alert.alert(
-        "Đăng nhập thất bại",
-        "Tên đăng nhập hoặc mật khẩu không đúng"
-      );
-      console.error(error);
+    onError: (error: any) => {
+      // Lấy error code từ response nếu có
+      const errorCode = error?.response?.data?.error?.code || error?.code;
+      const errorMessage = getAuthErrorMessage(errorCode);
+
+      Alert.alert("Đăng nhập thất bại", errorMessage);
+      console.error("Sign in error:", error);
     },
   });
 

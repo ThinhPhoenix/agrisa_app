@@ -86,23 +86,18 @@ export const mapGender = (sex: string): "M" | "F" => {
  * Map thông tin từ CCCD sang UserProfile để update
  * 
  * @param cardInfo - Response từ API getCardInfo
- * @param currentProfile - Profile hiện tại của user (để giữ lại các field không thay đổi)
- * @returns Partial<UserProfile> - Chỉ các field cần update
+ * @returns Partial<UserProfile> - Chỉ các field cần update từ CCCD
  */
 export const mapCardInfoToProfile = (
-  cardInfo: CardInfoResponse,
-  currentProfile?: Partial<UserProfile>
+  cardInfo: CardInfoResponse
 ): Partial<UserProfile> => {
   // Parse địa chỉ hiện tại
   const parsedCurrentAddress = parseAddress(cardInfo.address);
-  
-  // Parse địa chỉ thường trú
-  const parsedPermanentAddress = parseAddress(cardInfo.home);
 
   return {
     // Thông tin cơ bản từ CCCD
     full_name: cardInfo.name,
-    date_of_birth: cardInfo.dob,
+    date_of_birth: formatDateForBackend(cardInfo.dob),
     gender: mapGender(cardInfo.sex),
     nationality: cardInfo.nationality,
 
@@ -114,9 +109,6 @@ export const mapCardInfoToProfile = (
     ward_name: parsedCurrentAddress.ward_name,
     district_name: parsedCurrentAddress.district_name,
     province_name: parsedCurrentAddress.province_name,
-
-    // Giữ nguyên các field khác từ profile hiện tại
-    ...currentProfile,
   };
 };
 

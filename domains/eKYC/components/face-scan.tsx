@@ -40,7 +40,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const FACE_OVAL_WIDTH = SCREEN_WIDTH * 0.75; // Tăng từ 0.65 lên 0.75
 const FACE_OVAL_HEIGHT = FACE_OVAL_WIDTH * 1.35; // Giảm tỷ lệ từ 1.4 xuống 1.35 để cân đối hơn
 
-const RECORDING_DURATION = 10000; // 10 giây
+const RECORDING_DURATION = 5000; // 5 giây
 const NO_FACE_TIMEOUT = 120000; // 2 phút
 const FACE_DETECTION_INTERVAL = 500; // Kiểm tra mỗi 500ms
 const MAX_NO_FACE_PAUSE = 3000; // Cảnh báo sau 3 giây không có face
@@ -196,7 +196,7 @@ export const FaceScanScreen = () => {
 
         Alert.alert(
           "Thông báo",
-          "Không thể sử dụng tính năng phát hiện khuôn mặt. Hệ thống sẽ tự động ghi hình 10 giây.\n\nVui lòng giữ khuôn mặt trong khung trong suốt quá trình.",
+          "Không thể sử dụng tính năng phát hiện khuôn mặt. Hệ thống sẽ tự động ghi hình 5 giây.\n\nVui lòng giữ khuôn mặt trong khung trong suốt quá trình.",
           [
             {
               text: "Tiếp tục",
@@ -583,31 +583,9 @@ export const FaceScanScreen = () => {
         }
       } catch (error) {
         console.error("❌ Submit error:", error);
-
+        // Error sẽ được handle bởi useEkyc resultStatus
         setCurrentStep("instruction");
         stopRecording();
-
-        Alert.alert(
-          "Lỗi xác thực",
-          "Không thể gửi video xác thực. Vui lòng kiểm tra kết nối mạng và thử lại.",
-          [
-            {
-              text: "Thử lại",
-              onPress: () => {
-                faceScanMutation.reset();
-                resetToInitialState();
-              },
-            },
-            {
-              text: "Hủy",
-              style: "cancel",
-              onPress: () => {
-                faceScanMutation.reset();
-                router.back();
-              },
-            },
-          ]
-        );
       }
     },
     [user, ocrData, router, faceScanMutation, resetToInitialState]
@@ -625,48 +603,12 @@ export const FaceScanScreen = () => {
   // ==================== EFFECTS ====================
 
   useEffect(() => {
+    // Chỉ xử lý success - error đã được handle trong useEkyc với resultStatus
     if (faceScanMutation.isSuccess) {
-      console.log("✅ Success");
+      console.log("✅ Success - Handled by useEkyc resultStatus");
       setCurrentStep("success");
-      const timeout = setTimeout(() => {
-        router.push("/settings/profile");
-      }, 2000);
-      return () => clearTimeout(timeout);
     }
-
-    if (faceScanMutation.isError) {
-      console.error("❌ Error:", faceScanMutation.error);
-      stopRecording();
-
-      Alert.alert(
-        "Lỗi xác thực",
-        faceScanMutation.error?.message ||
-          "Không thể xác thực khuôn mặt. Vui lòng thử lại.",
-        [
-          {
-            text: "Thử lại",
-            onPress: () => {
-              faceScanMutation.reset();
-              resetToInitialState();
-            },
-          },
-          {
-            text: "Hủy",
-            style: "cancel",
-            onPress: () => {
-              faceScanMutation.reset();
-              router.back();
-            },
-          },
-        ]
-      );
-    }
-  }, [
-    faceScanMutation.isSuccess,
-    faceScanMutation.isError,
-    router,
-    resetToInitialState,
-  ]);
+  }, [faceScanMutation.isSuccess]);
 
   useEffect(() => {
     if (Platform.OS === "ios" || Platform.OS === "android") {
@@ -874,7 +816,7 @@ export const FaceScanScreen = () => {
             Xác thực khuôn mặt
           </Text>
           <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
-            Quá trình này sẽ ghi hình khuôn mặt của bạn trong 10 giây
+            Quá trình này sẽ ghi hình khuôn mặt của bạn trong 5 giây
           </Text>
         </VStack>
 
@@ -1064,12 +1006,12 @@ export const FaceScanScreen = () => {
             borderRadius="$lg"
           >
             {currentStep === "preparing" && !faceDetected
-              ? "Đặt khuôn mặt vào khung"
+              ? "Vui lòng đặt khuôn mặt gọn trong khung"
               : currentStep === "recording"
                 ? isPaused
-                  ? "Giữ khuôn mặt trong khung"
-                  : "Đang quét..."
-                : "Đặt khuôn mặt vào khung"}
+                  ? "Vui lòng giữ khuôn mặt gọn trong khung"
+                  : "Đang xác thực khuôn mặt..."
+                : "Vui lòng đặt khuôn mặt gọn trong khung"}
           </Text>
         </Box>
       </Box>

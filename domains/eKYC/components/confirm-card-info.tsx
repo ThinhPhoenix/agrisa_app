@@ -7,8 +7,9 @@
  * 
  * Flow:
  * 1. Load thông tin CCCD từ getCardInfo
- * 2. Hiển thị thông tin đầy đủ
- * 3. Xác nhận → Update profile → Hoàn tất eKYC
+ * 2. Hiển thị thông tin dạng phiếu thông tin (không có icon)
+ * 3. Xác nhận → Update profile → Hoàn tất eKYC (xử lý bởi useEkyc)
+ * 4. Không có nút quay lại - block hardware back
  */
 
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
@@ -26,20 +27,15 @@ import {
     Text,
     VStack,
 } from "@gluestack-ui/themed";
-import { router } from "expo-router";
 import {
     AlertCircle,
-    Calendar,
     CheckCircle2,
-    CreditCard,
-    Home,
     IdCard,
-    MapPin,
     RefreshCw,
-    User,
     XCircle,
 } from "lucide-react-native";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { BackHandler } from "react-native";
 
 export default function ConfirmCardInfoScreen() {
   const { colors } = useAgrisaColors();
@@ -56,25 +52,27 @@ export default function ConfirmCardInfoScreen() {
 
   const cardInfo = cardInfoData && "data" in cardInfoData ? cardInfoData.data : null;
 
+  // Block hardware back button - không cho phép quay lại
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => true // Return true để block back
+    );
+    return () => backHandler.remove();
+  }, []);
+
   // Auto-fetch khi component mount
   useEffect(() => {
     console.log("🎴 [Confirm Card Info] Component mounted - Fetching card info...");
     refetch();
   }, []);
 
-  // Handle confirm
-  const handleConfirm = async () => {
-    if (!cardInfo) return;
-
+  // Handle confirm - không tự động redirect, để useEkyc xử lý với resultStatus
+  const handleConfirm = useCallback(async () => {
+    if (!cardInfo || isConfirming) return;
     console.log("✅ [Confirm Card Info] Confirming card info...");
     await confirmCardInfoMutation.mutateAsync(cardInfo);
-  };
-
-  // Handle edit (quay lại face scan để quét lại)
-  const handleEdit = () => {
-    console.log("✏️ [Confirm Card Info] User wants to edit - Going back to face scan");
-    router.back();
-  };
+  }, [cardInfo, isConfirming, confirmCardInfoMutation]);
 
   // Loading state
   if (isLoading) {
@@ -121,64 +119,65 @@ export default function ConfirmCardInfoScreen() {
   return (
     <Box flex={1} bg={colors.background}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <VStack space="xl" p="$6" pb="$8">
+        <VStack space="lg" p="$5" pb="$8">
           {/* Header */}
-          <VStack space="md" alignItems="center">
+          <VStack space="sm" alignItems="center" pt="$4">
             <Box
               bg={colors.primary}
               borderRadius="$full"
-              p="$4"
-              w={80}
-              h={80}
+              p="$3"
+              w={70}
+              h={70}
               alignItems="center"
               justifyContent="center"
-              shadowColor={colors.shadow}
-              shadowOffset={{ width: 0, height: 4 }}
-              shadowOpacity={0.15}
-              shadowRadius={8}
-              elevation={4}
             >
               <IdCard
-                size={44}
+                size={36}
                 color={colors.primary_white_text}
                 strokeWidth={2.5}
               />
             </Box>
 
             <Text
-              fontSize="$2xl"
+              fontSize="$xl"
               fontWeight="$bold"
               color={colors.primary_text}
               textAlign="center"
             >
-              Xác nhận thông tin
+              Xác nhận thông tin CCCD
             </Text>
 
             <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
-              Vui lòng kiểm tra thông tin từ CCCD của bạn
+              Vui lòng kiểm tra thông tin trước khi xác nhận
             </Text>
           </VStack>
 
-          {/* Alert */}
+          {/* Alert thông báo */}
           <Box
             bg={colors.infoSoft}
-            borderRadius="$xl"
-            p="$4"
+            borderRadius="$lg"
+            p="$3"
             borderWidth={1}
             borderColor={colors.info}
           >
-            <HStack space="sm" alignItems="flex-start">
-              <AlertCircle size={20} color={colors.info} />
+            <HStack space="sm" alignItems="center">
+              <AlertCircle size={18} color={colors.info} />
               <Text fontSize="$xs" color={colors.info} flex={1}>
-                Thông tin này sẽ được cập nhật vào hồ sơ cá nhân của bạn. Vui lòng kiểm tra kỹ trước khi xác nhận.
+                Thông tin sẽ được cập nhật vào hồ sơ của bạn sau khi xác nhận.
               </Text>
             </HStack>
           </Box>
 
           {/* CCCD Images */}
           {(cardInfo.image_front || cardInfo.image_back) && (
-            <VStack space="md">
-              <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
+            <Box
+              bg={colors.card_surface}
+              borderRadius="$xl"
+              p="$4"
+              borderWidth={1}
+              borderColor={colors.frame_border}
+            >
+              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text} mb="$3">
                 Ảnh CCCD
               </Text>
 
@@ -192,8 +191,8 @@ export default function ConfirmCardInfoScreen() {
                       source={{ uri: `https://${cardInfo.image_front}` }}
                       alt="CCCD mặt trước"
                       w="$full"
-                      h={120}
-                      borderRadius="$lg"
+                      h={100}
+                      borderRadius={8}
                       borderWidth={1}
                       borderColor={colors.frame_border}
                     />
@@ -209,146 +208,61 @@ export default function ConfirmCardInfoScreen() {
                       source={{ uri: `https://${cardInfo.image_back}` }}
                       alt="CCCD mặt sau"
                       w="$full"
-                      h={120}
-                      borderRadius="$lg"
+                      h={100}
+                      borderRadius={8}
                       borderWidth={1}
                       borderColor={colors.frame_border}
                     />
                   </Box>
                 )}
               </HStack>
-            </VStack>
+            </Box>
           )}
 
-          {/* Thông tin cơ bản */}
-          <VStack space="md">
-            <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
-              Thông tin cơ bản
-            </Text>
+          {/* Phiếu thông tin - Dạng bảng đơn giản không có icon */}
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$xl"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            overflow="hidden"
+          >
+            {/* Tiêu đề phiếu */}
+            <Box bg={colors.primary} p="$3">
+              <Text
+                fontSize="$sm"
+                fontWeight="$bold"
+                color={colors.primary_white_text}
+                textAlign="center"
+              >
+                THÔNG TIN CĂN CƯỚC CÔNG DÂN
+              </Text>
+            </Box>
 
-            {/* Số CCCD */}
-            <InfoRow
-              icon={<CreditCard size={20} color={colors.primary} />}
-              label="Số CCCD"
-              value={cardInfo.national_id}
-              colors={colors}
-            />
+            {/* Nội dung phiếu */}
+            <VStack>
+              <InfoField label="Số CCCD" value={cardInfo.national_id} colors={colors} />
+              <InfoField label="Họ và tên" value={cardInfo.name} colors={colors} />
+              <InfoField label="Ngày sinh" value={cardInfo.dob} colors={colors} />
+              <InfoField label="Giới tính" value={cardInfo.sex} colors={colors} />
+              <InfoField label="Quốc tịch" value={cardInfo.nationality} colors={colors} />
+              <InfoField label="Quê quán" value={cardInfo.home} colors={colors} />
+              <InfoField label="Nơi thường trú" value={cardInfo.address} colors={colors} />
+              <InfoField label="Ngày cấp" value={cardInfo.issue_date} colors={colors} />
+              <InfoField label="Ngày hết hạn" value={cardInfo.doe} colors={colors} />
+              <InfoField label="Nơi cấp" value={cardInfo.issue_loc} colors={colors} isLast />
+            </VStack>
+          </Box>
 
-            {/* Họ tên */}
-            <InfoRow
-              icon={<User size={20} color={colors.primary} />}
-              label="Họ và tên"
-              value={cardInfo.name}
-              colors={colors}
-            />
-
-            {/* Ngày sinh */}
-            <InfoRow
-              icon={<Calendar size={20} color={colors.primary} />}
-              label="Ngày sinh"
-              value={cardInfo.dob}
-              colors={colors}
-            />
-
-            {/* Giới tính */}
-            <InfoRow
-              icon={<User size={20} color={colors.primary} />}
-              label="Giới tính"
-              value={cardInfo.sex}
-              colors={colors}
-            />
-
-            {/* Quốc tịch */}
-            <InfoRow
-              icon={<MapPin size={20} color={colors.primary} />}
-              label="Quốc tịch"
-              value={cardInfo.nationality}
-              colors={colors}
-            />
-          </VStack>
-
-          {/* Địa chỉ */}
-          <VStack space="md">
-            <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
-              Địa chỉ
-            </Text>
-
-            {/* Thường trú */}
-            <InfoRow
-              icon={<Home size={20} color={colors.primary} />}
-              label="Thường trú"
-              value={cardInfo.home}
-              colors={colors}
-              isMultiline
-            />
-
-            {/* Hiện tại */}
-            <InfoRow
-              icon={<MapPin size={20} color={colors.primary} />}
-              label="Hiện tại"
-              value={cardInfo.address}
-              colors={colors}
-              isMultiline
-            />
-          </VStack>
-
-          {/* Thông tin CCCD */}
-          <VStack space="md">
-            <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
-              Thông tin CCCD
-            </Text>
-
-            {/* Ngày cấp */}
-            <InfoRow
-              icon={<Calendar size={20} color={colors.primary} />}
-              label="Ngày cấp"
-              value={cardInfo.issue_date}
-              colors={colors}
-            />
-
-            {/* Ngày hết hạn */}
-            <InfoRow
-              icon={<Calendar size={20} color={colors.primary} />}
-              label="Ngày hết hạn"
-              value={cardInfo.doe}
-              colors={colors}
-            />
-
-            {/* Nơi cấp */}
-            <InfoRow
-              icon={<MapPin size={20} color={colors.primary} />}
-              label="Nơi cấp"
-              value={cardInfo.issue_loc}
-              colors={colors}
-              isMultiline
-            />
-
-            {/* Đặc điểm nhận dạng */}
-            {cardInfo.features && (
-              <InfoRow
-                icon={<AlertCircle size={20} color={colors.primary} />}
-                label="Đặc điểm"
-                value={cardInfo.features}
-                colors={colors}
-                isMultiline
-              />
-            )}
-          </VStack>
-
-          {/* Action Buttons */}
-          <VStack space="md" mt="$4">
+          {/* Action Buttons - Chỉ có nút Xác nhận, không có nút quay lại */}
+          <VStack space="md" mt="$2">
             {/* Confirm Button */}
             <Button
               bg={colors.success}
               borderRadius="$xl"
-              h="$14"
+              h="$12"
               onPress={handleConfirm}
               isDisabled={isConfirming}
-              shadowColor={colors.shadow}
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.1}
-              shadowRadius={4}
-              elevation={2}
             >
               <HStack space="sm" alignItems="center">
                 {isConfirming ? (
@@ -365,24 +279,6 @@ export default function ConfirmCardInfoScreen() {
                 </ButtonText>
               </HStack>
             </Button>
-
-            {/* Edit Button */}
-            <Button
-              variant="outline"
-              borderColor={colors.frame_border}
-              borderRadius="$xl"
-              h="$14"
-              onPress={handleEdit}
-              isDisabled={isConfirming}
-            >
-              <ButtonText
-                fontSize="$md"
-                fontWeight="$semibold"
-                color={colors.secondary_text}
-              >
-                Quét lại
-              </ButtonText>
-            </Button>
           </VStack>
         </VStack>
       </ScrollView>
@@ -391,51 +287,41 @@ export default function ConfirmCardInfoScreen() {
 }
 
 /**
- * Component hiển thị một dòng thông tin
+ * Component hiển thị một dòng thông tin trong phiếu
+ * Dạng đơn giản: Label - Value, không có icon
  */
-interface InfoRowProps {
-  icon: React.ReactNode;
+interface InfoFieldProps {
   label: string;
   value: string;
   colors: any;
-  isMultiline?: boolean;
+  isLast?: boolean;
 }
 
-function InfoRow({ icon, label, value, colors, isMultiline = false }: InfoRowProps) {
+function InfoField({ label, value, colors, isLast = false }: InfoFieldProps) {
   return (
     <Box
-      bg={colors.card_surface}
-      borderRadius="$xl"
-      p="$4"
-      borderWidth={1}
-      borderColor={colors.frame_border}
+      px="$4"
+      py="$3"
+      borderBottomWidth={isLast ? 0 : 1}
+      borderBottomColor={colors.frame_border}
     >
-      <HStack space="md" alignItems={isMultiline ? "flex-start" : "center"}>
-        <Box
-          bg={colors.primarySoft}
-          borderRadius="$lg"
-          p="$2"
-          w={40}
-          h={40}
-          alignItems="center"
-          justifyContent="center"
+      <HStack justifyContent="space-between" alignItems="flex-start">
+        <Text
+          fontSize="$xs"
+          color={colors.secondary_text}
+          flex={1}
         >
-          {icon}
-        </Box>
-
-        <VStack flex={1}>
-          <Text fontSize="$xs" color={colors.secondary_text} mb="$1">
-            {label}
-          </Text>
-          <Text
-            fontSize="$sm"
-            fontWeight="$semibold"
-            color={colors.primary_text}
-            numberOfLines={isMultiline ? undefined : 1}
-          >
-            {value}
-          </Text>
-        </VStack>
+          {label}
+        </Text>
+        <Text
+          fontSize="$sm"
+          fontWeight="$medium"
+          color={colors.primary_text}
+          flex={2}
+          textAlign="right"
+        >
+          {value || "Chưa có"}
+        </Text>
       </HStack>
     </Box>
   );

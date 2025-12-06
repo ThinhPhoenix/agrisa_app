@@ -472,7 +472,7 @@ export const OCRIdScreen = () => {
           </HStack>
           <VStack space="xs" ml="$6">
             <Text fontSize="$xs" color="#78350f">
-              • Đặt CCCD nằm ngang, đúng trong khung
+              • Vui lòng đặt CCCD nằm gọn trong khung hình
             </Text>
             <Text fontSize="$xs" color="#78350f">
               • Chụp ở nơi có ánh sáng đủ, không chói

@@ -8,6 +8,7 @@ import { getAuthErrorMessage } from "../enums/auth-error.enum";
 import { SignInPayload, SignUpPayload } from "../models/auth.models";
 import { AuthServices } from "../service/auth.service";
 import { useAuthStore } from "../stores/auth.store";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
 
 export const useAuth = () => {
   const { toast } = useToast();
@@ -27,7 +28,7 @@ export const useAuth = () => {
       // Lấy error code từ response nếu có
       const errorCode = error?.response?.data?.error?.code || error?.code;
       const errorMessage = getAuthErrorMessage(errorCode);
-      
+
       notification.error(errorMessage);
       console.error("Sign up error:", error);
     },
@@ -45,16 +46,18 @@ export const useAuth = () => {
       try {
         // Check partner_id từ API /me trước khi cho phép đăng nhập
         console.log("🔍 [Sign In] Checking partner_id...");
-        const profileResponse = await AuthServices.getUserProfileWithToken(accessToken);
-        const profile = (profileResponse as any)?.data?.data || (profileResponse as any)?.data;
-        
+        const profileResponse =
+          await AuthServices.getUserProfileWithToken(accessToken);
+        const profile =
+          (profileResponse as any)?.data?.data ||
+          (profileResponse as any)?.data;
+
         console.log("📋 [Sign In] Profile response:", profile);
-        
+
         // Nếu partner_id có giá trị (không phải null/undefined/empty) => Không cho đăng nhập
         if (profile?.partner_id) {
           console.log("❌ [Sign In] Partner detected, access denied");
-          Alert.alert(
-            "Không thể đăng nhập",
+          notification.error(
             "Bạn không được cấp quyền đăng nhập vào ứng dụng này. Vui lòng sử dụng ứng dụng dành cho đối tác."
           );
           return;
@@ -62,11 +65,17 @@ export const useAuth = () => {
 
         // partner_id = null => Farmer => Cho phép đăng nhập
         console.log("✅ [Sign In] Farmer verified, proceeding to home...");
+        
+        // Lưu fullName vào secureStorage để hiển thị ở màn hình đăng nhập
+        if (profile?.full_name) {
+          await secureStorage.setFullName(profile.full_name);
+          console.log("✅ [Sign In] Full name saved:", profile.full_name);
+        }
+        
         await setAuth(accessToken, user);
         router.replace("/(tabs)");
       } catch (profileError) {
         console.error("❌ [Sign In] Error checking profile:", profileError);
-        
       }
     },
     onError: (error: any) => {

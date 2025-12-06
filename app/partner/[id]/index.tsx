@@ -2,29 +2,28 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
 import {
-    Box,
-    HStack,
-    Image,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Image,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { useLocalSearchParams } from "expo-router";
 import {
-    AlertCircle,
-    Award,
-    Building2,
-    Calendar,
-    Clock,
-    Globe,
-    Mail,
-    MapPin,
-    Phone,
-    Shield,
-    Star,
-    TrendingUp,
-    Users,
+  AlertCircle,
+  Award,
+  Building2,
+  Calendar,
+  Clock,
+  Globe,
+  Mail,
+  MapPin,
+  Phone,
+  Star,
+  TrendingUp,
+  Users,
 } from "lucide-react-native";
 import React from "react";
 import { Linking, Pressable, RefreshControl } from "react-native";

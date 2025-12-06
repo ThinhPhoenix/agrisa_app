@@ -2,20 +2,16 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
 import { InsurancePartnerResponse } from "@/domains/insurance-partner/models/insurance-partner.model";
 import {
-    Box,
-    HStack,
-    Image,
-    Pressable,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Image,
+  Pressable,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import {
-    AlertCircle,
-    Building2,
-    ChevronRight,
-} from "lucide-react-native";
+import { AlertCircle, Building2, ChevronRight } from "lucide-react-native";
 import React from "react";
 
 /**

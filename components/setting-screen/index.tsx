@@ -372,7 +372,9 @@ export default function SettingsScreen() {
                 ]
             );
         }
-    };
+  };
+  
+  
 
     const handleChangePassword = () => {
         router.push("/settings/change-password");

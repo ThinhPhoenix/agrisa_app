@@ -102,11 +102,14 @@ export const EKYCStatusCheck: React.FC = () => {
   const ekycData = data?.data;
   const userData = meData;
 
+  console.log(userData);
+  
+
   // Kiểm tra đã hoàn thành định danh tài khoản (có đủ thông tin cơ bản)
   const isAccountIdentified = !!(
-    userData?.full_name &&
-    userData?.phone_number &&
-    userData?.email
+    userData?.data.full_name &&
+    userData?.data.phone_number &&
+    userData?.data.email
   );
 
   // Tính tổng số bước đã hoàn thành (tối đa 3 bước)

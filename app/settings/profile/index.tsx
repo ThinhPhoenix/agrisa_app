@@ -1,6 +1,17 @@
+/**
+ * ============================================
+ * 👤 PROFILE DETAIL SCREEN
+ * ============================================
+ * Màn hình hiển thị thông tin cá nhân chi tiết
+ * - Fetch data từ useAuthMe
+ * - Hiển thị thông tin cá nhân, eKYC, ngân hàng
+ */
+
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import useAuthMe from "@/domains/auth/hooks/use-auth-me";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
+import { useBank } from "@/domains/shared/hooks/use-bank";
 import {
   Box,
   HStack,
@@ -13,23 +24,17 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import {
-  AlertCircle,
   BadgeAlert,
   BadgeCheck,
   BadgeX,
   Calendar,
-  CheckCircle2,
-  Clock,
   Edit,
   IdCard,
-  Mail,
-  MapPin,
-  Phone,
   Shield,
   User,
   XCircle,
 } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RefreshControl } from "react-native";
 
 export default function ProfileDetailScreen() {
@@ -37,6 +42,16 @@ export default function ProfileDetailScreen() {
   const { user } = useAuthStore();
   const { geteKYCStatusQuery } = useEkyc();
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch profile từ useAuthMe
+  const {
+    data: profileData,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useAuthMe();
+
+  // Bank hook để lấy tên ngân hàng
+  const { getBankShortName } = useBank();
 
   // Fetch eKYC status
   const { data: ekycResponse, refetch: refetchEkyc } = user?.id
@@ -46,30 +61,41 @@ export default function ProfileDetailScreen() {
   const ekycStatus =
     ekycResponse && "data" in ekycResponse ? ekycResponse.data : null;
 
+  // Profile data từ API
+  const profile = (profileData as any)?.data || profileData || null;
+
+  // Auto fetch profile on mount
+  useEffect(() => {
+    refetchProfile();
+  }, []);
+
   // Refresh handler
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      if (user?.id) {
-        await refetchEkyc();
-      }
+      await Promise.all([
+        refetchProfile(),
+        user?.id ? refetchEkyc() : Promise.resolve(),
+      ]);
     } catch (error) {
       console.error("❌ [Profile Detail] Error refreshing:", error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [user?.id, refetchEkyc]);
+  }, [user?.id, refetchEkyc, refetchProfile]);
 
   // Auto-refresh on focus
   useFocusEffect(
     useCallback(() => {
+      refetchProfile();
       if (user?.id) {
         refetchEkyc();
       }
-    }, [user?.id, refetchEkyc])
+    }, [user?.id, refetchEkyc, refetchProfile])
   );
 
-  if (!user) {
+  // Loading state
+  if (isProfileLoading && !profile) {
     return (
       <VStack
         flex={1}
@@ -85,6 +111,7 @@ export default function ProfileDetailScreen() {
     );
   }
 
+  // Verification status helper
   const getVerificationStatus = () => {
     if (!ekycStatus) {
       return {
@@ -123,6 +150,85 @@ export default function ProfileDetailScreen() {
 
   const verificationStatus = getVerificationStatus();
 
+  // Helper để format địa chỉ đầy đủ
+  const getFullAddress = () => {
+    const parts = [
+      profile?.current_address,
+      profile?.ward_name,
+      profile?.district_name,
+      profile?.province_name,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join(", ") : null;
+  };
+
+  // Helper để format ngày sinh
+  const formatDateOfBirth = (dateString: string) => {
+    if (!dateString) return null;
+    try {
+      return new Date(dateString).toLocaleDateString("vi-VN");
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper để format giới tính
+  const formatGender = (gender: string) => {
+    if (gender === "M") return "Nam";
+    if (gender === "F") return "Nữ";
+    return gender || null;
+  };
+
+  // Helper để capitalize tên (viết hoa chữ cái đầu mỗi từ)
+  const capitalizeName = (name: string | null | undefined) => {
+    if (!name) return null;
+    return name
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  // Reusable Info Row Component (không có icon)
+  const InfoRow = ({
+    label,
+    value,
+    showStatus = false,
+    isVerified = false,
+  }: {
+    label: string;
+    value: string | null;
+    showStatus?: boolean;
+    isVerified?: boolean;
+  }) => (
+    <HStack space="md" alignItems="center" p="$4">
+      <VStack flex={1}>
+        <Text fontSize="$xs" color={colors.muted_text}>
+          {label}
+        </Text>
+        <Text
+          fontSize="$sm"
+          fontWeight="$semibold"
+          color={value ? colors.primary_text : colors.muted_text}
+        >
+          {value || "Chưa cập nhật"}
+        </Text>
+      </VStack>
+      {showStatus && (
+        <Box
+          w={10}
+          h={10}
+          borderRadius="$full"
+          bg={isVerified ? colors.success : colors.muted_text}
+        />
+      )}
+    </HStack>
+  );
+
+  // Divider Component
+  const Divider = () => (
+    <Box height={1} bg={colors.frame_border} width="100%" />
+  );
+
   return (
     <ScrollView
       flex={1}
@@ -136,30 +242,9 @@ export default function ProfileDetailScreen() {
         />
       }
     >
-      <VStack space="xl" p="$6" pb="$8">
-        {/* Testing Notice */}
-        <Box
-          bg={colors.warningSoft}
-          borderRadius="$xl"
-          p="$3"
-          borderWidth={1}
-          borderColor={colors.warning}
-        >
-          <HStack space="sm" alignItems="center">
-            <AlertCircle size={16} color={colors.warning} />
-            <Text
-              fontSize="$xs"
-              fontWeight="$semibold"
-              color={colors.warning}
-              flex={1}
-            >
-              Phiên bản Testing - Thông tin có thể thay đổi
-            </Text>
-          </HStack>
-        </Box>
-
+      <VStack space="lg" p="$5" pb="$8">
         {/* Profile Header */}
-        <VStack space="md" alignItems="center">
+        <VStack space="md" alignItems="center" pt="$2">
           <Box
             w={100}
             h={100}
@@ -179,31 +264,27 @@ export default function ProfileDetailScreen() {
           </Box>
 
           <VStack space="xs" alignItems="center">
-            <Text
-              fontSize="$2xl"
-              fontWeight="$bold"
-              color={colors.primary_text}
-            >
-              {user.email || "Chưa cập nhật"}{" "}
+            <HStack space="sm" alignItems="center">
+              <Text
+                fontSize="$xl"
+                fontWeight="$bold"
+                color={colors.primary_text}
+              >
+                {capitalizeName(profile?.full_name) || capitalizeName(profile?.display_name) || "Chưa cập nhật"}
+              </Text>
               <verificationStatus.icon
-                size={16}
+                size={18}
                 color={verificationStatus.color}
               />
+            </HStack>
+            <Text fontSize="$sm" color={colors.secondary_text}>
+              {user?.email || profile?.email || ""}
             </Text>
           </VStack>
 
-          
-
           {/* Edit Profile Button */}
           <Pressable onPress={() => router.push("/edit-profile")}>
-            <Box
-              bg={colors.primary}
-              borderRadius="$xl"
-              py="$3"
-              px="$6"
-              borderWidth={1}
-              borderColor={colors.primary}
-            >
+            <Box bg={colors.primary} borderRadius="$xl" py="$3" px="$6" mt="$2">
               <HStack space="sm" alignItems="center" justifyContent="center">
                 <Edit
                   size={18}
@@ -222,17 +303,9 @@ export default function ProfileDetailScreen() {
           </Pressable>
         </VStack>
 
-        {/* Personal Information */}
+        {/* Personal Information Section */}
         <VStack space="md">
-          {/* Section Header */}
           <HStack space="sm" alignItems="center">
-            <Box bg={colors.primary} borderRadius="$lg" p="$2">
-              <User
-                size={20}
-                color={colors.primary_white_text}
-                strokeWidth={2.5}
-              />
-            </Box>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
               Thông tin cá nhân
             </Text>
@@ -246,158 +319,104 @@ export default function ProfileDetailScreen() {
             overflow="hidden"
           >
             <VStack>
-              {/* Full Name */}
-              <HStack space="md" alignItems="center" p="$5">
-                <Box
-                  bg={colors.primarySoft}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <User size={20} color={colors.primary} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Họ và tên
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    {(user as any).full_name || "Chưa cập nhật"}
-                  </Text>
-                </VStack>
-              </HStack>
-
-              <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
-
-              {/* Email */}
-              <HStack space="md" alignItems="center" p="$5">
-                <Box
-                  bg={colors.primarySoft}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Mail size={20} color={colors.primary} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Email
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    {user.email}
-                  </Text>
-                </VStack>
-                <Box w={10} h={10} borderRadius="$full" bg={colors.success} />
-              </HStack>
-
-              <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
-
-              {/* Phone */}
-              <HStack space="md" alignItems="center" p="$5">
-                <Box
-                  bg={colors.primarySoft}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Phone size={20} color={colors.primary} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Số điện thoại
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={
-                      user.phone_number
-                        ? colors.primary_text
-                        : colors.muted_text
-                    }
-                  >
-                    {user.phone_number || "Chưa cập nhật"}
-                  </Text>
-                </VStack>
-                <Box
-                  w={10}
-                  h={10}
-                  borderRadius="$full"
-                  bg={user.phone_verified ? colors.success : colors.muted_text}
-                />
-              </HStack>
-
-              <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
-
-              {/* Address */}
-              <HStack space="md" alignItems="center" p="$5">
-                <Box
-                  bg={colors.primarySoft}
-                  borderRadius="$full"
-                  p="$2.5"
-                  w={40}
-                  h={40}
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <MapPin size={20} color={colors.primary} />
-                </Box>
-                <VStack flex={1}>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Địa chỉ
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={
-                      (user as any).address
-                        ? colors.primary_text
-                        : colors.muted_text
-                    }
-                  >
-                    {(user as any).address || "Chưa cập nhật"}
-                  </Text>
-                </VStack>
-              </HStack>
+              <InfoRow
+                label="Họ và tên"
+                value={capitalizeName(profile?.full_name)}
+              />
+              <Divider />
+              <InfoRow
+                label="Tên hiển thị"
+                value={capitalizeName(profile?.display_name)}
+              />
+              <Divider />
+              <InfoRow
+                label="Ngày sinh"
+                value={formatDateOfBirth(profile?.date_of_birth)}
+              />
+              <Divider />
+              <InfoRow
+                label="Giới tính"
+                value={formatGender(profile?.gender)}
+              />
+              <Divider />
+              <InfoRow
+                label="Email"
+                value={profile?.email || user?.email}
+                showStatus
+                isVerified={true}
+              />
+              <Divider />
+              <InfoRow
+                label="Số điện thoại chính"
+                value={profile?.primary_phone || user?.phone_number}
+                showStatus
+                isVerified={user?.phone_verified}
+              />
+              <Divider />
+              <InfoRow
+                label="Số điện thoại phụ"
+                value={profile?.alternate_phone}
+              />
+              <Divider />
+              <InfoRow
+                label="Địa chỉ hiện tại"
+                value={getFullAddress()}
+              />
+              <Divider />
+              <InfoRow
+                label="Địa chỉ thường trú"
+                value={profile?.permanent_address}
+              />
             </VStack>
           </Box>
         </VStack>
 
-        {/* eKYC Information */}
+        {/* Bank Information Section */}
+        <VStack space="md">
+          <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
+            Thông tin ngân hàng
+          </Text>
+
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$2xl"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            overflow="hidden"
+          >
+            <VStack>
+              <InfoRow
+                label="Ngân hàng"
+                value={
+                  profile?.bank_code
+                    ? getBankShortName(profile.bank_code)
+                    : null
+                }
+              />
+              <Divider />
+              <InfoRow
+                label="Số tài khoản"
+                value={profile?.account_number}
+              />
+              <Divider />
+              <InfoRow
+                label="Tên chủ tài khoản"
+                value={capitalizeName(profile?.account_name)}
+              />
+            </VStack>
+          </Box>
+        </VStack>
+
+        {/* eKYC Information Section */}
         {ekycStatus && (
           <VStack space="md">
-            {/* Section Header */}
-            <HStack space="sm" alignItems="center">
-              <Box bg={colors.info} borderRadius="$lg" p="$2">
-                <Shield
-                  size={20}
-                  color={colors.primary_white_text}
-                  strokeWidth={2.5}
-                />
-              </Box>
-              <Text
-                fontSize="$lg"
-                fontWeight="$bold"
-                color={colors.primary_text}
-              >
-                Xác thực danh tính
-              </Text>
-            </HStack>
+            <Text
+              fontSize="$lg"
+              fontWeight="$bold"
+              color={colors.primary_text}
+            >
+              Xác thực danh tính
+            </Text>
 
             <Box
               bg={colors.card_surface}
@@ -408,27 +427,7 @@ export default function ProfileDetailScreen() {
             >
               <VStack>
                 {/* CCCD Status */}
-                <HStack space="md" alignItems="center" p="$5">
-                  <Box
-                    bg={
-                      ekycStatus.is_ocr_done
-                        ? colors.successSoft
-                        : colors.errorSoft
-                    }
-                    borderRadius="$full"
-                    p="$2.5"
-                    w={40}
-                    h={40}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <IdCard
-                      size={20}
-                      color={
-                        ekycStatus.is_ocr_done ? colors.success : colors.error
-                      }
-                    />
-                  </Box>
+                <HStack space="md" alignItems="center" p="$4">
                   <VStack flex={1}>
                     <Text fontSize="$xs" color={colors.muted_text}>
                       Căn cước công dân
@@ -449,32 +448,10 @@ export default function ProfileDetailScreen() {
                   />
                 </HStack>
 
-                <Box height={1} bg={colors.frame_border} width="100%" mx="$5" />
+                <Divider />
 
                 {/* Face Verification Status */}
-                <HStack space="md" alignItems="center" p="$5">
-                  <Box
-                    bg={
-                      ekycStatus.is_face_verified
-                        ? colors.successSoft
-                        : colors.errorSoft
-                    }
-                    borderRadius="$full"
-                    p="$2.5"
-                    w={40}
-                    h={40}
-                    alignItems="center"
-                    justifyContent="center"
-                  >
-                    <Shield
-                      size={20}
-                      color={
-                        ekycStatus.is_face_verified
-                          ? colors.success
-                          : colors.error
-                      }
-                    />
-                  </Box>
+                <HStack space="md" alignItems="center" p="$4">
                   <VStack flex={1}>
                     <Text fontSize="$xs" color={colors.muted_text}>
                       Xác thực khuôn mặt
@@ -504,25 +481,17 @@ export default function ProfileDetailScreen() {
                 {/* Timestamps */}
                 {(ekycStatus.ocr_done_at || ekycStatus.face_verified_at) && (
                   <>
-                    <Box
-                      height={1}
-                      bg={colors.frame_border}
-                      width="100%"
-                      mx="$5"
-                    />
-
-                    <Box p="$5">
+                    <Divider />
+                    <Box p="$4">
                       <VStack space="xs">
-                        <HStack space="xs" alignItems="center" mb="$2">
-                          <Calendar size={14} color={colors.secondary_text} />
-                          <Text
-                            fontSize="$xs"
-                            fontWeight="$semibold"
-                            color={colors.secondary_text}
-                          >
-                            Thời gian xác thực
-                          </Text>
-                        </HStack>
+                        <Text
+                          fontSize="$xs"
+                          fontWeight="$semibold"
+                          color={colors.secondary_text}
+                          mb="$2"
+                        >
+                          Thời gian xác thực
+                        </Text>
                         {ekycStatus.ocr_done_at && (
                           <Text fontSize="$xs" color={colors.secondary_text}>
                             • CCCD:{" "}
@@ -548,21 +517,11 @@ export default function ProfileDetailScreen() {
           </VStack>
         )}
 
-        {/* Account Information */}
+        {/* Account Information Section */}
         <VStack space="md">
-          {/* Section Header */}
-          <HStack space="sm" alignItems="center">
-            <Box bg={colors.success} borderRadius="$lg" p="$2">
-              <Calendar
-                size={20}
-                color={colors.primary_white_text}
-                strokeWidth={2.5}
-              />
-            </Box>
-            <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
-              Thông tin tài khoản
-            </Text>
-          </HStack>
+          <Text fontSize="$lg" fontWeight="$bold" color={colors.primary_text}>
+            Thông tin tài khoản
+          </Text>
 
           <Box
             bg={colors.card_surface}
@@ -571,56 +530,74 @@ export default function ProfileDetailScreen() {
             borderColor={colors.frame_border}
             overflow="hidden"
           >
-            <VStack>
-              {/* Account Details */}
-              <VStack p="$5" space="sm">
-                <HStack justifyContent="space-between">
-                  <Text fontSize="$sm" color={colors.muted_text}>
-                    Trạng thái tài khoản
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.success}
-                  >
-                    Đang hoạt động
-                  </Text>
-                </HStack>
+            <VStack p="$4" space="sm">
+              <HStack justifyContent="space-between">
+                <Text fontSize="$sm" color={colors.muted_text}>
+                  Trạng thái
+                </Text>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.success}
+                >
+                  Đang hoạt động
+                </Text>
+              </HStack>
 
-                <Box height={1} bg={colors.frame_border} width="100%" my="$1" />
+              <Box height={1} bg={colors.frame_border} width="100%" my="$1" />
 
-                <HStack justifyContent="space-between">
-                  <Text fontSize="$sm" color={colors.muted_text}>
-                    Loại tài khoản
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    Nông dân
-                  </Text>
-                </HStack>
+              <HStack justifyContent="space-between">
+                <Text fontSize="$sm" color={colors.muted_text}>
+                  Loại tài khoản
+                </Text>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_text}
+                >
+                  Nông dân
+                </Text>
+              </HStack>
 
-                <Box height={1} bg={colors.frame_border} width="100%" my="$1" />
+              <Box height={1} bg={colors.frame_border} width="100%" my="$1" />
 
-                <HStack justifyContent="space-between">
-                  <Text fontSize="$sm" color={colors.muted_text}>
-                    Ngày tạo
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    {(user as any).created_at
-                      ? new Date((user as any).created_at).toLocaleDateString(
-                          "vi-VN"
-                        )
-                      : "Không xác định"}
-                  </Text>
-                </HStack>
-              </VStack>
+              <HStack justifyContent="space-between">
+                <Text fontSize="$sm" color={colors.muted_text}>
+                  Ngày tạo
+                </Text>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_text}
+                >
+                  {profile?.created_at
+                    ? new Date(profile.created_at).toLocaleDateString("vi-VN")
+                    : "Không xác định"}
+                </Text>
+              </HStack>
+
+              {profile?.updated_at && (
+                <>
+                  <Box
+                    height={1}
+                    bg={colors.frame_border}
+                    width="100%"
+                    my="$1"
+                  />
+                  <HStack justifyContent="space-between">
+                    <Text fontSize="$sm" color={colors.muted_text}>
+                      Cập nhật lần cuối
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      {new Date(profile.updated_at).toLocaleDateString("vi-VN")}
+                    </Text>
+                  </HStack>
+                </>
+              )}
             </VStack>
           </Box>
         </VStack>

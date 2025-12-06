@@ -57,6 +57,16 @@ export default function HomeScreen() {
 
   const { fullName, email } = useUserInfo();
 
+  // Helper để capitalize tên (viết hoa chữ cái đầu mỗi từ)
+  const capitalizeName = (name: string | null | undefined) => {
+    if (!name) return null;
+    return name
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   if (!fontsLoaded) return null;
 
   return (
@@ -87,7 +97,7 @@ export default function HomeScreen() {
               Xin chào,
             </Text>{" "}
             {fullName
-              ? fullName
+              ? capitalizeName(fullName)
               : email
                 ? email.split("@")[0]
                 : "Người dùng Agrisa"}

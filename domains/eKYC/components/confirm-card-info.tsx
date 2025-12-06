@@ -147,7 +147,7 @@ export default function ConfirmCardInfoScreen() {
                 color={colors.primary_white_text}
                 textAlign="center"
               >
-                THÔNG TIN CĂN CƯỚC CÔNG DÂN
+                Thông Tin Cá Nhân
               </Text>
             </Box>
 

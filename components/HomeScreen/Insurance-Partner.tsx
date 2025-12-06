@@ -15,7 +15,6 @@ import {
     AlertCircle,
     Building2,
     ChevronRight,
-    Star,
 } from "lucide-react-native";
 import React from "react";
 
@@ -92,17 +91,14 @@ export const InsurancePartners: React.FC = () => {
           </Text>
         </Box>
       ) : (
-      /* Partner List - Horizontal Scroll */
+      /* Partner List */
       <Box px="$4">
-        <HStack space="md" flexWrap="wrap">
+        <HStack space="sm" flexWrap="wrap" justifyContent="space-between">
           {partners.map((partner) => (
             <Pressable
               key={partner.partner_id}
               onPress={() => handlePartnerPress(partner.partner_id)}
-              flex={1}
-              minWidth="45%"
-              maxWidth="48%"
-              mb="$3"
+              style={{ width: '48%', marginBottom: 12 }}
             >
               <Box
                 bg={colors.card_surface}
@@ -110,7 +106,6 @@ export const InsurancePartners: React.FC = () => {
                 p="$3"
                 borderWidth={1}
                 borderColor={colors.frame_border}
-                alignItems="center"
                 sx={{
                   shadowColor: colors.shadow,
                   shadowOffset: { width: 0, height: 2 },
@@ -119,61 +114,51 @@ export const InsurancePartners: React.FC = () => {
                   elevation: 2,
                 }}
               >
-                {/* Logo */}
-                <Box
-                  w={80}
-                  h={80}
-                  borderRadius="$lg"
-                  overflow="hidden"
-                  bg={colors.background}
-                  mb="$2"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  {partner.partner_logo_url ? (
-                    <Image
-                      source={{ uri: partner.partner_logo_url }}
-                      alt={partner.partner_display_name}
-                      w="100%"
-                      h="100%"
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <Building2 size={40} color={colors.muted_text} />
-                  )}
-                </Box>
+                <HStack space="sm" alignItems="center">
+                  {/* Logo */}
+                  <Box
+                    w={48}
+                    h={48}
+                    borderRadius="$full"
+                    overflow="hidden"
+                    bg={colors.background}
+                    alignItems="center"
+                    justifyContent="center"
+                    borderWidth={1}
+                    borderColor={colors.frame_border}
+                    flexShrink={0}
+                  >
+                    {partner.partner_logo_url ? (
+                      <Image
+                        source={{ uri: partner.partner_logo_url }}
+                        alt={partner.partner_display_name}
+                        w="100%"
+                        h="100%"
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <Building2 size={24} color={colors.muted_text} />
+                    )}
+                  </Box>
 
-                {/* Tên công ty */}
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$semibold"
-                  color={colors.primary_text}
-                  textAlign="center"
-                  numberOfLines={2}
-                  lineHeight={18}
-                >
-                  {partner.partner_display_name}
-                </Text>
-
-                {/* Rating */}
-                {partner.partner_rating_score > 0 && (
-                  <HStack space="xs" alignItems="center" mt="$1">
-                    <Star size={12} color={colors.warning} fill={colors.warning} />
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      {partner.partner_rating_score.toFixed(1)}
+                  {/* Tên công ty */}
+                  <VStack flex={1} space="xs">
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                      numberOfLines={2}
+                      lineHeight={16}
+                    >
+                      {partner.partner_display_name}
                     </Text>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      ({partner.partner_rating_count})
-                    </Text>
-                  </HStack>
-                )}
-
-                {/* Xem chi tiết */}
-                <HStack space="xs" alignItems="center" mt="$2">
-                  <Text fontSize="$xs" color={colors.primary}>
-                    Xem chi tiết
-                  </Text>
-                  <ChevronRight size={14} color={colors.primary} />
+                    <HStack space="xs" alignItems="center">
+                      <Text fontSize="$2xs" color={colors.primary} fontWeight="$medium">
+                        Xem chi tiết
+                      </Text>
+                      <ChevronRight size={10} color={colors.primary} />
+                    </HStack>
+                  </VStack>
                 </HStack>
               </Box>
             </Pressable>

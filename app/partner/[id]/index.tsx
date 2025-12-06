@@ -13,6 +13,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import {
     AlertCircle,
+    Award,
     Building2,
     Calendar,
     Clock,
@@ -20,7 +21,9 @@ import {
     Mail,
     MapPin,
     Phone,
+    Shield,
     Star,
+    TrendingUp,
     Users,
 } from "lucide-react-native";
 import React from "react";
@@ -129,86 +132,85 @@ export default function PartnerDetailScreen() {
           </Box>
         )}
 
-        {/* Logo & Tên */}
-        <Box px="$4" mt={partner.cover_photo_url ? -40 : "$4"}>
-          <HStack space="md" alignItems="center">
-            {/* Logo */}
-            <Box
-              w={80}
-              h={80}
-              borderRadius="$xl"
-              overflow="hidden"
-              bg={colors.card_surface}
-              borderWidth={3}
-              borderColor={colors.background}
-              alignItems="center"
-              justifyContent="center"
-              flexShrink={0}
-              sx={{
-                shadowColor: colors.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 3,
-              }}
+        {/* Logo & Tên - Simple Style */}
+        <Box px="$4" mt="$4" alignItems="center">
+          {/* Logo tròn */}
+          <Box
+            w={80}
+            h={80}
+            borderRadius="$full"
+            overflow="hidden"
+            bg={colors.card_surface}
+            alignItems="center"
+            justifyContent="center"
+            borderWidth={2}
+            borderColor={colors.frame_border}
+            mt={partner.cover_photo_url ? -50 : 0}
+            sx={{
+              shadowColor: colors.shadow,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
+            {partner.partner_logo_url ? (
+              <Image
+                source={{ uri: partner.partner_logo_url }}
+                alt={partner.partner_display_name}
+                w="100%"
+                h="100%"
+                resizeMode="contain"
+              />
+            ) : (
+              <Building2 size={40} color={colors.muted_text} />
+            )}
+          </Box>
+
+          {/* Tên & Rating & Tagline */}
+          <VStack space="xs" alignItems="center" mt="$3">
+            <Text
+              fontSize="$xl"
+              fontWeight="$bold"
+              color={colors.primary_text}
+              textAlign="center"
             >
-              {partner.partner_logo_url ? (
-                <Image
-                  source={{ uri: partner.partner_logo_url }}
-                  alt={partner.partner_display_name}
-                  w="100%"
-                  h="100%"
-                  resizeMode="contain"
+              {partner.partner_display_name}
+            </Text>
+
+            {/* Rating */}
+            {partner.partner_rating_score > 0 && (
+              <HStack space="xs" alignItems="center">
+                <Star
+                  size={14}
+                  color={colors.warning}
+                  fill={colors.warning}
                 />
-              ) : (
-                <Building2 size={40} color={colors.muted_text} />
-              )}
-            </Box>
-
-            {/* Tên & Rating & Tagline */}
-            <VStack flex={1} space="xs">
-              <Text
-                fontSize="$lg"
-                fontWeight="$bold"
-                color={colors.primary_text}
-                flexWrap="wrap"
-              >
-                {partner.partner_display_name}
-              </Text>
-
-              {/* Rating */}
-              {partner.partner_rating_score > 0 && (
-                <HStack space="xs" alignItems="center">
-                  <Star
-                    size={14}
-                    color={colors.warning}
-                    fill={colors.warning}
-                  />
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    {partner.partner_rating_score.toFixed(1)}
-                  </Text>
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    ({partner.partner_rating_count} đánh giá)
-                  </Text>
-                </HStack>
-              )}
-
-              {partner.partner_tagline && (
                 <Text
-                  fontSize="$xs"
-                  color={colors.secondary_text}
-                  fontStyle="italic"
-                  numberOfLines={2}
+                  fontSize="$sm"
+                  fontWeight="$bold"
+                  color={colors.warning}
                 >
-                  "{partner.partner_tagline}"
+                  {partner.partner_rating_score.toFixed(1)}
                 </Text>
-              )}
-            </VStack>
-          </HStack>
+                <Text fontSize="$xs" color={colors.muted_text}>
+                  ({partner.partner_rating_count} đánh giá)
+                </Text>
+              </HStack>
+            )}
+
+            {partner.partner_tagline && (
+              <Text
+                fontSize="$sm"
+                color={colors.secondary_text}
+                fontStyle="italic"
+                textAlign="center"
+                px="$4"
+              >
+                "{partner.partner_tagline}"
+              </Text>
+            )}
+          </VStack>
         </Box>
 
         {/* Thông tin chính */}
@@ -222,14 +224,15 @@ export default function PartnerDetailScreen() {
               borderWidth={1}
               borderColor={colors.frame_border}
             >
-              <Text
-                fontSize="$md"
-                fontWeight="$semibold"
-                color={colors.primary_text}
-                mb="$2"
-              >
-                Giới thiệu
-              </Text>
+              <HStack space="sm" alignItems="center" mb="$3">
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Giới thiệu
+                </Text>
+              </HStack>
               <Text
                 fontSize="$sm"
                 color={colors.secondary_text}
@@ -237,6 +240,176 @@ export default function PartnerDetailScreen() {
               >
                 {partner.partner_description}
               </Text>
+            </Box>
+          )}
+
+          {/* Thống kê nhanh - Grid 2x2 */}
+          <HStack space="sm" flexWrap="wrap">
+            {/* Năm thành lập */}
+            {partner.year_established > 0 && (
+              <Box
+                w="48%"
+                bg={colors.card_surface}
+                borderRadius="$xl"
+                p="$3"
+                borderWidth={1}
+                borderColor={colors.frame_border}
+                mb="$2"
+              >
+                <HStack space="sm" alignItems="center">
+                  <Calendar size={20} color={colors.primary} />
+                  <VStack flex={1}>
+                    <Text fontSize="$xs" color={colors.muted_text}>
+                      Thành lập
+                    </Text>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {partner.year_established}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
+            )}
+
+            {/* Số năm kinh nghiệm */}
+            {partner.trust_metric_experience > 0 && (
+              <Box
+                w="48%"
+                bg={colors.card_surface}
+                borderRadius="$xl"
+                p="$3"
+                borderWidth={1}
+                borderColor={colors.frame_border}
+                mb="$2"
+              >
+                <HStack space="sm" alignItems="center">
+                  <Award size={20} color={colors.primary} />
+                  <VStack flex={1}>
+                    <Text fontSize="$xs" color={colors.muted_text}>
+                      Kinh nghiệm
+                    </Text>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {partner.trust_metric_experience} năm
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
+            )}
+
+            {/* Số khách hàng */}
+            {partner.trust_metric_clients > 0 && (
+              <Box
+                w="48%"
+                bg={colors.card_surface}
+                borderRadius="$xl"
+                p="$3"
+                borderWidth={1}
+                borderColor={colors.frame_border}
+                mb="$2"
+              >
+                <HStack space="sm" alignItems="center">
+                  <Users size={20} color={colors.primary} />
+                  <VStack flex={1}>
+                    <Text fontSize="$xs" color={colors.muted_text}>
+                      Khách hàng
+                    </Text>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {partner.trust_metric_clients.toLocaleString()}+
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
+            )}
+
+            {/* Tỷ lệ bồi thường */}
+            {partner.trust_metric_claim_rate > 0 && (
+              <Box
+                w="48%"
+                bg={colors.card_surface}
+                borderRadius="$xl"
+                p="$3"
+                borderWidth={1}
+                borderColor={colors.frame_border}
+                mb="$2"
+              >
+                <HStack space="sm" alignItems="center">
+                  <TrendingUp size={20} color={colors.primary} />
+                  <VStack flex={1}>
+                    <Text fontSize="$xs" color={colors.muted_text}>
+                      Tỷ lệ bồi thường
+                    </Text>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {partner.trust_metric_claim_rate}%
+                    </Text>
+                  </VStack>
+                </HStack>
+              </Box>
+            )}
+          </HStack>
+
+          {/* Thông tin bồi thường */}
+          {(partner.total_payouts || partner.average_payout_time) && (
+            <Box
+              bg={colors.card_surface}
+              borderRadius="$xl"
+              p="$4"
+              borderWidth={1}
+              borderColor={colors.frame_border}
+            >
+              <HStack space="sm" alignItems="center" mb="$3">
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Cam kết bồi thường
+                </Text>
+              </HStack>
+              <HStack justifyContent="space-around">
+                {partner.total_payouts && (
+                  <VStack alignItems="center">
+                    <Text fontSize="$xs" color={colors.muted_text}>
+                      Tổng đã chi trả
+                    </Text>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.success}
+                    >
+                      {partner.total_payouts}
+                    </Text>
+                  </VStack>
+                )}
+                {partner.average_payout_time && (
+                  <VStack alignItems="center">
+                    <Text fontSize="$xs" color={colors.muted_text}>
+                      Thời gian chi trả TB
+                    </Text>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.success}
+                    >
+                      {partner.average_payout_time}
+                    </Text>
+                  </VStack>
+                )}
+              </HStack>
             </Box>
           )}
 
@@ -248,14 +421,15 @@ export default function PartnerDetailScreen() {
             borderWidth={1}
             borderColor={colors.frame_border}
           >
-            <Text
-              fontSize="$md"
-              fontWeight="$semibold"
-              color={colors.primary_text}
-              mb="$3"
-            >
-              Thông tin liên hệ
-            </Text>
+            <HStack space="sm" alignItems="center" mb="$3">
+              <Text
+                fontSize="$md"
+                fontWeight="$bold"
+                color={colors.primary_text}
+              >
+                Liên hệ
+              </Text>
+            </HStack>
 
             <VStack space="md">
               {/* Hotline */}
@@ -264,9 +438,7 @@ export default function PartnerDetailScreen() {
                   onPress={() => handleCall(partner.customer_service_hotline)}
                 >
                   <HStack space="md" alignItems="center">
-                    <Box bg={colors.successSoft} p="$2" borderRadius="$lg">
-                      <Phone size={18} color={colors.success} />
-                    </Box>
+                    <Phone size={18} color={colors.primary} />
                     <VStack flex={1}>
                       <Text fontSize="$xs" color={colors.muted_text}>
                         Hotline CSKH
@@ -274,7 +446,6 @@ export default function PartnerDetailScreen() {
                       <Text
                         fontSize="$sm"
                         fontWeight="$semibold"
-                        color={colors.primary}
                       >
                         {partner.customer_service_hotline}
                       </Text>
@@ -289,9 +460,7 @@ export default function PartnerDetailScreen() {
                   onPress={() => handleEmail(partner.partner_official_email)}
                 >
                   <HStack space="md" alignItems="center">
-                    <Box bg={colors.infoSoft} p="$2" borderRadius="$lg">
-                      <Mail size={18} color={colors.info} />
-                    </Box>
+                    <Mail size={18} color={colors.primary} />
                     <VStack flex={1}>
                       <Text fontSize="$xs" color={colors.muted_text}>
                         Email
@@ -314,9 +483,7 @@ export default function PartnerDetailScreen() {
                   onPress={() => handleOpenLink(partner.partner_website)}
                 >
                   <HStack space="md" alignItems="center">
-                    <Box bg={colors.warningSoft} p="$2" borderRadius="$lg">
-                      <Globe size={18} color={colors.warning} />
-                    </Box>
+                    <Globe size={18} color={colors.primary} />
                     <VStack flex={1}>
                       <Text fontSize="$xs" color={colors.muted_text}>
                         Website
@@ -325,6 +492,7 @@ export default function PartnerDetailScreen() {
                         fontSize="$sm"
                         fontWeight="$semibold"
                         color={colors.primary}
+                        numberOfLines={1}
                       >
                         {partner.partner_website}
                       </Text>
@@ -336,9 +504,7 @@ export default function PartnerDetailScreen() {
               {/* Địa chỉ */}
               {partner.head_office_address && (
                 <HStack space="md" alignItems="flex-start">
-                  <Box bg={colors.errorSoft} p="$2" borderRadius="$lg">
-                    <MapPin size={18} color={colors.error} />
-                  </Box>
+                  <MapPin size={18} color={colors.primary} />
                   <VStack flex={1}>
                     <Text fontSize="$xs" color={colors.muted_text}>
                       Trụ sở chính
@@ -357,9 +523,7 @@ export default function PartnerDetailScreen() {
               {/* Giờ hỗ trợ */}
               {partner.support_hours && (
                 <HStack space="md" alignItems="center">
-                  <Box bg={colors.successSoft} p="$2" borderRadius="$lg">
-                    <Clock size={18} color={colors.success} />
-                  </Box>
+                  <Clock size={18} color={colors.primary} />
                   <VStack flex={1}>
                     <Text fontSize="$xs" color={colors.muted_text}>
                       Giờ hỗ trợ
@@ -372,176 +536,6 @@ export default function PartnerDetailScreen() {
               )}
             </VStack>
           </Box>
-
-          {/* Thống kê */}
-          <Box
-            bg={colors.card_surface}
-            borderRadius="$xl"
-            p="$4"
-            borderWidth={1}
-            borderColor={colors.frame_border}
-          >
-            <Text
-              fontSize="$md"
-              fontWeight="$semibold"
-              color={colors.primary_text}
-              mb="$3"
-            >
-              Thống kê hoạt động
-            </Text>
-
-            <HStack flexWrap="wrap" justifyContent="space-between">
-              {/* Năm thành lập */}
-              {partner.year_established > 0 && (
-                <HStack w="48%" mb="$3" space="sm" alignItems="center">
-                  <Box
-                    bg={colors.primarySoft}
-                    p="$2"
-                    borderRadius="$lg"
-                    flexShrink={0}
-                  >
-                    <Calendar size={16} color={colors.primary} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      Năm thành lập
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      {partner.year_established}
-                    </Text>
-                  </VStack>
-                </HStack>
-              )}
-
-              {/* Số năm kinh nghiệm */}
-              {partner.trust_metric_experience > 0 && (
-                <HStack w="48%" mb="$3" space="sm" alignItems="center">
-                  <Box
-                    bg={colors.successSoft}
-                    p="$2"
-                    borderRadius="$lg"
-                    flexShrink={0}
-                  >
-                    <Building2 size={16} color={colors.success} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      Kinh nghiệm
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      {partner.trust_metric_experience} năm
-                    </Text>
-                  </VStack>
-                </HStack>
-              )}
-
-              {/* Số khách hàng */}
-              {partner.trust_metric_clients > 0 && (
-                <HStack w="48%" mb="$3" space="sm" alignItems="center">
-                  <Box
-                    bg={colors.infoSoft}
-                    p="$2"
-                    borderRadius="$lg"
-                    flexShrink={0}
-                  >
-                    <Users size={16} color={colors.info} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      Khách hàng
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      {partner.trust_metric_clients.toLocaleString()}+
-                    </Text>
-                  </VStack>
-                </HStack>
-              )}
-
-              {/* Tỷ lệ claim */}
-              {partner.trust_metric_claim_rate > 0 && (
-                <HStack w="48%" mb="$3" space="sm" alignItems="center">
-                  <Box
-                    bg={colors.warningSoft}
-                    p="$2"
-                    borderRadius="$lg"
-                    flexShrink={0}
-                  >
-                    <Star size={16} color={colors.warning} />
-                  </Box>
-                  <VStack flex={1}>
-                    <Text fontSize="$xs" color={colors.muted_text}>
-                      Tỷ lệ bồi thường
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      {partner.trust_metric_claim_rate}%
-                    </Text>
-                  </VStack>
-                </HStack>
-              )}
-            </HStack>
-
-            {/* Thông tin bổ sung */}
-            <VStack space="sm" mt="$2">
-              {partner.total_payouts && (
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Tổng chi trả:
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.success}
-                  >
-                    {partner.total_payouts}
-                  </Text>
-                </VStack>
-              )}
-              {partner.average_payout_time && (
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Thời gian chi trả TB:
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    {partner.average_payout_time}
-                  </Text>
-                </VStack>
-              )}
-              {partner.coverage_areas && (
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.muted_text}>
-                    Vùng phủ sóng:
-                  </Text>
-                  <Text
-                    fontSize="$sm"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    {partner.coverage_areas}
-                  </Text>
-                </VStack>
-              )}
-            </VStack>
-          </Box>
         </VStack>
 
         {/* Bottom spacing */}
@@ -549,4 +543,4 @@ export default function PartnerDetailScreen() {
       </ScrollView>
     </Box>
   );
-}
+} 

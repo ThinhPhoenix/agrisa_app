@@ -3,20 +3,15 @@ import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { PublicBasePolicyResponse } from "@/domains/policy/models/policy.models";
 import { Utils } from "@/libs/utils/utils";
 import {
-    Box,
-    HStack,
-    Pressable,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Pressable,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import {
-    AlertCircle,
-    Calendar,
-    ChevronRight,
-    Shield,
-} from "lucide-react-native";
+import { AlertCircle, ChevronRight, Shield } from "lucide-react-native";
 import React from "react";
 
 /**

@@ -236,7 +236,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                 fontWeight="$semibold"
                 color={colors.warning}
               >
-                Phí bảo hiểm
+                Phí chi trả bảo hiểm
               </Text>
             </HStack>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.warning}>
@@ -270,7 +270,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                 fontWeight="$semibold"
                 color={colors.success}
               >
-                Bồi thường
+                Phí bảo hiểm bồi thường
               </Text>
             </HStack>
             <Text fontSize="$lg" fontWeight="$bold" color={colors.success}>
@@ -382,7 +382,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                       : colors.secondary_text
                   }
                 >
-                  Bồi thường
+                  Phí bồi thường
                 </Text>
               </Box>
             </Pressable>
@@ -415,7 +415,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                       : colors.secondary_text
                   }
                 >
-                  Hết hạn
+                  Khác
                 </Text>
               </Box>
             </Pressable>

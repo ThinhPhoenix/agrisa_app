@@ -1,3 +1,4 @@
+import { useGlobalNotification } from "@/components/modal/providers";
 import useAxios from "@/config/useAxios.config";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
@@ -32,7 +33,7 @@ import {
   PhoneIcon,
   ScanFace,
   ShieldCheck,
-  User
+  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
@@ -42,14 +43,13 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
 import { SignInPayload } from "../../models/auth.models";
 import { SignInPayloadSchema } from "../../schemas/auth.schema";
 import { useAuthStore } from "../../stores/auth.store";
-import { useGlobalNotification } from "@/components/modal/providers";
 
 const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -300,10 +300,10 @@ const SignInComponentUI = () => {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
     }
-    
+
     // Fallback: parse từ identifier nếu chưa có fullName
     if (!cachedIdentifier) return "Nông dân";
-    
+
     // Nếu là email, lấy phần trước @
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cachedIdentifier)) {
       const name = cachedIdentifier.split("@")[0];

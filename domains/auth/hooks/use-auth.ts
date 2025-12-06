@@ -1,6 +1,7 @@
 import { useGlobalNotification } from "@/components/modal/providers/NotificationProvider";
 import { useToast } from "@/domains/shared/hooks/useToast";
 import { QueryKey } from "@/domains/shared/stores/query-key";
+import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Alert } from "react-native";
@@ -8,7 +9,6 @@ import { getAuthErrorMessage } from "../enums/auth-error.enum";
 import { SignInPayload, SignUpPayload } from "../models/auth.models";
 import { AuthServices } from "../service/auth.service";
 import { useAuthStore } from "../stores/auth.store";
-import { secureStorage } from "@/domains/shared/utils/secureStorage";
 
 export const useAuth = () => {
   const { toast } = useToast();

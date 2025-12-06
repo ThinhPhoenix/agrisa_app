@@ -4,7 +4,7 @@ import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Alert } from "react-native";
-import { AuthErrorCode, getAuthErrorMessage } from "../enums/auth-error.enum";
+import { getAuthErrorMessage } from "../enums/auth-error.enum";
 import { SignInPayload, SignUpPayload } from "../models/auth.models";
 import { AuthServices } from "../service/auth.service";
 import { useAuthStore } from "../stores/auth.store";

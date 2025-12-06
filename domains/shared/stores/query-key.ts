@@ -52,6 +52,7 @@ export const QueryKey = {
   PAYMENT: {
     GET_ALL_PAYMENT: "get-all-payment",
     GET_DETAIL_PAYMENT: "get-detail-payment",
+    GET_TOTAL_BY_TYPE: "get-total-by-type",
   },
 
   CLAIM_EVENT: {

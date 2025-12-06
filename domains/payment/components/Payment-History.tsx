@@ -36,13 +36,21 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     "all" | "premium" | "compensation" | "expired"
   >("all");
 
-  const { getAllPayment } = usePayment();
+  const { getAllPayment, getTotalByType } = usePayment();
   const { data, isLoading, refetch, isRefetching } = getAllPayment();
+
+  // Lấy tổng phí bảo hiểm đã đăng ký (registration)
+  const { data: registrationData, refetch: refetchRegistration } = getTotalByType("policy_registration_payment");
+  const totalPremium = registrationData?.success ? registrationData.data : 0;
+
+  // Lấy tổng số tiền bồi thường (payout)
+  const { data: payoutData, refetch: refetchPayout } = getTotalByType("policy_payout_payment");
+  const totalCompensation = payoutData?.success ? payoutData.data : 0;
 
   const payments = data?.success ? data.data.items : [];
 
   const handleRefresh = async () => {
-    await refetch();
+    await Promise.all([refetch(), refetchRegistration(), refetchPayout()]);
     onRefresh?.();
   };
 
@@ -60,20 +68,6 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
       return p.status.code === PaymentStatusCode.EXPIRED;
     return true;
   });
-
-  // Tính tổng phí bảo hiểm (tiền ra)
-  const totalPremium = payments
-    .filter((p) => p.type === "policy_registration_payment")
-    .reduce((sum, p) => sum + p.amount, 0);
-
-  // Tính tổng bồi thường (tiền vào - chưa có trong data hiện tại)
-  const totalCompensation = payments
-    .filter(
-      (p) =>
-        p.type !== "policy_registration_payment" &&
-        p.status.code === PaymentStatusCode.COMPLETED
-    )
-    .reduce((sum, p) => sum + p.amount, 0);
 
   const getCategoryIcon = (payment: PaymentTransaction) => {
     // Nếu là phí bảo hiểm (tiền ra)

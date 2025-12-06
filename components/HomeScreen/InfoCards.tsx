@@ -1,5 +1,7 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { usePayment } from "@/domains/payment/hooks/use-payment";
 import { useStats } from "@/domains/shared/hooks/use-stats";
+import { Utils } from "@/libs/utils/utils";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -28,7 +30,12 @@ const CARD_GRADIENT = [
 export default function InfoCards() {
   const { colors } = useAgrisaColors();
   const { stats, isLoading } = useStats();
+  const { getTotalByType } = usePayment();
   const [moneyVisible, setMoneyVisible] = useState(false);
+
+  // Lấy tổng số tiền bồi thường (payout)
+  const { data: payoutData, isLoading: isLoadingPayout } = getTotalByType("policy_payout_payment");
+  const totalPayout = payoutData?.success ? payoutData.data : 0;
 
   // Card data configuration
   const cards = [
@@ -37,15 +44,19 @@ export default function InfoCards() {
       icon: Banknote,
       iconColor: colors.primary,
       iconBgColor: `${colors.primary}15`,
-      label: "Số tiền bảo hiểm",
+      label: "Số tiền bồi thường bảo hiểm",
       value: (
         <View className="flex-row items-center gap-2">
-          <Text
-            className="font-bold text-xl"
-            style={{ color: colors.primary_text }}
-          >
-            {moneyVisible ? "4.000.000.000đ" : "••••••••"}
-          </Text>
+          {isLoadingPayout ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <Text
+              className="font-bold text-xl"
+              style={{ color: colors.primary_text }}
+            >
+              {moneyVisible ? Utils.formatCurrency(totalPayout) : "••••••••"}
+            </Text>
+          )}
           <Pressable onPress={() => setMoneyVisible(!moneyVisible)}>
             {moneyVisible ? (
               <EyeOff size={16} color={colors.muted_text} />

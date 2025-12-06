@@ -58,10 +58,7 @@ export const signInSchema = z.object({
   password: z
     .string()
     .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-    .regex(
-      REGEX_PASSWORD,
-      "Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt"
-    ),
+    ,
 });
 
 export const signUpSchema = z

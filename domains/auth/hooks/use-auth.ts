@@ -39,8 +39,35 @@ export const useAuth = () => {
       return await AuthServices.signin(payload);
     },
     onSuccess: async (data: any) => {
-      await setAuth(data.data.access_token, data.data.user);
-      router.replace("/(tabs)");
+      const accessToken = data.data.access_token;
+      const user = data.data.user;
+
+      try {
+        // Check partner_id từ API /me trước khi cho phép đăng nhập
+        console.log("🔍 [Sign In] Checking partner_id...");
+        const profileResponse = await AuthServices.getUserProfileWithToken(accessToken);
+        const profile = (profileResponse as any)?.data?.data || (profileResponse as any)?.data;
+        
+        console.log("📋 [Sign In] Profile response:", profile);
+        
+        // Nếu partner_id có giá trị (không phải null/undefined/empty) => Không cho đăng nhập
+        if (profile?.partner_id) {
+          console.log("❌ [Sign In] Partner detected, access denied");
+          Alert.alert(
+            "Không thể đăng nhập",
+            "Bạn không được cấp quyền đăng nhập vào ứng dụng này. Vui lòng sử dụng ứng dụng dành cho đối tác."
+          );
+          return;
+        }
+
+        // partner_id = null => Farmer => Cho phép đăng nhập
+        console.log("✅ [Sign In] Farmer verified, proceeding to home...");
+        await setAuth(accessToken, user);
+        router.replace("/(tabs)");
+      } catch (profileError) {
+        console.error("❌ [Sign In] Error checking profile:", profileError);
+        
+      }
     },
     onError: (error: any) => {
       // Lấy error code từ response nếu có

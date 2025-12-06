@@ -155,10 +155,10 @@ export const useEkyc = () => {
       queryClient.invalidateQueries({ queryKey: [QueryKey.AUTH.ME] });
 
       resultStatus.showSuccess({
-        title: "Đã reset eKYC!",
+        title: "Đã đặt lại xác thực thành công!",
         message: "Bạn có thể bắt đầu quy trình xác thực lại.",
         autoRedirectSeconds: 3,
-        autoRedirectRoute: "/settings/verify/status",
+        autoRedirectRoute: "/settings",
         showHomeButton: true,
         lockNavigation: false,
       });

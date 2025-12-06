@@ -8,14 +8,16 @@ export const notificationService = {
     /**
      * Lấy lịch sử thông báo
      */
-    getNotificationHistory: async (): Promise<ApiResponse<NotificationHistoryResponse>> => {
+    getNotificationHistory: async (): Promise<
+      ApiResponse<NotificationHistoryResponse>
+    > => {
       return useAxios.get(`/push-noti/protected/history`);
     },
     /**
      * Lấy số lượng thông báo chưa đọc
      */
-    getNotificationCount: async (): Promise<ApiResponse<NotificationCount>> => {
+    getNotificationCount: async (): Promise<NotificationCount> => {
       return useAxios.get(`/push-noti/protected/unread-count`);
-    }
+    },
   },
 };

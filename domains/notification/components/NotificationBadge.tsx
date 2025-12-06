@@ -59,7 +59,7 @@ export const NotificationBadge: React.FC<NotificationBadgeProps> = ({
   const { data: countData } = getNotificationCount();
 
   // Sử dụng override count hoặc API count
-  const count = overrideCount ?? (countData?.success ? countData.data?.count ?? 0 : 0);
+  const count = overrideCount ?? (countData?.success ? countData.count ?? 0 : 0);
 
   // Không hiển thị nếu count = 0
   if (count === 0) {

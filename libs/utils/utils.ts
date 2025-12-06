@@ -47,6 +47,21 @@ export const Utils = {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   },
 
+  formatStringVietnameseDateTimeGMT7: (dateString: string): string => {
+    const date = new Date(dateString);
+
+    // Chuyển sang GMT+7 (thêm 7 giờ vào UTC)
+    const gmt7Date = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+
+    const day = String(gmt7Date.getUTCDate()).padStart(2, "0");
+    const month = String(gmt7Date.getUTCMonth() + 1).padStart(2, "0");
+    const year = gmt7Date.getUTCFullYear();
+    const hours = String(gmt7Date.getUTCHours()).padStart(2, "0");
+    const minutes = String(gmt7Date.getUTCMinutes()).padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  },
+
   formatCurrency: (value: number): string => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",

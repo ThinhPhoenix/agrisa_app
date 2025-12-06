@@ -94,9 +94,10 @@ export const mapCardInfoToProfile = (
   // Parse địa chỉ hiện tại
   const parsedCurrentAddress = parseAddress(cardInfo.address);
 
-  return {
+  const profileData = {
     // Thông tin cơ bản từ CCCD
     full_name: cardInfo.name,
+    display_name: cardInfo.name, // Backend có thể yêu cầu display_name
     date_of_birth: formatDateForBackend(cardInfo.dob),
     gender: mapGender(cardInfo.sex),
     nationality: cardInfo.nationality,
@@ -110,6 +111,14 @@ export const mapCardInfoToProfile = (
     district_name: parsedCurrentAddress.district_name,
     province_name: parsedCurrentAddress.province_name,
   };
+
+  // Debug log để kiểm tra data
+  console.log(
+    "📋 [mapCardInfoToProfile] Data to be sent:",
+    JSON.stringify(profileData, null, 2)
+  );
+
+  return profileData;
 };
 
 /**

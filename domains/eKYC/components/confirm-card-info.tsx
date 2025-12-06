@@ -19,18 +19,14 @@ import {
   Button,
   ButtonText,
   Center,
-  Heading,
   HStack,
-  Image,
   ScrollView,
   Spinner,
   Text,
   VStack,
 } from "@gluestack-ui/themed";
 import {
-  AlertCircle,
   CheckCircle2,
-  IdCard,
   RefreshCw,
   XCircle,
 } from "lucide-react-native";
@@ -92,9 +88,9 @@ export default function ConfirmCardInfoScreen() {
       <Center flex={1} bg={colors.background} px="$6">
         <VStack space="lg" alignItems="center">
           <XCircle size={80} color={colors.error} />
-          <Heading size="xl" color={colors.primary_text} textAlign="center">
+          <Text fontSize="$xl" fontWeight="$bold" color={colors.primary_text} textAlign="center">
             Không thể tải thông tin
-          </Heading>
+          </Text>
           <Text color={colors.secondary_text} textAlign="center">
             {error instanceof Error ? error.message : "Vui lòng thử lại sau."}
           </Text>
@@ -120,104 +116,20 @@ export default function ConfirmCardInfoScreen() {
     <Box flex={1} bg={colors.background}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <VStack space="lg" p="$5" pb="$8">
-          {/* Header */}
-          <VStack space="sm" alignItems="center" pt="$4">
-            <Box
-              bg={colors.primary}
-              borderRadius="$full"
-              p="$3"
-              w={70}
-              h={70}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <IdCard
-                size={36}
-                color={colors.primary_white_text}
-                strokeWidth={2.5}
-              />
-            </Box>
-
+          {/* Header - Tiêu đề thụt vào lề trái */}
+          <VStack space="sm" pt="$4">
             <Text
-              fontSize="$xl"
+              fontSize="$2xl"
               fontWeight="$bold"
               color={colors.primary_text}
-              textAlign="center"
             >
-              Xác nhận thông tin CCCD
+              Xác nhận và tiếp theo
             </Text>
 
-            <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
+            <Text fontSize="$sm" color={colors.secondary_text}>
               Vui lòng kiểm tra thông tin trước khi xác nhận
             </Text>
           </VStack>
-
-          {/* Alert thông báo */}
-          <Box
-            bg={colors.infoSoft}
-            borderRadius="$lg"
-            p="$3"
-            borderWidth={1}
-            borderColor={colors.info}
-          >
-            <HStack space="sm" alignItems="center">
-              <AlertCircle size={18} color={colors.info} />
-              <Text fontSize="$xs" color={colors.info} flex={1}>
-                Thông tin sẽ được cập nhật vào hồ sơ của bạn sau khi xác nhận.
-              </Text>
-            </HStack>
-          </Box>
-
-          {/* CCCD Images */}
-          {(cardInfo.image_front || cardInfo.image_back) && (
-            <Box
-              bg={colors.card_surface}
-              borderRadius="$xl"
-              p="$4"
-              borderWidth={1}
-              borderColor={colors.frame_border}
-            >
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text} mb="$3">
-                Ảnh CCCD
-              </Text>
-
-              <HStack space="md">
-                {cardInfo.image_front && (
-                  <Box flex={1}>
-                    <Text fontSize="$xs" color={colors.secondary_text} mb="$2">
-                      Mặt trước
-                    </Text>
-                    <Image
-                      source={{ uri: `https://${cardInfo.image_front}` }}
-                      alt="CCCD mặt trước"
-                      w="$full"
-                      h={100}
-                      borderRadius={8}
-                      borderWidth={1}
-                      borderColor={colors.frame_border}
-                    />
-                  </Box>
-                )}
-
-                {cardInfo.image_back && (
-                  <Box flex={1}>
-                    <Text fontSize="$xs" color={colors.secondary_text} mb="$2">
-                      Mặt sau
-                    </Text>
-                    <Image
-                      source={{ uri: `https://${cardInfo.image_back}` }}
-                      alt="CCCD mặt sau"
-                      w="$full"
-                      h={100}
-                      borderRadius={8}
-                      borderWidth={1}
-                      borderColor={colors.frame_border}
-                    />
-                  </Box>
-                )}
-              </HStack>
-            </Box>
-          )}
 
           {/* Phiếu thông tin - Dạng bảng đơn giản không có icon */}
           <Box

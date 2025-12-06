@@ -100,9 +100,11 @@ export const useEkyc = () => {
     mutationFn: async (cardInfo: CardInfoResponse) => {
       // Map CardInfo sang UserProfile
       const profileData = mapCardInfoToProfile(cardInfo);
+      console.log("🔄 [confirmCardInfoMutation] Sending profile data to API...");
 
       // Gọi API update profile
       const response = await AuthServices.updateUserProfile(profileData);
+      console.log("✅ [confirmCardInfoMutation] API Response:", JSON.stringify(response, null, 2));
       return response;
     },
     onSuccess: async () => {
@@ -113,19 +115,24 @@ export const useEkyc = () => {
       queryClient.invalidateQueries({ queryKey: [QueryKey.AUTH.ME] });
       queryClient.invalidateQueries({ queryKey: [QueryKey.EKYC.CARD_INFO] });
 
-      // Hiển thị success và chuyển đến status
+      // Hiển thị success và chuyển đến bank-info để nhập thông tin ngân hàng
       resultStatus.showSuccess({
-        title: "Hoàn tất xác thực!",
-        message: "Thông tin của bạn đã được cập nhật thành công.",
-        subMessage: "Tài khoản đã được xác thực đầy đủ.",
+        title: "Xác nhận thành công!",
+        message: "Thông tin CCCD đã được cập nhật.",
+        subMessage: "Tiếp tục nhập thông tin ngân hàng để nhận bồi thường.",
         autoRedirectSeconds: 3,
-        autoRedirectRoute: "/settings/verify/status",
-        showHomeButton: true,
+        autoRedirectRoute: "/settings/verify/bank-info",
+        showHomeButton: false,
         lockNavigation: true,
       });
     },
     onError: (error: any) => {
       console.error("❌ Lỗi xác nhận thông tin CCCD:", error);
+      console.error("❌ Error details:", JSON.stringify({
+        status: error?.response?.status,
+        data: error?.response?.data,
+        message: error?.message,
+      }, null, 2));
       resultStatus.showError({
         title: "Cập nhật thất bại",
         message: error?.response?.data?.message || "Không thể cập nhật thông tin. Vui lòng thử lại.",

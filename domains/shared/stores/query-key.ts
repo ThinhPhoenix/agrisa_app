@@ -71,5 +71,9 @@ export const QueryKey = {
     GET_COUNT: "get-notification-count",
   },
 
+  SHARED: {
+    BANKS: "shared-banks",
+  },
+
   TEST: "test",
 };

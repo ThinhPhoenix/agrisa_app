@@ -15,24 +15,24 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useEkyc } from "@/domains/eKYC/hooks/use-ekyc";
 import {
-    Box,
-    Button,
-    ButtonText,
-    Center,
-    Heading,
-    HStack,
-    Image,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  Button,
+  ButtonText,
+  Center,
+  Heading,
+  HStack,
+  Image,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import {
-    AlertCircle,
-    CheckCircle2,
-    IdCard,
-    RefreshCw,
-    XCircle,
+  AlertCircle,
+  CheckCircle2,
+  IdCard,
+  RefreshCw,
+  XCircle,
 } from "lucide-react-native";
 import { useCallback, useEffect } from "react";
 import { BackHandler } from "react-native";

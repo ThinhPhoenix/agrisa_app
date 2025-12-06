@@ -3,7 +3,6 @@ import { AuthServices } from "@/domains/auth/service/auth.service";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
 import {
   CardInfoResponse,
   FaceScanPayload,

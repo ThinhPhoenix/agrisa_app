@@ -27,10 +27,7 @@ import {
   BadgeAlert,
   BadgeCheck,
   BadgeX,
-  Calendar,
   Edit,
-  IdCard,
-  Shield,
   User,
   XCircle,
 } from "lucide-react-native";

@@ -3,7 +3,6 @@ import { useAuthStore } from "@/domains/auth/stores/auth.store";
 import { useSubscribe } from "@/domains/noti/hooks/use-subscribe";
 import { useUnsubscribe } from "@/domains/noti/hooks/use-unsubscribe";
 import { useValidate } from "@/domains/noti/hooks/use-validate";
-import { useSettingsStore } from "@/domains/shared/stores/settingsStore";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import {
     Box,
@@ -36,13 +35,17 @@ export default function SettingsScreen() {
     const router = useRouter();
 
     const {
-      user,
-      userProfile,
-      refreshAuth,
-      enableBiometric,
-      disableBiometric,
-    } = useAuthStore();    // Notification hooks
-    const { data: validateData, isLoading: isValidating, refetch: refetchValidate } = useValidate();
+        user,
+        userProfile,
+        refreshAuth,
+        enableBiometric,
+        disableBiometric,
+    } = useAuthStore(); // Notification hooks
+    const {
+        data: validateData,
+        isLoading: isValidating,
+        refetch: refetchValidate,
+    } = useValidate();
     const { mutate: subscribe, isPending: isSubscribing } = useSubscribe();
     const { mutate: unsubscribe, isPending: isUnsubscribing } =
         useUnsubscribe();

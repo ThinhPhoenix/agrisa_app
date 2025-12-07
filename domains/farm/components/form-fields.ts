@@ -87,7 +87,7 @@ export const createFarmFormFields = ({
       label: "Ngày gieo trồng",
       placeholder: "Chọn ngày gieo trồng",
       type: "datepicker",
-      required: true,
+      required: false,
       dateFormat: "DD/MM/YYYY",
     },
     {
@@ -95,7 +95,7 @@ export const createFarmFormFields = ({
       label: "Ngày thu hoạch dự kiến",
       placeholder: "Chọn ngày thu hoạch",
       type: "datepicker",
-      required: true,
+      required: false,
       dateFormat: "DD/MM/YYYY",
     },
 

@@ -379,36 +379,45 @@ export default function PartnerDetailScreen() {
                   Cam kết bồi thường
                 </Text>
               </HStack>
-              <HStack justifyContent="space-around">
+              <VStack space="sm">
                 {partner.total_payouts && (
-                  <VStack alignItems="center">
-                    <Text fontSize="$xs" color={colors.muted_text}>
+                  <HStack justifyContent="space-between" alignItems="flex-start">
+                    <Text fontSize="$sm" color={colors.muted_text}>
                       Tổng đã chi trả
                     </Text>
                     <Text
-                      fontSize="$md"
+                      fontSize="$sm"
                       fontWeight="$bold"
                       color={colors.success}
+                      textAlign="right"
+                      flexShrink={1}
+                      ml="$2"
                     >
                       {partner.total_payouts}
                     </Text>
-                  </VStack>
+                  </HStack>
+                )}
+                {partner.total_payouts && partner.average_payout_time && (
+                  <Box height={1} bg={colors.frame_border} width="100%" />
                 )}
                 {partner.average_payout_time && (
-                  <VStack alignItems="center">
-                    <Text fontSize="$xs" color={colors.muted_text}>
+                  <HStack justifyContent="space-between" alignItems="flex-start">
+                    <Text fontSize="$sm" color={colors.muted_text}>
                       Thời gian chi trả TB
                     </Text>
                     <Text
-                      fontSize="$md"
+                      fontSize="$sm"
                       fontWeight="$bold"
                       color={colors.success}
+                      textAlign="right"
+                      flexShrink={1}
+                      ml="$2"
                     >
                       {partner.average_payout_time}
                     </Text>
-                  </VStack>
+                  </HStack>
                 )}
-              </HStack>
+              </VStack>
             </Box>
           )}
 

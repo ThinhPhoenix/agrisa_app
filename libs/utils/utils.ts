@@ -625,4 +625,70 @@ export const Utils = {
     };
     return typeMap[type] || "Thanh toán";
   },
+
+  // ============================================
+  // 🏷️ BADGE UTILITIES
+  // ============================================
+
+  /**
+   * 🏷️ Lấy config cho Badge component
+   * @param variant - Loại badge: 'success' | 'error' | 'warning' | 'info' | 'default'
+   * @param colors - Object chứa các màu từ useAgrisaColors
+   * @returns Object chứa backgroundColor và textColor
+   */
+  getBadgeConfig: (
+    variant: "success" | "error" | "warning" | "info" | "default",
+    colors: {
+      success: string;
+      successSoft: string;
+      error: string;
+      errorSoft: string;
+      warning: string;
+      warningSoft: string;
+      info: string;
+      infoSoft: string;
+      muted_text: string;
+      card_surface: string;
+    }
+  ): { backgroundColor: string; textColor: string } => {
+    const configs = {
+      success: { backgroundColor: colors.successSoft, textColor: colors.success },
+      error: { backgroundColor: colors.errorSoft, textColor: colors.error },
+      warning: { backgroundColor: colors.warningSoft, textColor: colors.warning },
+      info: { backgroundColor: colors.infoSoft, textColor: colors.info },
+      default: { backgroundColor: colors.card_surface, textColor: colors.muted_text },
+    };
+    return configs[variant] || configs.default;
+  },
+
+  /**
+   * 🏷️ Lấy variant cho badge dựa trên giá trị boolean
+   * @param isActive - Trạng thái active/verified
+   * @returns 'success' nếu true, 'error' nếu false
+   */
+  getBadgeVariantFromBoolean: (isActive: boolean): "success" | "error" => {
+    return isActive ? "success" : "error";
+  },
+
+  /**
+   * 🏷️ Lấy variant cho badge dựa trên trạng thái
+   * @param status - Trạng thái: 'active' | 'inactive' | 'pending' | 'verified' | 'unverified'
+   * @returns Variant tương ứng
+   */
+  getBadgeVariantFromStatus: (
+    status: string
+  ): "success" | "error" | "warning" | "info" | "default" => {
+    const statusMap: Record<string, "success" | "error" | "warning" | "info" | "default"> = {
+      active: "success",
+      verified: "success",
+      completed: "success",
+      inactive: "error",
+      unverified: "error",
+      failed: "error",
+      pending: "warning",
+      processing: "warning",
+      info: "info",
+    };
+    return statusMap[status.toLowerCase()] || "default";
+  },
 };

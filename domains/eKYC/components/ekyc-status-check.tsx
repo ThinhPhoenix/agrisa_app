@@ -100,17 +100,29 @@ export const EKYCStatusCheck: React.FC = () => {
   const { data, isLoading, isError } = geteKYCStatusQuery(user?.id || "");
 
   const ekycData = data?.data;
-  const userData = meData;
+  const userData = (meData as any)?.data?.data || (meData as any)?.data || meData;
 
-  console.log(userData);
+  console.log("📋 [eKYC] User data:", userData);
   
 
   // Kiểm tra đã hoàn thành định danh tài khoản (có đủ thông tin cơ bản)
-  const isAccountIdentified = !!(
-    userData?.data.full_name &&
-    userData?.data.phone_number &&
-    userData?.data.email
-  );
+  // Các field bắt buộc: full_name, date_of_birth, gender, primary_phone, current_address
+  const checkAccountIdentified = () => {
+    if (!userData) return false;
+    
+    const requiredFields = [
+      userData.full_name,
+      userData.date_of_birth,
+      userData.gender,
+      userData.primary_phone,
+      userData.current_address,
+    ];
+    
+    // Kiểm tra tất cả các field bắt buộc đều có giá trị
+    return requiredFields.every(field => field && field.toString().trim() !== "");
+  };
+  
+  const isAccountIdentified = checkAccountIdentified();
 
   // Tính tổng số bước đã hoàn thành (tối đa 3 bước)
   const calculateCompletedSteps = () => {
@@ -296,73 +308,58 @@ export const EKYCStatusCheck: React.FC = () => {
               <StepIcon
                 icon={IdCard}
                 isCompleted={ekycData?.is_ocr_done || false}
-                label="Quét thẻ CCCD"
+                label="Định danh danh tính"
               />
 
               <StepIcon
                 icon={ScanFace}
                 isCompleted={ekycData?.is_face_verified || false}
-                label="Xác thực khuôn mặt"
+                label="Sinh trắc học"
               />
             </HStack>
           </VStack>
         </Box>
 
-        {/* Nút làm lại xác thực - chỉ hiển thị khi cần */}
+        {/* Nút làm lại xác thực - thiết kế gọn gàng hơn */}
         {shouldShowResetButton && (
           <Box
+            backgroundColor={colors.card_surface}
             borderRadius="$2xl"
-            padding={20}
-            borderWidth={1.5}
-            borderColor="#f59e0b"
-            backgroundColor="#fffbeb"
+            padding={16}
+            borderWidth={1}
+            borderColor={colors.frame_border}
           >
-            <VStack space="md">
-              <HStack space="sm" alignItems="flex-start">
-                <Box
-                  backgroundColor="#fef3c7"
-                  borderRadius="$full"
-                  padding={8}
-                  marginTop={2}
-                >
-                  <RotateCcw size={20} color="#f59e0b" />
-                </Box>
-                <VStack space="xs" flex={1}>
-                  <Text fontSize="$md" fontWeight="$bold" color="#92400e">
-                    Làm lại toàn bộ xác thực
-                  </Text>
-                  <Text fontSize="$xs" color="#78350f" lineHeight={18}>
-                    Xóa toàn bộ dữ liệu đã thực hiện và bắt đầu lại quy trình từ đầu.
-                    Chỉ sử dụng khi cần chụp lại ảnh giấy tờ hoặc quét lại khuôn mặt.
-                  </Text>
-                </VStack>
-              </HStack>
+            <HStack space="md" alignItems="center" justifyContent="space-between">
+              <VStack space="xs" flex={1}>
+                <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                  Đặt lại xác thực
+                </Text>
+                <Text fontSize="$xs" color={colors.muted_text} numberOfLines={2}>
+                  Đặt lại dữ liệu và bắt đầu xác thực danh tính
+                </Text>
+              </VStack>
 
               <Button
-                size="lg"
-                variant="solid"
-                backgroundColor="#f59e0b"
+                size="sm"
+                variant="outline"
+                borderColor={colors.warning}
                 onPress={handleResetEkyc}
                 isDisabled={resetEkycMutation.isPending}
                 borderRadius="$xl"
-                pressStyle={{
-                  backgroundColor: "#d97706",
-                }}
+                px="$4"
               >
-                <HStack space="sm" alignItems="center">
+                <HStack space="xs" alignItems="center">
                   {resetEkycMutation.isPending ? (
-                    <Spinner size="small" color="#ffffff" />
+                    <Spinner size="small" color={colors.warning} />
                   ) : (
-                    <RotateCcw size={18} color="#ffffff" />
+                    <RotateCcw size={16} color={colors.warning} />
                   )}
-                  <ButtonText color="#ffffff" fontWeight="$bold" fontSize="$md">
-                    {resetEkycMutation.isPending
-                      ? "Đang xử lý..."
-                      : "Bắt đầu làm lại"}
+                  <ButtonText color={colors.warning} fontWeight="$semibold" fontSize="$xs">
+                    {resetEkycMutation.isPending ? "Đang xử lý..." : "Làm lại"}
                   </ButtonText>
                 </HStack>
               </Button>
-            </VStack>
+            </HStack>
           </Box>
         )}
       </VStack>

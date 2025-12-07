@@ -114,12 +114,12 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
   const EmptyState = () => (
     <Box flex={1} justifyContent="center" alignItems="center" py="$16" px="$4">
       <Box
-        bg={colors.primarySoft || colors.background}
+        bg={colors.success}
         p="$6"
         borderRadius="$full"
         mb="$4"
       >
-        <Inbox size={48} color={colors.muted_text} strokeWidth={1.5} />
+        <Inbox size={48} color={colors.primary_white_text} strokeWidth={1.5} />
       </Box>
       <Text
         fontSize="$lg"

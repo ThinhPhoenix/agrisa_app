@@ -307,7 +307,7 @@ export default function AboutScreen() {
                 fontWeight="$semibold"
                 color={colors.primary_text}
               >
-                Nông dân & Đối tác bảo hiểm
+                Nông dân
               </Text>
             </Box>
           </VStack>

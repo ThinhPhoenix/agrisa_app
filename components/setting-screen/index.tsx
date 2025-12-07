@@ -1,5 +1,8 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
+import { useSubscribe } from "@/domains/noti/hooks/use-subscribe";
+import { useUnsubscribe } from "@/domains/noti/hooks/use-unsubscribe";
+import { useValidate } from "@/domains/noti/hooks/use-validate";
 import { useSettingsStore } from "@/domains/shared/stores/settingsStore";
 import { secureStorage } from "@/domains/shared/utils/secureStorage";
 import {
@@ -12,21 +15,17 @@ import {
     Text,
     VStack,
 } from "@gluestack-ui/themed";
-import * as Linking from "expo-linking";
 import * as LocalAuthentication from "expo-local-authentication";
+import * as Notifications from "expo-notifications";
 import { useFocusEffect, useRouter } from "expo-router";
 import {
     Bell,
     ChevronRight,
-    CloudRain,
-    FileText,
     Fingerprint,
     Key,
     Lock,
     ScanFace,
-    Settings as SettingsIcon,
     Shield,
-    Sprout,
 } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, Platform } from "react-native";
@@ -35,7 +34,6 @@ import { BiometricPasswordModal } from "./BiometricPasswordModal";
 export default function SettingsScreen() {
     const { colors } = useAgrisaColors();
     const router = useRouter();
-    const { notifications, toggleNotification } = useSettingsStore();
 
     const {
       user,
@@ -43,12 +41,16 @@ export default function SettingsScreen() {
       refreshAuth,
       enableBiometric,
       disableBiometric,
-    } = useAuthStore();
+    } = useAuthStore();    // Notification hooks
+    const { data: validateData, isLoading: isValidating, refetch: refetchValidate } = useValidate();
+    const { mutate: subscribe, isPending: isSubscribing } = useSubscribe();
+    const { mutate: unsubscribe, isPending: isUnsubscribing } =
+        useUnsubscribe();
 
     const [biometricType, setBiometricType] = useState<string>("Face ID");
     const [hasBiometric, setHasBiometric] = useState(false);
     const [isBiometricEnabledForAccount, setIsBiometricEnabledForAccount] =
-      useState(false);
+        useState(false);
     const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     // ✅ State cho custom modal (Android)
@@ -58,124 +60,139 @@ export default function SettingsScreen() {
     // 🔄 REFRESH USER DATA KHI VÀO SCREEN
     // ============================================
     useFocusEffect(
-      useCallback(() => {
-        console.log("🔄 [Settings] Screen focused, refreshing user data...");
-        loadUserData();
-      }, [])
+        useCallback(() => {
+            console.log(
+                "🔄 [Settings] Screen focused, refreshing user data..."
+            );
+            loadUserData();
+        }, [])
     );
 
     const loadUserData = async () => {
-      try {
-        setIsLoadingUser(true);
-        console.log("📱 [Settings] Loading user data...");
+        try {
+            setIsLoadingUser(true);
+            console.log("📱 [Settings] Loading user data...");
 
-        // ✅ Refresh auth từ SecureStore
-        await refreshAuth();
+            // ✅ Refresh auth từ SecureStore
+            await refreshAuth();
 
-        // ✅ Lấy user mới nhất từ store
-        const currentUser = useAuthStore.getState().user;
-        console.log("👤 [Settings] Current user after refresh:", currentUser);
+            // ✅ Lấy user mới nhất từ store
+            const currentUser = useAuthStore.getState().user;
+            console.log(
+                "👤 [Settings] Current user after refresh:",
+                currentUser
+            );
 
-        if (currentUser) {
-          console.log("✅ [Settings] User found:", {
-            id: currentUser.id,
-            email: currentUser.email,
-            phone: currentUser.phone_number,
-          });
-        } else {
-          console.log("⚠️ [Settings] No user found after refresh");
+            if (currentUser) {
+                console.log("✅ [Settings] User found:", {
+                    id: currentUser.id,
+                    email: currentUser.email,
+                    phone: currentUser.phone_number,
+                });
+            } else {
+                console.log("⚠️ [Settings] No user found after refresh");
+            }
+        } catch (error) {
+            console.error("❌ [Settings] Error loading user data:", error);
+        } finally {
+            setIsLoadingUser(false);
         }
-      } catch (error) {
-        console.error("❌ [Settings] Error loading user data:", error);
-      } finally {
-        setIsLoadingUser(false);
-      }
     };
 
     // ============================================
     // 🔍 CHECK BIOMETRIC AVAILABILITY & STATUS
     // ============================================
     useEffect(() => {
-      checkBiometricAvailability();
+        checkBiometricAvailability();
     }, []);
 
     useEffect(() => {
-      if (user && !isLoadingUser) {
-        console.log("✅ [Settings] User available, checking biometric status");
-        checkBiometricStatus();
-      }
+        if (user && !isLoadingUser) {
+            console.log(
+                "✅ [Settings] User available, checking biometric status"
+            );
+            checkBiometricStatus();
+        }
     }, [user, isLoadingUser]);
 
     const checkBiometricAvailability = async () => {
-      try {
-        const compatible = await LocalAuthentication.hasHardwareAsync();
-        const enrolled = await LocalAuthentication.isEnrolledAsync();
-        setHasBiometric(compatible && enrolled);
+        try {
+            const compatible = await LocalAuthentication.hasHardwareAsync();
+            const enrolled = await LocalAuthentication.isEnrolledAsync();
+            setHasBiometric(compatible && enrolled);
 
-        console.log("📱 [Settings] Biometric hardware check:", {
-          compatible,
-          enrolled,
-          available: compatible && enrolled,
-        });
+            console.log("📱 [Settings] Biometric hardware check:", {
+                compatible,
+                enrolled,
+                available: compatible && enrolled,
+            });
 
-        if (compatible) {
-          const types =
-            await LocalAuthentication.supportedAuthenticationTypesAsync();
-          if (
-            types.includes(
-              LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
-            )
-          ) {
-            setBiometricType("Face ID");
-          } else if (
-            types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)
-          ) {
-            setBiometricType("Vân tay");
-          } else {
-            setBiometricType("Sinh trắc học");
-          }
+            if (compatible) {
+                const types =
+                    await LocalAuthentication.supportedAuthenticationTypesAsync();
+                if (
+                    types.includes(
+                        LocalAuthentication.AuthenticationType
+                            .FACIAL_RECOGNITION
+                    )
+                ) {
+                    setBiometricType("Face ID");
+                } else if (
+                    types.includes(
+                        LocalAuthentication.AuthenticationType.FINGERPRINT
+                    )
+                ) {
+                    setBiometricType("Vân tay");
+                } else {
+                    setBiometricType("Sinh trắc học");
+                }
+            }
+        } catch (error) {
+            console.error("❌ [Settings] Lỗi check biometric:", error);
         }
-      } catch (error) {
-        console.error("❌ [Settings] Lỗi check biometric:", error);
-      }
     };
 
     const checkBiometricStatus = async () => {
-      try {
-        if (!user) {
-          console.log("⚠️ [Settings] No user found in checkBiometricStatus");
-          return;
+        try {
+            if (!user) {
+                console.log(
+                    "⚠️ [Settings] No user found in checkBiometricStatus"
+                );
+                return;
+            }
+
+            const identifier = user.email || user.phone_number;
+            if (!identifier) {
+                console.log("⚠️ [Settings] No identifier found");
+                return;
+            }
+
+            // ✅ Lấy device ID để debug
+            const deviceId = await secureStorage.getDeviceId();
+            console.log("📱 [Settings] Device ID:", deviceId);
+            console.log(
+                "👤 [Settings] Checking biometric for identifier:",
+                identifier
+            );
+
+            const enabled = await secureStorage.isBiometricEnabled(identifier);
+            setIsBiometricEnabledForAccount(enabled);
+
+            console.log(
+                `✅ [Settings] Biometric status for ${identifier}:`,
+                enabled
+            );
+
+            // ✅ Kiểm tra password có tồn tại không
+            const hasPassword =
+                await secureStorage.getBiometricPassword(identifier);
+            console.log(`🔑 [Settings] Has saved password:`, !!hasPassword);
+        } catch (error) {
+            console.error(
+                "❌ [Settings] Error checking biometric status:",
+                error
+            );
         }
-
-        const identifier = user.email || user.phone_number;
-        if (!identifier) {
-          console.log("⚠️ [Settings] No identifier found");
-          return;
-        }
-
-        // ✅ Lấy device ID để debug
-        const deviceId = await secureStorage.getDeviceId();
-        console.log("📱 [Settings] Device ID:", deviceId);
-        console.log(
-          "👤 [Settings] Checking biometric for identifier:",
-          identifier
-        );
-
-        const enabled = await secureStorage.isBiometricEnabled(identifier);
-        setIsBiometricEnabledForAccount(enabled);
-
-        console.log(
-          `✅ [Settings] Biometric status for ${identifier}:`,
-          enabled
-        );
-
-        // ✅ Kiểm tra password có tồn tại không
-        const hasPassword =
-          await secureStorage.getBiometricPassword(identifier);
-        console.log(`🔑 [Settings] Has saved password:`, !!hasPassword);
-      } catch (error) {
-        console.error("❌ [Settings] Error checking biometric status:", error);
-      }
     };
 
     // ============================================
@@ -186,59 +203,64 @@ export default function SettingsScreen() {
      * ✅ Xử lý enable biometric sau khi nhập password
      */
     const handleEnableBiometricWithPassword = async (password?: string) => {
-      console.log("🔑 [Settings] Password received, length:", password?.length);
-
-      if (!password || password.trim().length === 0) {
-        console.log("⚠️ [Settings] Empty password");
-        Alert.alert("Lỗi", "Vui lòng nhập mật khẩu");
-        return;
-      }
-
-      try {
-        console.log("👆 [Settings] Requesting biometric authentication...");
-
-        // Xác thực biometric trước
-        const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: `Đăng nhập bằng ${biometricType}`,
-          fallbackLabel: "Hủy",
-        });
-
-        console.log("👆 [Settings] Biometric auth result:", result.success);
-
-        if (result.success) {
-          console.log("✅ [Settings] Calling enableBiometric...");
-
-          // Enable biometric trong auth store
-          await enableBiometric(password);
-
-          // Cập nhật UI state
-          setIsBiometricEnabledForAccount(true);
-
-          const identifier = user!.email || user!.phone_number;
-          const verified = await secureStorage.isBiometricEnabled(identifier!);
-          console.log(
-            "✅ [Settings] Biometric enabled successfully, verified:",
-            verified
-          );
-
-          Alert.alert("Thành công", `Đã bật xác thực ${biometricType}`);
-        } else {
-          console.log("❌ [Settings] Biometric authentication failed");
-          Alert.alert("Thất bại", "Xác thực không thành công");
-        }
-      } catch (error: any) {
-        console.error("❌ [Settings] Error enabling biometric:", error);
-        console.error("❌ [Settings] Error details:", {
-          message: error.message,
-          code: error.code,
-          stack: error.stack,
-        });
-
-        Alert.alert(
-          "Lỗi",
-          error.message || "Không thể kích hoạt " + biometricType
+        console.log(
+            "🔑 [Settings] Password received, length:",
+            password?.length
         );
-      }
+
+        if (!password || password.trim().length === 0) {
+            console.log("⚠️ [Settings] Empty password");
+            Alert.alert("Lỗi", "Vui lòng nhập mật khẩu");
+            return;
+        }
+
+        try {
+            console.log("👆 [Settings] Requesting biometric authentication...");
+
+            // Xác thực biometric trước
+            const result = await LocalAuthentication.authenticateAsync({
+                promptMessage: `Đăng nhập bằng ${biometricType}`,
+                fallbackLabel: "Hủy",
+            });
+
+            console.log("👆 [Settings] Biometric auth result:", result.success);
+
+            if (result.success) {
+                console.log("✅ [Settings] Calling enableBiometric...");
+
+                // Enable biometric trong auth store
+                await enableBiometric(password);
+
+                // Cập nhật UI state
+                setIsBiometricEnabledForAccount(true);
+
+                const identifier = user!.email || user!.phone_number;
+                const verified = await secureStorage.isBiometricEnabled(
+                    identifier!
+                );
+                console.log(
+                    "✅ [Settings] Biometric enabled successfully, verified:",
+                    verified
+                );
+
+                Alert.alert("Thành công", `Đã bật xác thực ${biometricType}`);
+            } else {
+                console.log("❌ [Settings] Biometric authentication failed");
+                Alert.alert("Thất bại", "Xác thực không thành công");
+            }
+        } catch (error: any) {
+            console.error("❌ [Settings] Error enabling biometric:", error);
+            console.error("❌ [Settings] Error details:", {
+                message: error.message,
+                code: error.code,
+                stack: error.stack,
+            });
+
+            Alert.alert(
+                "Lỗi",
+                error.message || "Không thể kích hoạt " + biometricType
+            );
+        }
     };
 
     const handleToggleBiometric = async () => {
@@ -372,9 +394,7 @@ export default function SettingsScreen() {
                 ]
             );
         }
-  };
-  
-  
+    };
 
     const handleChangePassword = () => {
         router.push("/settings/change-password");
@@ -385,26 +405,68 @@ export default function SettingsScreen() {
     };
 
     const handleToggleNotifications = async () => {
-        const newValue = !notifications.enabled;
+        const currentValue = (validateData as any)?.value ?? false;
+        const newValue = !currentValue;
 
-        // Toggle the notification setting
-        toggleNotification("enabled");
+        if (newValue) {
+            // Bật thông báo - lấy expo token và subscribe
+            try {
+                const { status: existingStatus } =
+                    await Notifications.getPermissionsAsync();
+                let finalStatus = existingStatus;
 
-        // If turning on notifications, open browser with user_id
-        if (newValue && user?.id) {
-            const url = `https://agrisa-noti.phrimp.io.vn?user_id=${user.id}`;
-          try {
-                console.log(url);
-            
-                const canOpen = await Linking.canOpenURL(url);
-                if (canOpen) {
-                    await Linking.openURL(url);
-                } else {
-                    Alert.alert("Lỗi", "Không thể mở trình duyệt");
+                if (existingStatus !== "granted") {
+                    const { status } =
+                        await Notifications.requestPermissionsAsync();
+                    finalStatus = status;
                 }
+
+                if (finalStatus !== "granted") {
+                    Alert.alert(
+                        "Lỗi",
+                        "Bạn cần cấp quyền thông báo để sử dụng tính năng này"
+                    );
+                    return;
+                }
+
+                // Lấy expo push token
+                const token = (
+                    await Notifications.getExpoPushTokenAsync({
+                        projectId: "469aa2db-57cb-4365-9663-2b2b8dc2eaf8",
+                    })
+                ).data;
+
+                // Subscribe với backend
+                subscribe(token, {
+                    onSuccess: () => {
+                        refetchValidate();
+                    },
+                    onError: (error: any) => {
+                        console.error("Subscribe error:", error);
+                    },
+                });
             } catch (error) {
-                console.error("Error opening URL:", error);
-                Alert.alert("Lỗi", "Không thể mở trình duyệt");
+                console.error("Error getting push token:", error);
+            }
+        } else {
+            // Tắt thông báo - unsubscribe
+            try {
+                const token = (
+                    await Notifications.getExpoPushTokenAsync({
+                        projectId: "469aa2db-57cb-4365-9663-2b2b8dc2eaf8",
+                    })
+                ).data;
+
+                unsubscribe(token, {
+                    onSuccess: () => {
+                        refetchValidate();
+                    },
+                    onError: (error: any) => {
+                        console.error("Unsubscribe error:", error);
+                    },
+                });
+            } catch (error) {
+                console.error("Error getting push token:", error);
             }
         }
     };
@@ -415,12 +477,16 @@ export default function SettingsScreen() {
     const renderSectionHeader = (title: string, icon: any) => {
         const IconComponent = icon;
         return (
-          <HStack space="sm" alignItems="center" mb="$3" mt="$2">
-            <IconComponent size={20} color={colors.primary_text} />
-            <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text}>
-              {title}
-            </Text>
-          </HStack>
+            <HStack space="sm" alignItems="center" mb="$3" mt="$2">
+                <IconComponent size={20} color={colors.primary_text} />
+                <Text
+                    fontSize="$md"
+                    fontWeight="$bold"
+                    color={colors.primary_text}
+                >
+                    {title}
+                </Text>
+            </HStack>
         );
     };
 
@@ -433,42 +499,45 @@ export default function SettingsScreen() {
     ) => {
         const IconComponent = icon;
         return (
-          <Pressable
-            onPress={disabled ? undefined : onToggle}
-            disabled={disabled}
-          >
-            <HStack
-              p="$4"
-              bg={colors.card_surface}
-              borderRadius="$lg"
-              justifyContent="space-between"
-              alignItems="center"
-              mb="$2"
-              opacity={disabled ? 0.5 : 1}
+            <Pressable
+                onPress={disabled ? undefined : onToggle}
+                disabled={disabled}
             >
-              <HStack space="md" alignItems="center" flex={1}>
-                <Box bg={colors.card_surface} p="$2" borderRadius="$md">
-                  <IconComponent size={20} color={colors.secondary_text} />
-                </Box>
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$medium"
-                  color={colors.primary_text}
-                  flex={1}
+                <HStack
+                    p="$4"
+                    bg={colors.card_surface}
+                    borderRadius="$lg"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    mb="$2"
+                    opacity={disabled ? 0.5 : 1}
                 >
-                  {label}
-                </Text>
-              </HStack>
-              <Box>
-                <Switch
-                  value={value}
-                  onValueChange={onToggle}
-                  size="sm"
-                  disabled={disabled}
-                />
-              </Box>
-            </HStack>
-          </Pressable>
+                    <HStack space="md" alignItems="center" flex={1}>
+                        <Box bg={colors.card_surface} p="$2" borderRadius="$md">
+                            <IconComponent
+                                size={20}
+                                color={colors.secondary_text}
+                            />
+                        </Box>
+                        <Text
+                            fontSize="$sm"
+                            fontWeight="$medium"
+                            color={colors.primary_text}
+                            flex={1}
+                        >
+                            {label}
+                        </Text>
+                    </HStack>
+                    <Box>
+                        <Switch
+                            value={value}
+                            onValueChange={onToggle}
+                            size="sm"
+                            disabled={disabled}
+                        />
+                    </Box>
+                </HStack>
+            </Pressable>
         );
     };
 
@@ -490,7 +559,10 @@ export default function SettingsScreen() {
                 >
                     <HStack space="md" alignItems="center" flex={1}>
                         <Box bg={colors.card_surface} p="$2" borderRadius="$md">
-                            <IconComponent size={20} color={colors.primary_text} />
+                            <IconComponent
+                                size={20}
+                                color={colors.primary_text}
+                            />
                         </Box>
                         <Text
                             fontSize="$sm"
@@ -581,12 +653,11 @@ export default function SettingsScreen() {
                             {/* Nhận thông báo */}
                             {renderSwitchItem(
                                 "Nhận thông báo từ Agrisa",
-                                notifications.enabled,
+                                (validateData as any)?.value ?? false,
                                 handleToggleNotifications,
-                                Bell
+                                Bell,
+                                isSubscribing || isUnsubscribing || isValidating
                             )}
-
-                            
                         </VStack>
                     </Box>
                 </VStack>

@@ -1,122 +1,125 @@
 {
-  "expo": {
-    "name": "Agrisa",
-    "slug": "agrisa",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/agrisa.png",
-    "scheme": "agrisa",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "platforms": ["ios", "android"],
-    "ios": {
-      "supportsTablet": true,
-      
-      "infoPlist": {
-        "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
-        "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ",
-        "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng"
-
-      },
-      "bundleIdentifier": "com.agrisa.Agrisa"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/agrisa.png",
-      },
-      "edgeToEdgeEnabled": true,
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT",
-        "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
-      ],
-      "package": "com.agrisa.Agrisa",
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "agrisa",
-              "host": "payment"
+    "expo": {
+        "name": "Agrisa",
+        "slug": "agrisa",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/agrisa.png",
+        "scheme": "agrisa",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "splash": {
+            "image": "./assets/images/Logo/Agrisa_Logo.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#fbe9a8"
+        },
+        "platforms": ["ios", "android"],
+        "ios": {
+            "supportsTablet": true,
+            "infoPlist": {
+                "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
+                "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ",
+                "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng"
+            },
+            "bundleIdentifier": "com.agrisa.Agrisa"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/agrisa.png",
+                "backgroundColor": "#ffffff"
+            },
+            "package": "com.agrisa.Agrisa",
+            "permissions": [
+                "android.permission.CAMERA",
+                "android.permission.RECORD_AUDIO",
+                "android.permission.ACCESS_FINE_LOCATION",
+                "android.permission.ACCESS_COARSE_LOCATION",
+                "android.permission.USE_BIOMETRIC",
+                "android.permission.USE_FINGERPRINT",
+                "android.permission.INTERNET",
+                "android.permission.ACCESS_NETWORK_STATE"
+            ],
+            "intentFilters": [
+                {
+                    "action": "VIEW",
+                    "autoVerify": true,
+                    "data": [
+                        {
+                            "scheme": "agrisa",
+                            "host": "payment"
+                        }
+                    ],
+                    "category": ["BROWSABLE", "DEFAULT"]
+                }
+            ]
+        },
+        "web": {
+            "bundler": "metro",
+            "output": "static",
+            "favicon": "./assets/images/Logo/Agrisa_Logo.png"
+        },
+        "plugins": [
+            "expo-router",
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/Logo/Agrisa_Logo.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#fbe9a8"
+                }
+            ],
+            [
+                "expo-build-properties",
+                {
+                    "android": {
+                        "minSdkVersion": 26,
+                        "compileSdkVersion": 35,
+                        "targetSdkVersion": 34,
+                        "kotlinVersion": "2.0.20",
+                        "enableProguardInReleaseBuilds": false,
+                        "enableHermes": true,
+                        "usesCleartextTraffic": true,
+                        "enableMinifyInReleaseBuilds": false
+                    },
+                    "ios": {
+                        "deploymentTarget": "16.0"
+                    }
+                }
+            ],
+            [
+                "react-native-vision-camera",
+                {
+                    "cameraPermissionText": "Agrisa cần quyền truy cập camera"
+                }
+            ],
+            "expo-font",
+            "expo-web-browser",
+            [
+                "expo-local-authentication",
+                {
+                    "faceIDPermission": "Cho phép Agrisa sử dụng Face ID"
+                }
+            ],
+            [
+                "expo-location",
+                {
+                    "locationAlwaysAndWhenInUsePermission": "Agrisa cần quyền truy cập vị trí để xác định tọa độ"
+                }
+            ]
+        ],
+        "experiments": {
+            "typedRoutes": false
+        },
+        "extra": {
+            "router": {
+                "origin": false
+            },
+            "eas": {
+                "projectId": "469aa2db-57cb-4365-9663-2b2b8dc2eaf8"
             }
-          ],
-          "category": ["BROWSABLE", "DEFAULT"]
-        }
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/Logo/Agrisa_Logo.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/Logo/Agrisa_Logo.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#fbe9a8"
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "minSdkVersion": 26,
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 34,
-            "kotlinVersion": "2.0.20",
-            "enableProguardInReleaseBuilds": false,
-            "enableHermes": true,
-            "usesCleartextTraffic": true
-          },
-          "ios": {
-            "deploymentTarget": "16.0"
-          }
-        }
-      ],
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "Agrisa cần quyền truy cập camera"
-        }
-      ],
-      "expo-font",
-      "expo-web-browser",
-      [
-        "expo-local-authentication",
-        {
-          "faceIDPermission": "Cho phép Agrisa sử dụng Face ID"
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Agrisa cần quyền truy cập vị trí để xác định tọa độ"
-        }
-      ]
-    ],
-    
-    "experiments": {
-      "typedRoutes": false
-    },
-    "extra": {
-      "apiUrl": "process.env.EXPO_PUBLIC_API_URL",
-      "geminiApiKey": "process.env.EXPO_PUBLIC_GEMINI_KEY",
-      "openMapVnKey": "process.env.EXPO_PUBLIC_OPENMAPVN_KEY",
-      "router": {},
-      "eas": {
-        "projectId": "947c952c-e2b2-4317-9d0c-cf656fbc0287"
-      }
-    },
-    "owner": "agrisa-platform"
-  }
+        },
+        "owner": "thinhphoenix",
+        "projectId": "469aa2db-57cb-4365-9663-2b2b8dc2eaf8"
+    }
 }

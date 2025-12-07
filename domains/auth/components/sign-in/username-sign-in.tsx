@@ -148,7 +148,7 @@ const UsernameSignInComponent = () => {
           // Nếu tồn tại, lưu vào SecureStore và chuyển trang
           await secureStorage.setIdentifier(finalIdentifier);
           console.log("✅ [Username Sign-In] Saved to SecureStore");
-          router.push("/auth/sign-in");
+          router.replace("/auth/sign-in");
         },
         onError: () => {
           console.log("❌ [Username Sign-In] Identifier not found");

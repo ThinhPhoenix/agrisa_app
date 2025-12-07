@@ -208,7 +208,7 @@ export default function ProfileScreen() {
 
     if (ekycStatus.is_ocr_done && !ekycStatus.is_face_verified) {
       return {
-        text: "Tiếp tục xác thực khuôn mặt",
+        text: "Tiếp tục xác thực",
         route: "/settings/verify/face-scan",
         disabled: false,
         icon: BadgeAlert,
@@ -227,6 +227,15 @@ export default function ProfileScreen() {
   // 🔧 ACTIONS
   // ============================================
 
+    const capitalizeName = (name: string | null | undefined) => {
+      if (!name) return null;
+      return name
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+  };
+  
   const handleLogout = () => {
     try {
       logout();
@@ -348,9 +357,9 @@ export default function ProfileScreen() {
                     color={colors.primary_text}
                   >
                     {/* ✅ ƯU TIÊN: display_name/full_name từ UserProfile */}
-                    {userProfile?.display_name ||
-                      userProfile?.full_name ||
-                      user?.email?.split("@")[0] ||
+                    {capitalizeName(userProfile?.display_name) ||
+                      capitalizeName(userProfile?.full_name) ||
+                      capitalizeName(user?.email?.split("@")[0]) ||
                       "Người dùng"}
                   </Text>                  
                 </HStack>

@@ -12,21 +12,26 @@ import { useMeForm } from "../../hooks/use-me-form";
  * - Tất cả các field đều bắt buộc để xác thực danh tính
  * - Validation với Zod schema
  * - Auto-load dữ liệu từ profile hiện tại
- * - Hỗ trợ eKYC workflow redirect
  * - Sử dụng CustomForm với tối ưu hóa cho người Việt
  */
-interface MeComponentUIProps {
-  isFromEkyc?: boolean;
-}
-
-const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => {
+const MeComponentUI: React.FC = () => {
   const { colors } = useAgrisaColors();
   const { userProfile } = useAuthStore();
   const { data: profileData, refetch } = useAuthMe();
   const formRef = useRef<any>(null);
 
   // Form data state từ useMeForm
-  const { form, onSubmit: handleFormSubmit, isSubmitting, loadProfileData } = useMeForm({ isFromEkyc });
+  const {
+    form,
+    onSubmit: handleFormSubmit,
+    isSubmitting,
+    loadProfileData,
+    isDirty,
+    dirtyFields,
+  } = useMeForm();
+
+  // Watch form values để detect changes
+  const formValues = form.watch();
 
   // State để track đã load data chưa
   const [dataLoaded, setDataLoaded] = React.useState(false);
@@ -35,7 +40,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
   useEffect(() => {
     const loadData = async () => {
       const data = profileData || userProfile;
-      
+
       if (data) {
         loadProfileData(data);
         // Auto-fill vào CustomForm
@@ -58,6 +63,10 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
             ward_code: data.ward_code || "",
             ward_name: data.ward_name || "",
             postal_code: data.postal_code || "",
+            // Thông tin ngân hàng
+            account_number: data.account_number || "",
+            account_name: data.account_name || "",
+            bank_code: data.bank_code || "",
           });
         }
         setDataLoaded(true);
@@ -85,6 +94,10 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
               ward_code: fetchedData.ward_code || "",
               ward_name: fetchedData.ward_name || "",
               postal_code: fetchedData.postal_code || "",
+              // Thông tin ngân hàng
+              account_number: fetchedData.account_number || "",
+              account_name: fetchedData.account_name || "",
+              bank_code: fetchedData.bank_code || "",
             });
           }
           setDataLoaded(true);
@@ -131,7 +144,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Họ và tên",
       type: "input",
       placeholder: "Nguyễn Văn A",
-      required: true,
+      required: false,
       helperText: "Họ tên đầy đủ theo CMND/CCCD",
     },
     {
@@ -139,7 +152,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Tên hiển thị",
       type: "input",
       placeholder: "Tên gọi của bạn",
-      required: true,
+      required: false,
       helperText: "Tên bạn muốn hiển thị trong ứng dụng",
     },
     {
@@ -147,7 +160,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Ngày sinh",
       type: "datepicker",
       placeholder: "Chọn ngày sinh",
-      required: true,
+      required: false,
       dateFormat: "DD/MM/YYYY",
       maxDate: new Date(),
       helperText: "Định dạng: Ngày/Tháng/Năm",
@@ -157,7 +170,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Giới tính",
       type: "combobox",
       placeholder: "Chọn giới tính",
-      required: true,
+      required: false,
       options: [
         { label: "Nam", value: "M" },
         { label: "Nữ", value: "F" },
@@ -169,7 +182,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Quốc tịch",
       type: "input",
       placeholder: "Việt Nam",
-      required: true,
+      required: false,
     },
 
     // ============================================
@@ -180,7 +193,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Số điện thoại chính",
       type: "input",
       placeholder: "0987654321 hoặc +84987654321",
-      required: true,
+      required: false,
       helperText: "Số điện thoại để xác thực và nhận thông báo",
     },
     {
@@ -209,7 +222,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Địa chỉ thường trú",
       type: "input",
       placeholder: "Số nhà, tên đường, thôn/xóm...",
-      required: true,
+      required: false,
       helperText: "Địa chỉ theo CMND/CCCD",
     },
     {
@@ -217,7 +230,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Địa chỉ hiện tại",
       type: "input",
       placeholder: "Số nhà, tên đường, thôn/xóm...",
-      required: true,
+      required: false,
       helperText: "Nơi bạn đang sinh sống",
     },
     {
@@ -225,7 +238,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Mã tỉnh/thành",
       type: "input",
       placeholder: "VD: 01, 79...",
-      required: true,
+      required: false,
       helperText: "Mã hành chính tỉnh/thành phố",
     },
     {
@@ -233,14 +246,14 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Tên tỉnh/thành",
       type: "input",
       placeholder: "VD: Hà Nội, TP Hồ Chí Minh...",
-      required: true,
+      required: false,
     },
     {
       name: "district_code",
       label: "Mã quận/huyện",
       type: "input",
       placeholder: "VD: 001, 002...",
-      required: true,
+      required: false,
       helperText: "Mã hành chính quận/huyện",
     },
     {
@@ -248,14 +261,14 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Tên quận/huyện",
       type: "input",
       placeholder: "VD: Quận 1, Huyện Củ Chi...",
-      required: true,
+      required: false,
     },
     {
       name: "ward_code",
       label: "Mã phường/xã",
       type: "input",
       placeholder: "VD: 00001, 00002...",
-      required: true,
+      required: false,
       helperText: "Mã hành chính phường/xã",
     },
     {
@@ -263,7 +276,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: "Tên phường/xã",
       type: "input",
       placeholder: "VD: Phường Bến Nghé, Xã Tân Thông Hội...",
-      required: true,
+      required: false,
     },
     {
       name: "postal_code",
@@ -274,6 +287,34 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
     },
 
     // ============================================
+    // THÔNG TIN NGÂN HÀNG
+    // ============================================
+    {
+      name: "account_number",
+      label: "Số tài khoản ngân hàng",
+      type: "input",
+      placeholder: "VD: 28083101117776",
+      required: false,
+      helperText: "Số tài khoản để nhận bồi thường bảo hiểm",
+    },
+    {
+      name: "account_name",
+      label: "Tên chủ tài khoản",
+      type: "input",
+      placeholder: "VD: NGUYEN VAN A",
+      required: false,
+      helperText: "Tên chủ tài khoản (viết hoa, không dấu)",
+    },
+    {
+      name: "bank_code",
+      label: "Mã ngân hàng",
+      type: "input",
+      placeholder: "VD: 970422 (MB Bank)",
+      required: false,
+      helperText: "Mã NAPAS của ngân hàng (6 số)",
+    },
+
+    // ============================================
     // SUBMIT BUTTONS
     // ============================================
     {
@@ -281,7 +322,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       label: isSubmitting ? "Đang cập nhật..." : "Cập nhật thông tin",
       type: "button",
       isSubmit: true,
-      disabled: isSubmitting,
+      disabled: isSubmitting || !isDirty, // Chỉ enable khi có thay đổi
       loading: isSubmitting,
     },
     {
@@ -295,6 +336,9 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
 
   // Handle submit với sync từ CustomForm sang react-hook-form
   const onSubmit = async (values: Record<string, any>) => {
+    console.log("📝 Form values từ CustomForm:", values);
+    console.log("🔍 Dirty fields:", dirtyFields);
+
     // Format phone numbers
     if (values.primary_phone) {
       values.primary_phone = formatPhoneNumber(values.primary_phone);
@@ -303,9 +347,12 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
       values.alternate_phone = formatPhoneNumber(values.alternate_phone);
     }
 
-    // Sync values to react-hook-form
+    // Sync values to react-hook-form với dirty marking
     Object.keys(values).forEach((key) => {
-      form.setValue(key as any, values[key]);
+      form.setValue(key as any, values[key], {
+        shouldDirty: true, // Đánh dấu là dirty
+        shouldValidate: true, // Validate field
+      });
     });
 
     // Call original submit
@@ -319,12 +366,16 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
     display_name: data?.display_name || form.getValues("display_name") || "",
     date_of_birth: data?.date_of_birth || form.getValues("date_of_birth") || "",
     gender: data?.gender || form.getValues("gender") || "",
-    nationality: data?.nationality || form.getValues("nationality") || "Việt Nam",
+    nationality:
+      data?.nationality || form.getValues("nationality") || "Việt Nam",
     primary_phone: data?.primary_phone || form.getValues("primary_phone") || "",
-    alternate_phone: data?.alternate_phone || form.getValues("alternate_phone") || "",
+    alternate_phone:
+      data?.alternate_phone || form.getValues("alternate_phone") || "",
     email: data?.email || form.getValues("email") || "",
-    permanent_address: data?.permanent_address || form.getValues("permanent_address") || "",
-    current_address: data?.current_address || form.getValues("current_address") || "",
+    permanent_address:
+      data?.permanent_address || form.getValues("permanent_address") || "",
+    current_address:
+      data?.current_address || form.getValues("current_address") || "",
     province_code: data?.province_code || form.getValues("province_code") || "",
     province_name: data?.province_name || form.getValues("province_name") || "",
     district_code: data?.district_code || form.getValues("district_code") || "",
@@ -332,6 +383,11 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
     ward_code: data?.ward_code || form.getValues("ward_code") || "",
     ward_name: data?.ward_name || form.getValues("ward_name") || "",
     postal_code: data?.postal_code || form.getValues("postal_code") || "",
+    // Thông tin ngân hàng
+    account_number:
+      data?.account_number || form.getValues("account_number") || "",
+    account_name: data?.account_name || form.getValues("account_name") || "",
+    bank_code: data?.bank_code || form.getValues("bank_code") || "",
   };
 
   return (
@@ -343,9 +399,7 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
             Thông tin cá nhân
           </Text>
           <Text fontSize="$sm" color={colors.secondary_text} mt="$1">
-            {isFromEkyc 
-              ? "Vui lòng điền đầy đủ thông tin để xác thực danh tính"
-              : "Cập nhật thông tin cá nhân của bạn"}
+            Cập nhật thông tin cá nhân của bạn
           </Text>
         </Box>
 
@@ -356,8 +410,8 @@ const MeComponentUI: React.FC<MeComponentUIProps> = ({ isFromEkyc = false }) => 
           initialValues={initialValues}
           onSubmit={onSubmit}
           isSubmitting={isSubmitting}
-          formStyle={{ 
-            padding: 16, 
+          formStyle={{
+            padding: 16,
             backgroundColor: colors.card_surface,
             borderRadius: 16,
           }}

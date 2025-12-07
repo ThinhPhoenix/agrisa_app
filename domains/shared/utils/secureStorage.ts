@@ -14,6 +14,7 @@ export const STORAGE_KEYS = {
   DEVICE_ID: "agrisa_device_id",
   BIOMETRIC_PREFIX: "agrisa_biometric",
   USER_PROFILE: "agrisa_user_profile",
+  FULL_NAME: "agrisa_full_name",
 } as const;
 
 // ============================================
@@ -579,6 +580,48 @@ export const secureStorage = {
     } catch (error) {
       console.error("❌ [SecureStorage] Error getting user profile:", error);
       return null;
+    }
+  },
+
+  // ============================================
+  // 👤 FULL NAME (để hiển thị ở màn hình đăng nhập)
+  // ============================================
+
+  /**
+   * Lưu full name từ profile để hiển thị lại khi mở app
+   */
+  setFullName: async (fullName: string): Promise<void> => {
+    try {
+      await SecureStore.setItemAsync(STORAGE_KEYS.FULL_NAME, fullName);
+      console.log(`✅ [SecureStorage] Full name saved: ${fullName}`);
+    } catch (error) {
+      console.error("❌ [SecureStorage] Error saving full name:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy full name đã lưu
+   */
+  getFullName: async (): Promise<string | null> => {
+    try {
+      const fullName = await SecureStore.getItemAsync(STORAGE_KEYS.FULL_NAME);
+      return fullName;
+    } catch (error) {
+      console.error("❌ [SecureStorage] Error getting full name:", error);
+      return null;
+    }
+  },
+
+  /**
+   * Xóa full name đã lưu
+   */
+  clearFullName: async (): Promise<void> => {
+    try {
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.FULL_NAME);
+      console.log("✅ [SecureStorage] Full name cleared");
+    } catch (error) {
+      console.error("❌ [SecureStorage] Error clearing full name:", error);
     }
   },
 };

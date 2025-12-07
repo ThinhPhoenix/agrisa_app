@@ -15,11 +15,23 @@ export const usePolicy = () => {
     });
   };
 
-  const getDetailBasePolicy = (base_policy_id: string) => {
+  const getDetailBasePolicy = (
+    base_policy_id: string,
+    options?: { enabled?: boolean }
+  ) => {
     return useQuery({
       queryKey: [QueryKey.POLICY.DETAIL, base_policy_id],
       queryFn: () => policyServices.get.detail_policy(base_policy_id),
-      enabled: !!base_policy_id,
+      enabled:
+        options?.enabled !== undefined ? options.enabled : !!base_policy_id,
+    });
+  };
+
+  const getUnderwritingPolicy = (policy_id: string) => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.UNDERWRITING, policy_id],
+      queryFn: () => policyServices.get.getUnderwritingPolicy(policy_id),
+      enabled: !!policy_id,
     });
   };
 
@@ -28,13 +40,16 @@ export const usePolicy = () => {
       queryKey: [QueryKey.POLICY.REGISTERED_POLICIES],
       queryFn: () => policyServices.get.get_registered_policies(),
     });
-  }
+  };
 
-  const getRegisteredPolicyDetail = (policy_id: string) => {
+  const getRegisteredPolicyDetail = (
+    policy_id: string,
+    options?: { enabled?: boolean }
+  ) => {
     return useQuery({
       queryKey: [QueryKey.POLICY.REGISTERED_POLICY_DETAIL, policy_id],
       queryFn: () => policyServices.get.get_registered_policy_detail(policy_id),
-      enabled: !!policy_id,
+      enabled: options?.enabled !== undefined ? options.enabled : !!policy_id,
     });
   };
 
@@ -48,14 +63,13 @@ export const usePolicy = () => {
       resultStatus.showSuccess({
         title: "Đăng ký bảo hiểm thành công!",
         message: "Hồ sơ của bạn đã được gửi đi và đang chờ xét duyệt.",
-        subMessage: "Chúng tôi sẽ thông báo kết quả trong vòng 1-3 ngày làm việc.",
+        subMessage:
+          "Chúng tôi sẽ thông báo kết quả trong vòng 1-3 ngày làm việc.",
         autoRedirectSeconds: 5,
         autoRedirectRoute: "/(tabs)",
         showHomeButton: true,
         lockNavigation: true,
       });
-
-      
     },
     onError: (error: any) => {
       console.error("❌ Error registering policy:", error);
@@ -83,13 +97,15 @@ export const usePolicy = () => {
           "Trang trại này đã được đăng ký bảo hiểm. Vui lòng chọn trang trại khác hoặc kiểm tra lại danh sách bảo hiểm của bạn.";
       } else if (apiMessage.toLowerCase().includes("invalid planting date")) {
         errorTitle = "Ngày gieo trồng không hợp lệ";
-        errorMessage = "Ngày gieo trồng không hợp lệ. Vui lòng kiểm tra và chọn lại ngày gieo trồng phù hợp.";
+        errorMessage =
+          "Ngày gieo trồng không hợp lệ. Vui lòng kiểm tra và chọn lại ngày gieo trồng phù hợp.";
       } else if (
         apiMessage.toLowerCase().includes("insufficient balance") ||
         apiMessage.toLowerCase().includes("payment required")
       ) {
         errorTitle = "Số dư không đủ";
-        errorMessage = "Số dư trong tài khoản không đủ để thanh toán. Vui lòng nạp thêm tiền để tiếp tục.";
+        errorMessage =
+          "Số dư trong tài khoản không đủ để thanh toán. Vui lòng nạp thêm tiền để tiếp tục.";
       } else if (apiMessage) {
         // Nếu có message từ API và không match case nào, hiển thị luôn
         errorMessage = apiMessage;
@@ -99,7 +115,8 @@ export const usePolicy = () => {
       resultStatus.showError({
         title: errorTitle,
         message: errorMessage,
-        subMessage: "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ bộ phận hỗ trợ.",
+        subMessage:
+          "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ bộ phận hỗ trợ.",
         showHomeButton: true,
         lockNavigation: true,
       });
@@ -115,5 +132,6 @@ export const usePolicy = () => {
     registerPolicyMutation,
     getRegisteredPolicy,
     getRegisteredPolicyDetail,
+    getUnderwritingPolicy,
   };
 };

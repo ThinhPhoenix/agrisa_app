@@ -207,21 +207,22 @@ export type RegisterPolicyPayload = {
 /**
  * Trạng thái của policy đã đăng ký
  */
-export type RegisteredPolicyStatus = 
-  | "pending_review"      // Chờ xét duyệt
-  | "active"              // Đang hoạt động
-  | "expired"             // Hết hạn
-  | "cancelled"           // Đã hủy
-  | "rejected"            // Bị từ chối
-  | "suspended";          // Tạm ngưng
+export type RegisteredPolicyStatus =
+  | "draft" // Bản nháp
+  | "pending_review" // Chờ xét duyệt
+  | "pending_payment" // Chờ thanh toán
+  | "active" // Đang hoạt động
+  | "expired" // Hết hạn
+  | "cancelled" // Đã hủy
+  | "rejected"; // Bị từ chối
 
 /**
  * Trạng thái underwriting (thẩm định)
  */
 export type UnderwritingStatus =
-  | "pending"             // Đang chờ
-  | "active"            // Đã duyệt
-  | "rejected"            // Từ chối
+  | "pending" // Đang chờ thẩm định
+  | "approved" // Đã duyệt
+  | "rejected"; // Từ chối
 
 /**
  * Model cho một policy đã đăng ký
@@ -234,6 +235,7 @@ export type RegisteredPolicy = {
   farm_id: string;
   farmer_id: string;
   coverage_amount: number;
+  coverage_start_date: number; // Ngày bắt đầu bảo hiểm (timestamp)
   coverage_end_date: number;
   planting_date: number;
   area_multiplier: number;
@@ -262,3 +264,36 @@ export type RegisteredPolicyDetailResponse = RegisteredPolicy & {
   base_policy?: PublicBasePolicyResponse;
   farm?: any; // TODO: Add Farm type
 };
+
+
+
+export interface UnderwritingData {
+  id: string;
+  registered_policy_id: string;
+  validation_timestamp: number;
+  underwriting_status: string;
+  recommendations: Recommendations;
+  reason: string;
+  reason_evidence: ReasonEvidence;
+  validated_by: string;
+  validation_notes: string;
+  created_at: string; // ISO timestamp
+}
+
+export interface ReasonEvidence {
+  farm_history: string;
+  risk_level: string;
+  risk_score: number;
+}
+
+export interface Recommendations {
+  premium_adjustment: "none" | "increase" | "decrease";
+  suggested_coverage: "full" | "partial" | "minimal";
+}
+
+/**
+ * Response API cho underwriting data
+ */
+export interface UnderwritingDataResponse {
+  data: UnderwritingData[];
+}

@@ -23,12 +23,12 @@ import {
 import { useMemo, useState } from "react";
 import { RefreshControl } from "react-native";
 
-type HistoryStatus = "rejected" | "pending" | "active" | "all";
+type HistoryStatus = "rejected" | "pending" | "approved" | "all";
 
 const STATUS_TABS: { key: HistoryStatus; label: string }[] = [
   { key: "all", label: "Tất cả" },
   { key: "pending", label: "Chờ duyệt" },
-  { key: "active", label: "Chấp thuận" },
+  { key: "approved", label: "Chấp thuận" },
   { key: "rejected", label: "Từ chối" },
 ];
 
@@ -48,8 +48,8 @@ export default function PolicyHistoryScreen() {
     switch (activeTab) {
       case "pending":
         return policies.filter((p) => p.underwriting_status === "pending");
-      case "active":
-        return policies.filter((p) => p.underwriting_status === "active");
+      case "approved":
+        return policies.filter((p) => p.underwriting_status === "approved");
       case "rejected":
         return policies.filter((p) => p.underwriting_status === "rejected");
       case "all":
@@ -72,7 +72,7 @@ export default function PolicyHistoryScreen() {
         (p: RegisteredPolicy) => p.underwriting_status === "pending"
       ).length,
       approved: policies.filter(
-        (p: RegisteredPolicy) => p.underwriting_status === "active"
+        (p: RegisteredPolicy) => p.underwriting_status === "approved"
       ).length,
       rejected: policies.filter(
         (p: RegisteredPolicy) => p.underwriting_status === "rejected"
@@ -82,7 +82,7 @@ export default function PolicyHistoryScreen() {
 
   const getStatusIcon = (status: HistoryStatus) => {
     switch (status) {
-      case "active":
+      case "approved":
         return CheckCircle2;
       case "pending":
         return Clock;
@@ -95,7 +95,7 @@ export default function PolicyHistoryScreen() {
 
   const getStatusColor = (status: HistoryStatus) => {
     switch (status) {
-      case "active":
+      case "approved":
         return colors.success;
       case "pending":
         return colors.pending;
@@ -108,7 +108,7 @@ export default function PolicyHistoryScreen() {
 
   const getEmptyMessage = (status: HistoryStatus) => {
     switch (status) {
-      case "active":
+      case "approved":
         return "Chưa có đăng ký bảo hiểm nào được chấp thuận";
       case "pending":
         return "Chưa có đăng ký bảo hiểm nào đang chờ duyệt";

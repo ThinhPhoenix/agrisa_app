@@ -389,21 +389,21 @@ export default function EKYCStatusResultScreen() {
             )}
 
             {!isAccountIdentified && (
-              <Button
-                mt="$3"
-                bg={colors.primary}
+              <Box
+                bg={colors.infoSoft}
                 borderRadius="$lg"
-                onPress={() => router.push("/edit-profile")}
-                h="$11"
+                p="$2.5"
+                mt="$3"
+                borderWidth={1}
+                borderColor={colors.info}
               >
-                <ButtonText
-                  fontSize="$sm"
-                  fontWeight="$semibold"
-                  color={colors.primary_white_text}
-                >
-                  Cập nhật thông tin
-                </ButtonText>
-              </Button>
+                <HStack space="xs" alignItems="center">
+                  <AlertCircle size={14} color={colors.info} />
+                  <Text fontSize="$xs" color={colors.info}>
+                    Thông tin sẽ được cập nhật sau khi xác thực CCCD
+                  </Text>
+                </HStack>
+              </Box>
             )}
           </Box>
 
@@ -414,7 +414,6 @@ export default function EKYCStatusResultScreen() {
             p="$4"
             borderWidth={1}
             borderColor={isOCRDone ? colors.success : colors.frame_border}
-            opacity={isAccountIdentified ? 1 : 0.6}
           >
             <HStack space="md" alignItems="center" mb="$3">
               <Box
@@ -474,25 +473,7 @@ export default function EKYCStatusResultScreen() {
               </Text>
             )}
 
-            {!isOCRDone && !isAccountIdentified && (
-              <Box
-                bg={colors.warningSoft}
-                borderRadius="$lg"
-                p="$2.5"
-                mt="$3"
-                borderWidth={1}
-                borderColor={colors.warning}
-              >
-                <HStack space="xs" alignItems="center">
-                  <AlertCircle size={14} color={colors.warning} />
-                  <Text fontSize="$xs" color={colors.warning}>
-                    Vui lòng định danh tài khoản trước
-                  </Text>
-                </HStack>
-              </Box>
-            )}
-
-            {!isOCRDone && isAccountIdentified && (
+            {!isOCRDone && (
               <Button
                 mt="$3"
                 bg={colors.primary}
@@ -518,7 +499,6 @@ export default function EKYCStatusResultScreen() {
             p="$4"
             borderWidth={1}
             borderColor={isFaceVerified ? colors.success : colors.frame_border}
-            opacity={isAccountIdentified && isOCRDone ? 1 : 0.6}
           >
             <HStack space="md" alignItems="center" mb="$3">
               <Box
@@ -578,7 +558,7 @@ export default function EKYCStatusResultScreen() {
               </Text>
             )}
 
-            {!isFaceVerified && (!isAccountIdentified || !isOCRDone) && (
+            {!isFaceVerified && !isOCRDone && (
               <Box
                 bg={colors.warningSoft}
                 borderRadius="$lg"
@@ -590,15 +570,13 @@ export default function EKYCStatusResultScreen() {
                 <HStack space="xs" alignItems="center">
                   <AlertCircle size={14} color={colors.warning} />
                   <Text fontSize="$xs" color={colors.warning}>
-                    {!isAccountIdentified
-                      ? "Vui lòng định danh tài khoản trước"
-                      : "Vui lòng xác thực CCCD trước"}
+                    Vui lòng xác thực CCCD trước
                   </Text>
                 </HStack>
               </Box>
             )}
 
-            {!isFaceVerified && isAccountIdentified && isOCRDone && (
+            {!isFaceVerified && isOCRDone && (
               <Button
                 mt="$3"
                 bg={colors.primary}

@@ -12,12 +12,10 @@ import useAuthMe from "./use-auth-me";
  * - Validation với Zod schema
  * - Submit với API update
  * - Đồng bộ với auth store
- * - Redirect vào eKYC workflow nếu cần
  */
-export const useMeForm = (options?: { isFromEkyc?: boolean }) => {
+export const useMeForm = () => {
   const { updateProfile, isUpdating } = useAuthMe();
   const { fetchUserProfile } = useAuthStore();
-  const isFromEkyc = options?.isFromEkyc || false;
 
   // Form với validation
   const form = useForm<UserProfileFormSchema>({
@@ -40,6 +38,10 @@ export const useMeForm = (options?: { isFromEkyc?: boolean }) => {
       ward_code: "",
       ward_name: "",
       postal_code: "",
+      // Thông tin ngân hàng
+      account_number: "",
+      account_name: "",
+      bank_code: "",
     },
   });
 
@@ -65,45 +67,64 @@ export const useMeForm = (options?: { isFromEkyc?: boolean }) => {
       ward_code: profile.ward_code || "",
       ward_name: profile.ward_name || "",
       postal_code: profile.postal_code || "",
+      // Thông tin ngân hàng
+      account_number: profile.account_number || "",
+      account_name: profile.account_name || "",
+      bank_code: profile.bank_code || "",
     });
   };
 
   /**
-   * Submit form - Cập nhật profile
+   * Submit form - Cập nhật profile (chỉ gửi các field đã thay đổi)
    */
   const onSubmit = form.handleSubmit(async (data) => {
     try {
-      // Gọi API update
-      await updateProfile(data as Partial<UserProfile>);
+      // Lấy các field đã thay đổi (dirty fields)
+      const dirtyFields = form.formState.dirtyFields;
+      const changedData: Partial<UserProfile> = {};
+
+      // Chỉ gửi các field đã thay đổi
+      Object.keys(dirtyFields).forEach((key) => {
+        if (dirtyFields[key as keyof typeof dirtyFields]) {
+          changedData[key as keyof UserProfile] = data[
+            key as keyof typeof data
+          ] as any;
+        }
+      });
+
+      // Nếu không có thay đổi, không gửi request
+      if (Object.keys(changedData).length === 0) {
+        Alert.alert("Thông báo", "Không có thông tin nào thay đổi!", [
+          { text: "OK" },
+        ]);
+        return;
+      }
+
+      console.log("📤 Đang gửi dữ liệu đã thay đổi:", changedData);
+
+      // Gọi API update với chỉ các field đã thay đổi
+      await updateProfile(changedData);
 
       // Refresh profile trong auth store
       await fetchUserProfile();
 
+      // Reset dirty state sau khi update thành công
+      form.reset(data);
+
       // Thông báo thành công
-      Alert.alert(
-        "Thành công",
-        "Cập nhật thông tin cá nhân thành công!",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              if (isFromEkyc) {
-                // Nếu đến từ eKYC workflow, redirect đến id-scan
-                router.replace("/settings/verify/id-scan");
-              } else {
-                // Nếu không, quay lại trang trước
-                router.back();
-              }
-            },
-          },
-        ]
-      );
+      Alert.alert("Thành công", "Cập nhật thông tin cá nhân thành công!", [
+        {
+          text: "OK",
+          onPress: () => router.back(),
+        },
+      ]);
     } catch (error: any) {
       console.error("❌ Lỗi cập nhật profile:", error);
-      
+
       Alert.alert(
         "Lỗi",
-        error?.response?.data?.message || "Không thể cập nhật thông tin. Vui lòng thử lại.",
+        error?.response?.data?.message ||
+          "Không thể cập nhật thông tin. Vui lòng thử lại.",
         [{ text: "OK" }]
       );
     }
@@ -114,5 +135,7 @@ export const useMeForm = (options?: { isFromEkyc?: boolean }) => {
     onSubmit,
     isSubmitting: isUpdating,
     loadProfileData,
+    isDirty: form.formState.isDirty, // Có thay đổi hay không
+    dirtyFields: form.formState.dirtyFields, // Các field đã thay đổi
   };
 };

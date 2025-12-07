@@ -17,11 +17,11 @@ export const useFarm = () => {
     });
   };
 
-  const getDetailFarm = (farm_id: string) => {
+  const getDetailFarm = (farm_id: string, options?: { enabled?: boolean }) => {
     return useQuery({
       queryKey: [QueryKey.FARM.DETAIL, farm_id],
       queryFn: () => farmServices.get.detailFarm(farm_id),
-      enabled: !!farm_id,
+      enabled: options?.enabled !== undefined ? options.enabled : !!farm_id,
     });
   };
 

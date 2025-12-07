@@ -1,0 +1,327 @@
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
+import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { Utils } from "@/libs/utils/utils";
+import {
+  Box,
+  HStack,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
+} from "@gluestack-ui/themed";
+import { FileText, Package, Receipt } from "lucide-react-native";
+import { usePayment } from "../hooks/use-payment";
+
+interface PaymentDetailProps {
+  paymentId: string;
+}
+
+/**
+ * Component hiển thị chi tiết giao dịch thanh toán
+ */
+export const PaymentDetail: React.FC<PaymentDetailProps> = ({ paymentId }) => {
+  const { colors } = useAgrisaColors();
+  const { getDetailPayment } = usePayment();
+  const { getRegisteredPolicyDetail } = usePolicy();
+  const { getInsurancePartnerDetail } = useInsurancePartner();
+  
+  const { data, isLoading, isError } = getDetailPayment(paymentId);
+
+  const payment = data?.success ? data.data : null;
+
+  // Lấy policy_id từ orderItems[0].item_id (vì item_id chính là policy_id)
+  const policyId = payment?.orderItems?.[0]?.item_id;
+  
+  // Fetch policy detail để lấy insurance_provider_id
+  const { data: policyData, isLoading: isPolicyLoading } = getRegisteredPolicyDetail(policyId || '');
+  const policy = policyData?.success ? policyData.data : null;
+  
+  // Fetch insurance partner detail
+  const insuranceProviderId = policy?.insurance_provider_id;
+  const { data: insurancePartnerData, isLoading: isPartnerLoading } = getInsurancePartnerDetail(insuranceProviderId || '');
+  const insurancePartner = insurancePartnerData?.data;
+
+  if (isLoading || isPolicyLoading || isPartnerLoading) {
+    return (
+      <Box flex={1} alignItems="center" justifyContent="center" py="$20">
+        <Spinner size="large" color={colors.primary} />
+        <Text mt="$4" fontSize="$sm" color={colors.secondary_text}>
+          Đang tải thông tin giao dịch...
+        </Text>
+      </Box>
+    );
+  }
+
+  if (isError || !payment) {
+    return (
+      <Box flex={1} alignItems="center" justifyContent="center" p="$8">
+        <Box
+          bg={colors.errorSoft}
+          borderRadius="$full"
+          p="$4"
+          mb="$3"
+        >
+          <FileText size={32} color={colors.error} strokeWidth={1.5} />
+        </Box>
+        <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text} mb="$1">
+          Không tìm thấy giao dịch
+        </Text>
+        <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
+          Giao dịch không tồn tại hoặc đã bị xóa
+        </Text>
+      </Box>
+    );
+  }
+
+  // Xác định loại giao dịch
+  const isPremium = payment.type === 'policy_registration_payment';
+  const isExpired = payment.status === 'expired';
+  const isCompleted = payment.status === 'completed';
+  const isExpense = isPremium;
+
+  // Màu sắc theo loại giao dịch
+  const statusColor = isExpired ? colors.muted_text : (isCompleted ? colors.success : colors.warning);
+  const statusBgColor = isExpired ? colors.frame_border : (isCompleted ? colors.successSoft : colors.warningSoft);
+  const amountColor = isExpired ? colors.muted_text : (isExpense ? colors.warning : colors.success);
+  const amountBgColor = isExpired ? colors.frame_border : (isExpense ? colors.warningSoft : colors.successSoft);
+
+  // Label trạng thái
+  const statusLabel = payment.status === 'completed' ? 'Thành công' 
+    : payment.status === 'expired' ? 'Hết hạn'
+    : payment.status === 'pending' ? 'Đang chờ'
+    : 'Đã hủy';
+
+  return (
+    <ScrollView>
+      <VStack space="md" p="$4">
+        {/* Header Card - Amount & Icon */}
+        <Box
+          bg={colors.card_surface}
+          borderRadius="$2xl"
+          p="$5"
+          borderWidth={1}
+          borderColor={colors.frame_border}
+        >
+          <HStack space="md" alignItems="center">
+            {/* Icon */}
+            <Box
+              bg={amountBgColor}
+              borderRadius="$full"
+              p="$3.5"
+              w={60}
+              h={60}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Receipt size={30} color={amountColor} strokeWidth={2} />
+            </Box>
+
+            {/* Amount */}
+            <VStack flex={1}>
+              <Text fontSize="$xs" color={colors.secondary_text} mb="$1">
+                {Utils.getPaymentTypeLabel(payment.type)}
+              </Text>
+              <Text fontSize="$2xl" fontWeight="$bold" color={amountColor}>
+                {isExpired ? "" : isExpense ? "-" : "+"}
+                {Utils.formatCurrency(Number(payment.amount))}
+              </Text>
+            </VStack>
+          </HStack>
+        </Box>
+
+        {/* Info Card */}
+        <Box
+          bg={colors.card_surface}
+          borderRadius="$xl"
+          borderWidth={1}
+          borderColor={colors.frame_border}
+          p="$4"
+        >
+          <VStack space="sm">
+            {/* Trạng thái */}
+            <HStack justifyContent="space-between" alignItems="center" py="$2">
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Trạng thái
+              </Text>
+              <Box bg={statusBgColor} borderRadius="$md" px="$3" py="$1.5">
+                <Text fontSize="$xs" fontWeight="$semibold" color={statusColor}>
+                  {statusLabel}
+                </Text>
+              </Box>
+            </HStack>
+
+            <Box h={1} bg={colors.frame_border} />
+
+            {/* Thời gian */}
+            <HStack justifyContent="space-between" alignItems="center" py="$2">
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Thời gian thanh toán
+              </Text>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
+                {isExpired
+                  ? Utils.formatStringVietnameseDateTime(payment.expired_at)
+                  : Utils.formatStringVietnameseDateTime(payment.paid_at)}
+              </Text>
+            </HStack>
+
+            <Box h={1} bg={colors.frame_border} />
+
+            {/* Cập nhật cuối */}
+            <HStack justifyContent="space-between" alignItems="center" py="$2">
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Cập nhật cuối
+              </Text>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
+                {Utils.formatStringVietnameseDateTime(payment.updated_at)}
+              </Text>
+            </HStack>
+
+            <Box h={1} bg={colors.frame_border} />
+
+            {/* Mô tả */}
+            <HStack justifyContent="space-between" alignItems="center" py="$2">
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Mô tả
+              </Text>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
+                {payment.description}
+              </Text>
+            </HStack>
+
+            <Box h={1} bg={colors.frame_border} />
+
+            {/* Tổng phí */}
+            <HStack justifyContent="space-between" alignItems="center" py="$2">
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Tổng phí
+              </Text>
+              <Text
+                fontSize="$sm"
+                fontWeight="$semibold"
+                color={colors.primary_text}
+              >
+                Miễn phí
+              </Text>
+            </HStack>
+
+            <Box h={1} bg={colors.frame_border} />
+
+            {/* Danh mục */}
+            <HStack
+              justifyContent="space-between"
+              alignItems="flex-start"
+              py="$2"
+            >
+              <Text fontSize="$sm" color={colors.secondary_text}>
+                Danh mục
+              </Text>
+              <HStack space="xs" alignItems="center">
+                <Package size={14} color={amountColor} />
+                <Text fontSize="$sm" fontWeight="$semibold" color={amountColor}>
+                  {Utils.getPaymentTypeLabel(payment.type)}
+                </Text>
+              </HStack>
+            </HStack>
+          </VStack>
+        </Box>
+
+        {/* Thông tin bảo hiểm */}
+        {payment.orderItems && payment.orderItems.length > 0 && (
+          <Box
+            bg={colors.card_surface}
+            borderRadius="$xl"
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            p="$4"
+          >
+            <Text
+              fontSize="$md"
+              fontWeight="$bold"
+              color={colors.primary_text}
+              mb="$3"
+            >
+              Thông tin đơn đăng kí bảo hiểm
+            </Text>
+
+            <VStack space="sm">
+              {payment.orderItems.map((item, index) => (
+                <Box key={item.id}>
+                  {/* Tên bảo hiểm */}
+                  <HStack
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    py="$2"
+                  >
+                    <Text fontSize="$sm" color={colors.secondary_text}>
+                      Tên bảo hiểm
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      textAlign="right"
+                      flex={1}
+                      ml="$4"
+                    >
+                      {item.name}
+                    </Text>
+                  </HStack>
+
+                  <Box h={1} bg={colors.frame_border} />
+
+                  {/* Công ty bảo hiểm */}
+                  <HStack
+                    justifyContent="space-between"
+                    alignItems="center"
+                    py="$2"
+                  >
+                    <Text fontSize="$sm" color={colors.secondary_text}>
+                      Công ty bảo hiểm
+                    </Text>
+                    <HStack space="xs" alignItems="center">
+                      <Text fontSize="$sm" fontWeight="$semibold">
+                        {insurancePartner?.partner_display_name ||
+                          "Đang tải..."}
+                      </Text>
+                    </HStack>
+                  </HStack>
+                  <Box h={1} bg={colors.frame_border} />
+
+                  {/* Mã bảo hiểm */}
+                  <VStack py="$2" space="xs">
+                    <Text fontSize="$sm" color={colors.secondary_text}>
+                      Mã đơn bảo hiểm
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      {item.item_id}
+                    </Text>
+                  </VStack>
+
+                  {index < payment.orderItems.length - 1 && (
+                    <Box h={1} bg={colors.frame_border} my="$2" />
+                  )}
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+        )}
+      </VStack>
+    </ScrollView>
+  );
+};

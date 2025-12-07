@@ -27,6 +27,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   TouchableWithoutFeedback,
 } from "react-native";
 import { useAuthForm } from "../../hooks/use-auth-form";
@@ -97,17 +98,22 @@ const SignUpComponentUI = () => {
       style={{ flex: 1 }}
       keyboardVerticalOffset={0}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ImageBackground
-          source={require("@/assets/images/Login/Agrisa-Auth.png")}
+      <ImageBackground
+        source={require("@/assets/images/Login/Agrisa-Auth.png")}
+        style={{ flex: 1 }}
+        resizeMode="cover"
+      >
+        <LinearGradient
+          colors={["rgba(89, 172, 119, 0.3)", "rgba(89, 172, 119, 0.6)"]}
           style={{ flex: 1 }}
-          resizeMode="cover"
         >
-          <LinearGradient
-            colors={["rgba(89, 172, 119, 0.3)", "rgba(89, 172, 119, 0.6)"]}
-            style={{ flex: 1 }}
+          <ScrollView
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
-            <VStack flex={1} justifyContent="center" px="$5" space="lg">
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+              <VStack flex={1} justifyContent="center" px="$5" space="lg">
               {/* Logo - Compact */}
               <Box alignItems="center">
                 <Image
@@ -552,11 +558,12 @@ const SignUpComponentUI = () => {
                 </Box>
               </LinearGradient>
             </VStack>
-          </LinearGradient>
-        </ImageBackground>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
-  );
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </LinearGradient>
+    </ImageBackground>
+  </KeyboardAvoidingView>
+);
 };
 
 export default SignUpComponentUI;

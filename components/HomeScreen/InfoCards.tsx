@@ -1,6 +1,9 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { usePayment } from "@/domains/payment/hooks/use-payment";
 import { useStats } from "@/domains/shared/hooks/use-stats";
+import { Utils } from "@/libs/utils/utils";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   Banknote,
   CloudRain,
@@ -18,10 +21,21 @@ import {
   View,
 } from "react-native";
 
+const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.35)";
+const CARD_GRADIENT = [
+  "rgba(255,255,255,0.4)",
+  "rgba(255,255,255,0.2)",
+] as const;
+
 export default function InfoCards() {
   const { colors } = useAgrisaColors();
   const { stats, isLoading } = useStats();
+  const { getTotalByType } = usePayment();
   const [moneyVisible, setMoneyVisible] = useState(false);
+
+  // Lấy tổng số tiền bồi thường (payout)
+  const { data: payoutData, isLoading: isLoadingPayout } = getTotalByType("policy_payout_payment");
+  const totalPayout = payoutData?.success ? payoutData.data : 0;
 
   // Card data configuration
   const cards = [
@@ -30,15 +44,19 @@ export default function InfoCards() {
       icon: Banknote,
       iconColor: colors.primary,
       iconBgColor: `${colors.primary}15`,
-      label: "Số tiền bảo hiểm",
+      label: "Số tiền bồi thường bảo hiểm",
       value: (
         <View className="flex-row items-center gap-2">
-          <Text
-            className="font-bold text-xl"
-            style={{ color: colors.primary_text }}
-          >
-            {moneyVisible ? "4.000.000.000đ" : "••••••••"}
-          </Text>
+          {isLoadingPayout ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            <Text
+              className="font-bold text-xl"
+              style={{ color: colors.primary_text }}
+            >
+              {moneyVisible ? Utils.formatCurrency(totalPayout) : "••••••••"}
+            </Text>
+          )}
           <Pressable onPress={() => setMoneyVisible(!moneyVisible)}>
             {moneyVisible ? (
               <EyeOff size={16} color={colors.muted_text} />
@@ -55,7 +73,7 @@ export default function InfoCards() {
       icon: Wheat,
       iconColor: colors.success,
       iconBgColor: `${colors.success}15`,
-      label: "Trang trại",
+      label: "Trang trại đăng ký",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.success} />
       ) : (
@@ -68,7 +86,7 @@ export default function InfoCards() {
       icon: FileText,
       iconColor: colors.info,
       iconBgColor: `${colors.info}15`,
-      label: "Hợp đồng",
+      label: "Hợp đồng đã đăng ký",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.info} />
       ) : (
@@ -89,76 +107,99 @@ export default function InfoCards() {
 
   return (
     <View className="mb-4">
-      <BlurView
-        intensity={40}
-        tint="light"
+      <View
         className="overflow-hidden rounded-3xl"
         style={{
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          borderWidth: 1,
-          borderColor: "rgba(163, 20, 42, 0.1)",
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
-          elevation: 5,
+          borderWidth: 1.5,
+          borderColor: CARD_BORDER_COLOR,
+          // Outer glow - soft ambient shadow
+          shadowColor: "rgba(0, 0, 0, 0.15)",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 1,
+          shadowRadius: 32,
+          elevation: 20,
+          // Inner highlight effect via background
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
         }}
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 4 }}
+        {/* Top highlight border */}
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 20,
+            right: 20,
+            height: 1,
+            backgroundColor: "rgba(255, 255, 255, 0.6)",
+            borderRadius: 1,
+          }}
+        />
+        <LinearGradient
+          colors={CARD_GRADIENT}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
         >
-          {cards.map((card, index) => {
-            const Icon = card.icon;
-            return (
-              <View key={card.id}>
-                <View className="px-6 py-5" style={{ minWidth: 160 }}>
-                  {/* Icon với background gradient */}
-                  <View
-                    className="mb-3 w-11 h-11 rounded-2xl items-center justify-center"
-                    style={{
-                      backgroundColor: card.iconBgColor,
-                    }}
-                  >
-                    <Icon size={22} color={card.iconColor} strokeWidth={2.5} />
+          <BlurView
+            intensity={80}
+            tint="light"
+          >
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 4 }}
+            >
+              {cards.map((card, index) => {
+                const Icon = card.icon;
+                return (
+                  <View key={card.id}>
+                    <View className="px-6 py-5" style={{ minWidth: 160 }}>
+                      {/* Label với Icon bên cạnh */}
+                      <View className="flex-row items-center gap-2 mb-2">
+                        <View
+                          className="w-6 h-6 rounded-lg items-center justify-center"
+                          style={{
+                            backgroundColor: card.iconBgColor,
+                          }}
+                        >
+                          <Icon size={14} color={card.iconColor} strokeWidth={2.5} />
+                        </View>
+                        <Text
+                          className="text-sm font-semibold"
+                          style={{ color: colors.secondary_text }}
+                        >
+                          {card.label}
+                        </Text>
+                      </View>
+
+                      {/* Value */}
+                      {typeof card.value === "string" ? (
+                        <Text
+                          className="font-bold text-xl"
+                          style={{ color: colors.primary_text }}
+                        >
+                          {card.value}
+                        </Text>
+                      ) : (
+                        card.value
+                      )}
+                    </View>
+
+                    {/* Divider - không hiện ở card cuối */}
+                    {index < cards.length - 1 && (
+                      <View
+                        className="absolute right-0 top-4 bottom-4 w-px"
+                        style={{
+                          backgroundColor: "rgba(0, 0, 0, 0.1)",
+                        }}
+                      />
+                    )}
                   </View>
-
-                  {/* Label */}
-                  <Text
-                    className="text-xs mb-1.5 font-medium"
-                    style={{ color: colors.secondary_text }}
-                  >
-                    {card.label}
-                  </Text>
-
-                  {/* Value */}
-                  {typeof card.value === "string" ? (
-                    <Text
-                      className="font-bold text-xl"
-                      style={{ color: colors.primary_text }}
-                    >
-                      {card.value}
-                    </Text>
-                  ) : (
-                    card.value
-                  )}
-                </View>
-
-                {/* Divider - không hiện ở card cuối */}
-                {index < cards.length - 1 && (
-                  <View
-                    className="absolute right-0 top-4 bottom-4 w-px"
-                    style={{
-                      backgroundColor: "rgba(163, 20, 42, 0.08)",
-                    }}
-                  />
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
-      </BlurView>
+                );
+              })}
+            </ScrollView>
+          </BlurView>
+        </LinearGradient>
+      </View>
     </View>
   );
 }

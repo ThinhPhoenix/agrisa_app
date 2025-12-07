@@ -37,29 +37,31 @@ export const convertDocumentTagsToFormFields = (
     return [];
   }
 
-  return Object.entries(documentTags).map(([fieldName, fieldType]) => {
-    const formType = TYPE_MAPPING[fieldType.toLowerCase()] || "input";
-    
-    // Format label từ field name (capitalize first letter)
-    const label = fieldName
-      .split(" ")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+  return Object.entries(documentTags)
+    .filter(([_, fieldType]) => fieldType && typeof fieldType === "string")
+    .map(([fieldName, fieldType]) => {
+      const formType = TYPE_MAPPING[fieldType.toLowerCase()] || "input";
 
-    const field: FormField = {
-      name: fieldName,
-      label: label,
-      type: formType,
-      required: false, // Có thể điều chỉnh theo yêu cầu
-    };
+      // Format label từ field name (capitalize first letter)
+      const label = fieldName
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
 
-    return field;
-  });
+      const field: FormField = {
+        name: fieldName,
+        label: label,
+        type: formType,
+        required: false, // Có thể điều chỉnh theo yêu cầu
+      };
+
+      return field;
+    });
 };
 
 /**
  * Validate dữ liệu form trước khi submit
- * 
+ *
  * @param formData - Dữ liệu từ form
  * @param documentTags - Schema validation
  * @returns Object chứa isValid và errors
@@ -76,6 +78,11 @@ export const validateDocumentTagsData = (
 
   Object.entries(documentTags).forEach(([fieldName, fieldType]) => {
     const value = formData[fieldName];
+
+    // Skip nếu fieldType không hợp lệ
+    if (!fieldType || typeof fieldType !== "string") {
+      return;
+    }
 
     // Skip validation nếu không bắt buộc và không có giá trị
     if (!value || value === "") {
@@ -127,7 +134,7 @@ export const validateDocumentTagsData = (
 /**
  * Format dữ liệu form để gửi lên backend
  * Tất cả giá trị sẽ được chuyển thành string
- * 
+ *
  * @param formData - Dữ liệu từ form
  * @param documentTags - Schema để biết type
  * @returns Formatted data với tất cả values là string
@@ -145,7 +152,13 @@ export const formatDocumentTagsForSubmit = (
   Object.entries(formData).forEach(([fieldName, value]) => {
     const fieldType = documentTags[fieldName];
 
-    if (!fieldType || value === undefined || value === null || value === "") {
+    if (
+      !fieldType ||
+      typeof fieldType !== "string" ||
+      value === undefined ||
+      value === null ||
+      value === ""
+    ) {
       return;
     }
 
@@ -158,7 +171,7 @@ export const formatDocumentTagsForSubmit = (
 
 /**
  * Lấy initial values từ document_tags (nếu có)
- * 
+ *
  * @param documentTags - Schema
  * @returns Initial values cho form
  */
@@ -172,6 +185,12 @@ export const getInitialValuesFromDocumentTags = (
   const initialValues: Record<string, any> = {};
 
   Object.entries(documentTags).forEach(([fieldName, fieldType]) => {
+    // Skip nếu fieldType không hợp lệ
+    if (!fieldType || typeof fieldType !== "string") {
+      initialValues[fieldName] = "";
+      return;
+    }
+
     switch (fieldType.toLowerCase()) {
       case "boolean":
         initialValues[fieldName] = false;

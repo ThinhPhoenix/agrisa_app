@@ -1,3 +1,4 @@
+import { useGlobalNotification } from "@/components/modal/providers";
 import useAxios from "@/config/useAxios.config";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
@@ -32,7 +33,7 @@ import {
   PhoneIcon,
   ScanFace,
   ShieldCheck,
-  User
+  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
@@ -42,7 +43,7 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
@@ -62,6 +63,7 @@ const SignInComponentUI = () => {
   const { colors } = useAgrisaColors();
   const [showPassword, setShowPassword] = useState(false);
   const [cachedIdentifier, setCachedIdentifier] = useState<string | null>(null);
+  const [cachedFullName, setCachedFullName] = useState<string | null>(null);
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [isLoadingBiometric, setIsLoadingBiometric] = useState(false);
   const [biometricType, setBiometricType] = useState<string>("Vân tay");
@@ -71,7 +73,7 @@ const SignInComponentUI = () => {
   const { form, onSubmit, isLoading } = useAuthForm({
     type: "sign-in",
   });
-
+  const notification = useGlobalNotification();
   const signInFormControl = form.control as Control<SignInPayloadSchema>;
 
   // ============================================
@@ -147,6 +149,13 @@ const SignInComponentUI = () => {
         }
 
         setCachedIdentifier(lastIdentifier);
+
+        // Lấy fullName đã lưu từ lần đăng nhập trước
+        const savedFullName = await secureStorage.getFullName();
+        if (savedFullName) {
+          setCachedFullName(savedFullName);
+          console.log("✅ [Sign-in] Full name loaded:", savedFullName);
+        }
 
         const biometricEnabled =
           await secureStorage.isBiometricEnabled(lastIdentifier);
@@ -247,8 +256,7 @@ const SignInComponentUI = () => {
       console.error("❌ [Biometric] Error:", error);
 
       if (error?.response?.status === 401) {
-        Alert.alert(
-          "Đăng nhập thất bại",
+        notification.error(
           "Thông tin đăng nhập không đúng. Vui lòng đăng nhập lại bằng mật khẩu."
         );
 
@@ -281,13 +289,24 @@ const SignInComponentUI = () => {
     return <Phone size={20} color={colors.primary} strokeWidth={2.5} />;
   };
 
-  // Lấy tên hiển thị từ identifier
+  // Lấy tên hiển thị - Ưu tiên fullName đã lưu từ API
   const getDisplayName = () => {
+    // Ưu tiên sử dụng fullName đã lưu từ lần đăng nhập trước
+    if (cachedFullName) {
+      // Capitalize: viết hoa chữ cái đầu mỗi từ
+      return cachedFullName
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    }
+
+    // Fallback: parse từ identifier nếu chưa có fullName
     if (!cachedIdentifier) return "Nông dân";
+
     // Nếu là email, lấy phần trước @
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cachedIdentifier)) {
       const name = cachedIdentifier.split("@")[0];
-      // Capitalize first letter of each word
       return name
         .split(/[._-]/)
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

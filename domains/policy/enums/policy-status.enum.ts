@@ -6,24 +6,26 @@
 
 /**
  * Trạng thái của policy đã đăng ký
+ * Theo backend: draft, pending_review, pending_payment, active, expired, cancelled, rejected
  */
 export enum RegisteredPolicyStatus {
-  PENDING_REVIEW = "pending_review",   // Chờ xét duyệt
-  ACTIVE = "active",                    // Đang hoạt động
-  EXPIRED = "expired",                  // Hết hạn
-  CANCELLED = "cancelled",              // Đã hủy
-  REJECTED = "rejected",                // Bị từ chối
-  SUSPENDED = "suspended",              // Tạm ngưng
+  DRAFT = "draft", // Bản nháp - chưa submit
+  PENDING_REVIEW = "pending_review", // Chờ xét duyệt/thẩm định
+  PENDING_PAYMENT = "pending_payment", // Chờ thanh toán (đã duyệt)
+  ACTIVE = "active", // Đang hoạt động
+  EXPIRED = "expired", // Hết hạn
+  CANCELLED = "cancelled", // Đã hủy
+  REJECTED = "rejected", // Bị từ chối
 }
 
 /**
  * Trạng thái underwriting (thẩm định)
+ * Theo backend: pending, approved, rejected
  */
 export enum UnderwritingStatus {
-  PENDING = "pending",           // Đang chờ
-  ACTIVE = "active",         // Đã duyệt
-  REJECTED = "rejected",         // Từ chối
-  UNDER_REVIEW = "under_review", // Đang xem xét
+  PENDING = "pending", // Đang chờ thẩm định
+  APPROVED = "approved", // Đã duyệt
+  REJECTED = "rejected", // Từ chối
 }
 
 /**
@@ -39,13 +41,17 @@ export enum ProductStatus {
 /**
  * Label hiển thị cho RegisteredPolicyStatus
  */
-export const RegisteredPolicyStatusLabels: Record<RegisteredPolicyStatus, string> = {
+export const RegisteredPolicyStatusLabels: Record<
+  RegisteredPolicyStatus,
+  string
+> = {
+  [RegisteredPolicyStatus.DRAFT]: "Bản nháp",
   [RegisteredPolicyStatus.PENDING_REVIEW]: "Chờ xét duyệt",
+  [RegisteredPolicyStatus.PENDING_PAYMENT]: "Chờ thanh toán",
   [RegisteredPolicyStatus.ACTIVE]: "Đang hoạt động",
   [RegisteredPolicyStatus.EXPIRED]: "Hết hạn",
   [RegisteredPolicyStatus.CANCELLED]: "Đã hủy",
   [RegisteredPolicyStatus.REJECTED]: "Bị từ chối",
-  [RegisteredPolicyStatus.SUSPENDED]: "Tạm ngưng",
 };
 
 /**
@@ -53,23 +59,21 @@ export const RegisteredPolicyStatusLabels: Record<RegisteredPolicyStatus, string
  */
 export const UnderwritingStatusLabels: Record<UnderwritingStatus, string> = {
   [UnderwritingStatus.PENDING]: "Chờ duyệt",
-  [UnderwritingStatus.ACTIVE]: "Đã duyệt",
+  [UnderwritingStatus.APPROVED]: "Đã duyệt",
   [UnderwritingStatus.REJECTED]: "Từ chối",
-  [UnderwritingStatus.UNDER_REVIEW]: "Đang xem xét",
 };
 
 /**
  * Màu sắc cho các trạng thái (dùng với theme colors)
  */
 export const PolicyStatusColors = {
+  [RegisteredPolicyStatus.DRAFT]: "muted_text",
   [RegisteredPolicyStatus.PENDING_REVIEW]: "pending",
+  [RegisteredPolicyStatus.PENDING_PAYMENT]: "warning",
   [RegisteredPolicyStatus.ACTIVE]: "success",
   [RegisteredPolicyStatus.EXPIRED]: "muted_text",
   [RegisteredPolicyStatus.CANCELLED]: "error",
   [RegisteredPolicyStatus.REJECTED]: "error",
-  [RegisteredPolicyStatus.SUSPENDED]: "warning",
-  
   [UnderwritingStatus.PENDING]: "pending",
   [UnderwritingStatus.APPROVED]: "success",
-  [UnderwritingStatus.UNDER_REVIEW]: "info",
 } as const;

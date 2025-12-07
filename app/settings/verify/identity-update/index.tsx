@@ -2,17 +2,16 @@ import { AgrisaHeader } from "@/components/Header";
 import MeComponentUI from "@/domains/auth/components/me";
 
 /**
- * Trang cập nhật thông tin trong luồng eKYC
- * - Bắt buộc điền đầy đủ thông tin trước khi quét CCCD
- * - Không cho phép bỏ qua
+ * [DEPRECATED] Trang này không còn sử dụng trong flow mới
+ * Flow mới: eKYC → Confirm CCCD Info → Auto Update Profile
+ * 
+ * Trang được giữ lại để tương thích ngược
  */
 export default function IdentityUpdateScreen() {
   return (
     <>
-      <AgrisaHeader 
-        title="Cập nhật thông tin" 
-      />
-      <MeComponentUI isFromEkyc={true} />
+      <AgrisaHeader title="Cập nhật thông tin" />
+      <MeComponentUI />
     </>
   );
 };

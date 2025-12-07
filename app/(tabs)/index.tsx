@@ -1,6 +1,6 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
-import usePushNoti from "@/domains/shared/hooks/usePushNoti";
 import {
   DancingScript_400Regular,
   useFonts,
@@ -10,14 +10,14 @@ import { ReceiptText, Satellite, Scroll, Wheat } from "lucide-react-native";
 import React from "react";
 import { Image, RefreshControl, ScrollView, Text, View } from "react-native";
 import InfoCards from "../../components/HomeScreen/InfoCards";
+import { InsurancePartners } from "../../components/HomeScreen/Insurance-Partner";
 import { NewPolicies } from "../../components/HomeScreen/NewPolicies";
 import QuickActions from "../../components/quick-actions";
-import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 
 const quickActionItems = [
   {
     key: "farm",
-    name: "Trang trại",
+    name: "Trang trại của tôi",
     icon: Wheat,
     color: "#059669",
   },
@@ -29,13 +29,13 @@ const quickActionItems = [
   },
   {
     key: "satellite",
-    name: "Vệ tinh",
+    name: "Dữ liệu vệ tinh",
     icon: Satellite,
     color: "#59AC77",
   },
   {
-    key: "documents",
-    name: "Quản lý giấy tờ",
+    key: "claim",
+    name: "Quản lý bồi thường",
     icon: Scroll,
     color: "#C1856D",
   },
@@ -48,11 +48,6 @@ export default function HomeScreen() {
   const { refetch } = getPublicBasePolicy();
   const [refreshing, setRefreshing] = React.useState(false);
 
-  const sendNotification = usePushNoti({
-    title: "Thông báo từ Agrisa",
-    body: "Bạn vừa chạm vào xem ngay!",
-  });
-
   // Handle pull to refresh
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -62,13 +57,23 @@ export default function HomeScreen() {
 
   const { fullName, email } = useUserInfo();
 
+  // Helper để capitalize tên (viết hoa chữ cái đầu mỗi từ)
+  const capitalizeName = (name: string | null | undefined) => {
+    if (!name) return null;
+    return name
+      .toLowerCase()
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   if (!fontsLoaded) return null;
 
   return (
     <VStack className="flex-1 bg-white">
       {/* Cover Policy Image - Extended Background */}
       <Image
-        source={require("../../assets/images/Cover/Agrisa-Cover-Policy.png")}
+        source={require("../../assets/images/Cover/Agrisa-Cover-Home.png")}
         style={{
           position: "absolute",
           top: 0,
@@ -77,7 +82,6 @@ export default function HomeScreen() {
           height: 350, // Kéo dài xuống để phủ cả phần Quick Actions
           width: "100%",
           resizeMode: "cover",
-          opacity: 0.25,
           zIndex: 0,
         }}
       />
@@ -88,17 +92,21 @@ export default function HomeScreen() {
           <Text className="text-black text-lg">
             <Text
               style={{ fontFamily: "DancingScript_400Regular" }}
-              className="text-emerald-700 text-xl"
+              className="text-emerald-700 text-3xl"
             >
               Xin chào,
             </Text>{" "}
-            {fullName ? fullName : email ? email.split("@")[0] : "Người dùng Agrisa"}
+            {fullName
+              ? capitalizeName(fullName)
+              : email
+                ? email.split("@")[0]
+                : "Người dùng Agrisa"}
           </Text>
           <Image
             source={require("../../assets/images/Logo/Agrisa_Logo.png")}
             style={{
               width: 80,
-              height: 40,
+              height: 50,
               resizeMode: "contain",
             }}
           />
@@ -128,6 +136,9 @@ export default function HomeScreen() {
 
           {/* New Policies List */}
           <NewPolicies />
+
+          {/* Đối tác bảo hiểm */}
+          <InsurancePartners />
         </ScrollView>
       </View>
     </VStack>

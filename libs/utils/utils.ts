@@ -1,17 +1,65 @@
 export const Utils = {
   formatDateForMS: (timestamp: number): string => {
     const date = new Date(timestamp * 1000);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
+    // Chuyển sang GMT+7 (Việt Nam)
+    const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    const day = String(vietnamTime.getUTCDate()).padStart(2, "0");
+    const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, "0");
+    const year = vietnamTime.getUTCFullYear();
     return `${day}/${month}/${year}`;
   },
 
+  formatDateTimeForMS: (timestamp: number): string => {
+    const date = new Date(timestamp * 1000);
+    // Chuyển sang GMT+7 (Việt Nam)
+    const vietnamTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+    const day = String(vietnamTime.getUTCDate()).padStart(2, "0");
+    const month = String(vietnamTime.getUTCMonth() + 1).padStart(2, "0");
+    const year = vietnamTime.getUTCFullYear();
+    const hours = String(vietnamTime.getUTCHours()).padStart(2, "0");
+    const minutes = String(vietnamTime.getUTCMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  },
+
   formatVietnameseDate: (date: Date): string => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
     return `${day}/${month}/${year}`;
+  },
+
+  formatStringVietnameseDate: (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+
+    return `${day}/${month}/${year}`;
+  },
+
+  formatStringVietnameseDateTime: (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  },
+
+  formatStringVietnameseDateTimeGMT7: (dateString: string): string => {
+    const date = new Date(dateString);
+
+    // Chuyển sang GMT+7 (thêm 7 giờ vào UTC)
+    const gmt7Date = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+
+    const day = String(gmt7Date.getUTCDate()).padStart(2, "0");
+    const month = String(gmt7Date.getUTCMonth() + 1).padStart(2, "0");
+    const year = gmt7Date.getUTCFullYear();
+    const hours = String(gmt7Date.getUTCHours()).padStart(2, "0");
+    const minutes = String(gmt7Date.getUTCMinutes()).padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   },
 
   formatCurrency: (value: number): string => {
@@ -80,12 +128,51 @@ export const Utils = {
 
   getFrequencyLabel: (unit: string): string => {
     const labels: Record<string, string> = {
+      hourly: "Mỗi giờ",
       hour: "giờ",
+      daily: "Mỗi ngày",
       day: "ngày",
+      weekly: "Mỗi tuần",
       week: "tuần",
+      monthly: "Mỗi tháng",
       month: "tháng",
     };
     return labels[unit] || unit;
+  },
+
+  // Formatting cho Condition trong Policy Detail
+  formatAggregationLabel: (func: string): string => {
+    const labels: Record<string, string> = {
+      sum: "Tổng cộng",
+      avg: "Trung bình",
+      min: "Giá trị nhỏ nhất",
+      max: "Giá trị lớn nhất",
+      median: "Trung vị",
+    };
+    return labels[func] || func;
+  },
+
+  formatThresholdOperator: (op: string): string => {
+    const labels: Record<string, string> = {
+      "<": "Nhỏ hơn",
+      ">": "Lớn hơn",
+      "<=": "Nhỏ hơn hoặc bằng",
+      ">=": "Lớn hơn hoặc bằng",
+      "==": "Bằng",
+      "!=": "Khác",
+    };
+    return labels[op] || op;
+  },
+
+  formatBaselineFunction: (func: string): string => {
+    const labels: Record<string, string> = {
+      avg: "Trung bình",
+      median: "Trung vị",
+      min: "Giá trị thấp nhất",
+      max: "Giá trị cao nhất",
+      sum: "Tổng",
+    };
+    return labels[func] || func;
   },
 
   convertImageToBase64: async (uri: string): Promise<string> => {
@@ -167,14 +254,13 @@ export const Utils = {
 
   formatTimestamp: (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
+    const day = String(date.getUTCDate()).padStart(2, "0");
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const year = date.getUTCFullYear();
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+    return `${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
   },
 
   /**
@@ -254,5 +340,289 @@ export const Utils = {
 
     area = (area * R * R) / 2;
     return Math.abs(area);
+  },
+
+  /**
+   * 🌱 Đánh giá trạng thái NDMI (Normalized Difference Moisture Index)
+   * @param value - Giá trị NDMI từ -1 đến 1
+   * @returns Object chứa label, color (từ AgrisaColors), iconName (lucide), advice
+   */
+  getNDMIStatus: (
+    value: number
+  ): {
+    label: string;
+    color: string;
+    iconName: string;
+    advice: string;
+  } => {
+    if (value > 0.4)
+      return {
+        label: "Rất ẩm",
+        color: "info", // Màu xanh dương
+        iconName: "droplets",
+        advice: "Đất đủ nước, không cần tưới",
+      };
+    if (value > 0.2)
+      return {
+        label: "Độ ẩm tốt",
+        color: "success", // Màu xanh lá
+        iconName: "sprout",
+        advice: "Cây trồng phát triển tốt",
+      };
+    if (value > 0.1)
+      return {
+        label: "Hơi khô",
+        color: "pending", // Màu vàng
+        iconName: "alert-triangle",
+        advice: "Nên theo dõi, có thể cần tưới",
+      };
+    if (value > 0)
+      return {
+        label: "Khô",
+        color: "warning", // Màu cam
+        iconName: "triangle-alert",
+        advice: "Cần tưới nước sớm",
+      };
+    return {
+      label: "Rất khô",
+      color: "error", // Màu đỏ
+      iconName: "alert-circle",
+      advice: "Cần tưới nước ngay!",
+    };
+  },
+
+  /**
+   * 📊 Đánh giá độ tin cậy của dữ liệu vệ tinh dựa trên confidence và cloud cover
+   * @param confidence - Độ tin cậy từ 0 đến 1
+   * @param cloudCover - Phần trăm mây che (0-100)
+   * @returns Object chứa status, message, iconName, color
+   */
+  getConfidenceExplanation: (
+    confidence: number,
+    cloudCover: number
+  ): {
+    status: "low" | "medium" | "high";
+    message: string;
+    iconName: string;
+    color: string;
+  } => {
+    if (confidence < 0.3) {
+      return {
+        status: "low",
+        message: `Dữ liệu tham khảo (mây che ${Math.round(cloudCover)}%)`,
+        iconName: "cloud",
+        color: "muted_text",
+      };
+    }
+    if (confidence < 0.7) {
+      return {
+        status: "medium",
+        message: "Dữ liệu khá chính xác",
+        iconName: "cloud-sun",
+        color: "pending",
+      };
+    }
+    return {
+      status: "high",
+      message: "Dữ liệu rất chính xác",
+      iconName: "sun",
+      color: "success",
+    };
+  },
+
+  /**
+   * 🔍 So sánh policy number để kiểm tra tính hợp lệ của monitor data
+   * @param monitorPolicyNumber - Policy number từ monitor data response
+   * @param detailPolicyNumber - Policy number từ policy detail
+   * @returns true nếu khớp, false nếu không khớp
+   */
+  validateMonitorDataPolicy: (
+    monitorPolicyNumber: string | undefined | null,
+    detailPolicyNumber: string | undefined | null
+  ): boolean => {
+    if (!monitorPolicyNumber || !detailPolicyNumber) {
+      console.warn("⚠️ Missing policy number for validation");
+      return false;
+    }
+
+    const isValid = monitorPolicyNumber.trim() === detailPolicyNumber.trim();
+
+    if (!isValid) {
+      console.error(
+        `❌ Policy number mismatch: Monitor="${monitorPolicyNumber}" vs Detail="${detailPolicyNumber}"`
+      );
+    }
+
+    return isValid;
+  },
+
+  /**
+   * 🎯 Kiểm tra xem có nên hiển thị monitor data hay không
+   * @param underwritingStatus - Trạng thái underwriting (approved/rejected/pending)
+   * @returns true nếu nên hiển thị (approved hoặc rejected)
+   */
+  shouldShowMonitorData: (
+    underwritingStatus: string | undefined | null
+  ): boolean => {
+    if (!underwritingStatus) return false;
+
+    const status = underwritingStatus.toLowerCase();
+    const shouldShow = status === "approved" || status === "rejected";
+
+    console.log(
+      `📊 Monitor data display check: status="${status}" → ${shouldShow ? "SHOW" : "HIDE"}`
+    );
+
+    return shouldShow;
+  },
+
+  /**
+   * 💳 Format bank account number với dấu cách
+   * @param accountNumber - Số tài khoản ngân hàng
+   * @returns Số tài khoản đã format (VD: "1014 2511 3030 1689 4")
+   */
+  formatBankAccount: (accountNumber: string): string => {
+    if (!accountNumber) return "";
+    // Thêm dấu cách sau mỗi 4 chữ số
+    return accountNumber.replace(/(\d{4})(?=\d)/g, "$1 ");
+  },
+
+  /**
+   * 🏦 Lấy tên ngân hàng từ BIN code
+   * @param bin - Mã BIN của ngân hàng (6 số đầu)
+   * @returns Tên ngân hàng
+   */
+  getBankName: (bin: string): string => {
+    const bankMap: Record<string, string> = {
+      "970415": "Vietinbank",
+      "970422": "MB Bank",
+      "970436": "Vietcombank",
+      "970418": "BIDV",
+      "970405": "Agribank",
+      "970407": "Techcombank",
+      "970432": "VPBank",
+      "970423": "TPBank",
+      "970403": "Sacombank",
+      "970437": "HDBank",
+      "970441": "VIB",
+      "970454": "VietCapital Bank",
+      "970429": "SCB",
+      "970448": "OCB",
+      "970409": "BacA Bank",
+      "970416": "ACB",
+      "970438": "BVBank",
+      "970440": "SeABank",
+      "970443": "SHB",
+      "970431": "Eximbank",
+      "970426": "MSB",
+      "970414": "Oceanbank",
+      "970433": "VietBank",
+      "970439": "Public Bank",
+      "970458": "UOB",
+      "970452": "VietinBank - Chi nhánh",
+    };
+
+    return bankMap[bin] || "Ngân hàng";
+  },
+
+  /**
+   * ⏰ Format thời gian hết hạn payment
+   * @param expiredAt - ISO 8601 timestamp
+   * @returns Object chứa formatted time và remaining minutes
+   */
+  formatPaymentExpiry: (
+    expiredAt: string
+  ): {
+    formattedTime: string;
+    remainingMinutes: number;
+    isExpired: boolean;
+  } => {
+    const expiryDate = new Date(expiredAt);
+    const now = new Date();
+    const remainingMs = expiryDate.getTime() - now.getTime();
+    const remainingMinutes = Math.floor(remainingMs / 60000);
+
+    return {
+      formattedTime: expiryDate.toLocaleString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      remainingMinutes,
+      isExpired: remainingMinutes <= 0,
+    };
+  },
+
+  /**
+   * 📝 Generate payment description
+   * @param policyNumber - Số hợp đồng
+   * @returns Mô tả thanh toán
+   */
+  generatePaymentDescription: (policyNumber: string): string => {
+    return `TT ${policyNumber}`;
+  },
+
+  /**
+   * 🔢 Format order code để dễ đọc
+   * @param orderCode - Mã đơn hàng
+   * @returns Order code đã format
+   */
+  formatOrderCode: (orderCode: number): string => {
+    return orderCode.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  },
+
+  /**
+   * ⏱️ Countdown timer cho payment expiry
+   * @param remainingMinutes - Số phút còn lại
+   * @returns Object chứa hours, minutes, color, message
+   */
+  getPaymentCountdown: (
+    remainingMinutes: number
+  ): {
+    hours: number;
+    minutes: number;
+    color: string;
+    message: string;
+  } => {
+    if (remainingMinutes <= 0) {
+      return {
+        hours: 0,
+        minutes: 0,
+        color: "error",
+        message: "Đã hết hạn",
+      };
+    }
+
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = remainingMinutes % 60;
+
+    let color = "success";
+    let message = "Còn nhiều thời gian";
+
+    if (remainingMinutes <= 5) {
+      color = "error";
+      message = "Sắp hết hạn!";
+    } else if (remainingMinutes <= 10) {
+      color = "warning";
+      message = "Cần thanh toán sớm";
+    }
+
+    return { hours, minutes, color, message };
+  },
+
+  /**
+   * 💳 Lấy nhãn loại thanh toán
+   * @param type - Loại payment (policy_registration_payment, hopdong, etc.)
+   * @returns Nhãn tiếng Việt
+   */
+  getPaymentTypeLabel: (type: string): string => {
+    const typeMap: Record<string, string> = {
+      policy_registration_payment: "Thanh toán phí bảo hiểm",
+      hopdong: "Thanh toán hợp đồng",
+      contract: "Thanh toán hợp đồng",
+    };
+    return typeMap[type] || "Thanh toán";
   },
 };

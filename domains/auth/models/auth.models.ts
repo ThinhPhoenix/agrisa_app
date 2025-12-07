@@ -70,6 +70,10 @@ export interface UserProfile {
   ward_code: string;
   ward_name: string;
   postal_code: string;
+  // Thông tin ngân hàng để nhận bồi thường
+  account_number: string;
+  account_name: string;
+  bank_code: string;
   created_at: string;
   updated_at: string;
   last_updated_by: string;

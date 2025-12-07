@@ -26,12 +26,11 @@ export const useUserInfo = () => {
     // 👤 THÔNG TIN CƠ BẢN
     // ============================================
     
-    /** User ID - Ưu tiên từ userProfile */
-    userId: userProfile?.user_id || user?.id || null,
-    
     /** Tên đầy đủ - Ưu tiên từ userProfile */
     fullName: userProfile?.full_name || null,
     
+    accountName: userProfile?.account_name || null,
+
     /** Tên hiển thị - Ưu tiên từ userProfile */
     displayName: userProfile?.display_name || userProfile?.full_name || user?.email?.split("@")[0] || "Người dùng",
     

@@ -1,12 +1,14 @@
+import { FullscreenImageViewer } from "@/components/image-viewer";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Farm } from "@/domains/farm/models/farm.models";
-import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
   Button,
   ButtonText,
   HStack,
+  Image,
+  Pressable,
   ScrollView,
   Text,
   VStack,
@@ -14,16 +16,16 @@ import {
 import {
   Calendar,
   CheckCircle2,
-  Coffee,
   Edit3,
   FileCheck,
+  ImageIcon,
   MapPin,
   Shield,
   Sprout,
   Wheat,
   XCircle,
 } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 
 interface DetailFarmProps {
   /**
@@ -60,18 +62,31 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
    * Get crop icon và config theo loại cây
    */
   const { colors } = useAgrisaColors();
+
+  // State để quản lý fullscreen image viewer
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null
+  );
+
+  // Parse land_certificate_url thành array các URL
+  const certificateImages = farm.land_certificate_url
+    ? farm.land_certificate_url.split("|").filter((url) => url.trim())
+    : [];
+
   const getCropConfig = (cropType: string) => {
     switch (cropType) {
       case "rice":
         return {
           icon: Wheat,
+          isImage: false,
           color: colors.success,
           label: "Lúa",
           bg: colors.successSoft,
         };
       case "coffee":
         return {
-          icon: Coffee,
+          icon: require("@/assets/images/Icon/Coffea-Icon.png"),
+          isImage: true,
           color: "#8B4513",
           label: "Cà phê",
           bg: "#FFF8DC",
@@ -79,6 +94,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
       default:
         return {
           icon: Sprout,
+          isImage: false,
           color: "#8B4513",
           label: "Cây trồng khác",
           bg: "#FFF8DC",
@@ -87,13 +103,9 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
   };
 
   const cropConfig = getCropConfig(farm.crop_type);
-  const CropIcon = cropConfig.icon;
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      bg={colors.background}
-    >
+    <ScrollView showsVerticalScrollIndicator={false} bg={colors.background}>
       <VStack space="md" p="$4" pb="$24">
         {/* ===== HEADER CARD ===== */}
         <Box
@@ -142,11 +154,21 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                 shadowOpacity={0.3}
                 shadowRadius={4}
               >
-                <CropIcon
-                  size={28}
-                  color={colors.primary_white_text}
-                  strokeWidth={2.5}
-                />
+                {cropConfig.isImage ? (
+                  <Image
+                    source={cropConfig.icon}
+                    alt="Crop icon"
+                    w={28}
+                    h={28}
+                    tintColor={colors.primary_white_text}
+                  />
+                ) : (
+                  <cropConfig.icon
+                    size={28}
+                    color={colors.primary_white_text}
+                    strokeWidth={2.5}
+                  />
+                )}
               </Box>
             </HStack>
           </Box>
@@ -168,13 +190,9 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                   fontSize={18}
                   fontWeight="700"
                 >
-                  {(farm.area_sqm)} ha
+                  {farm.area_sqm} ha
                 </Text>
-                <Text
-                  color={colors.secondary_text}
-                  fontSize={10}
-                  mt="$0.5"
-                >
+                <Text color={colors.secondary_text} fontSize={10} mt="$0.5">
                   {farm.area_sqm * 10000} m²
                 </Text>
               </VStack>
@@ -227,16 +245,8 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
           p="$4"
         >
           <HStack alignItems="center" space="xs" mb="$3">
-            <MapPin
-              size={18}
-              color={colors.secondary_text}
-              strokeWidth={2}
-            />
-            <Text
-              fontSize={16}
-              fontWeight="700"
-              color={colors.primary_text}
-            >
+            <MapPin size={18} color={colors.secondary_text} strokeWidth={2} />
+            <Text fontSize={16} fontWeight="700" color={colors.primary_text}>
               Địa chỉ
             </Text>
           </HStack>
@@ -246,17 +256,8 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
             <InfoRow label="Quận/Huyện" value={farm.district} />
             <InfoRow label="Phường/Xã" value={farm.commune} />
 
-            <Box
-              bg={colors.card_surface}
-              borderRadius={12}
-              p="$3"
-              mt="$2"
-            >
-              <Text
-                fontSize={13}
-                color={colors.primary_text}
-                lineHeight={20}
-              >
+            <Box bg={colors.card_surface} borderRadius={12} p="$3" mt="$2">
+              <Text fontSize={13} color={colors.primary_text} lineHeight={20}>
                 {farm.address}
               </Text>
             </Box>
@@ -272,16 +273,8 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
           p="$4"
         >
           <HStack alignItems="center" space="xs" mb="$3">
-            <Calendar
-              size={18}
-              color={colors.secondary_text}
-              strokeWidth={2}
-            />
-            <Text
-              fontSize={16}
-              fontWeight="700"
-              color={colors.primary_text}
-            >
+            <Calendar size={18} color={colors.secondary_text} strokeWidth={2} />
+            <Text fontSize={16} fontWeight="700" color={colors.primary_text}>
               Thông tin canh tác
             </Text>
           </HStack>
@@ -295,10 +288,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
               label="Ngày thu hoạch dự kiến"
               value={Utils.formatDateForMS(farm.expected_harvest_date)}
             />
-            <InfoRow
-              label="Loại đất canh tác"
-              value={`${farm.soil_type}`}
-            />
+            <InfoRow label="Loại đất canh tác" value={`${farm.soil_type}`} />
           </VStack>
         </Box>
 
@@ -316,11 +306,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
               color={colors.secondary_text}
               strokeWidth={2}
             />
-            <Text
-              fontSize={16}
-              fontWeight="700"
-              color={colors.primary_text}
-            >
+            <Text fontSize={16} fontWeight="700" color={colors.primary_text}>
               Giấy tờ pháp lý
             </Text>
           </HStack>
@@ -346,11 +332,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                 </Text>
               </VStack>
               {farm.land_ownership_verified && (
-                <Shield
-                  size={24}
-                  color={colors.success}
-                  strokeWidth={2.5}
-                />
+                <Shield size={24} color={colors.success} strokeWidth={2.5} />
               )}
             </HStack>
 
@@ -384,16 +366,8 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                     </>
                   ) : (
                     <>
-                      <XCircle
-                        size={16}
-                        color={colors.error}
-                        strokeWidth={2}
-                      />
-                      <Text
-                        fontSize={13}
-                        fontWeight="600"
-                        color={colors.error}
-                      >
+                      <XCircle size={16} color={colors.error} strokeWidth={2} />
+                      <Text fontSize={13} fontWeight="600" color={colors.error}>
                         Chờ xác minh
                       </Text>
                     </>
@@ -427,16 +401,8 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                     </>
                   ) : (
                     <>
-                      <XCircle
-                        size={16}
-                        color={colors.error}
-                        strokeWidth={2}
-                      />
-                      <Text
-                        fontSize={13}
-                        fontWeight="600"
-                        color={colors.error}
-                      >
+                      <XCircle size={16} color={colors.error} strokeWidth={2} />
+                      <Text fontSize={13} fontWeight="600" color={colors.error}>
                         Chờ xác minh
                       </Text>
                     </>
@@ -446,6 +412,104 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
             </VStack>
           </VStack>
         </Box>
+
+        {/* ===== ẢNH GIẤY CHỨNG NHẬN ===== */}
+        {certificateImages.length > 0 && (
+          <Box
+            bg={colors.background}
+            borderRadius={16}
+            borderWidth={1}
+            borderColor={colors.frame_border}
+            p="$4"
+          >
+            <HStack alignItems="center" space="xs" mb="$3">
+              <ImageIcon
+                size={18}
+                color={colors.secondary_text}
+                strokeWidth={2}
+              />
+              <Text fontSize={16} fontWeight="700" color={colors.primary_text}>
+                Ảnh giấy chứng nhận
+              </Text>
+              <Box
+                bg={colors.primary}
+                borderRadius="$full"
+                px="$2"
+                py="$0.5"
+                ml="$1"
+              >
+                <Text
+                  fontSize={11}
+                  fontWeight="600"
+                  color={colors.primary_white_text}
+                >
+                  {certificateImages.length}
+                </Text>
+              </Box>
+            </HStack>
+
+            {/* Grid hiển thị ảnh thumbnail */}
+            <HStack flexWrap="wrap" mx={-4}>
+              {certificateImages.map((imageUrl, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => setSelectedImageIndex(index)}
+                  style={{
+                    width: "33.33%",
+                    padding: 4,
+                  }}
+                >
+                  <Box
+                    borderRadius={12}
+                    overflow="hidden"
+                    borderWidth={1}
+                    borderColor={colors.frame_border}
+                    aspectRatio={1}
+                  >
+                    <Image
+                      source={{
+                        uri: imageUrl.startsWith("http")
+                          ? imageUrl
+                          : `https://${imageUrl}`,
+                      }}
+                      alt={`Giấy chứng nhận ${index + 1}`}
+                      w="100%"
+                      h="100%"
+                      resizeMode="cover"
+                    />
+                    {/* Overlay số thứ tự */}
+                    <Box
+                      position="absolute"
+                      bottom={4}
+                      right={4}
+                      bg="rgba(0,0,0,0.6)"
+                      borderRadius="$full"
+                      px="$2"
+                      py="$0.5"
+                    >
+                      <Text
+                        fontSize={10}
+                        fontWeight="600"
+                        color={colors.primary_white_text}
+                      >
+                        {index + 1}/{certificateImages.length}
+                      </Text>
+                    </Box>
+                  </Box>
+                </Pressable>
+              ))}
+            </HStack>
+
+            <Text
+              fontSize={11}
+              color={colors.muted_text}
+              textAlign="center"
+              mt="$2"
+            >
+              Nhấn vào ảnh để xem chi tiết
+            </Text>
+          </Box>
+        )}
 
         {/* ===== THỜI GIAN ===== */}
         <Box
@@ -510,6 +574,16 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
           </HStack>
         </Button>
       </VStack>
+
+      {/* ===== FULLSCREEN IMAGE VIEWER ===== */}
+      <FullscreenImageViewer
+        images={certificateImages.map((url) =>
+          url.startsWith("http") ? url : `https://${url}`
+        )}
+        selectedIndex={selectedImageIndex}
+        onClose={() => setSelectedImageIndex(null)}
+        onIndexChange={(index) => setSelectedImageIndex(index)}
+      />
     </ScrollView>
   );
 };
@@ -521,16 +595,11 @@ const InfoRow: React.FC<{
   label: string;
   value: string;
 }> = ({ label, value }) => {
-
   const { colors } = useAgrisaColors();
-  
+
   return (
     <HStack justifyContent="space-between" alignItems="center" py="$1">
-      <Text
-        fontSize={12}
-        color={colors.muted_text}
-        fontWeight="500"
-      >
+      <Text fontSize={12} color={colors.muted_text} fontWeight="500">
         {label}
       </Text>
       <Text

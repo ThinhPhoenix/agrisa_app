@@ -1,4 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { NotificationBadge } from "@/domains/notification/components/NotificationBadge";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Animated, Pressable, SafeAreaView, Text, View } from "react-native";
@@ -362,7 +363,11 @@ export default function TabLayout() {
         options={{
           title: "Thông báo",
           tabBarIcon: ({ color, size }) => (
-            <NotificationIcon width={size} height={size} color={color} />
+            <View style={{ position: "relative" }}>
+              <NotificationIcon width={size} height={size} color={color} />
+              {/* Badge hiển thị số thông báo chưa đọc */}
+              <NotificationBadge size="sm" absolute top={-4} right={-6} />
+            </View>
           ),
         }}
       />

@@ -35,11 +35,8 @@ interface EvidencePhoto {
 export const CancelPolicyRequest: React.FC = () => {
   const { colors } = useAgrisaColors();
   const { id: registeredPolicyId } = useLocalSearchParams<{ id: string }>();
-  const { cancelPolicyMutation, getRegisteredPolicyDetail } = usePolicy();
+  const { cancelPolicyMutation } = usePolicy();
   const formRef = useRef<any>(null);
-
-  // Lấy thông tin registered policy để có base_policy_id
-  const { data: policyDetailData } = getRegisteredPolicyDetail(registeredPolicyId || "");
 
   // States
   const [cancelType, setCancelType] = useState<CancelRequestType>("other");
@@ -195,52 +192,50 @@ export const CancelPolicyRequest: React.FC = () => {
       return;
     }
 
-      try {
-      setIsSubmitting(true);
+    try {
+        setIsSubmitting(true);
 
-      // Set compensate_amount = 0 (không cho người dùng nhập)
-      const amount = 0;
+        // Set compensate_amount = 0 (không cho người dùng nhập)
+        const amount = 0;
 
-      // Tạo evidence object (description + images URLs)
-      const evidence = {
-        description: evidenceDescription,
-        images: evidencePhotos.map((photo) => ({
-          url: photo.uri, // TODO: Thay bằng URL thực sau khi upload
-        })),
-      };
+        // Tạo evidence object (description + images URLs)
+        const evidence = {
+          description: evidenceDescription,
+          images: evidencePhotos.map((photo) => ({
+            url: photo.uri, // TODO: Thay bằng URL thực sau khi upload
+          })),
+        };
 
-      const basePolicyId = policyDetailData?.data?.base_policy_id || "";
+        // Validate registered_policy_id exists
+        if (!registeredPolicyId) {
+          Alert.alert(
+            "Lỗi",
+            "Không tìm thấy thông tin hợp đồng. Vui lòng thử lại.",
+            [{ text: "Đóng" }]
+          );
+          setIsSubmitting(false);
+          return;
+        }
 
-      console.log("📤 Submitting cancel request:", {
-        registered_policy_id: registeredPolicyId,
-        base_policy_id: basePolicyId,
-        cancel_request_type: cancelType,
-        reason,
-        compensate_amount: amount,
-        evidence,
-      });      // Validate base_policy_id exists
-      if (!basePolicyId) {
-        Alert.alert(
-          "Lỗi",
-          "Không tìm thấy thông tin hợp đồng gốc. Vui lòng thử lại.",
-          [{ text: "Đóng" }]
-        );
-        setIsSubmitting(false);
-        return;
-      }
+        console.log("📤 Submitting cancel request:", {
+          registered_policy_id: registeredPolicyId,
+          cancel_request_type: cancelType,
+          reason,
+          compensate_amount: amount,
+          evidence,
+        });
 
-      // Call mutation
-      await cancelPolicyMutation.mutateAsync({
-        registered_policy_id: registeredPolicyId!,
-        base_policy_id: basePolicyId,
-        cancel_request_type: cancelType,
-        reason,
-        compensate_amount: amount,
-        evidence,
-      });
+        // Call mutation
+        await cancelPolicyMutation.mutateAsync({
+          registered_policy_id: registeredPolicyId,
+          cancel_request_type: cancelType,
+          reason,
+          compensate_amount: amount,
+          evidence,
+        });
 
-      // Success được xử lý trong mutation onSuccess
-    } catch (error) {
+        // Success được xử lý trong mutation onSuccess
+      } catch (error) {
       console.error("❌ Error submitting cancel request:", error);
       // Error được xử lý trong mutation onError
     } finally {

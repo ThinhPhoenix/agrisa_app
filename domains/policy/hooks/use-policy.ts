@@ -137,7 +137,6 @@ export const usePolicy = () => {
     mutationKey: [QueryKey.POLICY.CANCEL],
     mutationFn: async (payload: {
       registered_policy_id: string;
-      base_policy_id: string;
       cancel_request_type: CancelRequestPayload["cancel_request_type"];
       reason: string;
       compensate_amount: number;
@@ -145,7 +144,6 @@ export const usePolicy = () => {
     }) => {
       return await policyServices.post.cancel_registered_policy(
         payload.registered_policy_id,
-        payload.base_policy_id,
         {
           cancel_request_type: payload.cancel_request_type,
           reason: payload.reason,

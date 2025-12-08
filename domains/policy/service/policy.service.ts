@@ -20,11 +20,11 @@ export const policyServices = {
       );
     },
     cancel_registered_policy: async (
-      base_policy_id: string,
+      registered_policy_id: string,
       payload: CancelRequestPayload
     ): Promise<ApiResponse<any>> => {
       return useAxios.post(
-        `/policy/protected/api/v2/cancel_request?policy_id=${base_policy_id}`,
+        `/policy/protected/api/v2/cancel_request?policy_id=${registered_policy_id}`,
         payload
       );
     },

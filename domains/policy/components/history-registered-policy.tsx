@@ -20,6 +20,7 @@ import {
   Text,
   VStack,
 } from "@gluestack-ui/themed";
+import { router } from "expo-router";
 import {
   AlertCircle,
   Banknote,
@@ -41,7 +42,6 @@ import React, { useState } from "react";
 import { Linking, RefreshControl } from "react-native";
 import { UnderwritingStatus } from "../enums/policy-status.enum";
 import { RegisteredPolicy } from "../models/policy.models";
-import { router } from "expo-router";
 
 interface DetailRegisteredPolicyProps {
   policy: RegisteredPolicy;

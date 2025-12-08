@@ -221,16 +221,16 @@ export const secureStorage = {
   },
 
   /**
-   * Xóa tất cả auth data (token + user + fullName)
+   * Xóa auth data (token + user) - GIỮ LẠI fullName để hiển thị lại khi login
    */
   clearAuth: async (): Promise<void> => {
     try {
       await Promise.all([
         SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN),
         SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
-        SecureStore.deleteItemAsync(STORAGE_KEYS.FULL_NAME), // ✅ Xóa fullName để tránh hiển thị tên acc cũ
+        // ⚠️ KHÔNG xóa fullName ở đây - chỉ xóa khi đổi tài khoản
       ]);
-      console.log("✅ [SecureStorage] Auth data cleared (including fullName)");
+      console.log("✅ [SecureStorage] Auth data cleared (fullName preserved)");
     } catch (error) {
       console.error("❌ [SecureStorage] Error clearing auth:", error);
     }
@@ -527,6 +527,7 @@ export const secureStorage = {
   /**
    * Xóa TẤT CẢ dữ liệu (logout hoàn toàn)
    * Bao gồm: token, user, identifier, biometric
+   * ⚠️ GIỮ LẠI fullName để hiển thị lại khi login
    */
   clearAll: async (): Promise<void> => {
     try {
@@ -537,13 +538,14 @@ export const secureStorage = {
         SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
         SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_IDENTIFIER),
         SecureStore.deleteItemAsync(STORAGE_KEYS.USER_PROFILE),
+        // ⚠️ KHÔNG xóa fullName - chỉ xóa khi đổi tài khoản
         // Xóa biometric của account hiện tại
         savedIdentifier
           ? secureStorage.clearBiometric(savedIdentifier)
           : Promise.resolve(),
       ]);
 
-      console.log("✅ [SecureStorage] All data cleared");
+      console.log("✅ [SecureStorage] All data cleared (fullName preserved)");
     } catch (error) {
       console.error("❌ [SecureStorage] Error clearing all data:", error);
     }
@@ -623,6 +625,37 @@ export const secureStorage = {
       console.log("✅ [SecureStorage] Full name cleared");
     } catch (error) {
       console.error("❌ [SecureStorage] Error clearing full name:", error);
+    }
+  },
+
+  // ============================================
+  // 🔄 CHANGE ACCOUNT - Đổi tài khoản
+  // ============================================
+
+  /**
+   * Xóa dữ liệu khi đổi tài khoản
+   * Bao gồm: token, user, identifier, biometric, fullName, profile
+   * Sử dụng khi user muốn đăng nhập tài khoản khác
+   */
+  clearForAccountChange: async (): Promise<void> => {
+    try {
+      const savedIdentifier = await secureStorage.getIdentifier();
+
+      await Promise.all([
+        SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN),
+        SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
+        SecureStore.deleteItemAsync(STORAGE_KEYS.SAVED_IDENTIFIER),
+        SecureStore.deleteItemAsync(STORAGE_KEYS.USER_PROFILE),
+        SecureStore.deleteItemAsync(STORAGE_KEYS.FULL_NAME), // ✅ Xóa fullName khi đổi tài khoản
+        // Xóa biometric của account cũ
+        savedIdentifier
+          ? secureStorage.clearBiometric(savedIdentifier)
+          : Promise.resolve(),
+      ]);
+
+      console.log("✅ [SecureStorage] All data cleared for account change (including fullName)");
+    } catch (error) {
+      console.error("❌ [SecureStorage] Error clearing data for account change:", error);
     }
   },
 };

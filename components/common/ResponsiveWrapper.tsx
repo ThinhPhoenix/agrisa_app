@@ -29,6 +29,10 @@ const ResponsiveWrapper: React.FC<ResponsiveWrapperProps> = ({
     "/auth/sign-up",
     "/auth/forgot-password",
     "/auth/username-sign-in",
+    "/auth/cccd-input",
+    "/auth/email-input",
+    "/auth/otp-verification",
+    "/auth/phone-verification",
     "/"
   ];
 

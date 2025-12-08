@@ -55,10 +55,10 @@ export const useAuth = () => {
         console.log("📋 [Sign In] Profile response:", profile);
 
         // Nếu partner_id có giá trị (không phải null/undefined/empty) => Không cho đăng nhập
-        if (profile?.partner_id) {
+        if (profile?.partner_id || profile?.role_id === "system_admin") {
           console.log("❌ [Sign In] Partner detected, access denied");
           notification.error(
-            "Bạn không được cấp quyền đăng nhập vào ứng dụng này. Vui lòng sử dụng ứng dụng dành cho đối tác."
+            "Bạn không được cấp quyền đăng nhập vào ứng dụng này. Vui lòng sử dụng ứng dụng dành cho đối tác/Admin."
           );
           return;
         }
@@ -120,9 +120,47 @@ export const useAuth = () => {
     },
   });
 
+  // ============================================
+  // 📱 PHONE VERIFICATION - Xác thực số điện thoại
+  // ============================================
+  
+  const sendPhoneOTPMutation = useMutation({
+    mutationKey: [QueryKey.AUTH.SEND_PHONE_OTP],
+    mutationFn: async (phone: string) => {
+      return await AuthServices.sendPhoneVerificationCode(phone);
+    },
+    onSuccess: () => {
+      notification.success("Mã OTP đã được gửi đến số điện thoại của bạn");
+      console.log("✅ [Phone OTP] OTP sent successfully");
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || "Không thể gửi mã OTP. Vui lòng thử lại sau.";
+      notification.error(errorMessage);
+      console.error("❌ [Phone OTP] Send OTP error:", error);
+    },
+  });
+
+  const verifyPhoneOTPMutation = useMutation({
+    mutationKey: [QueryKey.AUTH.VERIFY_PHONE_OTP],
+    mutationFn: async ({ phone, code }: { phone: string; code: string }) => {
+      return await AuthServices.verifyPhoneCode(phone, code);
+    },
+    onSuccess: () => {
+      notification.success("Xác thực số điện thoại thành công");
+      console.log("✅ [Phone OTP] Phone verified successfully");
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || "Mã OTP không chính xác. Vui lòng thử lại.";
+      notification.error(errorMessage);
+      console.error("❌ [Phone OTP] Verify OTP error:", error);
+    },
+  });
+
   return {
     signInMutation,
     signUpMutation,
     checkIdentifierMutation,
+    sendPhoneOTPMutation,
+    verifyPhoneOTPMutation,
   };
 };

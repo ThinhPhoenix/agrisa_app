@@ -177,7 +177,8 @@ const SignInComponentUI = () => {
       {
         text: "Đổi tài khoản",
         onPress: async () => {
-          await secureStorage.clearIdentifier();
+          // ✅ Xóa tất cả dữ liệu bao gồm fullName khi đổi tài khoản
+          await secureStorage.clearForAccountChange();
           router.replace("/auth/username-sign-in");
         },
       },

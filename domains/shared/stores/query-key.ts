@@ -4,6 +4,8 @@ export const QueryKey = {
     SIGN_UP: "sign-up",
     CHECK_IDENTIFIER: "check-identifier",
     ME: "auth-me",
+    SEND_PHONE_OTP: "send-phone-otp",
+    VERIFY_PHONE_OTP: "verify-phone-otp",
   },
 
   INSURANCE_PARTNER: {

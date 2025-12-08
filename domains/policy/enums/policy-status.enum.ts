@@ -6,16 +6,19 @@
 
 /**
  * Trạng thái của policy đã đăng ký
- * Theo backend: draft, pending_review, pending_payment, active, expired, cancelled, rejected
+ * Theo backend: draft, pending_review, pending_payment, active, payout, expired, pending_cancel, cancelled, rejected, dispute
  */
 export enum RegisteredPolicyStatus {
   DRAFT = "draft", // Bản nháp - chưa submit
   PENDING_REVIEW = "pending_review", // Chờ xét duyệt/thẩm định
   PENDING_PAYMENT = "pending_payment", // Chờ thanh toán (đã duyệt)
   ACTIVE = "active", // Đang hoạt động
+  PAYOUT = "payout", // Đang chi trả bồi thường
   EXPIRED = "expired", // Hết hạn
+  PENDING_CANCEL = "pending_cancel", // Chờ xử lý hủy
   CANCELLED = "cancelled", // Đã hủy
   REJECTED = "rejected", // Bị từ chối
+  DISPUTE = "dispute", // Tranh chấp
 }
 
 /**
@@ -49,9 +52,12 @@ export const RegisteredPolicyStatusLabels: Record<
   [RegisteredPolicyStatus.PENDING_REVIEW]: "Chờ xét duyệt",
   [RegisteredPolicyStatus.PENDING_PAYMENT]: "Chờ thanh toán",
   [RegisteredPolicyStatus.ACTIVE]: "Đang hoạt động",
+  [RegisteredPolicyStatus.PAYOUT]: "Đang chi trả",
   [RegisteredPolicyStatus.EXPIRED]: "Hết hạn",
+  [RegisteredPolicyStatus.PENDING_CANCEL]: "Chờ xử lý hủy",
   [RegisteredPolicyStatus.CANCELLED]: "Đã hủy",
   [RegisteredPolicyStatus.REJECTED]: "Bị từ chối",
+  [RegisteredPolicyStatus.DISPUTE]: "Tranh chấp",
 };
 
 /**
@@ -71,9 +77,12 @@ export const PolicyStatusColors = {
   [RegisteredPolicyStatus.PENDING_REVIEW]: "pending",
   [RegisteredPolicyStatus.PENDING_PAYMENT]: "warning",
   [RegisteredPolicyStatus.ACTIVE]: "success",
+  [RegisteredPolicyStatus.PAYOUT]: "info",
   [RegisteredPolicyStatus.EXPIRED]: "muted_text",
+  [RegisteredPolicyStatus.PENDING_CANCEL]: "warning",
   [RegisteredPolicyStatus.CANCELLED]: "error",
   [RegisteredPolicyStatus.REJECTED]: "error",
+  [RegisteredPolicyStatus.DISPUTE]: "error",
   [UnderwritingStatus.PENDING]: "pending",
   [UnderwritingStatus.APPROVED]: "success",
 } as const;

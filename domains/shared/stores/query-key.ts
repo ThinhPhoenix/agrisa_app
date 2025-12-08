@@ -28,6 +28,9 @@ export const QueryKey = {
     REGISTERED_POLICIES: "registered-policies",
     REGISTERED_POLICY_DETAIL: "registered-policy-detail",
     UNDERWRITING: "underwriting-policy",
+    CANCEL: "policy-cancel",
+    GET_CANCEL_REASONS: "get-cancel-reasons",
+    GET_CANCEL_REQUESTS: "get-cancel-requests",
   },
 
   FARM: {

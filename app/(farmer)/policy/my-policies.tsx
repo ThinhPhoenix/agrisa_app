@@ -15,20 +15,82 @@ import {
 } from "@gluestack-ui/themed";
 import { router } from "expo-router";
 import {
+  AlertCircle,
   CheckCircle2,
   Clock,
+  DollarSign,
   FileText,
   Info,
   XCircle,
 } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { RefreshControl } from "react-native";
+import { RefreshControl, ScrollView as RNScrollView } from "react-native";
+
+type PolicyTabKey =
+  | "waiting"
+  | "active"
+  | "payout"
+  | "pending_cancel"
+  | "expired"
+  | "cancelled"
+  | "dispute";
+
+type TabConfig = {
+  key: PolicyTabKey;
+  label: string;
+  icon: any;
+  color: keyof ReturnType<typeof useAgrisaColors>["colors"];
+};
 
 export default function MyPoliciesScreen() {
   const { colors } = useAgrisaColors();
-  const [selectedTab, setSelectedTab] = useState<
-    "waiting" | "active" | "expired"
-  >("active");
+  const [selectedTab, setSelectedTab] = useState<PolicyTabKey>("active");
+
+  // Cấu hình tabs
+  const TABS_CONFIG: TabConfig[] = [
+    {
+      key: "waiting",
+      label: "Chờ hiệu lực",
+      icon: Clock,
+      color: "warning",
+    },
+    {
+      key: "active",
+      label: "Có hiệu lực",
+      icon: CheckCircle2,
+      color: "success",
+    },
+    {
+      key: "payout",
+      label: "Đang chi trả",
+      icon: DollarSign,
+      color: "info",
+    },
+    {
+      key: "pending_cancel",
+      label: "Chờ xử lý hủy",
+      icon: Clock,
+      color: "warning",
+    },
+    {
+      key: "expired",
+      label: "Hết hạn",
+      icon: XCircle,
+      color: "muted_text",
+    },
+    {
+      key: "cancelled",
+      label: "Đã hủy",
+      icon: XCircle,
+      color: "error",
+    },
+    {
+      key: "dispute",
+      label: "Tranh chấp",
+      icon: AlertCircle,
+      color: "error",
+    },
+  ];
 
   // Lấy danh sách registered policies
   const { getRegisteredPolicy } = usePolicy();
@@ -37,21 +99,33 @@ export default function MyPoliciesScreen() {
   // Phân loại policies theo trạng thái
   const categorizedPolicies = useMemo(() => {
     if (!data?.success || !data?.data?.policies) {
-      return { waiting: [], active: [], expired: [] };
+      return {
+        waiting: [],
+        active: [],
+        payout: [],
+        pending_cancel: [],
+        expired: [],
+        cancelled: [],
+        dispute: [],
+      };
     }
 
     const now = Math.floor(Date.now() / 1000);
-    const policies = data.data.policies;
+    // Chỉ lấy policies đã thanh toán phí bảo hiểm
+    const policies = data.data.policies.filter(
+      (p: RegisteredPolicy) => p.premium_paid_by_farmer === true
+    );
 
     return {
-      // Chờ hiệu lực: active nhưng chưa tới ngày bắt đầu
+      // Chờ hiệu lực: CHỈ khi status = active, approved và chưa tới ngày bắt đầu
+      // Các status khác (payout, pending_cancel, cancelled, dispute, expired) không thể "chờ hiệu lực"
       waiting: policies.filter(
         (p: RegisteredPolicy) =>
           p.status === RegisteredPolicyStatus.ACTIVE &&
           p.underwriting_status === "approved" &&
           now < p.coverage_start_date
       ),
-      // Có hiệu lực: active và đã tới ngày bắt đầu
+      // Có hiệu lực: CHỈ khi status = active, approved và trong khoảng thời gian bảo hiểm
       active: policies.filter(
         (p: RegisteredPolicy) =>
           p.status === RegisteredPolicyStatus.ACTIVE &&
@@ -59,17 +133,86 @@ export default function MyPoliciesScreen() {
           now >= p.coverage_start_date &&
           now <= p.coverage_end_date
       ),
-      // Hết hạn: expired
+      // Đang chi trả: status = payout
+      payout: policies.filter(
+        (p: RegisteredPolicy) => p.status === RegisteredPolicyStatus.PAYOUT
+      ),
+      // Chờ xử lý hủy: status = pending_cancel
+      pending_cancel: policies.filter(
+        (p: RegisteredPolicy) =>
+          p.status === RegisteredPolicyStatus.PENDING_CANCEL
+      ),
+      // Hết hạn: CHỈ khi status = expired HOẶC active nhưng đã quá ngày kết thúc
       expired: policies.filter(
         (p: RegisteredPolicy) =>
           p.status === RegisteredPolicyStatus.EXPIRED ||
           (p.status === RegisteredPolicyStatus.ACTIVE &&
             now > p.coverage_end_date)
       ),
+      // Đã hủy: status = cancelled
+      cancelled: policies.filter(
+        (p: RegisteredPolicy) => p.status === RegisteredPolicyStatus.CANCELLED
+      ),
+      // Tranh chấp: status = dispute
+      dispute: policies.filter(
+        (p: RegisteredPolicy) => p.status === RegisteredPolicyStatus.DISPUTE
+      ),
     };
   }, [data]);
 
   const currentPolicies = categorizedPolicies[selectedTab];
+
+  // Helper để lấy màu và background cho tab
+  const getTabColors = (tab: PolicyTabKey) => {
+    const config = TABS_CONFIG.find((t) => t.key === tab);
+    if (!config) return { color: colors.muted_text, bg: colors.background };
+    const color = colors[config.color];
+    const bgMap: Record<string, string> = {
+      warning: colors.warningSoft,
+      success: colors.successSoft,
+      info: colors.infoSoft,
+      error: colors.errorSoft,
+    };
+    return {
+      color,
+      bg: bgMap[config.color] || colors.background,
+    };
+  };
+
+  // Helper để lấy empty message
+  const getEmptyMessage = (tab: PolicyTabKey): { title: string; desc: string } => {
+    const messages: Record<PolicyTabKey, { title: string; desc: string }> = {
+      waiting: {
+        title: "Chưa có hợp đồng chờ hiệu lực",
+        desc: "Các hợp đồng được phê duyệt sẽ xuất hiện ở đây khi chưa đến ngày bắt đầu bảo hiểm.",
+      },
+      active: {
+        title: "Chưa có hợp đồng đang hoạt động",
+        desc: "Bạn chưa có hợp đồng bảo hiểm nào đang hoạt động. Hãy khám phá các chương trình bảo hiểm tại trang Trang chủ.",
+      },
+      payout: {
+        title: "Chưa có hợp đồng đang chi trả",
+        desc: "Các hợp đồng đang trong quá trình chi trả bồi thường sẽ xuất hiện ở đây.",
+      },
+      pending_cancel: {
+        title: "Chưa có yêu cầu hủy nào đang chờ xử lý",
+        desc: "Các yêu cầu hủy hợp đồng đang chờ xét duyệt sẽ xuất hiện ở đây.",
+      },
+      expired: {
+        title: "Chưa có hợp đồng hết hạn",
+        desc: "Các hợp đồng đã hết hạn sẽ xuất hiện ở đây.",
+      },
+      cancelled: {
+        title: "Chưa có hợp đồng đã hủy",
+        desc: "Các hợp đồng đã bị hủy sẽ xuất hiện ở đây.",
+      },
+      dispute: {
+        title: "Chưa có hợp đồng tranh chấp",
+        desc: "Các hợp đồng đang trong quá trình giải quyết tranh chấp sẽ xuất hiện ở đây.",
+      },
+    };
+    return messages[tab];
+  };
 
   return (
     <VStack flex={1} bg={colors.background}>
@@ -130,242 +273,59 @@ export default function MyPoliciesScreen() {
             </VStack>
           </Box>
 
-          {/* Status Filter Tabs */}
-          <HStack
-            space="sm"
-            bg={colors.background}
+          {/* Status Filter Tabs - Horizontal Scrollable */}
+          <Box
             borderBottomWidth={1}
             borderBottomColor={colors.frame_border}
-            pb="$3"
+            pb="$2"
           >
-            <Pressable flex={1} onPress={() => setSelectedTab("waiting")}>
-              {({ pressed }) => {
-                const isActive = selectedTab === "waiting";
-                const count = categorizedPolicies.waiting.length;
+            <RNScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: 0,
+                gap: 12,
+              }}
+            >
+              {TABS_CONFIG.map((tab) => {
+                const isActive = selectedTab === tab.key;
+                const count = categorizedPolicies[tab.key].length;
+
                 return (
-                  <Box
-                    bg={isActive ? colors.warning : colors.card_surface}
-                    borderRadius="$lg"
-                    p="$3"
-                    alignItems="center"
-                    opacity={pressed ? 0.7 : 1}
-                    borderWidth={isActive ? 0 : 1}
-                    borderColor={colors.frame_border}
-                    position="relative"
+                  <Pressable
+                    key={tab.key}
+                    onPress={() => setSelectedTab(tab.key)}
                   >
-                    {/* Count Badge */}
-                    {count > 0 && (
+                    {({ pressed }) => (
                       <Box
-                        position="absolute"
-                        top={-6}
-                        right={-6}
-                        bg={
-                          isActive ? colors.primary_white_text : colors.warning
-                        }
-                        borderRadius="$full"
-                        minWidth={20}
-                        height={20}
-                        alignItems="center"
-                        justifyContent="center"
-                        px="$1"
-                        borderWidth={2}
-                        borderColor={colors.background}
+                        pb="$2"
+                        borderBottomWidth={isActive ? 2 : 0}
+                        borderBottomColor={colors.primary}
+                        opacity={pressed ? 0.7 : 1}
                       >
                         <Text
-                          fontSize="$xs"
-                          fontWeight="$bold"
+                          fontSize="$sm"
+                          fontWeight={isActive ? "$bold" : "$normal"}
                           color={
-                            isActive
-                              ? colors.warning
-                              : colors.primary_white_text
+                            isActive ? colors.primary : colors.secondary_text
                           }
                         >
-                          {count}
+                          {tab.label} {count > 0 && `(${count})`}
                         </Text>
                       </Box>
                     )}
-
-                    <Clock
-                      size={20}
-                      color={
-                        isActive ? colors.primary_white_text : colors.warning
-                      }
-                      strokeWidth={2}
-                    />
-                    <Text
-                      fontSize="$xs"
-                      fontWeight="$semibold"
-                      color={
-                        isActive ? colors.primary_white_text : colors.warning
-                      }
-                      mt="$1"
-                    >
-                      Chờ hiệu lực
-                    </Text>
-                  </Box>
+                  </Pressable>
                 );
-              }}
-            </Pressable>
-
-            <Pressable flex={1} onPress={() => setSelectedTab("active")}>
-              {({ pressed }) => {
-                const isActive = selectedTab === "active";
-                const count = categorizedPolicies.active.length;
-                return (
-                  <Box
-                    bg={isActive ? colors.success : colors.card_surface}
-                    borderRadius="$lg"
-                    p="$3"
-                    alignItems="center"
-                    opacity={pressed ? 0.7 : 1}
-                    borderWidth={isActive ? 0 : 1}
-                    borderColor={colors.frame_border}
-                    position="relative"
-                  >
-                    {/* Count Badge */}
-                    {count > 0 && (
-                      <Box
-                        position="absolute"
-                        top={-6}
-                        right={-6}
-                        bg={
-                          isActive ? colors.primary_white_text : colors.success
-                        }
-                        borderRadius="$full"
-                        minWidth={20}
-                        height={20}
-                        alignItems="center"
-                        justifyContent="center"
-                        px="$1"
-                        borderWidth={2}
-                        borderColor={colors.background}
-                      >
-                        <Text
-                          fontSize="$xs"
-                          fontWeight="$bold"
-                          color={
-                            isActive
-                              ? colors.success
-                              : colors.primary_white_text
-                          }
-                        >
-                          {count}
-                        </Text>
-                      </Box>
-                    )}
-
-                    <CheckCircle2
-                      size={20}
-                      color={
-                        isActive ? colors.primary_white_text : colors.success
-                      }
-                      strokeWidth={2}
-                    />
-                    <Text
-                      fontSize="$xs"
-                      fontWeight="$semibold"
-                      color={
-                        isActive ? colors.primary_white_text : colors.success
-                      }
-                      mt="$1"
-                    >
-                      Có hiệu lực
-                    </Text>
-                  </Box>
-                );
-              }}
-            </Pressable>
-
-            <Pressable flex={1} onPress={() => setSelectedTab("expired")}>
-              {({ pressed }) => {
-                const isActive = selectedTab === "expired";
-                const count = categorizedPolicies.expired.length;
-                return (
-                  <Box
-                    bg={isActive ? colors.muted_text : colors.card_surface}
-                    borderRadius="$lg"
-                    p="$3"
-                    alignItems="center"
-                    opacity={pressed ? 0.7 : 1}
-                    borderWidth={isActive ? 0 : 1}
-                    borderColor={colors.frame_border}
-                    position="relative"
-                  >
-                    {/* Count Badge */}
-                    {count > 0 && (
-                      <Box
-                        position="absolute"
-                        top={-6}
-                        right={-6}
-                        bg={
-                          isActive
-                            ? colors.primary_white_text
-                            : colors.muted_text
-                        }
-                        borderRadius="$full"
-                        minWidth={20}
-                        height={20}
-                        alignItems="center"
-                        justifyContent="center"
-                        px="$1"
-                        borderWidth={2}
-                        borderColor={colors.background}
-                      >
-                        <Text
-                          fontSize="$xs"
-                          fontWeight="$bold"
-                          color={
-                            isActive
-                              ? colors.muted_text
-                              : colors.primary_white_text
-                          }
-                        >
-                          {count}
-                        </Text>
-                      </Box>
-                    )}
-
-                    <XCircle
-                      size={20}
-                      color={
-                        isActive ? colors.primary_white_text : colors.muted_text
-                      }
-                      strokeWidth={2}
-                    />
-                    <Text
-                      fontSize="$xs"
-                      fontWeight="$semibold"
-                      color={
-                        isActive ? colors.primary_white_text : colors.muted_text
-                      }
-                      mt="$1"
-                    >
-                      Hết hạn
-                    </Text>
-                  </Box>
-                );
-              }}
-            </Pressable>
-          </HStack>
+              })}
+            </RNScrollView>
+          </Box>
 
           {/* Summary Stats */}
           {!isLoading && currentPolicies.length > 0 && (
             <Box
-              bg={
-                selectedTab === "waiting"
-                  ? colors.warningSoft
-                  : selectedTab === "active"
-                    ? colors.successSoft
-                    : colors.background
-              }
+              bg={getTabColors(selectedTab).bg}
               borderWidth={1}
-              borderColor={
-                selectedTab === "waiting"
-                  ? colors.warning
-                  : selectedTab === "active"
-                    ? colors.success
-                    : colors.frame_border
-              }
+              borderColor={getTabColors(selectedTab).color}
               p="$3"
               borderRadius="$lg"
             >
@@ -374,13 +334,7 @@ export default function MyPoliciesScreen() {
                   <Text
                     fontSize="$2xl"
                     fontWeight="$bold"
-                    color={
-                      selectedTab === "waiting"
-                        ? colors.warning
-                        : selectedTab === "active"
-                          ? colors.success
-                          : colors.muted_text
-                    }
+                    color={getTabColors(selectedTab).color}
                   >
                     {currentPolicies.length}
                   </Text>
@@ -395,13 +349,7 @@ export default function MyPoliciesScreen() {
 
                 <Box
                   width={1}
-                  bg={
-                    selectedTab === "waiting"
-                      ? colors.warning
-                      : selectedTab === "active"
-                        ? colors.success
-                        : colors.muted_text
-                  }
+                  bg={getTabColors(selectedTab).color}
                   height={40}
                   opacity={0.3}
                 />
@@ -410,13 +358,7 @@ export default function MyPoliciesScreen() {
                   <Text
                     fontSize="$xl"
                     fontWeight="$bold"
-                    color={
-                      selectedTab === "waiting"
-                        ? colors.warning
-                        : selectedTab === "active"
-                          ? colors.success
-                          : colors.muted_text
-                    }
+                    color={getTabColors(selectedTab).color}
                   >
                     {currentPolicies
                       .reduce((sum, p) => sum + p.coverage_amount, 0)
@@ -464,11 +406,7 @@ export default function MyPoliciesScreen() {
                 color={colors.primary_text}
                 mt="$3"
               >
-                {selectedTab === "waiting"
-                  ? "Chưa có hợp đồng chờ hiệu lực"
-                  : selectedTab === "active"
-                    ? "Chưa có hợp đồng đang hoạt động"
-                    : "Chưa có hợp đồng hết hạn"}
+                {getEmptyMessage(selectedTab).title}
               </Text>
               <Text
                 fontSize="$sm"
@@ -476,11 +414,7 @@ export default function MyPoliciesScreen() {
                 textAlign="center"
                 mt="$1"
               >
-                {selectedTab === "waiting"
-                  ? "Các hợp đồng được phê duyệt sẽ xuất hiện ở đây khi chưa đến ngày bắt đầu bảo hiểm."
-                  : selectedTab === "active"
-                    ? "Bạn chưa có hợp đồng bảo hiểm nào đang hoạt động. Hãy khám phá các chương trình bảo hiểm tại trang Trang chủ."
-                    : "Các hợp đồng đã hết hạn hoặc bị hủy sẽ xuất hiện ở đây."}
+                {getEmptyMessage(selectedTab).desc}
               </Text>
             </Box>
           ) : (

@@ -215,9 +215,12 @@ export type RegisteredPolicyStatus =
   | "pending_review" // Chờ xét duyệt
   | "pending_payment" // Chờ thanh toán
   | "active" // Đang hoạt động
+  | "payout" // Đang chi trả
   | "expired" // Hết hạn
+  | "pending_cancel" // Chờ xử lý hủy
   | "cancelled" // Đã hủy
-  | "rejected"; // Bị từ chối
+  | "rejected" // Bị từ chối
+  | "dispute"; // Tranh chấp
 
 /**
  * Trạng thái underwriting (thẩm định)
@@ -244,6 +247,7 @@ export type RegisteredPolicy = {
   area_multiplier: number;
   total_farmer_premium: number;
   total_data_cost: number;
+  premium_paid_by_farmer: boolean; // Đã thanh toán phí bảo hiểm chưa
   status: RegisteredPolicyStatus;
   underwriting_status: UnderwritingStatus;
   signed_policy_document_url: string;
@@ -324,3 +328,37 @@ export interface CancelRequestPayload {
     images: EvidenceImage[]; // Danh sách ảnh bằng chứng (chỉ URL)
   };
 }
+
+/**
+ * Trạng thái yêu cầu hủy hợp đồng
+ */
+export type CancelRequestStatus = "pending" | "approved" | "rejected" | "pending_review" | "cancelled";
+
+/**
+ * Model cho yêu cầu hủy hợp đồng bảo hiểm
+ */
+export interface CancelRequest {
+  id: string;
+  registered_policy_id: string;
+  cancel_request_type: CancelRequestType;
+  reason: string;
+  evidence: {
+    description: string;
+    images: EvidenceImage[];
+  };
+  status: CancelRequestStatus;
+  requested_by: string;
+  requested_at: string; // ISO timestamp
+  created_at: string; // ISO timestamp
+  updated_at: string; // ISO timestamp
+}
+
+/**
+ * Response API cho danh sách cancel requests
+ */
+export interface CancelRequestsResponse {
+  claims: CancelRequest[];
+  count: number;
+  farmer_id: string;
+}
+

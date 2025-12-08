@@ -23,13 +23,14 @@ import {
 import { useMemo, useState } from "react";
 import { RefreshControl } from "react-native";
 
-type HistoryStatus = "rejected" | "pending" | "approved" | "all";
+type HistoryStatus = "rejected" | "pending" | "approved" | "all" | "other";
 
 const STATUS_TABS: { key: HistoryStatus; label: string }[] = [
   { key: "all", label: "Tất cả" },
   { key: "pending", label: "Chờ duyệt" },
   { key: "approved", label: "Chấp thuận" },
   { key: "rejected", label: "Từ chối" },
+  { key: "other", label: "Khác" },
 ];
 
 export default function PolicyHistoryScreen() {
@@ -47,11 +48,31 @@ export default function PolicyHistoryScreen() {
 
     switch (activeTab) {
       case "pending":
-        return policies.filter((p) => p.underwriting_status === "pending");
+        return policies.filter(
+          (p: RegisteredPolicy) => p.underwriting_status === "pending"
+        );
       case "approved":
-        return policies.filter((p) => p.underwriting_status === "approved");
+        return policies.filter(
+          (p: RegisteredPolicy) => p.underwriting_status === "approved"
+        );
       case "rejected":
-        return policies.filter((p) => p.underwriting_status === "rejected");
+        return policies.filter(
+          (p: RegisteredPolicy) => p.underwriting_status === "rejected"
+        );
+      case "other":
+        // Các status không thuộc pending/approved/rejected HOẶC
+        // policy status = cancelled HOẶC
+        // approved + paid nhưng status không phải active
+        return policies.filter(
+          (p: RegisteredPolicy) =>
+            p.status === "cancelled" ||
+            (p.underwriting_status === "approved" &&
+              p.premium_paid_by_farmer === true &&
+              p.status !== "active") ||
+            (p.underwriting_status !== "pending" &&
+              p.underwriting_status !== "approved" &&
+              p.underwriting_status !== "rejected")
+        );
       case "all":
       default:
         return policies;
@@ -61,7 +82,7 @@ export default function PolicyHistoryScreen() {
   // Count policies for each status
   const statusCounts = useMemo(() => {
     if (!data?.success || !data?.data?.policies) {
-      return { all: 0, pending: 0, approved: 0, rejected: 0 };
+      return { all: 0, pending: 0, approved: 0, rejected: 0, other: 0 };
     }
 
     const policies = data.data.policies;
@@ -77,6 +98,16 @@ export default function PolicyHistoryScreen() {
       rejected: policies.filter(
         (p: RegisteredPolicy) => p.underwriting_status === "rejected"
       ).length,
+      other: policies.filter(
+        (p: RegisteredPolicy) =>
+          p.status === "cancelled" ||
+          (p.underwriting_status === "approved" &&
+            p.premium_paid_by_farmer === true &&
+            p.status !== "active") ||
+          (p.underwriting_status !== "pending" &&
+            p.underwriting_status !== "approved" &&
+            p.underwriting_status !== "rejected")
+      ).length,
     };
   }, [data]);
 
@@ -88,6 +119,8 @@ export default function PolicyHistoryScreen() {
         return Clock;
       case "rejected":
         return XCircle;
+      case "other":
+        return Info;
       default:
         return FileText;
     }
@@ -101,6 +134,8 @@ export default function PolicyHistoryScreen() {
         return colors.pending;
       case "rejected":
         return colors.error;
+      case "other":
+        return colors.muted_text;
       default:
         return colors.info;
     }
@@ -114,6 +149,8 @@ export default function PolicyHistoryScreen() {
         return "Chưa có đăng ký bảo hiểm nào đang chờ duyệt";
       case "rejected":
         return "Chưa có đăng ký bảo hiểm nào bị từ chối";
+      case "other":
+        return "Chưa có đăng ký bảo hiểm với trạng thái khác";
       case "all":
         return "Chưa có đăng ký bảo hiểm nào";
     }
@@ -168,73 +205,35 @@ export default function PolicyHistoryScreen() {
 
       {/* Status Filter Tabs */}
       <HStack
-        space="sm"
-        p="$4"
+        space="lg"
+        px="$4"
+        py="$2"
         bg={colors.background}
         borderBottomWidth={1}
         borderBottomColor={colors.frame_border}
       >
         {STATUS_TABS.map((tab) => {
           const isActive = activeTab === tab.key;
-          const TabIcon = getStatusIcon(tab.key);
-          const tabColor = getStatusColor(tab.key);
           const count = statusCounts[tab.key];
 
           return (
             <Pressable
               key={tab.key}
-              flex={1}
               onPress={() => setActiveTab(tab.key)}
             >
               {({ pressed }) => (
                 <Box
-                  bg={isActive ? tabColor : colors.card_surface}
-                  borderRadius="$lg"
-                  p="$3"
-                  alignItems="center"
+                  pb="$2"
+                  borderBottomWidth={isActive ? 2 : 0}
+                  borderBottomColor={colors.primary}
                   opacity={pressed ? 0.7 : 1}
-                  borderWidth={isActive ? 0 : 1}
-                  borderColor={colors.frame_border}
-                  position="relative"
                 >
-                  {/* Count Badge */}
-                  {count > 0 && (
-                    <Box
-                      position="absolute"
-                      top={-6}
-                      right={-6}
-                      bg={isActive ? colors.primary_white_text : tabColor}
-                      borderRadius="$full"
-                      minWidth={20}
-                      height={20}
-                      alignItems="center"
-                      justifyContent="center"
-                      px="$1"
-                      borderWidth={2}
-                      borderColor={colors.background}
-                    >
-                      <Text
-                        fontSize="$xs"
-                        fontWeight="$bold"
-                        color={isActive ? tabColor : colors.primary_white_text}
-                      >
-                        {count}
-                      </Text>
-                    </Box>
-                  )}
-
-                  <TabIcon
-                    size={20}
-                    color={isActive ? colors.primary_white_text : tabColor}
-                    strokeWidth={2}
-                  />
                   <Text
-                    fontSize="$xs"
-                    fontWeight="$semibold"
-                    color={isActive ? colors.primary_white_text : tabColor}
-                    mt="$1"
+                    fontSize="$sm"
+                    fontWeight={isActive ? "$bold" : "$normal"}
+                    color={isActive ? colors.primary : colors.secondary_text}
                   >
-                    {tab.label}
+                    {tab.label} {count > 0 && `(${count})`}
                   </Text>
                 </Box>
               )}

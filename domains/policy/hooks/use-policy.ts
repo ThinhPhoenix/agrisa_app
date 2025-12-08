@@ -11,8 +11,53 @@ export const usePolicy = () => {
 
   const getPublicBasePolicy = () => {
     return useQuery({
-      queryKey: [QueryKey.EKYC.STATUS],
+      queryKey: [QueryKey.POLICY.BASE],
       queryFn: () => policyServices.get.base_policy(),
+    });
+  };
+  const getCancelReason = () => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.GET_CANCEL_REASONS],
+      queryFn: () => policyServices.get.get_cancel_request_reasons(),
+    });
+  };
+
+  const getCancelRequests = () => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.GET_CANCEL_REQUESTS],
+      queryFn: () => policyServices.get.get_cancel_requests(),
+    });
+  };
+
+  const getCancelRequestByPolicyId = (registered_policy_id: string) => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.GET_CANCEL_REQUESTS, registered_policy_id],
+      queryFn: async () => {
+        const response = await policyServices.get.get_cancel_requests();
+        console.log("🔍 Full API Response:", JSON.stringify(response, null, 2));
+
+        if (response.success && response.data) {
+          console.log("🔍 Response data:", response.data);
+          console.log("🔍 Looking for policy_id:", registered_policy_id);
+
+          // Lọc cancel request theo registered_policy_id
+          const filteredClaim = response.data.claims?.find((claim) => {
+            console.log(
+              "🔍 Comparing claim.registered_policy_id:",
+              claim.registered_policy_id,
+              "with:",
+              registered_policy_id
+            );
+            return claim.registered_policy_id === registered_policy_id;
+          });
+
+          console.log("🔍 Filtered claim:", filteredClaim);
+          return filteredClaim || null;
+        }
+        console.log("❌ Response not successful or no data");
+        return null;
+      },
+      enabled: !!registered_policy_id,
     });
   };
 
@@ -228,5 +273,8 @@ export const usePolicy = () => {
     getRegisteredPolicy,
     getRegisteredPolicyDetail,
     getUnderwritingPolicy,
+    getCancelReason,
+    getCancelRequests,
+    getCancelRequestByPolicyId,
   };
 };

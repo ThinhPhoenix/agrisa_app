@@ -24,7 +24,7 @@ class WebSocketService {
         this.userId = userId;
 
         try {
-            const wsUrl = `${WS_URL}/notifications?user_id=${userId}`;
+            const wsUrl = `${WS_URL}/noti/public/ws?user_id=${userId}`;
             console.log("[WebSocket] Connecting to:", wsUrl);
 
             this.ws = new WebSocket(wsUrl);

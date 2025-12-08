@@ -7,6 +7,7 @@ import {
   CardInfoResponse,
   FaceScanPayload,
   OCRIDPPayload,
+  UpdateCardInfoPayload,
 } from "../models/ekyc.models";
 import { eKYCServices } from "../service/ekyc.service";
 import { mapCardInfoToProfile } from "../utils/card-info.utils";
@@ -51,7 +52,9 @@ export const useEkyc = () => {
       console.error("❌ Lỗi xác thực CCCD:", error);
       resultStatus.showError({
         title: "Xác thực CCCD thất bại",
-        message: error?.response?.data?.message || "Không thể xác thực CCCD. Vui lòng thử lại.",
+        message:
+          error?.response?.data?.message ||
+          "Không thể xác thực CCCD. Vui lòng thử lại.",
         subMessage: "Đảm bảo ảnh CCCD rõ nét và đúng khung.",
         showHomeButton: true,
         lockNavigation: true,
@@ -80,7 +83,9 @@ export const useEkyc = () => {
       console.error("❌ Lỗi xác thực khuôn mặt:", error);
       resultStatus.showError({
         title: "Xác thực khuôn mặt thất bại",
-        message: error?.response?.data?.message || "Không thể xác thực khuôn mặt. Vui lòng thử lại.",
+        message:
+          error?.response?.data?.message ||
+          "Không thể xác thực khuôn mặt. Vui lòng thử lại.",
         subMessage: "Đảm bảo khuôn mặt nằm trong khung và có đủ ánh sáng.",
         showHomeButton: true,
         lockNavigation: true,
@@ -100,11 +105,16 @@ export const useEkyc = () => {
     mutationFn: async (cardInfo: CardInfoResponse) => {
       // Map CardInfo sang UserProfile
       const profileData = mapCardInfoToProfile(cardInfo);
-      console.log("🔄 [confirmCardInfoMutation] Sending profile data to API...");
+      console.log(
+        "🔄 [confirmCardInfoMutation] Sending profile data to API..."
+      );
 
       // Gọi API update profile
       const response = await AuthServices.updateUserProfile(profileData);
-      console.log("✅ [confirmCardInfoMutation] API Response:", JSON.stringify(response, null, 2));
+      console.log(
+        "✅ [confirmCardInfoMutation] API Response:",
+        JSON.stringify(response, null, 2)
+      );
       return response;
     },
     onSuccess: async () => {
@@ -128,14 +138,23 @@ export const useEkyc = () => {
     },
     onError: (error: any) => {
       console.error("❌ Lỗi xác nhận thông tin CCCD:", error);
-      console.error("❌ Error details:", JSON.stringify({
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-      }, null, 2));
+      console.error(
+        "❌ Error details:",
+        JSON.stringify(
+          {
+            status: error?.response?.status,
+            data: error?.response?.data,
+            message: error?.message,
+          },
+          null,
+          2
+        )
+      );
       resultStatus.showError({
         title: "Cập nhật thất bại",
-        message: error?.response?.data?.message || "Không thể cập nhật thông tin. Vui lòng thử lại.",
+        message:
+          error?.response?.data?.message ||
+          "Không thể cập nhật thông tin. Vui lòng thử lại.",
         subMessage: "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ hỗ trợ.",
         showHomeButton: true,
         lockNavigation: true,
@@ -174,6 +193,47 @@ export const useEkyc = () => {
     },
   });
 
+  /**
+   * Mutation để cập nhật các field thông tin CCCD
+   * - Chỉ cần truyền các field muốn update
+   * - Sau khi update thành công, invalidate cache và quay lại trang confirm
+   */
+  const updateCardInfoFieldsMutation = useMutation({
+    mutationKey: [QueryKey.EKYC.UPDATE_CARD_INFO_FIELDS],
+    mutationFn: async (payload: UpdateCardInfoPayload) => {
+      console.log(
+        "🔄 [updateCardInfoFieldsMutation] Updating fields:",
+        payload
+      );
+      return await eKYCServices.post.update_card_info_fields(payload);
+    },
+    onSuccess: async () => {
+      // Invalidate cache để refetch data mới
+      queryClient.invalidateQueries({ queryKey: [QueryKey.EKYC.CARD_INFO] });
+
+      resultStatus.showSuccess({
+        title: "Cập nhật thành công!",
+        message: "Thông tin CCCD đã được cập nhật.",
+        autoRedirectSeconds: 2,
+        autoRedirectRoute: "/settings/verify/confirm-info",
+        showHomeButton: false,
+        lockNavigation: true,
+      });
+    },
+    onError: (error: any) => {
+      console.error("❌ Lỗi cập nhật thông tin CCCD:", error);
+      resultStatus.showError({
+        title: "Cập nhật thất bại",
+        message:
+          error?.response?.data?.message ||
+          "Không thể cập nhật thông tin. Vui lòng thử lại.",
+        subMessage: "Kiểm tra lại thông tin và thử lại.",
+        showHomeButton: true,
+        lockNavigation: true,
+      });
+    },
+  });
+
   return {
     geteKYCStatusQuery,
     ocrIdMutation,
@@ -181,6 +241,8 @@ export const useEkyc = () => {
     getCardInfo,
     confirmCardInfoMutation,
     resetEkycMutation,
+    updateCardInfoFieldsMutation,
     isConfirming: confirmCardInfoMutation.isPending,
+    isUpdating: updateCardInfoFieldsMutation.isPending,
   };
 };

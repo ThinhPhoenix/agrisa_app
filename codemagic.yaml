@@ -7,6 +7,7 @@ workflows:
     environment:
       groups:
         - expo_url
+        - firebase_config  # ✅ Thêm Firebase config group
       vars:
         EXPO_PROJECT_SLUG: "agrisa"
         # Thêm biến để tăng heap size
@@ -16,6 +17,66 @@ workflows:
       cache_paths:
         - $CM_BUILD_DIR/node_modules
     scripts:
+      - name: Generate Firebase Config (google-services.json)
+        script: |
+          echo "🔥 Generating google-services.json from environment variables..."
+          
+          # Validate Firebase environment variables
+          if [ -z "$FIREBASE_PROJECT_ID" ] || [ -z "$FIREBASE_API_KEY" ]; then
+            echo "❌ ERROR: Firebase environment variables are not set!"
+            echo "Please check Codemagic environment group 'firebase_config'"
+            echo "Required: FIREBASE_PROJECT_ID, FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_STORAGE_BUCKET"
+            exit 1
+          fi
+          
+          echo "✅ Firebase config variables loaded:"
+          echo "   PROJECT_ID: $FIREBASE_PROJECT_ID"
+          echo "   STORAGE_BUCKET: $FIREBASE_STORAGE_BUCKET"
+          echo "   APP_ID: $FIREBASE_APP_ID"
+          
+          # Tạo file google-services.json động từ environment variables
+          cat > google-services.json << EOF
+          {
+            "project_info": {
+              "project_number": "1019069630814",
+              "project_id": "$FIREBASE_PROJECT_ID",
+              "storage_bucket": "$FIREBASE_STORAGE_BUCKET"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "$FIREBASE_APP_ID",
+                  "android_client_info": {
+                    "package_name": "com.agrisa.Agrisa"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "$FIREBASE_API_KEY"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+          
+          # Verify file created successfully
+          if [ -f "google-services.json" ]; then
+            echo "✅ google-services.json created successfully"
+            echo "📄 File preview (first 15 lines):"
+            head -15 google-services.json
+          else
+            echo "❌ Failed to create google-services.json"
+            exit 1
+          fi
+      
       - name: Install Bun và dependencies
         script: |
           curl -fsSL https://bun.sh/install | bash
@@ -59,6 +120,40 @@ workflows:
             -keystore ~/.android/debug.keystore -storepass android \
             -dname 'CN=Android Debug,O=Android,C=US' -keyalg 'RSA' \
             -keysize 2048 -validity 10000
+      
+      - name: Copy Firebase Config to Android Project
+        script: |
+          echo "📦 Copying google-services.json to Android app directory..."
+          
+          # Kiểm tra file google-services.json tồn tại
+          if [ ! -f "google-services.json" ]; then
+            echo "❌ google-services.json not found in project root!"
+            echo "Please ensure the Generate Firebase Config step ran successfully."
+            exit 1
+          fi
+          
+          # Kiểm tra thư mục android/app tồn tại
+          if [ ! -d "android/app" ]; then
+            echo "❌ android/app directory not found!"
+            echo "Please ensure Expo prebuild ran successfully."
+            exit 1
+          fi
+          
+          # Copy file vào android/app
+          cp google-services.json android/app/google-services.json
+          
+          # Verify copy thành công
+          if [ -f "android/app/google-services.json" ]; then
+            echo "✅ google-services.json copied successfully to android/app/"
+            echo "📊 File info:"
+            ls -lh android/app/google-services.json
+            echo ""
+            echo "📄 Content verification (first 10 lines):"
+            head -10 android/app/google-services.json
+          else
+            echo "❌ Failed to copy google-services.json to android/app/"
+            exit 1
+          fi
       
       - name: Build Android APK
         script: |
@@ -111,6 +206,7 @@ workflows:
     environment:
       groups:
         - expo_url 
+        - firebase_config  # ✅ Thêm Firebase config group
       vars:
         BUNDLE_ID: "com.tnhaan.agrisa"
         EXPO_PROJECT_SLUG: "agrisa"
@@ -122,6 +218,60 @@ workflows:
       cache_paths:
         - $CM_BUILD_DIR/node_modules
     scripts:
+      - name: Generate Firebase Config (GoogleService-Info.plist)
+        script: |
+          echo "🔥 Generating GoogleService-Info.plist for iOS..."
+          
+          # Validate Firebase environment variables
+          if [ -z "$FIREBASE_PROJECT_ID" ] || [ -z "$FIREBASE_API_KEY" ]; then
+            echo "❌ ERROR: Firebase environment variables are not set!"
+            exit 1
+          fi
+          
+          echo "✅ Firebase config variables loaded for iOS"
+          
+          # Tạo GoogleService-Info.plist cho iOS
+          cat > GoogleService-Info.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>API_KEY</key>
+            <string>$FIREBASE_API_KEY</string>
+            <key>GCM_SENDER_ID</key>
+            <string>1019069630814</string>
+            <key>PLIST_VERSION</key>
+            <string>1</string>
+            <key>BUNDLE_ID</key>
+            <string>com.tnhaan.agrisa</string>
+            <key>PROJECT_ID</key>
+            <string>$FIREBASE_PROJECT_ID</string>
+            <key>STORAGE_BUCKET</key>
+            <string>$FIREBASE_STORAGE_BUCKET</string>
+            <key>IS_ADS_ENABLED</key>
+            <false/>
+            <key>IS_ANALYTICS_ENABLED</key>
+            <false/>
+            <key>IS_APPINVITE_ENABLED</key>
+            <true/>
+            <key>IS_GCM_ENABLED</key>
+            <true/>
+            <key>IS_SIGNIN_ENABLED</key>
+            <true/>
+            <key>GOOGLE_APP_ID</key>
+            <string>$FIREBASE_APP_ID</string>
+          </dict>
+          </plist>
+          EOF
+          
+          if [ -f "GoogleService-Info.plist" ]; then
+            echo "✅ GoogleService-Info.plist created successfully"
+            cat GoogleService-Info.plist
+          else
+            echo "❌ Failed to create GoogleService-Info.plist"
+            exit 1
+          fi
+      
       - name: Install Bun và dependencies
         script: |
           curl -fsSL https://bun.sh/install | bash
@@ -172,6 +322,28 @@ workflows:
       - name: Install CocoaPods dependencies
         script: |
           cd ios && pod install
+      
+      - name: Copy Firebase Config to iOS Project
+        script: |
+          echo "📦 Copying GoogleService-Info.plist to iOS project..."
+          
+          # Kiểm tra file tồn tại
+          if [ ! -f "GoogleService-Info.plist" ]; then
+            echo "❌ GoogleService-Info.plist not found!"
+            exit 1
+          fi
+          
+          # Copy vào thư mục iOS project
+          cp GoogleService-Info.plist ios/Agrisa/GoogleService-Info.plist
+          
+          # Verify
+          if [ -f "ios/Agrisa/GoogleService-Info.plist" ]; then
+            echo "✅ GoogleService-Info.plist copied to ios/Agrisa/"
+            ls -lh ios/Agrisa/GoogleService-Info.plist
+          else
+            echo "❌ Failed to copy GoogleService-Info.plist"
+            exit 1
+          fi
       
       - name: Build iOS App Bundle
         script: |

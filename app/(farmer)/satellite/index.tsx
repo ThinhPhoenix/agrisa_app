@@ -111,7 +111,9 @@ export default function SatelliteListScreen() {
   const isLoading = viewMode === "farm" ? isFarmsLoading : isPoliciesLoading;
   const error = viewMode === "farm" ? farmsError : policiesError;
   const isEmpty =
-    viewMode === "farm" ? farms?.length === 0 : activePolicies?.length === 0;
+    viewMode === "farm"
+      ? !farms || farms.length === 0
+      : !activePolicies || activePolicies.length === 0;
 
   // Cover Image Component with Parallax Effect
   const CoverImage = () => {
@@ -306,8 +308,8 @@ export default function SatelliteListScreen() {
         {/* Empty state */}
         {!isLoading && !error && isEmpty && (
           <Box py="$12" px="$6" alignItems="center">
-            <Box bg={colors.primarySoft} p="$6" borderRadius="$full" mb="$4">
-              <Satellite size={64} color={colors.primary} strokeWidth={1.5} />
+            <Box bg={colors.success} p="$6" borderRadius="$full" mb="$4">
+              <Satellite size={64} color={colors.primary_white_text} strokeWidth={1.5} />
             </Box>
             <Text
               fontSize="$xl"
@@ -333,9 +335,13 @@ export default function SatelliteListScreen() {
         )}
 
         {/* Farm list */}
-        {!isLoading && !error && viewMode === "farm" && farms?.length > 0 && (
-          <VStack space="md">
-            {farms.map((farm: any) => (
+        {!isLoading &&
+          !error &&
+          viewMode === "farm" &&
+          farms &&
+          farms.length > 0 && (
+            <VStack space="md">
+              {farms.map((farm: any) => (
               <Pressable
                 key={farm.id}
                 onPress={() =>
@@ -466,7 +472,8 @@ export default function SatelliteListScreen() {
         {!isLoading &&
           !error &&
           viewMode === "policy" &&
-          activePolicies?.length > 0 && (
+          activePolicies &&
+          activePolicies.length > 0 && (
             <VStack space="md">
               {activePolicies.map((policy: any) => (
                 <Pressable
@@ -613,7 +620,7 @@ export default function SatelliteListScreen() {
 
   return (
     <Box flex={1} bg={colors.background}>
-      <AgrisaHeader title="Theo dõi dữ liệu vệ tinh" />
+      <AgrisaHeader title="Theo dõi chỉ số vệ tinh" />
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}

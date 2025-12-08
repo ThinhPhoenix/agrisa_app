@@ -1,6 +1,6 @@
 import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { DetailRegisteredPolicy } from "@/domains/policy/components/detail-registered-policy";
+import { HistoryDetailRegisteredPolicy } from "@/domains/policy/components/history-registered-policy";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { Box, Spinner, Text, VStack } from "@gluestack-ui/themed";
 import { router, useLocalSearchParams } from "expo-router";
@@ -22,7 +22,7 @@ export default function RegisteredPolicyDetailScreen() {
     return (
       <VStack flex={1} bg={colors.background}>
         <AgrisaHeader
-          title="Chi tiết hợp đồng"
+          title="Chi tiết hợp đồng đăng ký"
           showBackButton={true}
           onBack={() => router.back()}
         />
@@ -40,7 +40,7 @@ export default function RegisteredPolicyDetailScreen() {
     return (
       <VStack flex={1} bg={colors.background}>
         <AgrisaHeader
-          title="Chi tiết hợp đồng"
+          title="Chi tiết hợp đồng đăng ký"
           showBackButton={true}
           onBack={() => router.back()}
         />
@@ -70,12 +70,12 @@ export default function RegisteredPolicyDetailScreen() {
   return (
     <VStack flex={1} bg={colors.background}>
       <AgrisaHeader
-        title="Chi tiết hợp đồng"
+        title="Chi tiết hợp đồng đăng ký"
         showBackButton={true}
         onBack={() => router.back()}
       />
 
-      <DetailRegisteredPolicy
+      <HistoryDetailRegisteredPolicy
         policy={policy}
         isRefreshing={isFetching && !isLoading}
         onRefresh={refetch}

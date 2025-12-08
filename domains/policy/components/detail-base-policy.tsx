@@ -39,7 +39,6 @@ import {
   HelpCircle,
   Info,
   Leaf,
-  Percent,
   Shield,
   TrendingUp,
   XCircle,
@@ -264,7 +263,6 @@ export default function DetailBasePolicyScreen() {
                 <ImportantNotesCard policy={base_policy} colors={colors} />
               </VStack>
             )}
-
           </VStack>
         </ScrollView>
 
@@ -626,7 +624,7 @@ const PolicyDocumentSection = ({
   );
 };
 
-// 2. Cost & Payout Grid - THIẾT KẾ TỐI GIẢN & TRỰC QUAN
+// 2. Cost & Payout Grid - THIẾT KẾ LABEL TRÁI, VALUE PHẢI
 const CostPayoutGrid = ({
   policy,
   colors,
@@ -643,22 +641,47 @@ const CostPayoutGrid = ({
       borderRadius="$xl"
       p="$4"
     >
-      <HStack space="md" alignItems="center">
-        <Box bg={colors.primarySoft} borderRadius="$full" p="$3">
-          <Shield size={28} color={colors.primary} strokeWidth={2.5} />
-        </Box>
-        <VStack flex={1} space="xs">
-          <Text fontSize="$xs" color={colors.secondary_text}>
-            Phí bảo hiểm
+      <VStack space="sm">
+        <Text fontSize="$md" fontWeight="$bold" color={colors.primary}>
+          Phí bảo hiểm
+        </Text>
+        <Divider bg={colors.frame_border} />
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Số tiền
           </Text>
-          <Text fontSize="$3xl" fontWeight="$bold" color={colors.primary}>
+          <Text fontSize="$xl" fontWeight="$bold" color={colors.primary_text}>
             {Utils.formatCurrency(policy.fix_premium_amount)}
           </Text>
-          <Text fontSize="$xs" color={colors.muted_text}>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Loại phí
+          </Text>
+          <Text
+            fontSize="$md"
+            fontWeight="$semibold"
+            color={colors.primary_text}
+          >
             {policy.is_per_hectare ? "/ hecta" : "Phí cố định"}
           </Text>
-        </VStack>
-      </HStack>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Tỷ lệ phí cơ bản
+          </Text>
+          <Text
+            fontSize="$md"
+            fontWeight="$semibold"
+            color={colors.primary_text}
+          >
+            {(policy.premium_base_rate * 100).toFixed(1)}%
+          </Text>
+        </HStack>
+      </VStack>
     </Box>
 
     {/* 💎 QUYỀN LỢI BỒI THƯỜNG */}
@@ -669,85 +692,64 @@ const CostPayoutGrid = ({
       borderRadius="$xl"
       p="$4"
     >
-      <VStack space="md">
-        {/* Header */}
-        <HStack space="md" alignItems="center">
-          <Box bg={colors.successSoft} borderRadius="$full" p="$3">
-            <TrendingUp size={28} color={colors.success} strokeWidth={2.5} />
-          </Box>
-          <VStack flex={1} space="xs">
-            <Text fontSize="$xs" color={colors.secondary_text}>
-              Bồi thường
-            </Text>
-            <HStack alignItems="baseline" space="xs">
-              <Text fontSize="$3xl" fontWeight="$bold" color={colors.success}>
-                {Utils.formatCurrency(policy.fix_payout_amount)}
-              </Text>
-              <Text fontSize="$md" color={colors.secondary_text}>
-                - {Utils.formatCurrency(policy.payout_cap)}
-              </Text>
-            </HStack>
-            <Text fontSize="$xs" color={colors.muted_text}>
-              {policy.is_payout_per_hectare ? "/ hecta" : "Tổng cộng"} (tùy mức
-              độ)
-            </Text>
-          </VStack>
-        </HStack>
-
+      <VStack space="sm">
+        <Text fontSize="$md" fontWeight="$bold" color={colors.success}>
+          Quyền lợi bồi thường
+        </Text>
         <Divider bg={colors.frame_border} />
 
-        {/* Chi tiết */}
-        <VStack space="sm">
-          <HStack space="sm" alignItems="center">
-            <Box
-              bg={colors.infoSoft}
-              borderRadius="$md"
-              p="$2"
-              width="$10"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Percent size={18} color={colors.info} strokeWidth={2.5} />
-            </Box>
-            <VStack flex={1}>
-              <Text fontSize="$xs" color={colors.secondary_text}>
-                Tỷ lệ cơ bản
-              </Text>
-              <Text
-                fontSize="$md"
-                fontWeight="$semibold"
-                color={colors.primary_text}
-              >
-                {(policy.payout_base_rate * 100).toFixed(0)}% giá trị cây trồng
-              </Text>
-            </VStack>
-          </HStack>
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Bồi thường cơ bản
+          </Text>
+          <Text fontSize="$xl" fontWeight="$bold" color={colors.success}>
+            {Utils.formatCurrency(policy.fix_payout_amount)}
+          </Text>
+        </HStack>
 
-          <HStack space="sm" alignItems="center">
-            <Box
-              bg={colors.warningSoft}
-              borderRadius="$md"
-              p="$2"
-              width="$10"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <TrendingUp size={18} color={colors.warning} strokeWidth={2.5} />
-            </Box>
-            <VStack flex={1}>
-              <Text fontSize="$xs" color={colors.secondary_text}>
-                Hệ số vượt ngưỡng
-              </Text>
-              <Text
-                fontSize="$md"
-                fontWeight="$semibold"
-                color={colors.primary_text}
-              >
-                ×{policy.over_threshold_multiplier} (thiệt hại nặng)
-              </Text>
-            </VStack>
-          </HStack>
-        </VStack>
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Bồi thường tối đa
+          </Text>
+          <Text fontSize="$xl" fontWeight="$bold" color={colors.error}>
+            {Utils.formatCurrency(policy.payout_cap)}
+          </Text>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Loại bồi thường
+          </Text>
+          <Text
+            fontSize="$md"
+            fontWeight="$semibold"
+            color={colors.primary_text}
+          >
+            {policy.is_payout_per_hectare ? "/ hecta" : "Tổng cộng"}
+          </Text>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Tỷ lệ bồi thường
+          </Text>
+          <Text
+            fontSize="$md"
+            fontWeight="$semibold"
+            color={colors.primary_text}
+          >
+            {(policy.payout_base_rate * 100).toFixed(0)}%
+          </Text>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Hệ số vượt ngưỡng
+          </Text>
+          <Text fontSize="$md" fontWeight="$semibold" color={colors.warning}>
+            ×{policy.over_threshold_multiplier}
+          </Text>
+        </HStack>
       </VStack>
     </Box>
 
@@ -759,91 +761,53 @@ const CostPayoutGrid = ({
       borderRadius="$xl"
       p="$4"
     >
-      <VStack space="md">
-        <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
+      <VStack space="sm">
+        <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text}>
           Chính sách linh hoạt
         </Text>
+        <Divider bg={colors.frame_border} />
 
-        {/* Hủy hợp đồng */}
-        <HStack space="sm" alignItems="center">
-          <Box
-            bg={colors.errorSoft}
-            borderRadius="$md"
-            p="$2"
-            width="$10"
-            alignItems="center"
-            justifyContent="center"
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Hoàn phí khi hủy
+          </Text>
+          <Text
+            fontSize="$md"
+            fontWeight="$semibold"
+            color={colors.primary_text}
           >
-            <XCircle size={18} color={colors.error} strokeWidth={2.5} />
-          </Box>
-          <VStack flex={1}>
-            <Text fontSize="$xs" color={colors.secondary_text}>
-              Hoàn phí khi hủy
-            </Text>
+            {policy.cancel_premium_rate > 0
+              ? `${(policy.cancel_premium_rate * 100).toFixed(0)}%`
+              : "Không hoàn phí"}
+          </Text>
+        </HStack>
+
+        <HStack justifyContent="space-between" alignItems="center">
+          <Text fontSize="$sm" color={colors.secondary_text}>
+            Giảm giá gia hạn
+          </Text>
+          <HStack space="xs" alignItems="center">
             <Text
               fontSize="$md"
               fontWeight="$semibold"
               color={colors.primary_text}
             >
-              {policy.cancel_premium_rate > 0
-                ? `${(policy.cancel_premium_rate * 100).toFixed(0)}% số tiền đã đóng`
-                : "Không hoàn phí"}
+              {policy.renewal_discount_rate > 0
+                ? `${(policy.renewal_discount_rate * 100).toFixed(0)}%`
+                : "Không giảm giá"}
             </Text>
-          </VStack>
-        </HStack>
-
-        {/* Gia hạn */}
-        <HStack space="sm" alignItems="center">
-          <Box
-            bg={colors.successSoft}
-            borderRadius="$md"
-            p="$2"
-            width="$10"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Calendar size={18} color={colors.success} strokeWidth={2.5} />
-          </Box>
-          <VStack flex={1}>
-            <Text fontSize="$xs" color={colors.secondary_text}>
-              Gia hạn năm sau
-            </Text>
-            {policy.renewal_discount_rate > 0 ? (
-              <HStack alignItems="center" space="xs">
-                <Text
-                  fontSize="$md"
-                  fontWeight="$semibold"
-                  color={colors.primary_text}
+            {policy.auto_renewal && (
+              <Badge bg={colors.successSoft} borderRadius="$full" size="sm">
+                <BadgeText
+                  color={colors.success}
+                  fontSize="$2xs"
+                  fontWeight="$bold"
                 >
-                  Giảm {(policy.renewal_discount_rate * 100).toFixed(0)}%
-                </Text>
-                {policy.auto_renewal && (
-                  <Badge bg={colors.successSoft} borderRadius="$full" size="sm">
-                    <BadgeText
-                      color={colors.success}
-                      fontSize="$2xs"
-                      fontWeight="$bold"
-                    >
-                      Tự động
-                    </BadgeText>
-                  </Badge>
-                )}
-              </HStack>
-            ) : (
-              <HStack alignItems="center" space="xs">
-                <Text
-                  fontSize="$md"
-                  fontWeight="$semibold"
-                  color={colors.primary_text}
-                >
-                  {policy.auto_renewal ? "Tự động gia hạn" : "Gia hạn thủ công"}
-                </Text>
-                <Text fontSize="$xs" color={colors.muted_text}>
-                  (không giảm giá)
-                </Text>
-              </HStack>
+                  Tự động
+                </BadgeText>
+              </Badge>
             )}
-          </VStack>
+          </HStack>
         </HStack>
       </VStack>
     </Box>
@@ -1439,36 +1403,43 @@ const TriggerCard = ({
           </VStack>
 
           {/* Blackout Periods */}
-          {trigger.blackout_periods && (
-            <>
-              <Divider bg={colors.frame_border} />
-              <VStack space="xs">
-                <HStack space="sm" alignItems="center">
-                  <AlertTriangle
-                    size={16}
-                    color={colors.warning}
-                    strokeWidth={2}
-                  />
-                  <Text
-                    fontSize="$xs"
-                    fontWeight="$semibold"
-                    color={colors.primary_text}
-                  >
-                    Thời gian không kích hoạt
-                  </Text>
-                </HStack>
-                <Box bg={colors.warningSoft} borderRadius="$md" p="$2" ml="$6">
-                  <Text fontSize="$sm" color={colors.primary_text}>
-                    Từ ngày {trigger.blackout_periods.start_day} đến ngày{" "}
-                    {trigger.blackout_periods.end_day}
-                  </Text>
-                  <Text fontSize="$xs" color={colors.muted_text} mt="$1">
-                    Lý do: {trigger.blackout_periods.reason}
-                  </Text>
-                </Box>
-              </VStack>
-            </>
-          )}
+          {trigger.blackout_periods &&
+            trigger.blackout_periods.periods &&
+            trigger.blackout_periods.periods.length > 0 && (
+              <>
+                <Divider bg={colors.frame_border} />
+                <VStack space="xs">
+                  <HStack space="sm" alignItems="center">
+                    <AlertTriangle
+                      size={16}
+                      color={colors.warning}
+                      strokeWidth={2}
+                    />
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      Thời gian không kích hoạt
+                    </Text>
+                  </HStack>
+                  <VStack space="xs" ml="$6">
+                    {trigger.blackout_periods.periods.map((period, index) => (
+                      <Box
+                        key={index}
+                        bg={colors.warningSoft}
+                        borderRadius="$md"
+                        p="$2"
+                      >
+                        <Text fontSize="$sm" color={colors.primary_text}>
+                          Từ {period.start} đến {period.end}
+                        </Text>
+                      </Box>
+                    ))}
+                  </VStack>
+                </VStack>
+              </>
+            )}
 
           {/* Conditions List */}
           <Divider bg={colors.frame_border} />
@@ -1639,7 +1610,7 @@ const ConditionItem = ({
                     {Utils.formatAggregationLabel(
                       condition.aggregation_function
                     )}{" "}
-                    trong {condition.aggregation_window_days} ngày{" "}
+                    chỉ số trong {condition.aggregation_window_days} ngày{" "}
                     {Utils.formatThresholdOperator(
                       condition.threshold_operator
                     )}{" "}

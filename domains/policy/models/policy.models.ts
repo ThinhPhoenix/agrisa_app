@@ -107,9 +107,12 @@ export type AggregationFunction = "avg" | "min" | "max" | "sum" | "median";
  * Thời gian cấm kích hoạt (Blackout Period)
  */
 export type BlackoutPeriod = {
-  start_day: number;
-  end_day: number;
-  reason: string;
+  start: string; // Format: "MM-DD"
+  end: string; // Format: "MM-DD"
+};
+
+export type BlackoutPeriods = {
+  periods: BlackoutPeriod[];
 };
 
 /**
@@ -147,7 +150,7 @@ export type PolicyTrigger = {
   growth_stage: string;
   monitor_interval: number;
   monitor_frequency_unit: MonitorFrequencyUnit;
-  blackout_periods: BlackoutPeriod | null;
+  blackout_periods: BlackoutPeriods | null;
   created_at: string;
   updated_at: string;
   conditions: PolicyCondition[];
@@ -265,8 +268,6 @@ export type RegisteredPolicyDetailResponse = RegisteredPolicy & {
   farm?: any; // TODO: Add Farm type
 };
 
-
-
 export interface UnderwritingData {
   id: string;
   registered_policy_id: string;
@@ -296,4 +297,30 @@ export interface Recommendations {
  */
 export interface UnderwritingDataResponse {
   data: UnderwritingData[];
+}
+
+/**
+ * Loại yêu cầu hủy hợp đồng
+ */
+export type CancelRequestType = "contract_violation" | "other";
+
+/**
+ * Ảnh bằng chứng trong evidence
+ */
+export interface EvidenceImage {
+  url: string; // URL của ảnh
+}
+
+/**
+ * Payload yêu cầu hủy hợp đồng bảo hiểm
+ * evidence sử dụng cấu trúc: text description + array of image URLs
+ */
+export interface CancelRequestPayload {
+  cancel_request_type: CancelRequestType; // Loại hủy: vi phạm hợp đồng hoặc lý do khác
+  reason: string; // Lý do chi tiết (mô tả văn bản)
+  compensate_amount: number; // Số tiền đề nghị bồi thường
+  evidence: {
+    description: string; // Mô tả bằng chứng (text)
+    images: EvidenceImage[]; // Danh sách ảnh bằng chứng (chỉ URL)
+  };
 }

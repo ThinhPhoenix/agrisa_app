@@ -49,4 +49,20 @@ export type CardInfoResponse = {
   user_id: string;
 }
 
+/**
+ * Payload để update thông tin CCCD - cho phép update từng field bất kỳ
+ */
+export type UpdateCardInfoPayload = Partial<{
+  national_id: string;
+  name: string;
+  dob: string;
+  sex: string;
+  nationality: string;
+  home: string;
+  address: string;
+  doe: string;
+  issue_date: string;
+  issue_loc: string;
+}>;
+
 

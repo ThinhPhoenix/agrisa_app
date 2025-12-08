@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { FormFarmDTO } from "../models/farm.models";
 import { farmServices } from "../service/farm.service";
+import { parseFarmError } from "../utils/farm-error-handler";
 
 export const useFarm = () => {
   const queryClient = useQueryClient();
@@ -31,6 +32,8 @@ export const useFarm = () => {
   const createFarmMutation = useMutation({
     mutationFn: (payload: FormFarmDTO) => farmServices.post.createFarm(payload),
     onSuccess: async (data: any) => {
+      console.log("✅ Farm created successfully:", data);
+
       // Invalidate queries trước khi chuyển trang
       await queryClient.invalidateQueries({ queryKey: [QueryKey.FARM.LIST] });
 
@@ -47,40 +50,35 @@ export const useFarm = () => {
     },
     onError: (error: any) => {
       console.error("❌ Create farm error:", error);
+      console.error("❌ Error response:", error?.response);
+      console.error("❌ Error data:", error?.response?.data);
 
-      // Xử lý error message cụ thể
-      let errorMessage = "Không thể đăng ký trang trại. Vui lòng thử lại.";
-      let errorTitle = "Đăng ký thất bại";
+      // Parse error bằng farm-error-handler
+      const errorInfo = parseFarmError(error);
 
-      const apiMessage = error?.response?.data?.message || error?.message || "";
+      console.log("📋 Parsed error info:", errorInfo);
 
-      if (
-        apiMessage.toLowerCase().includes("duplicate") ||
-        apiMessage.toLowerCase().includes("already exists")
-      ) {
-        errorTitle = "Trang trại đã tồn tại";
-        errorMessage =
-          "Trang trại này đã được đăng ký. Vui lòng kiểm tra lại thông tin.";
-      } else if (
-        apiMessage.toLowerCase().includes("invalid coordinates") ||
-        apiMessage.toLowerCase().includes("boundary")
-      ) {
-        errorTitle = "Tọa độ không hợp lệ";
-        errorMessage =
-          "Tọa độ ranh giới trang trại không hợp lệ. Vui lòng vẽ lại ranh giới.";
-      } else if (apiMessage) {
-        errorMessage = apiMessage;
-      }
-
-      // Hiển thị Result Status Screen với error
+      // Hiển thị Result Status Screen với error chi tiết
       resultStatus.showError({
-        title: errorTitle,
-        message: errorMessage,
+        title: errorInfo.title,
+        message: errorInfo.message,
         subMessage:
+          errorInfo.subMessage ||
           "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ bộ phận hỗ trợ.",
         showHomeButton: true,
         lockNavigation: true,
       });
+
+      // Log technical details for debugging
+      if (errorInfo.technicalMessage) {
+        console.error("🔧 Technical error:", errorInfo.technicalMessage);
+      }
+      if (errorInfo.httpStatus) {
+        console.error("📊 HTTP Status:", errorInfo.httpStatus);
+      }
+      if (errorInfo.errorCode) {
+        console.error("🔑 Error Code:", errorInfo.errorCode);
+      }
     },
   });
 
@@ -96,6 +94,8 @@ export const useFarm = () => {
       payload: FormFarmDTO;
     }) => farmServices.post.createFarm(payload),
     onSuccess: (response, variables) => {
+      console.log("✅ Farm updated successfully:", response);
+
       if (response.success) {
         notification.success("✅ Cập nhật nông trại thành công!");
 
@@ -109,11 +109,43 @@ export const useFarm = () => {
         router.replace(`/(farmer)/form-farm/${variables.farmId}?mode=detail`);
       }
     },
-    onError: (error: any) => {
+    onError: (error: any, variables) => {
       console.error("❌ Update farm error:", error);
-      notification.error(
-        error?.message || "Không thể cập nhật nông trại. Vui lòng thử lại."
-      );
+      console.error("❌ Farm ID:", variables.farmId);
+      console.error("❌ Error response:", error?.response);
+      console.error("❌ Error data:", error?.response?.data);
+
+      // Parse error bằng farm-error-handler
+      const errorInfo = parseFarmError(error);
+
+      console.log("📋 Parsed error info:", errorInfo);
+
+      // Hiển thị notification với error chi tiết
+      let notificationMessage = errorInfo.message;
+
+      if (errorInfo.subMessage) {
+        notificationMessage += `\n${errorInfo.subMessage}`;
+      }
+
+      if (errorInfo.suggestions && errorInfo.suggestions.length > 0) {
+        notificationMessage += "\n\nGợi ý:";
+        errorInfo.suggestions.forEach((suggestion, index) => {
+          notificationMessage += `\n${index + 1}. ${suggestion}`;
+        });
+      }
+
+      notification.error(notificationMessage);
+
+      // Log technical details for debugging
+      if (errorInfo.technicalMessage) {
+        console.error("🔧 Technical error:", errorInfo.technicalMessage);
+      }
+      if (errorInfo.httpStatus) {
+        console.error("📊 HTTP Status:", errorInfo.httpStatus);
+      }
+      if (errorInfo.errorCode) {
+        console.error("🔑 Error Code:", errorInfo.errorCode);
+      }
     },
   });
 

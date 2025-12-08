@@ -11,7 +11,7 @@ import {
 import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import { ScanText, Upload, X } from "lucide-react-native";
+import { Sparkles, Upload, X } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import {
   Alert,
@@ -36,6 +36,7 @@ export interface OcrScannerProps {
   buttonLabel?: string;
   prompt?: string;
   multiple?: boolean; // Tính năng mới
+  imageUris?: string[]; // Nhận ảnh từ bên ngoài (nếu có)
 }
 
 const OcrScanner: React.FC<OcrScannerProps> = ({
@@ -43,6 +44,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
   buttonLabel,
   prompt,
   multiple = false,
+  imageUris: externalImageUris, // Nhận từ props
 }) => {
   const GEMINI_API_KEY = Constants.expoConfig?.extra?.geminiApiKey;
   const { mode } = useAgrisaColors();
@@ -115,7 +117,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
       });
 
       const geminiResp = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -277,36 +279,58 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
     outputRange: [0, 0.45],
   });
 
+  // Nếu có ảnh từ props, chỉ hiển thị nút xác nhận
+  const urisToProcess =
+    externalImageUris && externalImageUris.length > 0
+      ? externalImageUris
+      : imageUris;
+  const isExternalMode = externalImageUris && externalImageUris.length > 0;
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <Box alignItems="center" justifyContent="center" padding={20}>
           <Button
-            onPress={openDrawer}
-            isDisabled={isUploading || isProcessing}
+            onPress={
+              isExternalMode ? () => performOCR(externalImageUris) : openDrawer
+            }
+            isDisabled={
+              isUploading ||
+              isProcessing ||
+              (isExternalMode && externalImageUris.length === 0)
+            }
             style={{
               width: "100%",
-              backgroundColor: themeColors.primary,
-              borderRadius: 8,
-              minHeight: 52,
+              backgroundColor: isExternalMode
+                ? themeColors.success
+                : themeColors.primary,
+              borderRadius: 12,
+              minHeight: 56,
+              paddingVertical: 16,
             }}
           >
-            {isUploading && <ButtonSpinner mr="$2" />}
-            <ScanText color={themeColors.primary_white_text} size={18} />
+            {(isUploading || isProcessing) && (
+              <ButtonSpinner mr="$2" color={themeColors.primary_white_text} />
+            )}
+            <Sparkles color={themeColors.primary_white_text} size={20} />
             <ButtonText
               ml="$2"
               style={{
                 color: themeColors.primary_white_text,
-                fontWeight: "600",
-                fontSize: 15,
+                fontWeight: "700",
+                fontSize: 16,
               }}
             >
-              {buttonLabel ?? (multiple ? "Chọn ảnh" : "Chọn ảnh")}
+              {isProcessing
+                ? "Đang xử lý..."
+                : isExternalMode
+                  ? (buttonLabel ?? "Xác nhận và quét")
+                  : (buttonLabel ?? "Chọn ảnh")}
             </ButtonText>
           </Button>
 
-          {/* Preview selected images in multiple mode */}
-          {multiple && imageUris.length > 0 && (
+          {/* Preview selected images in multiple mode - chỉ hiển thị khi không có ảnh từ props */}
+          {!isExternalMode && multiple && imageUris.length > 0 && (
             <View style={styles.previewContainer}>
               <View style={styles.previewHeader}>
                 <Text style={styles.previewTitle}>

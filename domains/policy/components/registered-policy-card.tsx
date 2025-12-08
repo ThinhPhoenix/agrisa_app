@@ -64,7 +64,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
         switch (policy.status) {
           case "active":
             return {
-              label: "Có hiệu lực",
+              label: "Được bảo hiểm",
               color: colors.success,
               bgColor: colors.successSoft,
               icon: CheckCircle2,
@@ -133,7 +133,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
 
   return (
     <Pressable
-      onPress={() => router.push(`/(farmer)/registered-policies/${policy.id}`)}
+      onPress={() => router.push(`/(farmer)/history-registered-policy/${policy.id}`)}
     >
       {({ pressed }) => (
         <Box

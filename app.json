@@ -24,6 +24,7 @@
             "bundleIdentifier": "com.agrisa.Agrisa"
         },
         "android": {
+            "googleServicesFile": "./google-services.json",
             "adaptiveIcon": {
                 "foregroundImage": "./assets/images/agrisa.png",
                 "backgroundColor": "#ffffff"

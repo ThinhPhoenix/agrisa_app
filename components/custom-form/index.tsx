@@ -108,6 +108,13 @@ export interface FormField {
   maxDate?: Date;
   dateFormat?: string;
   mode?: "date" | "time" | "datetime";
+  validation?: (
+    value: any,
+    formValues?: Record<string, any>
+  ) => {
+    isValid: boolean;
+    errorMessage?: string;
+  };
 }
 
 export interface CustomFormProps {
@@ -118,6 +125,7 @@ export interface CustomFormProps {
   formStyle?: any;
   gap?: number;
   submitButtonText?: string;
+  showSubmitButton?: boolean; // Control submit button visibility
   isSubmitting?: boolean;
 }
 
@@ -130,6 +138,7 @@ export const CustomForm = forwardRef(function CustomForm(
     formStyle,
     gap = 16,
     submitButtonText = "Submit",
+    showSubmitButton = true,
     isSubmitting = false,
   }: CustomFormProps,
   ref
@@ -165,9 +174,12 @@ export const CustomForm = forwardRef(function CustomForm(
       const validationErrors: Record<string, string> = {};
 
       fields.forEach((field) => {
+        const value = formData[field.name];
+
+        // Check required
         if (
           field.required &&
-          (formData[field.name] === undefined || formData[field.name] === "")
+          (value === undefined || value === "" || value === null)
         ) {
           validationErrors[field.name] = `Vui lòng ${
             field.type === "select" ||
@@ -178,6 +190,20 @@ export const CustomForm = forwardRef(function CustomForm(
                 ? "chọn ngày"
                 : "nhập"
           } ${field.label.toLowerCase()}!`;
+        }
+
+        // Run custom validation nếu có và field có giá trị
+        if (
+          field.validation &&
+          value !== undefined &&
+          value !== "" &&
+          value !== null
+        ) {
+          const validationResult = field.validation(value, formData);
+          if (!validationResult.isValid) {
+            validationErrors[field.name] =
+              validationResult.errorMessage || "Giá trị không hợp lệ";
+          }
         }
       });
 
@@ -197,18 +223,43 @@ export const CustomForm = forwardRef(function CustomForm(
   }));
 
   useEffect(() => {
-    if (initialValues) setFormData(initialValues);
-  }, [initialValues]);
+    if (initialValues) {
+      // Deep merge để đảm bảo cập nhật đầy đủ
+      setFormData((prev) => ({
+        ...prev,
+        ...initialValues,
+      }));
+    }
+  }, [JSON.stringify(initialValues)]); // Deep compare bằng JSON.stringify
 
   useEffect(() => {
-    onValuesChange && onValuesChange(formData);
-  }, [formData, onValuesChange]);
+    if (onValuesChange) {
+      onValuesChange(formData);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]); // Chỉ theo dõi formData, không theo dõi onValuesChange
 
   const handleFieldChange = (name: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    const newFormData = { ...formData, [name]: value };
+    setFormData(newFormData);
 
     const field = fields.find((f) => f.name === name);
+
+    // Run custom validation nếu có
+    if (field?.validation) {
+      const validationResult = field.validation(value, newFormData);
+      if (!validationResult.isValid) {
+        setErrors((prev) => ({
+          ...prev,
+          [name]: validationResult.errorMessage || "Giá trị không hợp lệ",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    } else if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
     if (field?.onChange) {
       field.onChange(value);
     }
@@ -219,11 +270,12 @@ export const CustomForm = forwardRef(function CustomForm(
     const validationErrors: Record<string, string> = {};
 
     fields.forEach((field) => {
+      const value = formData[field.name];
+
+      // Check required
       if (
         field.required &&
-        (formData[field.name] === undefined ||
-          formData[field.name] === "" ||
-          formData[field.name] === null)
+        (value === undefined || value === "" || value === null)
       ) {
         validationErrors[field.name] = `Vui lòng ${
           field.type === "select" ||
@@ -234,6 +286,20 @@ export const CustomForm = forwardRef(function CustomForm(
               ? "chọn ngày"
               : "nhập"
         } ${field.label.toLowerCase()}!`;
+      }
+
+      // Run custom validation nếu có và field có giá trị
+      if (
+        field.validation &&
+        value !== undefined &&
+        value !== "" &&
+        value !== null
+      ) {
+        const validationResult = field.validation(value, formData);
+        if (!validationResult.isValid) {
+          validationErrors[field.name] =
+            validationResult.errorMessage || "Giá trị không hợp lệ";
+        }
       }
     });
 
@@ -1277,7 +1343,7 @@ export const CustomForm = forwardRef(function CustomForm(
         </View>
       ))}
 
-      {!hasSubmitField && onSubmit && (
+      {!hasSubmitField && onSubmit && showSubmitButton && (
         <Button
           onPress={handleSubmit}
           isDisabled={isSubmitting}

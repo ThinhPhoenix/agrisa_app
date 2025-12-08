@@ -1,5 +1,6 @@
 import useAxios from "@/config/useAxios.config";
 import {
+  CancelRequestPayload,
   PolicyDetailResponse,
   PublicBasePolicyResponse,
   RegisteredPoliciesResponse,
@@ -15,6 +16,16 @@ export const policyServices = {
     ): Promise<ApiResponse<any>> => {
       return useAxios.post(
         `/policy/protected/api/v2/policies/register`,
+        payload
+      );
+    },
+    cancel_registered_policy: async (
+      registered_policy_id: string,
+      base_policy_id: string,
+      payload: CancelRequestPayload
+    ): Promise<ApiResponse<any>> => {
+      return useAxios.post(
+        `/policy/protected/api/v2/cancel_request?policy_id=${base_policy_id}`,
         payload
       );
     },

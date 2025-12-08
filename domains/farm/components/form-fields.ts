@@ -3,6 +3,8 @@ import type { FormField } from "@/components/custom-form";
 interface FormFieldsOptions {
   mode: "create" | "edit";
   ocrResult: any | null;
+  hasIrrigation?: boolean; // Để conditional rendering irrigation_type
+  plantingDate?: Date | string | null; // Để set minDate cho expected_harvest_date
 }
 
 /**
@@ -13,7 +15,24 @@ interface FormFieldsOptions {
 export const createFarmFormFields = ({
   mode,
   ocrResult,
+  hasIrrigation = false,
+  plantingDate = null,
 }: FormFieldsOptions): FormField[] => {
+  // Get today's date at midnight for comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Ngày mai (minimum date cho planting_date)
+  const tomorrow = new Date(today.getTime() + 86400000);
+
+  // Minimum date cho expected_harvest_date (ngày sau planting_date)
+  let minHarvestDate: Date | undefined = undefined;
+  if (plantingDate) {
+    const plantingDateObj = new Date(plantingDate);
+    plantingDateObj.setHours(0, 0, 0, 0);
+    minHarvestDate = new Date(plantingDateObj.getTime() + 86400000); // +1 ngày
+  }
+
   return [
     // ===== THÔNG TIN CƠ BẢN =====
     {
@@ -87,16 +106,64 @@ export const createFarmFormFields = ({
       label: "Ngày gieo trồng",
       placeholder: "Chọn ngày gieo trồng",
       type: "datepicker",
-      required: false,
+      required: true,
       dateFormat: "DD/MM/YYYY",
+      // minDate: tomorrow, // Chỉ cho chọn từ ngày mai
+      // helperText: "Ngày gieo trồng phải từ ngày mai trở đi",
+      // validation: (value: any) => {
+      //   if (!value) return { isValid: true };
+
+      //   const selectedDate = new Date(value);
+      //   selectedDate.setHours(0, 0, 0, 0);
+
+      //   // Kiểm tra không phải hôm nay hoặc quá khứ
+      //   if (selectedDate.getTime() <= today.getTime()) {
+      //     return {
+      //       isValid: false,
+      //       errorMessage: "Ngày gieo trồng phải từ ngày mai trở đi",
+      //     };
+      //   }
+
+      //   return { isValid: true };
+      // },
     },
     {
       name: "expected_harvest_date",
       label: "Ngày thu hoạch dự kiến",
       placeholder: "Chọn ngày thu hoạch",
       type: "datepicker",
-      required: false,
+      required: true,
       dateFormat: "DD/MM/YYYY",
+      // minDate: minHarvestDate, // Chỉ cho chọn sau ngày gieo trồng
+      // helperText: "Ngày thu hoạch phải sau ngày gieo trồng ít nhất 1 ngày",
+      // validation: (value: any, formValues: any) => {
+      //   if (!value) return { isValid: true };
+
+      //   const harvestDate = new Date(value);
+      //   harvestDate.setHours(0, 0, 0, 0);
+
+      //   // Kiểm tra có planting_date không
+      //   if (!formValues?.planting_date) {
+      //     return {
+      //       isValid: false,
+      //       errorMessage: "Vui lòng chọn ngày gieo trồng trước",
+      //     };
+      //   }
+
+      //   const plantingDate = new Date(formValues.planting_date);
+      //   plantingDate.setHours(0, 0, 0, 0);
+
+      //   // Kiểm tra harvest date phải sau planting date ít nhất 1 ngày
+      //   if (harvestDate <= plantingDate) {
+      //     return {
+      //       isValid: false,
+      //       errorMessage:
+      //         "Ngày thu hoạch phải sau ngày gieo trồng ít nhất 1 ngày",
+      //     };
+      //   }
+
+      //   return { isValid: true };
+      // },
     },
 
     // ===== GIẤY TỞ PHÁP LÝ =====
@@ -125,6 +192,8 @@ export const createFarmFormFields = ({
       type: "input",
       required: true,
       disabled: mode === "create" && !ocrResult,
+      helperText:
+        "Chấp nhận các loại đất dựa trên cây trồng và sổ như sau:\n - Đất chuyên trồng lúa nước (LUC)\n - Đất trồng lúa nước còn lại (LUK) \n - Đất lúa nương (LUN) \n - Đất trồng cây lâu năm (CLN)",
     },
 
     // ===== HỆ THỐNG TƯỚI TIÊU =====
@@ -133,23 +202,22 @@ export const createFarmFormFields = ({
       label: "Có hệ thống tưới tiêu?",
       type: "switch",
       required: true,
+      helperText: "Bật nếu trang trại có hệ thống tưới tiêu",
     },
-    {
-      name: "irrigation_type",
-      label: "Loại hệ thống tưới",
-      placeholder: "Chọn loại hệ thống",
-      type: "select",
-      required: false,
-      options: [
-        { label: "Kênh mương", value: "Kênh mương" },
-        { label: "Nhỏ giọt", value: "Nhỏ giọt" },
-        { label: "Phun mưa", value: "Phun mưa" },
-        { label: "Máy bơm", value: "Máy bơm" },
-        { label: "Nước mưa", value: "Nước mưa" },
-        { label: "Không có", value: "Không có" },
-        { label: "Khác", value: "Khác" },
-      ],
-    },
+
+    // Chỉ hiển thị khi has_irrigation = true
+    ...(hasIrrigation
+      ? [
+          {
+            name: "irrigation_type",
+            label: "Loại hệ thống tưới",
+            placeholder: "VD: Kênh mương, nhỏ giọt, phun mưa...",
+            type: "input" as const,
+            required: false,
+            helperText: "Mô tả loại hệ thống tưới tiêu đang sử dụng",
+          },
+        ]
+      : []),
 
     // ===== TRẠNG THÁI (CHỈ EDIT MODE) =====
     ...(mode === "edit"

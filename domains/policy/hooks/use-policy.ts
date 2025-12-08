@@ -2,6 +2,7 @@ import { useNotificationModal } from "@/components/modal";
 import { useResultStatus } from "@/components/result-status/useResultStatus";
 import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { CancelRequestPayload } from "../models/policy.models";
 import { policyServices } from "../service/policy.service";
 
 export const usePolicy = () => {
@@ -107,8 +108,14 @@ export const usePolicy = () => {
         errorMessage =
           "Số dư trong tài khoản không đủ để thanh toán. Vui lòng nạp thêm tiền để tiếp tục.";
       } else if (apiMessage) {
-        // Nếu có message từ API và không match case nào, hiển thị luôn
+        // ✅ Case chung chung: Hiển thị message từ API nhưng thêm context
+        errorTitle = "Đăng ký thất bại";
         errorMessage = apiMessage;
+      } else {
+        // ✅ Không có message gì từ API
+        errorTitle = "Lỗi không xác định";
+        errorMessage =
+          "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ.";
       }
 
       // Hiển thị Result Status Screen với error
@@ -120,9 +127,98 @@ export const usePolicy = () => {
         showHomeButton: true,
         lockNavigation: true,
       });
+    },
+  });
 
-      // Vẫn giữ notification modal cho những nơi khác sử dụng
-      // notification.error(errorMessage);
+  /**
+   * Mutation: Hủy hợp đồng bảo hiểm (Cancel Policy)
+   */
+  const cancelPolicyMutation = useMutation({
+    mutationKey: [QueryKey.POLICY.CANCEL],
+    mutationFn: async (payload: {
+      registered_policy_id: string;
+      base_policy_id: string;
+      cancel_request_type: CancelRequestPayload["cancel_request_type"];
+      reason: string;
+      compensate_amount: number;
+      evidence: CancelRequestPayload["evidence"];
+    }) => {
+      return await policyServices.post.cancel_registered_policy(
+        payload.registered_policy_id,
+        payload.base_policy_id,
+        {
+          cancel_request_type: payload.cancel_request_type,
+          reason: payload.reason,
+          compensate_amount: payload.compensate_amount,
+          evidence: payload.evidence,
+        }
+      );
+    },
+    onSuccess: async (data: any) => {
+      console.log("✅ Cancel policy request submitted:", data);
+
+      // Hiển thị Result Status Screen với success
+      resultStatus.showSuccess({
+        title: "Gửi yêu cầu thành công!",
+        message: "Yêu cầu hủy hợp đồng của bạn đã được gửi đi.",
+        subMessage:
+          "Chúng tôi sẽ xem xét và phản hồi trong vòng 3-5 ngày làm việc.",
+        autoRedirectSeconds: 5,
+        autoRedirectRoute: "/(tabs)",
+        showHomeButton: true,
+        lockNavigation: true,
+      });
+    },
+    onError: (error: any) => {
+      console.error("❌ Error cancelling policy:", error);
+
+      // Xử lý error message cụ thể
+      let errorMessage =
+        "Không thể gửi yêu cầu hủy hợp đồng. Vui lòng thử lại.";
+      let errorTitle = "Gửi yêu cầu thất bại";
+
+      const apiMessage = error?.response?.data?.message || error?.message || "";
+
+      if (apiMessage.toLowerCase().includes("policy not found")) {
+        errorTitle = "Không tìm thấy hợp đồng";
+        errorMessage =
+          "Hợp đồng không tồn tại hoặc đã bị xóa. Vui lòng kiểm tra lại.";
+      } else if (
+        apiMessage.toLowerCase().includes("policy already cancelled") ||
+        apiMessage.toLowerCase().includes("already canceled")
+      ) {
+        errorTitle = "Hợp đồng đã hủy";
+        errorMessage = "Hợp đồng này đã được hủy trước đó.";
+      } else if (
+        apiMessage.toLowerCase().includes("policy not active") ||
+        apiMessage.toLowerCase().includes("invalid status")
+      ) {
+        errorTitle = "Trạng thái không hợp lệ";
+        errorMessage =
+          "Chỉ có thể hủy hợp đồng đang có hiệu lực. Vui lòng kiểm tra lại trạng thái hợp đồng.";
+      } else if (apiMessage.toLowerCase().includes("pending cancel request")) {
+        errorTitle = "Đã có yêu cầu hủy";
+        errorMessage =
+          "Bạn đã gửi yêu cầu hủy hợp đồng này trước đó. Vui lòng đợi phản hồi.";
+      } else if (apiMessage) {
+        // Case chung chung: Hiển thị message từ API
+        errorMessage = apiMessage;
+      } else {
+        // Không có message từ API
+        errorTitle = "Lỗi không xác định";
+        errorMessage =
+          "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ.";
+      }
+
+      // Hiển thị Result Status Screen với error
+      resultStatus.showError({
+        title: errorTitle,
+        message: errorMessage,
+        subMessage:
+          "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ bộ phận hỗ trợ.",
+        showHomeButton: true,
+        lockNavigation: true,
+      });
     },
   });
 
@@ -130,6 +226,7 @@ export const usePolicy = () => {
     getPublicBasePolicy,
     getDetailBasePolicy,
     registerPolicyMutation,
+    cancelPolicyMutation,
     getRegisteredPolicy,
     getRegisteredPolicyDetail,
     getUnderwritingPolicy,

@@ -198,7 +198,19 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   };
 
   // ===== FORM FIELDS =====
-  const formFields = createFarmFormFields({ mode, ocrResult });
+  // Pass hasIrrigation để conditional rendering irrigation_type field
+  // Pass plantingDate để set minDate cho expected_harvest_date
+  // useMemo để re-render khi has_irrigation hoặc planting_date thay đổi
+  const formFields = React.useMemo(
+    () =>
+      createFarmFormFields({
+        mode,
+        ocrResult,
+        hasIrrigation: formValues.has_irrigation ?? false,
+        plantingDate: formValues.planting_date ?? null,
+      }),
+    [mode, ocrResult, formValues.has_irrigation, formValues.planting_date]
+  );
 
   // ===== OCR RESULT HANDLER =====
   const handleOcrResult = async ({
@@ -288,6 +300,20 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       notification.error("Không thể xử lý ảnh. Vui lòng thử lại!");
     }
   };
+
+  // ===== FORM VALUES CHANGE HANDLER =====
+  const handleFormValuesChange = useCallback(
+    (values: Record<string, any>) => {
+      // Nếu planting_date thay đổi, xóa expected_harvest_date để user chọn lại
+      if (values.planting_date !== formValues.planting_date) {
+        values.expected_harvest_date = null;
+      }
+
+      // Luôn sync tất cả formValues để các field khác hoạt động
+      updateFormValues(values);
+    },
+    [formValues.planting_date, updateFormValues]
+  );
 
   // ===== SUBMIT HANDLER =====
   const handleSubmit = useCallback(
@@ -1224,6 +1250,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     fields={formFields}
                     initialValues={formValues}
                     onSubmit={handleSubmit}
+                    onValuesChange={handleFormValuesChange}
                     submitButtonText={
                       isSubmitting
                         ? "Đang xử lý..."

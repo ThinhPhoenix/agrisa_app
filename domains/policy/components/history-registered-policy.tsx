@@ -20,7 +20,6 @@ import {
   Text,
   VStack,
 } from "@gluestack-ui/themed";
-import { router } from "expo-router";
 import {
   AlertCircle,
   Banknote,
@@ -37,12 +36,12 @@ import {
   Sprout,
   User,
   View,
-  XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Linking, RefreshControl } from "react-native";
 import { UnderwritingStatus } from "../enums/policy-status.enum";
 import { RegisteredPolicy } from "../models/policy.models";
+import { router } from "expo-router";
 
 interface DetailRegisteredPolicyProps {
   policy: RegisteredPolicy;
@@ -55,7 +54,7 @@ interface DetailRegisteredPolicyProps {
  * Thiết kế như một hợp đồng bảo hiểm chuyên nghiệp
  * Bao gồm thông tin policy và farm đầy đủ với map
  */
-export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
+export const HistoryDetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   policy,
   isRefreshing = false,
   onRefresh,
@@ -97,11 +96,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const farm = farmData?.success ? farmData.data : null;
 
   const getPolicyStatusDisplay = () => {
-    // Lấy timestamp hiện tại (giây)
-    const currentTimestamp = Math.floor(Date.now() / 1000);
-    const coverageStartTimestamp = policy.coverage_start_date;
-    const coverageEndTimestamp = policy.coverage_end_date;
-
     // Trường hợp đặc biệt: pending_payment (chỜ thanh toán sau khi duyệt)
     if (
       policy.status === "pending_payment" &&
@@ -118,35 +112,15 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
     // Xử lý theo underwriting_status
     switch (policy.underwriting_status) {
       case UnderwritingStatus.APPROVED:
-        // Nếu approved, xem tiếp status để xác định trạng thái cuối
+        // Nếu approved, xem tiếp status đệ xác định trạng thái cuối
         switch (policy.status) {
           case "active":
-            // Kiểm tra xem đã đến ngày bắt đầu bảo hiểm chưa
-            if (currentTimestamp < coverageStartTimestamp) {
-              // Chưa đến ngày bắt đầu
-              return {
-                label: "Chờ hiệu lực",
-                color: colors.pending,
-                icon: AlertCircle,
-                bgColor: colors.warningSoft,
-              };
-            } else if (currentTimestamp >= coverageEndTimestamp) {
-              // Đã quá ngày kết thúc
-              return {
-                label: "Đã hết hạn",
-                color: colors.muted_text,
-                icon: AlertCircle,
-                bgColor: colors.background,
-              };
-            } else {
-              // Đang trong thời gian bảo hiểm
-              return {
-                label: "Có hiệu lực",
-                color: colors.success,
-                icon: CheckCircle2,
-                bgColor: colors.successSoft,
-              };
-            }
+            return {
+              label: "Đã được bảo hiểm",
+              color: colors.success,
+              icon: CheckCircle2,
+              bgColor: colors.successSoft,
+            };
           case "expired":
             return {
               label: "Đã hết hạn",
@@ -162,16 +136,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
               bgColor: colors.errorSoft,
             };
           default:
-            // Trường hợp đã phê duyệt nhưng chưa active
-            // Kiểm tra xem đã đến ngày bắt đầu chưa
-            if (currentTimestamp < coverageStartTimestamp) {
-              return {
-                label: "Chờ hiệu lực",
-                color: colors.pending,
-                icon: CheckCircle2,
-                bgColor: colors.warningSoft,
-              };
-            }
             return {
               label: "Đã được phê duyệt",
               color: colors.success,
@@ -457,9 +421,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                       color={colors.primary_text}
                       textAlign="center"
                     >
-                      {userProfile?.full_name ||
-                        userProfile?.display_name ||
-                        "Chưa cập nhật"}
+                      {userProfile?.full_name || userProfile?.display_name || "Chưa cập nhật"}
                     </Text>
                   </VStack>
                 </Box>
@@ -1385,36 +1347,37 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           </Box>
         )}
 
-        {/* Nút Yêu cầu hủy hợp đồng - Chỉ hiển thị khi status = active */}
-        {policy.status === "active" &&
-          policy.underwriting_status === UnderwritingStatus.APPROVED && (
-            <Pressable
-              onPress={() => {
-                router.push(
-                  `/(farmer)/registered-policies/${policy.id}/cancel`
-                );
-              }}
+        {/* Nút Hủy - Hiển thị khi pending_payment hoặc pending_review */}
+        {(policy.status === "pending_payment" ||
+          policy.status === "pending_review") && (
+          <Pressable
+            onPress={() => {
+              router.push(
+                `/(farmer)/history-registered-policy/${policy.id}/cancel`
+              );
+            }}
+          >
+            <Box
+              bg={colors.background}
+              borderRadius="$lg"
+              p="$3"
+              borderWidth={1}
+              borderColor={colors.error}
             >
-              <Box
-                bg={colors.background}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.error}
-              >
-                <HStack space="sm" alignItems="center" justifyContent="center">
-                  <XCircle size={16} color={colors.error} strokeWidth={2} />
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$bold"
-                    color={colors.error}
-                  >
-                    Yêu cầu hủy hợp đồng
-                  </Text>
-                </HStack>
-              </Box>
-            </Pressable>
-          )}
+              <HStack space="sm" alignItems="center" justifyContent="center">
+                <AlertCircle size={16} color={colors.error} strokeWidth={2} />
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.error}
+                  textAlign="center"
+                >
+                  Hủy đăng ký
+                </Text>
+              </HStack>
+            </Box>
+          </Pressable>
+        )}
 
         {/* Footer note */}
         <Box

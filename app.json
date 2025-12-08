@@ -9,9 +9,9 @@
         "userInterfaceStyle": "automatic",
         "newArchEnabled": true,
         "splash": {
-            "image": "./assets/images/Logo/Agrisa_Logo.png",
+            "image": "./assets/images/Logo/agrisa.png",
             "resizeMode": "contain",
-            "backgroundColor": "#fbe9a8"
+            "backgroundColor": "#059669"
         },
         "platforms": ["ios", "android"],
         "ios": {

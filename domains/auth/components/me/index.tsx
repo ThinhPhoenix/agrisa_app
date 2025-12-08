@@ -307,7 +307,7 @@ const MeComponentUI: React.FC = () => {
     },
     {
       name: "bank_code",
-      label: "Mã ngân hàng",
+      label: "Ngân hàng",
       type: "input",
       placeholder: "VD: 970422 (MB Bank)",
       required: false,

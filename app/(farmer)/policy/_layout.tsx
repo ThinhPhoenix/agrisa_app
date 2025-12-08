@@ -83,7 +83,7 @@ function AnimatedTabButton({
           })}
         <Text
           style={{
-            fontSize: 12,
+            fontSize: 10,
             marginTop: 4,
             fontWeight: '600',
             color: isFocused ? AgrisaColors.light.primary : AgrisaColors.light.muted_text,

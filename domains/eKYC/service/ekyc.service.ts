@@ -3,6 +3,7 @@ import {
   EKYCStatusResponse,
   FaceScanPayload,
   OCRIDPPayload,
+  UpdateCardInfoPayload,
 } from "../models/ekyc.models";
 
 export const eKYCServices = {
@@ -28,7 +29,15 @@ export const eKYCServices = {
 
     reset_ekyc: async (): Promise<ApiResponse<void>> => {
       return useAxios.post("/auth/protected/api/v2/session/reset-ekyc");
-    }
+    },
+    update_card_info: async (): Promise<ApiResponse<any>> => {
+      return useAxios.post("/auth/protected/api/v2/user-card");
+    },
+    update_card_info_fields: async (
+      payload: UpdateCardInfoPayload
+    ): Promise<ApiResponse<any>> => {
+      return useAxios.post("/auth/protected/api/v2/user-card", payload);
+    },
   },
 
   get: {

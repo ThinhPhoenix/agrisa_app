@@ -25,11 +25,8 @@ import {
   Text,
   VStack,
 } from "@gluestack-ui/themed";
-import {
-  CheckCircle2,
-  RefreshCw,
-  XCircle,
-} from "lucide-react-native";
+import { router } from "expo-router";
+import { CheckCircle2, Edit3, RefreshCw, XCircle } from "lucide-react-native";
 import { useCallback, useEffect } from "react";
 import { BackHandler } from "react-native";
 
@@ -153,21 +150,84 @@ export default function ConfirmCardInfoScreen() {
 
             {/* Nội dung phiếu */}
             <VStack>
-              <InfoField label="Số CCCD" value={cardInfo.national_id} colors={colors} />
-              <InfoField label="Họ và tên" value={cardInfo.name} colors={colors} />
-              <InfoField label="Ngày sinh" value={cardInfo.dob} colors={colors} />
-              <InfoField label="Giới tính" value={cardInfo.sex} colors={colors} />
-              <InfoField label="Quốc tịch" value={cardInfo.nationality} colors={colors} />
-              <InfoField label="Quê quán" value={cardInfo.home} colors={colors} />
-              <InfoField label="Nơi thường trú" value={cardInfo.address} colors={colors} />
-              <InfoField label="Ngày cấp" value={cardInfo.issue_date} colors={colors} />
-              <InfoField label="Ngày hết hạn" value={cardInfo.doe} colors={colors} />
-              <InfoField label="Nơi cấp" value={cardInfo.issue_loc} colors={colors} isLast />
+              <InfoField
+                label="Số CCCD"
+                value={cardInfo.national_id}
+                colors={colors}
+              />
+              <InfoField
+                label="Họ và tên"
+                value={cardInfo.name}
+                colors={colors}
+              />
+              <InfoField
+                label="Ngày sinh"
+                value={cardInfo.dob}
+                colors={colors}
+              />
+              <InfoField
+                label="Giới tính"
+                value={cardInfo.sex}
+                colors={colors}
+              />
+              <InfoField
+                label="Quốc tịch"
+                value={cardInfo.nationality}
+                colors={colors}
+              />
+              <InfoField
+                label="Quê quán"
+                value={cardInfo.home}
+                colors={colors}
+              />
+              <InfoField
+                label="Nơi thường trú"
+                value={cardInfo.address}
+                colors={colors}
+              />
+              <InfoField
+                label="Ngày cấp"
+                value={cardInfo.issue_date}
+                colors={colors}
+              />
+              <InfoField
+                label="Ngày hết hạn"
+                value={cardInfo.doe}
+                colors={colors}
+              />
+              <InfoField
+                label="Nơi cấp"
+                value={cardInfo.issue_loc}
+                colors={colors}
+                isLast
+              />
             </VStack>
           </Box>
 
           {/* Action Buttons - Chỉ có nút Xác nhận, không có nút quay lại */}
           <VStack space="md" mt="$2">
+            {/* Edit Button - Navigate to edit page */}
+            <Button
+              bg={colors.background}
+              borderRadius="$xl"
+              h="$12"
+              borderWidth={1}
+              borderColor={colors.primary}
+              onPress={() => router.push("/settings/verify/edit-card-info")}
+              isDisabled={isConfirming}
+            >
+              <HStack space="sm" alignItems="center">
+                <Edit3 size={20} color={colors.primary} />
+                <ButtonText
+                  fontSize="$md"
+                  fontWeight="$semibold"
+                  color={colors.primary}
+                >
+                  Chỉnh sửa thông tin
+                </ButtonText>
+              </HStack>
+            </Button>
+
             {/* Confirm Button */}
             <Button
               bg={colors.success}

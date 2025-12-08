@@ -20,7 +20,6 @@ export const policyServices = {
       );
     },
     cancel_registered_policy: async (
-      registered_policy_id: string,
       base_policy_id: string,
       payload: CancelRequestPayload
     ): Promise<ApiResponse<any>> => {

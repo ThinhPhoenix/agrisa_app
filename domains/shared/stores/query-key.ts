@@ -17,6 +17,7 @@ export const QueryKey = {
     FACE_SCAN: "ekyc-face-scan",
     CARD_INFO: "ekyc-card-info",
     CONFIRM_CARD_INFO: "ekyc-confirm-card-info",
+    UPDATE_CARD_INFO_FIELDS: "ekyc-update-card-info-fields",
     RESET_EKYC: "ekyc-reset",
   },
 

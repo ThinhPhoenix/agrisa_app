@@ -16,9 +16,9 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
-        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-        "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+        "EXPO_PUBLIC_API_URL":"https://agrisa-api.phrimp.io.vn",
+        "EXPO_PUBLIC_GEMINI_KEY":"AIzaSyAIVnctG0wwi72p2KEPbEJwcBUL5jjmJFk",
+        "EXPO_PUBLIC_OPENMAPVN_KEY":"sPZ5JZsqMDT0d5thxk2sQ1OannuGV2JP"
       }
     },
     "production": {

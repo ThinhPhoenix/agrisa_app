@@ -4,7 +4,6 @@ interface FormFieldsOptions {
   mode: "create" | "edit";
   ocrResult: any | null;
   hasIrrigation?: boolean; // Để conditional rendering irrigation_type
-  plantingDate?: Date | string | null; // Để set minDate cho expected_harvest_date
 }
 
 /**
@@ -16,23 +15,7 @@ export const createFarmFormFields = ({
   mode,
   ocrResult,
   hasIrrigation = false,
-  plantingDate = null,
 }: FormFieldsOptions): FormField[] => {
-  // Get today's date at midnight for comparison
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  // Ngày mai (minimum date cho planting_date)
-  const tomorrow = new Date(today.getTime() + 86400000);
-
-  // Minimum date cho expected_harvest_date (ngày sau planting_date)
-  let minHarvestDate: Date | undefined = undefined;
-  if (plantingDate) {
-    const plantingDateObj = new Date(plantingDate);
-    plantingDateObj.setHours(0, 0, 0, 0);
-    minHarvestDate = new Date(plantingDateObj.getTime() + 86400000); // +1 ngày
-  }
-
   return [
     // ===== THÔNG TIN CƠ BẢN =====
     {
@@ -100,70 +83,24 @@ export const createFarmFormFields = ({
       helperText: "Đơn vị tính: hecta (ha) - Tự động chuyển đổi từ m²",
     },
 
-    // ===== LỊCH CANH TÁC =====
+    // ===== LỊCH CANH TÁC (TÙY CHỌN) =====
     {
       name: "planting_date",
-      label: "Ngày gieo trồng",
+      label: "Ngày gieo trồng (không bắt buộc)",
       placeholder: "Chọn ngày gieo trồng",
       type: "datepicker",
-      required: true,
+      required: false,
       dateFormat: "DD/MM/YYYY",
-      // minDate: tomorrow, // Chỉ cho chọn từ ngày mai
-      // helperText: "Ngày gieo trồng phải từ ngày mai trở đi",
-      // validation: (value: any) => {
-      //   if (!value) return { isValid: true };
-
-      //   const selectedDate = new Date(value);
-      //   selectedDate.setHours(0, 0, 0, 0);
-
-      //   // Kiểm tra không phải hôm nay hoặc quá khứ
-      //   if (selectedDate.getTime() <= today.getTime()) {
-      //     return {
-      //       isValid: false,
-      //       errorMessage: "Ngày gieo trồng phải từ ngày mai trở đi",
-      //     };
-      //   }
-
-      //   return { isValid: true };
-      // },
+      helperText: "Có thể bỏ trống nếu chưa xác định",
     },
     {
       name: "expected_harvest_date",
-      label: "Ngày thu hoạch dự kiến",
+      label: "Ngày thu hoạch dự kiến (không bắt buộc)",
       placeholder: "Chọn ngày thu hoạch",
       type: "datepicker",
-      required: true,
+      required: false,
       dateFormat: "DD/MM/YYYY",
-      // minDate: minHarvestDate, // Chỉ cho chọn sau ngày gieo trồng
-      // helperText: "Ngày thu hoạch phải sau ngày gieo trồng ít nhất 1 ngày",
-      // validation: (value: any, formValues: any) => {
-      //   if (!value) return { isValid: true };
-
-      //   const harvestDate = new Date(value);
-      //   harvestDate.setHours(0, 0, 0, 0);
-
-      //   // Kiểm tra có planting_date không
-      //   if (!formValues?.planting_date) {
-      //     return {
-      //       isValid: false,
-      //       errorMessage: "Vui lòng chọn ngày gieo trồng trước",
-      //     };
-      //   }
-
-      //   const plantingDate = new Date(formValues.planting_date);
-      //   plantingDate.setHours(0, 0, 0, 0);
-
-      //   // Kiểm tra harvest date phải sau planting date ít nhất 1 ngày
-      //   if (harvestDate <= plantingDate) {
-      //     return {
-      //       isValid: false,
-      //       errorMessage:
-      //         "Ngày thu hoạch phải sau ngày gieo trồng ít nhất 1 ngày",
-      //     };
-      //   }
-
-      //   return { isValid: true };
-      // },
+      helperText: "Có thể bỏ trống nếu chưa xác định",
     },
 
     // ===== GIẤY TỞ PHÁP LÝ =====

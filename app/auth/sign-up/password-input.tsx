@@ -1,8 +1,17 @@
 import { useGlobalNotification } from "@/components/modal/providers/NotificationProvider";
+import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useAuth } from "@/domains/auth/hooks/use-auth";
 import { useSignUpStore } from "@/domains/auth/stores/signup.store";
-import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { Box, HStack, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Lock,
+  XCircle,
+} from "lucide-react-native";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -17,8 +26,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
-import { VStack, HStack, Box } from "@gluestack-ui/themed";
-import { Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, XCircle } from "lucide-react-native";
 
 /**
  * ============================================

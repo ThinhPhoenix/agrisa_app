@@ -1,7 +1,9 @@
 import { useGlobalNotification } from "@/components/modal/providers/NotificationProvider";
-import { useSignUpStore } from "@/domains/auth/stores/signup.store";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useSignUpStore } from "@/domains/auth/stores/signup.store";
+import { Box, HStack, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
+import { ArrowLeft, ArrowRight, CheckCircle2, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Image,
@@ -15,8 +17,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
-import { VStack, HStack, Box } from "@gluestack-ui/themed";
-import { Mail, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react-native";
 
 /**
  * ============================================
@@ -246,10 +246,11 @@ export default function EmailInputScreen() {
                     lineHeight: 22,
                   }}
                 >
-                  <Text style={{ fontWeight: "700" }}>Email sẽ được dùng để:</Text>{"\n"}
-                  • Nhận thông báo về hợp đồng bảo hiểm{"\n"}
-                  • Khôi phục mật khẩu khi cần{"\n"}
-                  • Nhận thông tin quan trọng từ Agrisa
+                  <Text style={{ fontWeight: "700" }}>
+                    Email sẽ được dùng để:
+                  </Text>
+                  {"\n"}• Nhận thông báo về hợp đồng bảo hiểm{"\n"}• Khôi phục
+                  mật khẩu khi cần{"\n"}• Nhận thông tin quan trọng từ Agrisa
                 </Text>
               </Box>
 
@@ -326,7 +327,11 @@ export default function EmailInputScreen() {
                 borderColor: `${colors.success}40`,
               }}
             >
-              <CheckCircle2 size={24} color={colors.success} style={{ marginRight: 12 }} />
+              <CheckCircle2
+                size={24}
+                color={colors.success}
+                style={{ marginRight: 12 }}
+              />
               <VStack className="flex-1">
                 <Text
                   style={{

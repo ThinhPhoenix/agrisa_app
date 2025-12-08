@@ -1,7 +1,14 @@
 import { useGlobalNotification } from "@/components/modal/providers/NotificationProvider";
-import { useSignUpStore } from "@/domains/auth/stores/signup.store";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useSignUpStore } from "@/domains/auth/stores/signup.store";
+import { Box, HStack, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  CreditCard,
+} from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Image,
@@ -15,8 +22,6 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native";
-import { VStack, HStack, Box } from "@gluestack-ui/themed";
-import { CreditCard, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react-native";
 
 /**
  * ============================================
@@ -44,7 +49,9 @@ export default function CCCDInputScreen() {
     // Check CCCD format (9 hoặc 12 số)
     const cccdRegex = /^(\d{9}|\d{12})$/;
     if (!cccdRegex.test(cccdInput.trim())) {
-      notification.error("Số CCCD/CMND không hợp lệ. Vui lòng nhập 9 hoặc 12 số");
+      notification.error(
+        "Số CCCD/CMND không hợp lệ. Vui lòng nhập 9 hoặc 12 số"
+      );
       return;
     }
 
@@ -183,7 +190,11 @@ export default function CCCDInputScreen() {
                     alignItems: "center",
                   }}
                 >
-                  <CreditCard size={32} color={colors.warning} strokeWidth={2.5} />
+                  <CreditCard
+                    size={32}
+                    color={colors.warning}
+                    strokeWidth={2.5}
+                  />
                 </Box>
               </VStack>
 
@@ -224,7 +235,8 @@ export default function CCCDInputScreen() {
                     color: colors.muted_text,
                   }}
                 >
-                  Số CCCD sẽ được dùng để xác thực danh tính khi đăng ký bảo hiểm
+                  Số CCCD sẽ được dùng để xác thực danh tính khi đăng ký bảo
+                  hiểm
                 </Text>
               </VStack>
 
@@ -246,9 +258,9 @@ export default function CCCDInputScreen() {
                       lineHeight: 22,
                     }}
                   >
-                    <Text style={{ fontWeight: "700" }}>Định dạng hợp lệ:</Text>{"\n"}
-                    • CMND cũ: 9 số (VD: 123456789){"\n"}
-                    • CCCD mới: 12 số (VD: 001234567890)
+                    <Text style={{ fontWeight: "700" }}>Định dạng hợp lệ:</Text>
+                    {"\n"}• CMND cũ: 9 số (VD: 123456789){"\n"}• CCCD mới: 12 số
+                    (VD: 001234567890)
                   </Text>
                 </Box>
 
@@ -268,10 +280,12 @@ export default function CCCDInputScreen() {
                       lineHeight: 22,
                     }}
                   >
-                    <Text style={{ fontWeight: "700" }}>Bảo mật thông tin:</Text>{"\n"}
-                    • Thông tin CCCD được mã hóa an toàn{"\n"}
-                    • Chỉ dùng để xác thực danh tính{"\n"}
-                    • Tuân thủ quy định bảo vệ dữ liệu cá nhân
+                    <Text style={{ fontWeight: "700" }}>
+                      Bảo mật thông tin:
+                    </Text>
+                    {"\n"}• Thông tin CCCD được mã hóa an toàn{"\n"}• Chỉ dùng
+                    để xác thực danh tính{"\n"}• Tuân thủ quy định bảo vệ dữ
+                    liệu cá nhân
                   </Text>
                 </Box>
               </VStack>
@@ -349,7 +363,11 @@ export default function CCCDInputScreen() {
                   borderColor: `${colors.success}40`,
                 }}
               >
-                <CheckCircle2 size={20} color={colors.success} style={{ marginRight: 12 }} />
+                <CheckCircle2
+                  size={20}
+                  color={colors.success}
+                  style={{ marginRight: 12 }}
+                />
                 <Text
                   style={{
                     fontSize: 13,
@@ -371,7 +389,11 @@ export default function CCCDInputScreen() {
                   borderColor: `${colors.success}40`,
                 }}
               >
-                <CheckCircle2 size={20} color={colors.success} style={{ marginRight: 12 }} />
+                <CheckCircle2
+                  size={20}
+                  color={colors.success}
+                  style={{ marginRight: 12 }}
+                />
                 <Text
                   style={{
                     fontSize: 13,

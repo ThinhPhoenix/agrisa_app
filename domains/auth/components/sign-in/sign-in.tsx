@@ -2,48 +2,48 @@ import { useGlobalNotification } from "@/components/modal/providers";
 import useAxios from "@/config/useAxios.config";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
-  Box,
-  Button,
-  ButtonIcon,
-  ButtonText,
-  FormControl,
-  FormControlError,
-  FormControlErrorText,
-  HStack,
-  Image,
-  Input,
-  InputField,
-  InputSlot,
-  Pressable,
-  Text,
-  VStack,
+    Box,
+    Button,
+    ButtonIcon,
+    ButtonText,
+    FormControl,
+    FormControlError,
+    FormControlErrorText,
+    HStack,
+    Image,
+    Input,
+    InputField,
+    InputSlot,
+    Pressable,
+    Text,
+    VStack,
 } from "@gluestack-ui/themed";
 import { LinearGradient } from "expo-linear-gradient";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
 import {
-  Eye,
-  EyeOff,
-  Fingerprint,
-  Lock,
-  LogIn,
-  Mail,
-  Newspaper,
-  Phone,
-  PhoneIcon,
-  ScanFace,
-  ShieldCheck,
-  User,
+    Eye,
+    EyeOff,
+    Fingerprint,
+    Lock,
+    LogIn,
+    Mail,
+    Newspaper,
+    Phone,
+    PhoneIcon,
+    ScanFace,
+    ShieldCheck,
+    User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import {
-  Alert,
-  Dimensions,
-  ImageBackground,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+    Alert,
+    Dimensions,
+    ImageBackground,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";

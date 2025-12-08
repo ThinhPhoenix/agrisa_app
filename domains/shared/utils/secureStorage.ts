@@ -221,15 +221,16 @@ export const secureStorage = {
   },
 
   /**
-   * Xóa tất cả auth data (token + user)
+   * Xóa tất cả auth data (token + user + fullName)
    */
   clearAuth: async (): Promise<void> => {
     try {
       await Promise.all([
         SecureStore.deleteItemAsync(STORAGE_KEYS.ACCESS_TOKEN),
         SecureStore.deleteItemAsync(STORAGE_KEYS.USER_DATA),
+        SecureStore.deleteItemAsync(STORAGE_KEYS.FULL_NAME), // ✅ Xóa fullName để tránh hiển thị tên acc cũ
       ]);
-      console.log("✅ [SecureStorage] Auth data cleared");
+      console.log("✅ [SecureStorage] Auth data cleared (including fullName)");
     } catch (error) {
       console.error("❌ [SecureStorage] Error clearing auth:", error);
     }

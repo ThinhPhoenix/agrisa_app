@@ -412,7 +412,7 @@ export default function SettingsScreen() {
         const newValue = !currentValue;
 
         if (newValue) {
-            // Bật thông báo - lấy expo token và subscribe
+            // Bật thông báo
             try {
                 const { status: existingStatus } =
                     await Notifications.getPermissionsAsync();
@@ -432,42 +432,66 @@ export default function SettingsScreen() {
                     return;
                 }
 
-                // Lấy expo push token
-                const token = (
-                    await Notifications.getExpoPushTokenAsync({
-                        projectId: "469aa2db-57cb-4365-9663-2b2b8dc2eaf8",
-                    })
-                ).data;
+                // iOS: Không cần expo token, chỉ subscribe
+                if (Platform.OS === "ios") {
+                    subscribe("", {
+                        onSuccess: () => {
+                            refetchValidate();
+                        },
+                        onError: (error: any) => {
+                            console.error("Subscribe error:", error);
+                        },
+                    });
+                } else {
+                    // Android: Lấy expo push token
+                    const token = (
+                        await Notifications.getExpoPushTokenAsync({
+                            projectId: "469aa2db-57cb-4365-9663-2b2b8dc2eaf8",
+                        })
+                    ).data;
 
-                // Subscribe với backend
-                subscribe(token, {
-                    onSuccess: () => {
-                        refetchValidate();
-                    },
-                    onError: (error: any) => {
-                        console.error("Subscribe error:", error);
-                    },
-                });
+                    subscribe(token, {
+                        onSuccess: () => {
+                            refetchValidate();
+                        },
+                        onError: (error: any) => {
+                            console.error("Subscribe error:", error);
+                        },
+                    });
+                }
             } catch (error) {
                 console.error("Error getting push token:", error);
             }
         } else {
-            // Tắt thông báo - unsubscribe
+            // Tắt thông báo
             try {
-                const token = (
-                    await Notifications.getExpoPushTokenAsync({
-                        projectId: "469aa2db-57cb-4365-9663-2b2b8dc2eaf8",
-                    })
-                ).data;
+                // iOS: Không cần expo token
+                if (Platform.OS === "ios") {
+                    unsubscribe("", {
+                        onSuccess: () => {
+                            refetchValidate();
+                        },
+                        onError: (error: any) => {
+                            console.error("Unsubscribe error:", error);
+                        },
+                    });
+                } else {
+                    // Android: Lấy expo push token
+                    const token = (
+                        await Notifications.getExpoPushTokenAsync({
+                            projectId: "469aa2db-57cb-4365-9663-2b2b8dc2eaf8",
+                        })
+                    ).data;
 
-                unsubscribe(token, {
-                    onSuccess: () => {
-                        refetchValidate();
-                    },
-                    onError: (error: any) => {
-                        console.error("Unsubscribe error:", error);
-                    },
-                });
+                    unsubscribe(token, {
+                        onSuccess: () => {
+                            refetchValidate();
+                        },
+                        onError: (error: any) => {
+                            console.error("Unsubscribe error:", error);
+                        },
+                    });
+                }
             } catch (error) {
                 console.error("Error getting push token:", error);
             }

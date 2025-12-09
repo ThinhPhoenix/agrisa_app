@@ -4,18 +4,23 @@ interface FormFieldsOptions {
   mode: "create" | "edit";
   ocrResult: any | null;
   hasIrrigation?: boolean; // Để conditional rendering irrigation_type
+  isManualMode?: boolean; // Cho phép nhập thủ công không cần OCR
 }
 
 /**
  * Factory function để tạo form fields cho đăng ký/cập nhật nông trại
- * @param options - Options gồm mode và ocrResult
+ * @param options - Options gồm mode, ocrResult, hasIrrigation, và isManualMode
  * @returns Danh sách form fields
  */
 export const createFarmFormFields = ({
   mode,
   ocrResult,
   hasIrrigation = false,
+  isManualMode = false,
 }: FormFieldsOptions): FormField[] => {
+  // Trong create mode, chỉ disable nếu không có OCR result VÀ không phải manual mode
+  const shouldDisableField = mode === "create" && !ocrResult && !isManualMode;
+
   return [
     // ===== THÔNG TIN CƠ BẢN =====
     {
@@ -30,35 +35,35 @@ export const createFarmFormFields = ({
     {
       name: "province",
       label: "Tỉnh/Thành phố",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập tỉnh",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập tỉnh",
       type: "input",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
     },
     {
       name: "district",
       label: "Quận/Huyện",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập quận/huyện",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập quận/huyện",
       type: "input",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
     },
     {
       name: "commune",
       label: "Phường/Xã",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập phường/xã",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập phường/xã",
       type: "input",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
     },
     {
       name: "address",
       label: "Địa chỉ chi tiết",
       placeholder:
-        mode === "create" ? "Tự động từ sổ đỏ" : "Nhập địa chỉ đầy đủ",
+        mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập địa chỉ đầy đủ",
       type: "textarea",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
     },
 
     // ===== THÔNG TIN CANH TÁC =====
@@ -76,10 +81,10 @@ export const createFarmFormFields = ({
     {
       name: "area_sqm",
       label: "Diện tích (ha)",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập diện tích",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập diện tích",
       type: "number",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
       helperText: "Đơn vị tính: hecta (ha) - Tự động chuyển đổi từ m²",
     },
 
@@ -107,28 +112,28 @@ export const createFarmFormFields = ({
     {
       name: "land_certificate_number",
       label: "Số giấy chứng nhận đất",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập số sổ đỏ",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập số sổ đỏ",
       type: "input",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
     },
     {
       name: "owner_national_id",
       label: "Số CCCD chủ đất",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập số CCCD",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập số CCCD",
       type: "input",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
     },
 
     // ===== THÔNG TIN ĐẤT ĐAI =====
     {
       name: "soil_type",
       label: "Loại đất",
-      placeholder: mode === "create" ? "Tự động từ sổ đỏ" : "Nhập loại đất",
+      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập loại đất",
       type: "input",
       required: true,
-      disabled: mode === "create" && !ocrResult,
+      disabled: shouldDisableField,
       helperText:
         "Chấp nhận các loại đất dựa trên cây trồng và sổ như sau:\n - Đất chuyên trồng lúa nước (LUC)\n - Đất trồng lúa nước còn lại (LUK) \n - Đất lúa nương (LUN) \n - Đất trồng cây lâu năm (CLN)",
     },

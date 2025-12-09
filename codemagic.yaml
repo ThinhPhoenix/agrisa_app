@@ -11,7 +11,10 @@ workflows:
                 GRADLE_OPTS: "-Xmx4096m -XX:MaxMetaspaceSize=1024m"
             node: 18
         cache:
-            cache_paths: [$CM_BUILD_DIR/node_modules]
+            cache_paths: 
+                - $CM_BUILD_DIR/node_modules
+                - $HOME/.gradle/caches
+                - $HOME/.gradle/wrapper
         scripts:
             - name: Install Dependencies
               script: |
@@ -28,28 +31,33 @@ workflows:
                   export EXPO_PUBLIC_OPENMAPVN_KEY=$EXPO_PUBLIC_OPENMAPVN_KEY
                   export EXPO_PUBLIC_GEMINI_KEY=$EXPO_PUBLIC_GEMINI_KEY
 
-                  # Prebuild
+                  rm -rf ~/.gradle/caches/transforms-*
+                  rm -rf ~/.gradle/caches/*/transforms
+
                   rm -rf android
                   bunx expo prebuild --platform android
 
-                  # Copy google-services.json from repo to android/app
                   cp google-services.json android/app/
 
-                  # Setup keystore
                   rm -f ~/.android/debug.keystore
                   keytool -genkeypair -alias androiddebugkey -keypass android \
                     -keystore ~/.android/debug.keystore -storepass android \
                     -dname 'CN=Android Debug,O=Android,C=US' -keyalg RSA \
                     -keysize 2048 -validity 10000
 
-                  # Build APK
                   cd android
                   export GRADLE_OPTS="-Xmx4096m -XX:MaxMetaspaceSize=1024m"
-                  ./gradlew clean assembleRelease --no-daemon --max-workers=2
+                  ./gradlew clean --refresh-dependencies
+                  ./gradlew assembleRelease --no-daemon --max-workers=2 --refresh-dependencies
 
-                  # Rename APK
                   APK_PATH=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
-                  [ -f "$APK_PATH" ] && mv "$APK_PATH" app/build/outputs/apk/release/Agrisa.apk
+                  if [ -f "$APK_PATH" ]; then
+                      mv "$APK_PATH" app/build/outputs/apk/release/Agrisa.apk
+                      echo "✓ APK built successfully: Agrisa.apk"
+                  else
+                      echo "✗ APK build failed - file not found"
+                      exit 1
+                  fi
 
         artifacts:
             - android/app/build/outputs/**/*.apk
@@ -80,7 +88,9 @@ workflows:
             xcode: latest
             cocoapods: default
         cache:
-            cache_paths: [$CM_BUILD_DIR/node_modules]
+            cache_paths: 
+                - $CM_BUILD_DIR/node_modules
+                - $HOME/Library/Caches/CocoaPods
         scripts:
             - name: Install Dependencies
               script: |
@@ -97,17 +107,13 @@ workflows:
                   export EXPO_PUBLIC_OPENMAPVN_KEY=$EXPO_PUBLIC_OPENMAPVN_KEY
                   export EXPO_PUBLIC_GEMINI_KEY=$EXPO_PUBLIC_GEMINI_KEY
 
-                  # Prebuild
                   rm -rf ios
                   bunx expo prebuild --platform ios
 
-                  # Copy GoogleService-Info.plist from repo to ios/Agrisa
                   cp GoogleService-Info.plist ios/Agrisa/
 
-                  # Install pods
                   cd ios && pod install && cd ..
 
-                  # Build unsigned
                   xcodebuild \
                     -workspace ios/Agrisa.xcworkspace \
                     -scheme Agrisa \
@@ -119,11 +125,16 @@ workflows:
                     CODE_SIGNING_ALLOWED=NO \
                     build
 
-                  # Create IPA
                   APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" -type d | head -1)
-                  mkdir -p output/Payload
-                  cp -R "$APP_PATH" output/Payload/
-                  cd output && zip -r Agrisa.ipa Payload && rm -rf Payload
+                  if [ -d "$APP_PATH" ]; then
+                      mkdir -p output/Payload
+                      cp -R "$APP_PATH" output/Payload/
+                      cd output && zip -r Agrisa.ipa Payload && rm -rf Payload
+                      echo "✓ IPA built successfully: Agrisa.ipa"
+                  else
+                      echo "✗ IPA build failed - app not found"
+                      exit 1
+                  fi
 
         artifacts:
             - output/Agrisa.ipa

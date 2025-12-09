@@ -15,7 +15,12 @@ const useMyNoti = ({ limit }: { limit?: number }) => {
         queryKey: ["my-notifications"],
         queryFn: async ({ pageParam = 1 }) => {
             const platform = Platform.OS === "ios" ? "ios" : "android";
-            console.log("Fetching notifications page:", pageParam, "limit:", limit);
+            console.log(
+                "Fetching notifications page:",
+                pageParam,
+                "limit:",
+                limit
+            );
             const response = await useAxios.get(
                 `/noti/protected/notifications?page=${pageParam}&limit=${limit}&platform=${platform}`
             );
@@ -35,7 +40,7 @@ const useMyNoti = ({ limit }: { limit?: number }) => {
     });
 
     // Flatten the data from all pages
-    const notifications = data?.pages.flatMap(page => page.data || []) || [];
+    const notifications = data?.pages.flatMap((page) => page.data || []) || [];
     console.log("Flattened notifications:", notifications.length);
 
     return {

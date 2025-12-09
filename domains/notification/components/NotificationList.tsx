@@ -147,7 +147,13 @@ export default function NotificationList({
         return null;
     }
 
-    const renderItem = ({ item, index }: { item: NotificationItem; index: number }) => (
+    const renderItem = ({
+        item,
+        index,
+    }: {
+        item: NotificationItem;
+        index: number;
+    }) => (
         <NotificationItemCard
             item={item}
             isLast={false} // FlatList handles separators

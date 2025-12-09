@@ -47,10 +47,7 @@ export default function PublicBasePolicyScreen({
 
   useEffect(() => {
     if (isError) {
-      toast.toast.error(
-        (error as Error)?.message ||
-          "Không thể tải danh sách sản phẩm bảo hiểm."
-      );
+      console.error("❌ [PublicBasePolicy] Lỗi tải chính sách:", error);
     }
   }, [isError, error, toast]);
 

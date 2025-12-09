@@ -1,36 +1,36 @@
 {
-  "cli": {
-    "version": ">= 16.19.3",
-    "appVersionSource": "remote"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
-        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-        "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
-      }
+    "cli": {
+        "version": ">= 16.19.3",
+        "appVersionSource": "remote"
     },
-    "preview": {
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
-        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-        "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
-      }
+    "build": {
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal",
+            "env": {
+                "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
+                "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
+                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+            }
+        },
+        "preview": {
+            "distribution": "internal",
+            "env": {
+                "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
+                "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
+                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+            }
+        },
+        "production": {
+            "autoIncrement": true,
+            "env": {
+                "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
+                "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
+                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+            }
+        }
     },
-    "production": {
-      "autoIncrement": true,
-      "env": {
-        "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
-        "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-        "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
-      }
+    "submit": {
+        "production": {}
     }
-  },
-  "submit": {
-    "production": {}
-  }
 }

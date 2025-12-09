@@ -34,63 +34,90 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
     partnerData?.data?.partner_display_name || policy.insurance_provider_id;
 
   const getPolicyStatusDisplay = () => {
-    // ƯU TIÊN underwriting_status để hiển thị chính xác
-    // Ma trận hợp lệ:
-    // - draft + pending: Bản nháp
-    // - pending_review + pending: Chờ thẩm định
-    // - pending_payment + approved: Chờ thanh toán
-    // - active + approved: Đang hoạt động
-    // - rejected + rejected: Bị từ chối
-    // - expired + approved: Hết hạn
-    // - cancelled + approved: Đã hủy
+    // ƯU TIÊN kiểm tra policy.status trước (status thực tế của hợp đồng)
+    // Nếu có các status đặc biệt, hiển thị ngay không cần xem underwriting_status
 
-    // Trường hợp đặc biệt: pending_payment (chỜ thanh toán sau khi duyệt)
-    if (
-      policy.status === "pending_payment" &&
-      policy.underwriting_status === "approved"
-    ) {
-      return {
-        label: "Chờ thanh toán",
-        color: colors.warning,
-        bgColor: colors.warningSoft,
-        icon: Clock,
-      };
+    // 1. Kiểm tra các status đặc biệt của policy
+    switch (policy.status) {
+      case "payout":
+        return {
+          label: "Đang chi trả",
+          color: colors.info,
+          bgColor: colors.infoSoft,
+          icon: CheckCircle2,
+        };
+      
+      case "pending_cancel":
+        return {
+          label: "Chờ xử lý hủy",
+          color: colors.warning,
+          bgColor: colors.warningSoft,
+          icon: Clock,
+        };
+      
+      case "dispute":
+        return {
+          label: "Tranh chấp",
+          color: colors.error,
+          bgColor: colors.errorSoft,
+          icon: AlertCircle,
+        };
+      
+      case "cancelled":
+        return {
+          label: "Đã hủy",
+          color: colors.error,
+          bgColor: colors.errorSoft,
+          icon: XCircle,
+        };
+      
+      case "expired":
+        return {
+          label: "Hết hạn",
+          color: colors.muted_text,
+          bgColor: colors.background,
+          icon: XCircle,
+        };
+      
+      case "pending_payment":
+        // Chờ thanh toán (sau khi được duyệt)
+        if (policy.underwriting_status === "approved") {
+          return {
+            label: "Chờ thanh toán",
+            color: colors.warning,
+            bgColor: colors.warningSoft,
+            icon: Clock,
+          };
+        }
+        break;
+      
+      case "draft":
+        return {
+          label: "Bản nháp",
+          color: colors.muted_text,
+          bgColor: colors.background,
+          icon: AlertCircle,
+        };
     }
 
-    // Xử lý theo underwriting_status
+    // 2. Nếu không có status đặc biệt, xử lý theo underwriting_status
     switch (policy.underwriting_status) {
       case "approved":
         // Nếu approved, xem tiếp status để xác định trạng thái cuối
-        switch (policy.status) {
-          case "active":
-            return {
-              label: "Được bảo hiểm",
-              color: colors.success,
-              bgColor: colors.successSoft,
-              icon: CheckCircle2,
-            };
-          case "expired":
-            return {
-              label: "Hết hạn",
-              color: colors.muted_text,
-              bgColor: colors.background,
-              icon: XCircle,
-            };
-          case "cancelled":
-            return {
-              label: "Đã hủy",
-              color: colors.error,
-              bgColor: colors.errorSoft,
-              icon: XCircle,
-            };
-          default:
-            return {
-              label: "Đã duyệt",
-              color: colors.success,
-              bgColor: colors.successSoft,
-              icon: CheckCircle2,
-            };
+        if (policy.status === "active") {
+          return {
+            label: "Được bảo hiểm",
+            color: colors.success,
+            bgColor: colors.successSoft,
+            icon: CheckCircle2,
+          };
         }
+        return {
+          label: "Đã duyệt",
+          color: colors.success,
+          bgColor: colors.successSoft,
+          icon: CheckCircle2,
+        };
 
       case "rejected":
         return {
@@ -102,12 +129,12 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
 
       case "pending":
         // Nếu pending, xem status để phân biệt draft và pending_review
-        if (policy.status === "draft") {
+        if (policy.status === "pending_review") {
           return {
-            label: "Bản nháp",
-            color: colors.muted_text,
-            bgColor: colors.background,
-            icon: AlertCircle,
+            label: "Chờ duyệt",
+            color: colors.pending,
+            bgColor: "",
+            icon: Clock,
           };
         }
         return {
@@ -118,7 +145,6 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
         };
 
       default:
-        // Fallback nếu không xác định được
         return {
           label: "Không xác định",
           color: colors.muted_text,

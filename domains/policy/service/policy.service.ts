@@ -1,6 +1,7 @@
 import useAxios from "@/config/useAxios.config";
 import {
   CancelRequestPayload,
+  CancelRequestsResponse,
   PolicyDetailResponse,
   PublicBasePolicyResponse,
   RegisteredPoliciesResponse,
@@ -58,6 +59,18 @@ export const policyServices = {
     ): Promise<ApiResponse<UnderwritingData>> => {
       return useAxios.get(
         `/policy/protected/api/v2/policies/read-own/underwriting/${policy_id}`
+      );
+    },
+    get_cancel_request_reasons: async (): Promise<ApiResponse<any>> => {
+      return useAxios.get(
+        `/policy/protected/api/v2/cancel_request/read-own/me`
+      );
+    },
+    get_cancel_requests: async (): Promise<
+      ApiResponse<CancelRequestsResponse>
+    > => {
+      return useAxios.get(
+        `/policy/protected/api/v2/cancel_request/read-own/me`
       );
     },
   },

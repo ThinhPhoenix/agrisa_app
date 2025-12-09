@@ -277,8 +277,8 @@ export interface FormFarmDTO {
   commune?: string;
   address?: string;
   crop_type?: string;
-  planting_date?: number;
-  expected_harvest_date?: number;
+  planting_date?: number | null;
+  expected_harvest_date?: number | null;
   land_certificate_number?: string;
   has_irrigation?: boolean;
   irrigation_type?: string;

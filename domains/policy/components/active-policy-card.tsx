@@ -66,20 +66,104 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
     return daysUntil > 0 ? daysUntil : 0;
   };
 
-  // Kiểm tra policy đã có hiệu lực chưa
+  // Kiểm tra policy đã có hiệu lực chưa (chỉ dùng cho active status)
   const isPolicyEffective = () => {
     const now = Math.floor(Date.now() / 1000);
     return now >= policy.coverage_start_date;
   };
 
-  const daysRemaining = getDaysRemaining();
-  const daysUntilEffective = getDaysUntilEffective();
-  const isEffective = isPolicyEffective();
-  const isExpired = policy.status === RegisteredPolicyStatus.EXPIRED;
+  // Xác định trạng thái hiển thị dựa trên policy.status
+  const getStatusDisplay = () => {
+    const now = Math.floor(Date.now() / 1000);
 
-  // Xác định màu chính cho card dựa trên trạng thái
-  const cardColor = isExpired ? colors.muted_text : colors.success;
-  const cardSoftColor = isExpired ? colors.muted_text + "20" : colors.successSoft;
+    switch (policy.status) {
+      case RegisteredPolicyStatus.PAYOUT:
+        return {
+          label: "Đang chi trả",
+          color: colors.info,
+          icon: CheckCircle2,
+          showDays: false,
+          message: "Đang trong quá trình chi trả bồi thường",
+        };
+
+      case RegisteredPolicyStatus.PENDING_CANCEL:
+        return {
+          label: "Chờ xử lý hủy",
+          color: colors.warning,
+          icon: Clock,
+          showDays: false,
+          message: "Yêu cầu hủy hợp đồng đang được xử lý",
+        };
+
+      case RegisteredPolicyStatus.DISPUTE:
+        return {
+          label: "Tranh chấp",
+          color: colors.error,
+          icon: Clock,
+          showDays: false,
+          message: "Hợp đồng đang trong quá trình giải quyết tranh chấp",
+        };
+
+      case RegisteredPolicyStatus.CANCELLED:
+        return {
+          label: "Đã hủy",
+          color: colors.error,
+          icon: Clock,
+          showDays: false,
+          message: "Hợp đồng đã bị hủy bỏ",
+        };
+
+      case RegisteredPolicyStatus.EXPIRED:
+        return {
+          label: "Hết hạn",
+          color: colors.muted_text,
+          icon: Clock,
+          showDays: false,
+          message: "Bảo hiểm đã hết hạn",
+        };
+
+      case RegisteredPolicyStatus.ACTIVE:
+        // Kiểm tra xem đã đến ngày bắt đầu chưa
+        if (now < policy.coverage_start_date) {
+          const daysUntil = Math.ceil((policy.coverage_start_date - now) / 86400);
+          return {
+            label: "Chờ hiệu lực",
+            color: colors.warning,
+            icon: Clock,
+            showDays: true,
+            daysCount: daysUntil,
+            daysLabel: "ngày đến khi có hiệu lực",
+            isWaiting: true,
+          };
+        }
+
+        // Đã đến ngày bắt đầu
+        const daysLeft = Math.ceil((policy.coverage_end_date - now) / 86400);
+        return {
+          label: "Có hiệu lực",
+          color: colors.success,
+          icon: CheckCircle2,
+          showDays: true,
+          daysCount: daysLeft > 0 ? daysLeft : 0,
+          daysLabel: "ngày",
+          isWaiting: false,
+        };
+
+      default:
+        // Fallback cho các trạng thái khác
+        return {
+          label: "Không xác định",
+          color: colors.muted_text,
+          icon: Clock,
+          showDays: false,
+          message: "Trạng thái không xác định",
+        };
+    }
+  };
+
+  const statusDisplay = getStatusDisplay();
+  const cardColor = statusDisplay.color;
+  const cardSoftColor = statusDisplay.color + "20";
 
   return (
     <Pressable
@@ -132,27 +216,15 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                   borderColor={cardColor}
                 >
                   <HStack space="xs" alignItems="center">
-                    {isExpired ? (
-                      <Clock size={14} color={cardColor} strokeWidth={2.5} />
-                    ) : (
-                      <CheckCircle2
-                        size={14}
-                        color={cardColor}
-                        strokeWidth={2.5}
-                      />
-                    )}
+                    <statusDisplay.icon size={14} color={cardColor} strokeWidth={2.5} />
                     <Text fontSize="$xs" fontWeight="$bold" color={cardColor}>
-                      {isExpired
-                        ? "Hết hạn"
-                        : isEffective
-                          ? "Có hiệu lực"
-                          : "Chờ hiệu lực"}
+                      {statusDisplay.label}
                     </Text>
                   </HStack>
                 </Box>
               </HStack>
 
-              {/* Số ngày còn lại */}
+              {/* Thông tin trạng thái */}
               <Box
                 bg={colors.primary_white_text}
                 borderRadius="$lg"
@@ -161,46 +233,30 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
               >
                 <HStack space="sm" alignItems="center">
                   <Calendar size={16} color={cardColor} strokeWidth={2} />
-                  {isExpired ? (
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$semibold"
-                      color={colors.muted_text}
-                    >
-                      Bảo hiểm đã hết hạn
-                    </Text>
-                  ) : isEffective ? (
+                  {statusDisplay.showDays ? (
                     <>
                       <Text fontSize="$sm" color={colors.secondary_text}>
-                        Còn lại:
+                        {statusDisplay.isWaiting ? "Còn:" : "Còn lại:"}
                       </Text>
                       <Text
                         fontSize="$xl"
                         fontWeight="$bold"
-                        color={colors.success}
+                        color={cardColor}
                       >
-                        {daysRemaining}
+                        {statusDisplay.daysCount}
                       </Text>
                       <Text fontSize="$sm" color={colors.secondary_text}>
-                        ngày
+                        {statusDisplay.daysLabel}
                       </Text>
                     </>
                   ) : (
-                    <>
-                      <Text fontSize="$sm" color={colors.secondary_text}>
-                        Còn:
-                      </Text>
-                      <Text
-                        fontSize="$xl"
-                        fontWeight="$bold"
-                        color={colors.warning}
-                      >
-                        {daysUntilEffective}
-                      </Text>
-                      <Text fontSize="$sm" color={colors.secondary_text}>
-                        ngày đến khi có hiệu lực
-                      </Text>
-                    </>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.secondary_text}
+                    >
+                      {statusDisplay.message}
+                    </Text>
                   )}
                 </HStack>
               </Box>

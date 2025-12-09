@@ -4,6 +4,8 @@ export const QueryKey = {
     SIGN_UP: "sign-up",
     CHECK_IDENTIFIER: "check-identifier",
     ME: "auth-me",
+    SEND_PHONE_OTP: "send-phone-otp",
+    VERIFY_PHONE_OTP: "verify-phone-otp",
   },
 
   INSURANCE_PARTNER: {
@@ -28,6 +30,9 @@ export const QueryKey = {
     REGISTERED_POLICIES: "registered-policies",
     REGISTERED_POLICY_DETAIL: "registered-policy-detail",
     UNDERWRITING: "underwriting-policy",
+    CANCEL: "policy-cancel",
+    GET_CANCEL_REASONS: "get-cancel-reasons",
+    GET_CANCEL_REQUESTS: "get-cancel-requests",
   },
 
   FARM: {

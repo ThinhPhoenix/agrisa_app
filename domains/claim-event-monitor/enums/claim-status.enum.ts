@@ -3,6 +3,8 @@
  * Mapping với backend claim status
  */
 export enum ClaimStatus {
+  /** Đã tạo */
+  GENERATED = "generated",
   /** Chờ đối tác bảo hiểm xét duyệt */
   PENDING_PARTNER_REVIEW = "pending_partner_review",
   /** Đã duyệt */
@@ -11,8 +13,6 @@ export enum ClaimStatus {
   REJECTED = "rejected",
   /** Đã chi trả */
   PAID = "paid",
-  /** Đã hủy */
-  CANCELLED = "cancelled",
 }
 
 /**
@@ -29,11 +29,11 @@ export enum ClaimGenerationMethod {
  * Mapping label tiếng Việt cho ClaimStatus
  */
 export const ClaimStatusLabel: Record<ClaimStatus, string> = {
+  [ClaimStatus.GENERATED]: "Đã tạo",
   [ClaimStatus.PENDING_PARTNER_REVIEW]: "Chờ xét duyệt",
   [ClaimStatus.APPROVED]: "Đã duyệt",
   [ClaimStatus.REJECTED]: "Từ chối",
   [ClaimStatus.PAID]: "Đã chi trả",
-  [ClaimStatus.CANCELLED]: "Đã hủy",
 };
 
 /**
@@ -50,8 +50,10 @@ export interface ClaimStatusTabItem {
  */
 export const ClaimStatusTabs: ClaimStatusTabItem[] = [
   { value: "all", label: "Tất cả" },
+  { value: ClaimStatus.GENERATED, label: "Đã tạo" },
   { value: ClaimStatus.PENDING_PARTNER_REVIEW, label: "Chờ duyệt" },
   { value: ClaimStatus.APPROVED, label: "Đã duyệt" },
+  { value: ClaimStatus.REJECTED, label: "Từ chối" },
   { value: ClaimStatus.PAID, label: "Đã trả" },
 ];
 

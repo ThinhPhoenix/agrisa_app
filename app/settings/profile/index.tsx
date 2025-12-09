@@ -480,7 +480,7 @@ export default function ProfileDetailScreen() {
                       flex={1}
                       ml="$4"
                     >
-                      {ekycStatus?.cic_no || cardInfo?.national_id || "Chưa cập nhật"}
+                      {cardInfo?.national_id || "Chưa cập nhật"}
                     </Text>
                   </HStack>
 

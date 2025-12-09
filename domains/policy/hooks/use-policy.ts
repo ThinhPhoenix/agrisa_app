@@ -146,7 +146,7 @@ export const usePolicy = () => {
           errorMessage = "Số tiền bảo hiểm phải lớn hơn 0.";
         } else if (apiMessage.toLowerCase().includes("planting_date")) {
           errorMessage =
-            "Ngày gieo trồng không hợp lệ hoặc không được để trống. Vui lòng chọn ngày trong quá khứ.";
+            "Ngày gieo trồng không hợp lệ. Vui lòng chọn ngày trong quá khứ hoặc bỏ qua nếu chưa có.";
         } else if (apiMessage.toLowerCase().includes("area_multiplier")) {
           errorMessage = "Hệ số diện tích không hợp lệ.";
         } else if (

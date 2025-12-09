@@ -38,7 +38,7 @@ export const usePolicyForm = ({
 
     // State
     const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null);
-    const [plantingDate, setPlantingDate] = useState<Date>(new Date());
+    const [plantingDate, setPlantingDate] = useState<Date>(new Date()); // Default to current date
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // State cho document tags form data
@@ -130,14 +130,14 @@ export const usePolicyForm = ({
             return "Vui lòng chọn ngày gieo trồng.";
         }
 
-        // Kiểm tra planting date không được trong quá khứ quá xa
-        const daysDiff = Math.floor(
-            (new Date().getTime() - plantingDate.getTime()) /
-                (1000 * 60 * 60 * 24)
-        );
+        // Kiểm tra planting date không được trong quá khứ
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(plantingDate);
+        selectedDate.setHours(0, 0, 0, 0);
 
-        if (daysDiff > 365) {
-            return "Ngày gieo trồng không hợp lệ (quá 1 năm trước).";
+        if (selectedDate < today) {
+            return "Ngày gieo trồng không được chọn ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc tương lai.";
         }
 
         // Validate document_tags nếu có

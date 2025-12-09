@@ -15,6 +15,8 @@ export enum FarmErrorCategory {
   
   // File Upload Errors
   FILE_UPLOAD = "FILE_UPLOAD",
+
+  NATIONAL_ID_MISMATCH = "NATIONAL_ID_MISMATCH",
   
   // Land Certificate Verification
   LAND_CERTIFICATE = "LAND_CERTIFICATE",
@@ -61,10 +63,9 @@ export const parseFarmError = (error: any): FarmErrorInfo => {
   // Extract error information
   const httpStatus = error?.response?.status || error?.status;
   const responseData = error?.response?.data;
-  const errorCode = responseData?.error?.code || error?.code;
+  const errorCode = (responseData?.error?.code || error?.code || "").toUpperCase();
   const errorMessage =
     responseData?.error?.message || error?.message || "";
-  const apiMessage = errorMessage.toLowerCase();
 
   // 1. NETWORK ERRORS
   if (error.isNetworkError || errorCode === "NETWORK_OFFLINE") {
@@ -83,17 +84,19 @@ export const parseFarmError = (error: any): FarmErrorInfo => {
     };
   }
 
-  // 2. AUTHENTICATION & AUTHORIZATION ERRORS (401, 403)
+  // 2. CHECK ERROR CODE FIRST (Priority over HTTP status)
+  const errorInfo = parseByErrorCode(errorCode, errorMessage, httpStatus);
+  if (errorInfo) return errorInfo;
+
+  // 3. FALLBACK TO HTTP STATUS
   if (httpStatus === 401 || httpStatus === 403) {
     return parseAuthError(errorCode, errorMessage, httpStatus);
   }
 
-  // 3. VALIDATION ERRORS (400)
-  if (httpStatus === 400 || errorCode === "VALIDATION_FAILED") {
+  if (httpStatus === 400) {
     return parseValidationError(errorMessage, httpStatus);
   }
 
-  // 4. NOT FOUND ERRORS (404)
   if (httpStatus === 404) {
     return {
       category: FarmErrorCategory.AUTH,
@@ -110,18 +113,174 @@ export const parseFarmError = (error: any): FarmErrorInfo => {
     };
   }
 
-  // 5. SERVER ERRORS (500)
-  if (httpStatus === 500 || errorCode === "INTERNAL_SERVER_ERROR") {
+  if (httpStatus === 500) {
     return parseServerError(errorMessage, httpStatus);
   }
 
-  // 6. UNKNOWN ERRORS
+  // 4. UNKNOWN ERRORS
   return {
     ...defaultError,
     technicalMessage: errorMessage,
     httpStatus,
     errorCode,
   };
+};
+
+/**
+ * Parse error by error code (Priority check)
+ */
+const parseByErrorCode = (
+  errorCode: string,
+  errorMessage: string,
+  httpStatus: number
+): FarmErrorInfo | null => {
+  if (!errorCode) return null;
+
+  // VALIDATION ERRORS
+  if (errorCode === "VALIDATION_FAILED" || errorCode === "BAD_REQUEST") {
+    return parseValidationError(errorMessage, httpStatus);
+  }
+
+  // AUTHENTICATION ERRORS
+  if (
+    errorCode === "UNAUTHORIZED" ||
+    errorCode === "FORBIDDEN" ||
+    errorCode === "TOKEN_EXPIRED" ||
+    errorCode === "INVALID_TOKEN"
+  ) {
+    return parseAuthError(errorCode, errorMessage, httpStatus);
+  }
+
+  // NATIONAL ID MISMATCH
+  if (errorCode === "NATIONAL_ID_MISMATCH") {
+    return {
+      category: FarmErrorCategory.NATIONAL_ID_MISMATCH,
+      title: "CCCD không khớp",
+      message: "Số CCCD trên giấy chứng nhận không khớp với số CCCD trong hồ sơ của bạn.",
+      subMessage: "Vui lòng kiểm tra lại thông tin hoặc cập nhật CCCD trong hồ sơ.",
+      httpStatus,
+      errorCode,
+      canRetry: false,
+      suggestions: [
+        "Kiểm tra số CCCD trên giấy chứng nhận đất",
+        "Cập nhật CCCD trong Hồ sơ → Thông tin cá nhân",
+      ],
+    };
+  }
+
+  // LAND CERTIFICATE ERRORS
+  if (
+    errorCode === "LAND_CERTIFICATE_VERIFICATION_FAILED" ||
+    errorCode === "INVALID_LAND_CERTIFICATE"
+  ) {
+    return {
+      category: FarmErrorCategory.LAND_CERTIFICATE,
+      title: "Xác minh giấy chứng nhận thất bại",
+      message: "Không thể xác minh giấy chứng nhận quyền sử dụng đất.",
+      subMessage: "Vui lòng kiểm tra lại thông tin hoặc ảnh chụp giấy tờ.",
+      httpStatus,
+      errorCode,
+      canRetry: true,
+      suggestions: [
+        "Kiểm tra thông tin trên giấy chứng nhận",
+        "Chụp lại ảnh rõ nét, đầy đủ thông tin",
+        "Đảm bảo thông tin CCCD khớp với giấy chứng nhận",
+      ],
+    };
+  }
+
+  // FILE UPLOAD ERRORS
+  if (
+    errorCode === "FILE_UPLOAD_FAILED" ||
+    errorCode === "INVALID_FILE_TYPE" ||
+    errorCode === "FILE_TOO_LARGE" ||
+    errorCode === "INVALID_FILE_NAME"
+  ) {
+    return parseFileUploadError(errorCode, errorMessage, httpStatus);
+  }
+
+  // SYSTEM ERRORS
+  if (
+    errorCode === "INTERNAL_SERVER_ERROR" ||
+    errorCode === "DATABASE_ERROR" ||
+    errorCode === "FARM_CREATION_FAILED" ||
+    errorCode === "IMAGERY_WORKER_ERROR"
+  ) {
+    return parseServerError(errorMessage, httpStatus);
+  }
+
+  return null;
+};
+
+/**
+ * Parse file upload errors by code
+ */
+const parseFileUploadError = (
+  errorCode: string,
+  errorMessage: string,
+  httpStatus: number
+): FarmErrorInfo => {
+  switch (errorCode) {
+    case "INVALID_FILE_NAME":
+      return {
+        category: FarmErrorCategory.FILE_UPLOAD,
+        title: "Tên file không hợp lệ",
+        message: "File bạn chọn có tên không hợp lệ.",
+        subMessage: "Vui lòng đổi tên file và thử lại.",
+        httpStatus,
+        errorCode,
+        canRetry: true,
+        suggestions: [
+          "Đổi tên file không chứa ký tự đặc biệt",
+          "Sử dụng chữ cái, số và dấu gạch ngang",
+        ],
+      };
+
+    case "INVALID_FILE_TYPE":
+      return {
+        category: FarmErrorCategory.FILE_UPLOAD,
+        title: "Định dạng file không hợp lệ",
+        message: "File bạn chọn không đúng định dạng.",
+        subMessage: "Chỉ chấp nhận file ảnh: JPG, JPEG, PNG.",
+        httpStatus,
+        errorCode,
+        canRetry: true,
+        suggestions: ["Chọn file ảnh có định dạng JPG, JPEG hoặc PNG"],
+      };
+
+    case "FILE_TOO_LARGE":
+      return {
+        category: FarmErrorCategory.FILE_UPLOAD,
+        title: "File quá lớn",
+        message: "File bạn chọn vượt quá dung lượng cho phép.",
+        subMessage: "Vui lòng chọn file có kích thước nhỏ hơn.",
+        httpStatus,
+        errorCode,
+        canRetry: true,
+        suggestions: [
+          "Nén ảnh trước khi tải lên",
+          "Kích thước tối đa: 5MB/file",
+        ],
+      };
+
+    case "FILE_UPLOAD_FAILED":
+    default:
+      return {
+        category: FarmErrorCategory.FILE_UPLOAD,
+        title: "Lỗi tải file",
+        message: "Không thể tải file ảnh lên hệ thống.",
+        subMessage: "Vui lòng thử lại hoặc chọn ảnh khác.",
+        technicalMessage: errorMessage,
+        httpStatus,
+        errorCode,
+        canRetry: true,
+        suggestions: [
+          "Kiểm tra kết nối internet",
+          "Thử chọn ảnh khác",
+          "Thử lại sau vài phút",
+        ],
+      };
+  }
 };
 
 /**

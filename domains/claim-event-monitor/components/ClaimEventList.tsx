@@ -1,15 +1,6 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Box, HStack, Pressable, Text, VStack } from "@gluestack-ui/themed";
-import {
-  Ban,
-  Banknote,
-  CheckCircle2,
-  Clock,
-  FileText,
-  FileWarning,
-  Inbox,
-  XCircle,
-} from "lucide-react-native";
+import { FileWarning, Inbox } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Animated, RefreshControl } from "react-native";
 import { ClaimStatus, ClaimStatusTabs } from "../enums/claim-status.enum";
@@ -72,39 +63,21 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
     return counts;
   }, [claims]);
 
-  // Lấy icon cho từng tab status
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case ClaimStatus.PENDING_PARTNER_REVIEW:
-        return Clock;
-      case ClaimStatus.APPROVED:
-        return CheckCircle2;
-      case ClaimStatus.REJECTED:
-        return XCircle;
-      case ClaimStatus.PAID:
-        return Banknote;
-      case ClaimStatus.CANCELLED:
-        return Ban;
-      default:
-        return FileText;
-    }
-  };
-
   // Lấy màu cho từng tab status
   const getStatusColor = (status: string) => {
     switch (status) {
-      case ClaimStatus.PENDING_PARTNER_REVIEW:
-        return colors.pending;
-      case ClaimStatus.APPROVED:
+      case ClaimStatus.GENERATED:
         return colors.info || colors.primary;
+      case ClaimStatus.PENDING_PARTNER_REVIEW:
+        return colors.pending || colors.warning;
+      case ClaimStatus.APPROVED:
+        return colors.success;
       case ClaimStatus.REJECTED:
         return colors.error;
       case ClaimStatus.PAID:
-        return colors.success;
-      case ClaimStatus.CANCELLED:
-        return colors.muted_text;
-      default:
         return colors.primary;
+      default:
+        return colors.secondary_text;
     }
   };
 
@@ -167,85 +140,54 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
   );
 
   /**
-   * Component Tabs - Style giống history.tsx
+   * Component Tabs - Simple text + count style (giống my-policies.tsx)
    */
   const TabsComponent = () => (
-    <HStack
-      space="sm"
-      p="$4"
-      bg={colors.background}
+    <Box
       borderBottomWidth={1}
       borderBottomColor={colors.frame_border}
+      pb="$2"
     >
-      {ClaimStatusTabs.map((tab) => {
-        const isActive = activeTab === tab.value;
-        const TabIcon = getStatusIcon(tab.value);
-        const tabColor = getStatusColor(tab.value);
-        const count = countByStatus[tab.value] || 0;
+      <Animated.ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          gap: 12,
+        }}
+      >
+        {ClaimStatusTabs.map((tab) => {
+          const isActive = activeTab === tab.value;
+          const count = countByStatus[tab.value] || 0;
 
-        return (
-          <Pressable
-            key={tab.value}
-            flex={1}
-            onPress={() => setActiveTab(tab.value)}
-          >
-            {({ pressed }) => (
-              <Box
-                bg={isActive ? tabColor : colors.card_surface}
-                borderRadius="$lg"
-                p="$3"
-                alignItems="center"
-                opacity={pressed ? 0.7 : 1}
-                borderWidth={isActive ? 0 : 1}
-                borderColor={colors.frame_border}
-                position="relative"
-              >
-                {/* Count Badge */}
-                {count > 0 && (
-                  <Box
-                    position="absolute"
-                    top={-6}
-                    right={-6}
-                    bg={isActive ? colors.primary_white_text : tabColor}
-                    borderRadius="$full"
-                    minWidth={20}
-                    height={20}
-                    alignItems="center"
-                    justifyContent="center"
-                    px="$1"
-                    borderWidth={2}
-                    borderColor={colors.background}
-                  >
-                    <Text
-                      fontSize="$xs"
-                      fontWeight="$bold"
-                      color={isActive ? tabColor : colors.primary_white_text}
-                    >
-                      {count}
-                    </Text>
-                  </Box>
-                )}
-
-                <TabIcon
-                  size={20}
-                  color={isActive ? colors.primary_white_text : tabColor}
-                  strokeWidth={2}
-                />
-                <Text
-                  fontSize="$xs"
-                  fontWeight="$semibold"
-                  color={isActive ? colors.primary_white_text : tabColor}
-                  mt="$1"
-                  textAlign="center"
+          return (
+            <Pressable
+              key={tab.value}
+              onPress={() => setActiveTab(tab.value)}
+            >
+              {({ pressed }) => (
+                <Box
+                  pb="$2"
+                  borderBottomWidth={isActive ? 2 : 0}
+                  borderBottomColor={colors.primary}
+                  opacity={pressed ? 0.7 : 1}
                 >
-                  {tab.label}
-                </Text>
-              </Box>
-            )}
-          </Pressable>
-        );
-      })}
-    </HStack>
+                  <Text
+                    fontSize="$sm"
+                    fontWeight={isActive ? "$bold" : "$normal"}
+                    color={
+                      isActive ? colors.primary : colors.secondary_text
+                    }
+                  >
+                    {tab.label} {count > 0 && `(${count})`}
+                  </Text>
+                </Box>
+              )}
+            </Pressable>
+          );
+        })}
+      </Animated.ScrollView>
+    </Box>
   );
 
   return (

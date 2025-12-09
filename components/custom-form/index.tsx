@@ -171,6 +171,8 @@ export const CustomForm = forwardRef(function CustomForm(
   const initialValuesHashRef = useRef<string | null>(null);
   // Theo dõi hash formData đã notify để tránh onValuesChange lặp
   const prevFormDataHashRef = useRef<string | null>(null);
+  // Cờ để bỏ qua onValuesChange khi đang sync initialValues -> formData
+  const syncingInitialValuesRef = useRef(false);
 
   const { mode } = useAgrisaColors();
   const themeColors = AgrisaColors[mode];
@@ -235,14 +237,24 @@ export const CustomForm = forwardRef(function CustomForm(
     if (initialValuesHashRef.current === nextHash) return;
     initialValuesHashRef.current = nextHash;
 
+    syncingInitialValuesRef.current = true; // tránh trigger onValuesChange khi sync
+
     setFormData((prev) => ({
       ...prev,
       ...initialValues,
     }));
+
+    // Clear flag ngay sau khi sync xong ở frame tiếp theo
+    setTimeout(() => {
+      syncingInitialValuesRef.current = false;
+    }, 0);
   }, [initialValues]);
 
   useEffect(() => {
     if (!onValuesChange) return;
+
+    // Bỏ qua nếu đang sync initialValues để tránh vòng lặp
+    if (syncingInitialValuesRef.current) return;
 
     const nextHash = JSON.stringify(formData);
     if (prevFormDataHashRef.current === nextHash) return;

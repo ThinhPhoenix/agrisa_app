@@ -135,7 +135,7 @@ export const createFarmFormFields = ({
       required: true,
       disabled: shouldDisableField,
       helperText:
-        "Chấp nhận các loại đất dựa trên cây trồng và sổ như sau:\n - Đất chuyên trồng lúa nước (LUC)\n - Đất trồng lúa nước còn lại (LUK) \n - Đất lúa nương (LUN) \n - Đất trồng cây lâu năm (CLN)",
+        "Chấp nhận các loại đất dựa trên cây trồng và sổ như sau:\n - Đất chuyên trồng lúa (LUC)\n - Đất trồng lúa còn lại (LUK) \n - Đất lúa nương (LUN) \n - Đất trồng cây lâu năm (CLN)",
     },
 
     // ===== HỆ THỐNG TƯỚI TIÊU =====

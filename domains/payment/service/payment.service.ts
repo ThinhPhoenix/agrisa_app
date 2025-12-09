@@ -15,7 +15,9 @@ export const paymentService = {
 
   get: {
     getAllPayment: async (): Promise<ApiResponse<PaymentListResponse>> => {
-      return useAxios.get(`/payment/protected/orders`);
+      return useAxios.get(
+        `/payment/protected/orders?page=1&limit=100&status=completed`
+      );
     },
     getDetailPayment: async (payment_id: string): Promise<ApiResponse<PaymentDetailResponse>> => {
       return useAxios.get(`/payment/protected/order/${payment_id}`);

@@ -314,10 +314,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={handleDateChange}
-                maximumDate={new Date()}
-                minimumDate={
-                  new Date(new Date().setFullYear(new Date().getFullYear() - 1))
-                }
+                minimumDate={new Date()} // Không cho chọn quá khứ
                 locale="vi-VN"
               />
             )}

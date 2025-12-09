@@ -359,7 +359,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                 Giá trị đo được
               </Text>
               <Text fontSize="$sm" fontWeight="$bold" color={conditionColor}>
-                {condition.measured_value.toFixed(6)}
+                {condition.measured_value}
                 {unitDisplay}
               </Text>
             </VStack>
@@ -388,7 +388,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                 fontWeight="$semibold"
                 color={colors.primary_text}
               >
-                {condition.baseline_value.toFixed(6)}
+                {condition.baseline_value}
                 {unitDisplay}
               </Text>
             </VStack>
@@ -904,7 +904,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                         fontWeight="$bold"
                         color={colors.primary_text}
                       >
-                        {farm.area_sqm.toFixed(2)} ha
+                        {farm.area_sqm} ha
                       </Text>
                     </VStack>
                   </HStack>
@@ -993,7 +993,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  {claim.calculated_threshold_payout.toFixed(2)}
+                  {claim.calculated_threshold_payout}
                   {formatUnit(dataSourceUnit, dataSource?.parameter_name)}
                 </Text>
               </HStack>
@@ -1003,7 +1003,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   Mức vượt ngưỡng
                 </Text>
                 <Text fontSize="$sm" fontWeight="$bold" color={colors.error}>
-                  {claim.over_threshold_value.toFixed(4)}
+                  {claim.over_threshold_value}
                   {formatUnit(dataSourceUnit, dataSource?.parameter_name)}
                 </Text>
               </HStack>
@@ -1390,7 +1390,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     }
                     textTransform="capitalize"
                   >
-                    {claim.partner_decision || "Không có"}
+                    {claim.partner_decision ? claim.partner_decision : "Chưa cập nhật"}
                   </Text>
                 </VStack>
               </Box>
@@ -1411,7 +1411,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     color={colors.primary_text}
                     lineHeight="$lg"
                   >
-                    {claim.partner_notes || "Không có"}
+                    {claim.partner_notes ? claim.partner_notes : "Chưa cập nhật"}
                   </Text>
                 </Box>
               </VStack>
@@ -1427,7 +1427,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     fontWeight="$semibold"
                     color={colors.primary_text}
                   >
-                    {claim.reviewed_by || "Không có"}
+                    {claim.reviewed_by ? claim.reviewed_by : "Chưa cập nhật"}
                   </Text>
                 </HStack>
               </HStack>

@@ -99,11 +99,20 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   );
   // Ref để track giá trị hasIrrigation hiện tại (tránh dependency trong useCallback)
   const hasIrrigationRef = useRef(hasIrrigation);
+  // Ref để tránh loop onValuesChange <-> updateFormValues
+  const formValuesHashRef = useRef<string | null>(null);
+  // Ref lưu formValues hiện tại để so sánh tránh setState thừa
+  const formValuesRef = useRef(formValues);
   
   // Sync ref với state khi hasIrrigation thay đổi
   useEffect(() => {
     hasIrrigationRef.current = hasIrrigation;
   }, [hasIrrigation]);
+
+  // Luôn cập nhật ref formValues để so sánh trong onValuesChange
+  useEffect(() => {
+    formValuesRef.current = formValues;
+  }, [formValues]);
 
   const MAX_IMAGES = 4;
 
@@ -320,6 +329,24 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   // Dùng useRef để tránh infinite loop - không có hasIrrigation trong deps
   const handleFormValuesChange = useCallback(
     (values: Record<string, any>) => {
+      const nextHash = JSON.stringify(values);
+      if (formValuesHashRef.current === nextHash) {
+        return;
+      }
+      formValuesHashRef.current = nextHash;
+
+       // Nếu không có thay đổi thực sự, bỏ qua để tránh setState lặp
+       const prev = formValuesRef.current || {};
+       let changed = false;
+       const keys = new Set([...Object.keys(prev), ...Object.keys(values)]);
+       for (const key of keys) {
+         if (JSON.stringify(prev[key]) !== JSON.stringify((values as any)[key])) {
+           changed = true;
+           break;
+         }
+       }
+       if (!changed) return;
+
       // Sync hasIrrigation state nếu thay đổi - dùng ref để so sánh
       if (
         values.has_irrigation !== undefined &&
@@ -1101,50 +1128,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 onResult={handleOcrResult}
               />
 
-              {/* Nút Skip OCR - Nhập thủ công */}
-              <Box
-                bg={colors.infoSoft}
-                borderRadius="$xl"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.info}
-              >
-                <VStack space="sm">
-                  <HStack space="sm" alignItems="center">
-                    <AlertCircle
-                      size={16}
-                      color={colors.info}
-                      strokeWidth={2}
-                    />
-                    <Text
-                      flex={1}
-                      fontSize="$xs"
-                      color={colors.secondary_text}
-                      lineHeight={18}
-                    >
-                      Nếu OCR không hoạt động hoặc kết quả không chính xác, bạn có thể bỏ qua và nhập thủ công
-                    </Text>
-                  </HStack>
-                  <Button
-                    onPress={() => {
-                      setInputMode('manual');
-                      notification.info("Chuyển sang chế độ nhập thủ công. Vui lòng điền đầy đủ thông tin bên dưới.");
-                    }}
-                    variant="outline"
-                    borderColor={colors.info}
-                    bg={colors.card_surface}
-                    borderRadius="$lg"
-                    size="sm"
-                  >
-                    <HStack space="xs" alignItems="center">
-                      <FileText size={16} color={colors.info} strokeWidth={2} />
-                      <ButtonText color={colors.info} fontSize="$xs" fontWeight="$bold">
-                        Bỏ qua OCR và nhập thủ công
-                      </ButtonText>
-                    </HStack>
-                  </Button>
-                </VStack>
-              </Box>
+              
             </VStack>
           )}
 

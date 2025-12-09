@@ -1,6 +1,6 @@
 workflows:
     # Android Build
-    react-native-android:
+    apk:
         name: React Native Android
         instance_type: mac_mini_m1
         max_build_duration: 120
@@ -67,7 +67,7 @@ workflows:
                     failure: true
 
     # iOS Build
-    react-native-ios-ipa:
+    ipa:
         name: React Native iOS IPA
         instance_type: mac_mini_m1
         max_build_duration: 120

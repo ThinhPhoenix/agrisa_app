@@ -30,7 +30,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   BackHandler,
   Dimensions,
@@ -88,6 +88,18 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<any>(null);
   const [allowNavigation, setAllowNavigation] = useState(false);
+
+  // State riêng cho has_irrigation để tránh re-render formFields
+  const [hasIrrigation, setHasIrrigation] = useState<boolean>(
+    initialData?.has_irrigation ?? false
+  );
+  // Ref để track giá trị hasIrrigation hiện tại (tránh dependency trong useCallback)
+  const hasIrrigationRef = useRef(hasIrrigation);
+  
+  // Sync ref với state khi hasIrrigation thay đổi
+  useEffect(() => {
+    hasIrrigationRef.current = hasIrrigation;
+  }, [hasIrrigation]);
 
   const MAX_IMAGES = 4;
 
@@ -199,17 +211,15 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
   // ===== FORM FIELDS =====
   // Pass hasIrrigation để conditional rendering irrigation_type field
-  // Pass plantingDate để set minDate cho expected_harvest_date
-  // useMemo để re-render khi has_irrigation hoặc planting_date thay đổi
+  // useMemo chỉ depend vào hasIrrigation state riêng, không depend vào formValues
   const formFields = React.useMemo(
     () =>
       createFarmFormFields({
         mode,
         ocrResult,
-        hasIrrigation: formValues.has_irrigation ?? false,
-        plantingDate: formValues.planting_date ?? null,
+        hasIrrigation,
       }),
-    [mode, ocrResult, formValues.has_irrigation, formValues.planting_date]
+    [mode, ocrResult, hasIrrigation]
   );
 
   // ===== OCR RESULT HANDLER =====
@@ -302,17 +312,21 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   };
 
   // ===== FORM VALUES CHANGE HANDLER =====
+  // Dùng useRef để tránh infinite loop - không có hasIrrigation trong deps
   const handleFormValuesChange = useCallback(
     (values: Record<string, any>) => {
-      // Nếu planting_date thay đổi, xóa expected_harvest_date để user chọn lại
-      if (values.planting_date !== formValues.planting_date) {
-        values.expected_harvest_date = null;
+      // Sync hasIrrigation state nếu thay đổi - dùng ref để so sánh
+      if (
+        values.has_irrigation !== undefined &&
+        values.has_irrigation !== hasIrrigationRef.current
+      ) {
+        setHasIrrigation(values.has_irrigation);
       }
 
-      // Luôn sync tất cả formValues để các field khác hoạt động
+      // Luôn sync tất cả formValues
       updateFormValues(values);
     },
-    [formValues.planting_date, updateFormValues]
+    [updateFormValues] // KHÔNG có hasIrrigation trong deps - dùng ref thay thế
   );
 
   // ===== SUBMIT HANDLER =====

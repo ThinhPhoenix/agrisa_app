@@ -1,5 +1,6 @@
 import useAxios from "@/config/useAxios.config";
 import { useQuery } from "@tanstack/react-query";
+import { Platform } from "react-native";
 
 interface ValidateResponse {
     value: boolean;
@@ -7,7 +8,10 @@ interface ValidateResponse {
 
 const validateNotificationToken = async (): Promise<
     ApiResponse<ValidateResponse>
-> => {
+    > => {
+    if (Platform.OS === "ios") {
+        return useAxios.get("/noti/protected/validate?platform=ios");
+    }
     return useAxios.get("/noti/protected/validate?platform=android");
 };
 

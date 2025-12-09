@@ -19,7 +19,8 @@
             "infoPlist": {
                 "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
                 "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ",
-                "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng"
+                "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng",
+                "UIBackgroundModes": ["fetch", "remote-notification"]
             },
             "bundleIdentifier": "com.agrisa.Agrisa"
         },
@@ -120,7 +121,7 @@
                 "projectId": "469aa2db-57cb-4365-9663-2b2b8dc2eaf8"
             }
         },
-        "owner": "thinhphoenix",
+        "owner": "pass-fpt",
         "projectId": "469aa2db-57cb-4365-9663-2b2b8dc2eaf8"
     }
 }

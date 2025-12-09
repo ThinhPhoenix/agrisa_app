@@ -88,7 +88,10 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         console.log("Raw Values:", values);
 
         // Convert date strings (DD/MM/YYYY) to Unix timestamp
-        const parseDateToTimestamp = (dateString: string): number => {
+        const parseDateToTimestamp = (
+          dateString: string | null | undefined
+        ): number | null => {
+          if (!dateString) return null;
           const [day, month, year] = dateString.split("/");
           return Math.floor(
             new Date(`${year}-${month}-${day}`).getTime() / 1000

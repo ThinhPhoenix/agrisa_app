@@ -58,6 +58,7 @@ import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 import { Platform, ScrollView, View } from "react-native";
@@ -166,6 +167,11 @@ export const CustomForm = forwardRef(function CustomForm(
     Record<string, boolean>
   >({});
 
+  // Theo dõi hash initialValues đã apply để tránh setFormData lặp
+  const initialValuesHashRef = useRef<string | null>(null);
+  // Theo dõi hash formData đã notify để tránh onValuesChange lặp
+  const prevFormDataHashRef = useRef<string | null>(null);
+
   const { mode } = useAgrisaColors();
   const themeColors = AgrisaColors[mode];
 
@@ -223,21 +229,27 @@ export const CustomForm = forwardRef(function CustomForm(
   }));
 
   useEffect(() => {
-    if (initialValues) {
-      // Deep merge để đảm bảo cập nhật đầy đủ
-      setFormData((prev) => ({
-        ...prev,
-        ...initialValues,
-      }));
-    }
-  }, [JSON.stringify(initialValues)]); // Deep compare bằng JSON.stringify
+    if (!initialValues) return;
+
+    const nextHash = JSON.stringify(initialValues);
+    if (initialValuesHashRef.current === nextHash) return;
+    initialValuesHashRef.current = nextHash;
+
+    setFormData((prev) => ({
+      ...prev,
+      ...initialValues,
+    }));
+  }, [initialValues]);
 
   useEffect(() => {
-    if (onValuesChange) {
-      onValuesChange(formData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData]); // Chỉ theo dõi formData, không theo dõi onValuesChange
+    if (!onValuesChange) return;
+
+    const nextHash = JSON.stringify(formData);
+    if (prevFormDataHashRef.current === nextHash) return;
+    prevFormDataHashRef.current = nextHash;
+
+    onValuesChange(formData);
+  }, [formData, onValuesChange]);
 
   const handleFieldChange = (name: string, value: any) => {
     const newFormData = { ...formData, [name]: value };

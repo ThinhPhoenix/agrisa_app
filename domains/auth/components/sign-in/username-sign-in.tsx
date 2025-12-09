@@ -31,6 +31,7 @@ import {
   Dimensions,
   ImageBackground,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -165,9 +166,16 @@ const UsernameSignInComponent = () => {
 
   const identifierType = detectIdentifierType(watchIdentifier);
 
+  const handleContactSupport = () => {
+    const phoneNumber = "tel:+84377744322";
+    Linking.openURL(phoneNumber).catch((err) =>
+      console.error("❌ Error opening phone dialer:", err)
+    );
+  };
+
   const shortcuts = [
-    { label: "Điều khoản sử dụng", icon: Newspaper },
-    { label: "Liên hệ hỗ trợ", icon: PhoneIcon },
+    { label: "Điều khoản sử dụng", icon: Newspaper, onPress: () => {} },
+    { label: "Liên hệ hỗ trợ", icon: PhoneIcon, onPress: handleContactSupport },
   ];
 
   return (
@@ -446,13 +454,13 @@ const UsernameSignInComponent = () => {
                 px="$1"
                 mt="$5"
               >
-                {shortcuts.map(({ label, icon: Icon }) => (
+                {shortcuts.map(({ label, icon: Icon, onPress }) => (
                   <Pressable
                     key={label}
                     accessibilityRole="button"
                     style={{ flex: 1 }}
                     hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    onPress={() => {}}
+                    onPress={onPress}
                   >
                     <VStack alignItems="center" space="xs">
                       <Box

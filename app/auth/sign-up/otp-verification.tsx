@@ -8,8 +8,6 @@ import { ArrowLeft, RefreshCw, ShieldCheck } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Image,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -119,337 +117,237 @@ export default function OTPVerificationScreen() {
   // 🎨 RENDER UI
   // ============================================
   return (
-    <ImageBackground
-      source={require("@/assets/images/Cover/Agrisa_Cover.png")}
-      style={{ flex: 1 }}
-      resizeMode="cover"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: "center",
-              padding: 24,
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            padding: 24,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Form Container */}
+          <Box
+            style={{
+              backgroundColor: colors.card_surface,
+              borderRadius: 24,
+              padding: 28,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 5,
             }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
           >
-            {/* Logo */}
-            <VStack space="xl" className="items-center mb-10">
-              <Image
-                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
-                style={{ width: 120, height: 120 }}
-                resizeMode="contain"
-              />
-              <VStack space="xs" className="items-center">
-                <Text
-                  style={{
-                    fontSize: 32,
-                    fontWeight: "bold",
-                    color: colors.primary_white_text,
-                    textAlign: "center",
-                  }}
-                >
-                  Xác thực OTP
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.primary_white_text,
-                    opacity: 0.9,
-                    textAlign: "center",
-                  }}
-                >
-                  Nhập mã OTP đã được gửi về
-                </Text>
-              </VStack>
-            </VStack>
-
-            {/* Form Container */}
-            <Box
-              style={{
-                backgroundColor: colors.background,
-                borderRadius: 24,
-                padding: 28,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.15,
-                shadowRadius: 16,
-                elevation: 8,
-              }}
-            >
-              {/* Progress Indicator */}
-              <HStack space="sm" className="mb-6">
+            {/* Header với Icon bên trong Box */}
+            <VStack space="md" className="mb-8">
+              <HStack space="md" className="items-center">
                 <Box
                   style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.success,
-                    borderRadius: 2,
-                  }}
-                />
-                <Box
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.frame_border,
-                    borderRadius: 2,
-                  }}
-                />
-                <Box
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.frame_border,
-                    borderRadius: 2,
-                  }}
-                />
-                <Box
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.frame_border,
-                    borderRadius: 2,
-                  }}
-                />
-              </HStack>
-
-              {/* Step Indicator */}
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: colors.muted_text,
-                  textAlign: "center",
-                  marginBottom: 24,
-                  fontWeight: "600",
-                }}
-              >
-                Bước 1/4 - Xác thực OTP
-              </Text>
-
-              {/* Shield Icon */}
-              <VStack space="md" className="items-center mb-6">
-                <Box
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 16,
                     backgroundColor: colors.successSoft,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
-                  <ShieldCheck size={32} color={colors.success} strokeWidth={2.5} />
+                  <ShieldCheck
+                    size={28}
+                    color={colors.success}
+                    strokeWidth={2.5}
+                  />
                 </Box>
-              </VStack>
-
-              {/* Phone Number Display */}
-              <Box
-                style={{
-                  backgroundColor: colors.card_surface,
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 24,
-                  borderLeftWidth: 4,
-                  borderLeftColor: colors.success,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: colors.secondary_text,
-                    marginBottom: 4,
-                  }}
-                >
-                  Mã OTP đã được gửi đến:
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 18,
-                    color: colors.primary_text,
-                    fontWeight: "700",
-                  }}
-                >
-                  {formData.phone}
-                </Text>
-              </Box>
-
-              {/* OTP Input */}
-              <VStack space="sm" className="mb-6">
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "600",
-                    color: colors.primary_text,
-                  }}
-                >
-                  Mã OTP <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <TextInput
-                  value={otpCode}
-                  onChangeText={setOtpCode}
-                  placeholder="● ● ● ● ● ●"
-                  placeholderTextColor={colors.muted_text}
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  style={{
-                    backgroundColor: colors.card_surface,
-                    borderWidth: 2,
-                    borderColor: otpCode.length === 6 ? colors.success : colors.frame_border,
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    fontSize: 24,
-                    letterSpacing: 12,
-                    textAlign: "center",
-                    color: colors.primary_text,
-                    fontWeight: "700",
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: colors.muted_text,
-                    textAlign: "center",
-                  }}
-                >
-                  Nhập 6 số OTP từ tin nhắn
-                </Text>
-              </VStack>
-
-              {/* Countdown Timer */}
-              {countdown > 0 && (
-                <Text
-                  style={{
-                    fontSize: 14,
-                    color: colors.secondary_text,
-                    textAlign: "center",
-                    marginBottom: 16,
-                  }}
-                >
-                  Mã OTP còn hiệu lực trong{" "}
-                  <Text style={{ fontWeight: "700", color: colors.warning }}>
-                    {countdown}s
+                <VStack className="flex-1">
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      fontWeight: "bold",
+                      color: colors.primary_text,
+                    }}
+                  >
+                    Xác thực OTP
                   </Text>
-                </Text>
-              )}
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: colors.secondary_text,
+                      marginTop: 2,
+                    }}
+                  >
+                    Nhập mã OTP đã được gửi về
+                  </Text>
+                </VStack>
+              </HStack>
+            </VStack>
 
-              {/* Verify Button */}
-              <TouchableOpacity
-                onPress={handleVerifyOTP}
-                disabled={verifyPhoneOTPMutation.isPending || otpCode.length !== 6}
+            {/* Phone Number Display - 1 dòng */}
+            <Box
+              style={{
+                backgroundColor: colors.background,
+                borderRadius: 12,
+                padding: 14,
+                marginBottom: 20,
+                borderLeftWidth: 3,
+                borderLeftColor: colors.success,
+              }}
+            >
+              <Text
                 style={{
-                  backgroundColor:
-                    verifyPhoneOTPMutation.isPending || otpCode.length !== 6
-                      ? colors.muted_text
-                      : colors.success,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  marginBottom: 12,
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  fontSize: 14,
+                  color: colors.primary_text,
                 }}
               >
-                {verifyPhoneOTPMutation.isPending && (
-                  <ActivityIndicator
-                    color={colors.primary_white_text}
-                    size="small"
-                    style={{ marginRight: 8 }}
-                  />
-                )}
-                <Text
-                  style={{
-                    color: colors.primary_white_text,
-                    fontSize: 16,
-                    fontWeight: "700",
-                  }}
-                >
-                  {verifyPhoneOTPMutation.isPending ? "Đang xác thực..." : "Xác nhận"}
+                <Text style={{ color: colors.secondary_text }}>
+                  Mã OTP đã được gửi đến:{" "}
                 </Text>
-              </TouchableOpacity>
+                <Text style={{ fontWeight: "700" }}>{formData.phone}</Text>
+              </Text>
+            </Box>
 
-              {/* Resend OTP Button */}
-              <TouchableOpacity
-                onPress={handleResendOTP}
-                disabled={sendPhoneOTPMutation.isPending || countdown > 0 || !canSendOtp()}
+            {/* OTP Input */}
+            <VStack space="sm" className="mb-4">
+              <Text
                 style={{
-                  backgroundColor: "transparent",
-                  borderWidth: 2,
-                  borderColor: countdown > 0 ? colors.frame_border : colors.info,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  marginBottom: 12,
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: colors.primary_text,
                 }}
               >
+                Mã OTP <Text style={{ color: colors.error }}>*</Text>
+              </Text>
+              <TextInput
+                value={otpCode}
+                onChangeText={setOtpCode}
+                placeholder="Nhập mã OTP (6 ký tự)"
+                placeholderTextColor={colors.muted_text}
+                keyboardType="default"
+                autoCapitalize="characters"
+                maxLength={6}
+                style={{
+                  backgroundColor: colors.background,
+                  borderWidth: 1.5,
+                  borderColor:
+                    otpCode.length === 6
+                      ? colors.success
+                      : colors.frame_border,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontSize: 16,
+                  color: colors.primary_text,
+                  fontWeight: "600",
+                  letterSpacing: 2,
+                }}
+              />
+            </VStack>
+
+            {/* Text Gửi lại với countdown */}
+            <Box style={{ marginBottom: 16 }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: colors.secondary_text,
+                }}
+              >
+                Bạn chưa nhận được mã OTP?{" "}
                 {sendPhoneOTPMutation.isPending ? (
-                  <ActivityIndicator
-                    color={colors.info}
-                    size="small"
-                    style={{ marginRight: 8 }}
-                  />
+                  <Text style={{ color: colors.info }}>Đang gửi...</Text>
+                ) : countdown > 0 || !canSendOtp() ? (
+                  <Text style={{ color: colors.muted_text }}>
+                    Gửi lại {countdown > 0 ? `(${countdown}s)` : ""}
+                  </Text>
                 ) : (
-                  <RefreshCw
-                    size={20}
-                    color={countdown > 0 ? colors.muted_text : colors.info}
-                    style={{ marginRight: 8 }}
-                  />
+                  <Text
+                    style={{ 
+                      color: colors.info, 
+                      fontWeight: "700",
+                      textDecorationLine: "underline"
+                    }}
+                    onPress={handleResendOTP}
+                  >
+                    Gửi lại
+                  </Text>
                 )}
-                <Text
-                  style={{
-                    color: countdown > 0 ? colors.muted_text : colors.info,
-                    fontSize: 16,
-                    fontWeight: "600",
-                  }}
-                >
-                  {sendPhoneOTPMutation.isPending
-                    ? "Đang gửi..."
-                    : countdown > 0
-                    ? `Gửi lại sau ${countdown}s`
-                    : "Gửi lại mã OTP"}
-                </Text>
-              </TouchableOpacity>
+              </Text>
+            </Box>
 
-              {/* Back Button */}
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{
-                  backgroundColor: "transparent",
-                  borderWidth: 2,
-                  borderColor: colors.frame_border,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                }}
-              >
-                <ArrowLeft
-                  size={20}
-                  color={colors.secondary_text}
+            {/* Verify Button */}
+            <TouchableOpacity
+              onPress={handleVerifyOTP}
+              disabled={
+                verifyPhoneOTPMutation.isPending || otpCode.length !== 6
+              }
+              style={{
+                backgroundColor:
+                  verifyPhoneOTPMutation.isPending || otpCode.length !== 6
+                    ? colors.muted_text
+                    : colors.success,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: "center",
+                marginBottom: 12,
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              {verifyPhoneOTPMutation.isPending && (
+                <ActivityIndicator
+                  color={colors.primary_white_text}
+                  size="small"
                   style={{ marginRight: 8 }}
                 />
-                <Text
-                  style={{
-                    color: colors.secondary_text,
-                    fontSize: 16,
-                    fontWeight: "600",
-                  }}
-                >
-                  Đổi số điện thoại
-                </Text>
-              </TouchableOpacity>
-            </Box>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+              )}
+              <Text
+                style={{
+                  color: colors.primary_white_text,
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                {verifyPhoneOTPMutation.isPending
+                  ? "Đang xác thực..."
+                  : "Xác nhận"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Back Button */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{
+                backgroundColor: "transparent",
+                borderWidth: 1.5,
+                borderColor: colors.frame_border,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <ArrowLeft
+                size={20}
+                color={colors.secondary_text}
+                style={{ marginRight: 8 }}
+              />
+              <Text
+                style={{
+                  color: colors.secondary_text,
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Đổi số điện thoại
+              </Text>
+            </TouchableOpacity>
+          </Box>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

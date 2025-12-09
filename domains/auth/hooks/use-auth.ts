@@ -88,6 +88,39 @@ export const useAuth = () => {
     },
   });
 
+  const checkSignUpIdentifierMutation = useMutation({
+    mutationKey: [QueryKey.AUTH.CHECK_IDENTIFIER],
+    mutationFn: async (identifier: string) => {
+      const response = await AuthServices.checkIdentifier({ identifier });
+
+      // Type guard để đảm bảo response là success response
+      if (!("data" in response)) {
+        throw new Error("Invalid response format");
+      }
+
+      const available = response.data.available;
+
+      console.log("✅ [Check Identifier] Full response:", response);
+      console.log("✅ [Check Identifier] Available:", available);
+
+      // Nếu available = false => Tài khoản đã tồn tại => Reject để prevent registration
+      // Ngược lại available = true => Tài khoản chưa tồn tại => Cho phép đăng ký
+      if (available) {
+        notification.error("Số điện thoại này đã được đăng ký trong hệ thống");
+        throw new Error("Identifier already exists");
+      }
+      
+      return response.data;
+    },
+    onError: (error: any) => {
+      // Chỉ show error nếu không phải lỗi "Identifier already exists"
+      if (error.message !== "Identifier already exists") {
+        console.error("❌ Check identifier error:", error);
+        notification.error("Có lỗi xảy ra khi kiểm tra tài khoản");
+      }
+    },
+  });
+
   const checkIdentifierMutation = useMutation({
     mutationKey: [QueryKey.AUTH.CHECK_IDENTIFIER],
     mutationFn: async (identifier: string) => {
@@ -162,5 +195,6 @@ export const useAuth = () => {
     checkIdentifierMutation,
     sendPhoneOTPMutation,
     verifyPhoneOTPMutation,
+    checkSignUpIdentifierMutation,
   };
 };

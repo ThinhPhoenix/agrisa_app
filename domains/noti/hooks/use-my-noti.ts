@@ -30,7 +30,7 @@ const useMyNoti = ({ limit }: { limit?: number }) => {
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage) => {
-            const pagination = lastPage.pagination;
+            const pagination = (lastPage as any).pagination;
             console.log("Last page pagination:", pagination);
             if (pagination && pagination.page < pagination.totalPages) {
                 return pagination.page + 1;

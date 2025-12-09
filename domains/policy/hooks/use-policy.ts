@@ -140,7 +140,8 @@ export const usePolicy = () => {
         if (apiMessage.toLowerCase().includes("base_policy_id")) {
           errorMessage = "Vui lòng chọn gói bảo hiểm.";
         } else if (apiMessage.toLowerCase().includes("farmer_id")) {
-          errorMessage = "Không tìm thấy thông tin nông dân. Vui lòng đăng nhập lại.";
+          errorMessage =
+            "Không tìm thấy thông tin nông dân. Vui lòng đăng nhập lại.";
         } else if (apiMessage.toLowerCase().includes("coverage_amount")) {
           errorMessage = "Số tiền bảo hiểm phải lớn hơn 0.";
         } else if (apiMessage.toLowerCase().includes("planting_date")) {
@@ -148,18 +149,26 @@ export const usePolicy = () => {
             "Ngày gieo trồng không hợp lệ hoặc không được để trống. Vui lòng chọn ngày trong quá khứ.";
         } else if (apiMessage.toLowerCase().includes("area_multiplier")) {
           errorMessage = "Hệ số diện tích không hợp lệ.";
-        } else if (apiMessage.toLowerCase().includes("farm.id") || apiMessage.toLowerCase().includes("farm_name")) {
-          errorMessage = "Vui lòng chọn trang trại hoặc nhập thông tin trang trại mới.";
+        } else if (
+          apiMessage.toLowerCase().includes("farm.id") ||
+          apiMessage.toLowerCase().includes("farm_name")
+        ) {
+          errorMessage =
+            "Vui lòng chọn trang trại hoặc nhập thông tin trang trại mới.";
         } else if (apiMessage.toLowerCase().includes("farm.area_sqm")) {
           errorMessage = "Diện tích trang trại phải lớn hơn 0.";
         } else if (apiMessage.toLowerCase().includes("crop_type")) {
           errorMessage = "Vui lòng chọn loại cây trồng.";
-        } else if (apiMessage.toLowerCase().includes("boundary") || apiMessage.toLowerCase().includes("center_location")) {
+        } else if (
+          apiMessage.toLowerCase().includes("boundary") ||
+          apiMessage.toLowerCase().includes("center_location")
+        ) {
           errorMessage = "Vui lòng cung cấp thông tin vị trí trang trại.";
         } else if (apiMessage.toLowerCase().includes("policy_tags")) {
           errorMessage = "Thông tin tài liệu bảo hiểm không hợp lệ.";
         } else {
-          errorMessage = "Thông tin đăng ký chưa đầy đủ hoặc không hợp lệ. Vui lòng kiểm tra lại.";
+          errorMessage =
+            "Thông tin đăng ký chưa đầy đủ hoặc không hợp lệ. Vui lòng kiểm tra lại.";
         }
       } else if (errorCode === "UNAUTHORIZED" || httpStatus === 401) {
         errorTitle = "Chưa đăng nhập";
@@ -182,12 +191,16 @@ export const usePolicy = () => {
         errorTitle = "Đăng ký thất bại";
         // Parse chi tiết lỗi từ service
         if (
-          apiMessage.toLowerCase().includes("enrollment date validation failed") ||
+          apiMessage
+            .toLowerCase()
+            .includes("enrollment date validation failed") ||
           apiMessage.toLowerCase().includes("enrollment dates are required")
         ) {
           errorMessage =
             "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác.";
-        } else if (apiMessage.toLowerCase().includes("farm already registered")) {
+        } else if (
+          apiMessage.toLowerCase().includes("farm already registered")
+        ) {
           errorTitle = "Trang trại đã được bảo hiểm";
           errorMessage =
             "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn trang trại khác.";
@@ -198,10 +211,16 @@ export const usePolicy = () => {
           errorTitle = "Gói bảo hiểm không khả dụng";
           errorMessage =
             "Gói bảo hiểm này hiện không còn hoạt động. Vui lòng chọn gói khác.";
-        } else if (apiMessage.toLowerCase().includes("database") || apiMessage.toLowerCase().includes("transaction")) {
+        } else if (
+          apiMessage.toLowerCase().includes("database") ||
+          apiMessage.toLowerCase().includes("transaction")
+        ) {
           errorMessage =
             "Không thể lưu thông tin đăng ký. Vui lòng thử lại sau.";
-        } else if (apiMessage.toLowerCase().includes("document") || apiMessage.toLowerCase().includes("signed")) {
+        } else if (
+          apiMessage.toLowerCase().includes("document") ||
+          apiMessage.toLowerCase().includes("signed")
+        ) {
           errorMessage =
             "Không thể tạo hợp đồng bảo hiểm. Vui lòng thử lại sau.";
         } else {

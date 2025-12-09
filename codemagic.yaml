@@ -64,7 +64,7 @@ workflows:
                     ]
                 notify:
                     success: true
-                    falure: true
+                    failure: true
 
     # iOS Build
     react-native-ios-ipa:

@@ -2,48 +2,49 @@ import { useGlobalNotification } from "@/components/modal/providers";
 import useAxios from "@/config/useAxios.config";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
-    Box,
-    Button,
-    ButtonIcon,
-    ButtonText,
-    FormControl,
-    FormControlError,
-    FormControlErrorText,
-    HStack,
-    Image,
-    Input,
-    InputField,
-    InputSlot,
-    Pressable,
-    Text,
-    VStack,
+  Box,
+  Button,
+  ButtonIcon,
+  ButtonText,
+  FormControl,
+  FormControlError,
+  FormControlErrorText,
+  HStack,
+  Image,
+  Input,
+  InputField,
+  InputSlot,
+  Pressable,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { LinearGradient } from "expo-linear-gradient";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
 import {
-    Eye,
-    EyeOff,
-    Fingerprint,
-    Lock,
-    LogIn,
-    Mail,
-    Newspaper,
-    Phone,
-    PhoneIcon,
-    ScanFace,
-    ShieldCheck,
-    User,
+  Eye,
+  EyeOff,
+  Fingerprint,
+  Lock,
+  LogIn,
+  Mail,
+  Newspaper,
+  Phone,
+  PhoneIcon,
+  ScanFace,
+  ShieldCheck,
+  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import {
-    Alert,
-    Dimensions,
-    ImageBackground,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
+  Alert,
+  Dimensions,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
@@ -319,9 +320,16 @@ const SignInComponentUI = () => {
     return phone.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
   };
 
+  const handleContactSupport = () => {
+    const phoneNumber = "tel:+84377744322";
+    Linking.openURL(phoneNumber).catch((err) =>
+      console.error("❌ Error opening phone dialer:", err)
+    );
+  };
+
   const shortcuts = [
-    { label: "Điều khoản sử dụng", icon: Newspaper },
-    { label: "Liên hệ hỗ trợ", icon: PhoneIcon },
+    { label: "Điều khoản sử dụng", icon: Newspaper, onPress: () => {} },
+    { label: "Liên hệ hỗ trợ", icon: PhoneIcon, onPress: handleContactSupport },
   ];
 
   // ============================================
@@ -408,9 +416,9 @@ const SignInComponentUI = () => {
             {/* Logo & Title */}
             <HStack alignItems="center" space="sm">
               <Image
-                source={require("@/assets/images/Logo/Agrisa.png")}
+                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
                 alt="Agrisa Logo"
-                style={{ width: 100, height: 100 }}
+                style={{ width: 80, height: 80 }}
                 resizeMode="contain"
               />
             </HStack>
@@ -692,13 +700,13 @@ const SignInComponentUI = () => {
                 px="$1"
                 mt="$5"
               >
-                {shortcuts.map(({ label, icon: Icon }) => (
+                {shortcuts.map(({ label, icon: Icon, onPress }) => (
                   <Pressable
                     key={label}
                     accessibilityRole="button"
                     style={{ flex: 1 }}
                     hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    onPress={() => {}}
+                    onPress={onPress}
                   >
                     <VStack alignItems="center" space="xs">
                       <Box

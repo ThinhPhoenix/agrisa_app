@@ -15,8 +15,6 @@ import {
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Image,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -128,377 +126,373 @@ export default function PasswordInputScreen() {
   // 🎨 RENDER UI
   // ============================================
   return (
-    <ImageBackground
-      source={require("@/assets/images/Cover/Agrisa_Cover.png")}
-      style={{ flex: 1 }}
-      resizeMode="cover"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: "center",
-              padding: 24,
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            padding: 24,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Form Container */}
+          <Box
+            style={{
+              backgroundColor: colors.card_surface,
+              borderRadius: 24,
+              padding: 28,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 5,
             }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
           >
-            {/* Logo */}
-            <VStack space="xl" className="items-center mb-10">
-              <Image
-                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
-                style={{ width: 120, height: 120 }}
-                resizeMode="contain"
-              />
-              <VStack space="xs" className="items-center">
-                <Text
-                  style={{
-                    fontSize: 32,
-                    fontWeight: "bold",
-                    color: colors.primary_white_text,
-                    textAlign: "center",
-                  }}
-                >
-                  Tạo mật khẩu
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.primary_white_text,
-                    opacity: 0.9,
-                    textAlign: "center",
-                  }}
-                >
-                  Bước cuối cùng - Hoàn tất đăng ký
-                </Text>
-              </VStack>
-            </VStack>
-
-            {/* Form Container */}
-            <Box
-              style={{
-                backgroundColor: colors.background,
-                borderRadius: 24,
-                padding: 28,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.15,
-                shadowRadius: 16,
-                elevation: 8,
-              }}
-            >
-              {/* Progress Indicator */}
-              <HStack space="sm" className="mb-6">
-                {[1, 2, 3, 4].map((step) => (
-                  <Box
-                    key={step}
-                    style={{
-                      flex: 1,
-                      height: 4,
-                      backgroundColor: colors.success,
-                      borderRadius: 2,
-                    }}
-                  />
-                ))}
-              </HStack>
-
-              {/* Step Indicator */}
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: colors.muted_text,
-                  textAlign: "center",
-                  marginBottom: 24,
-                  fontWeight: "600",
-                }}
-              >
-                Bước 4/4 - Hoàn tất
-              </Text>
-
-              {/* Lock Icon */}
-              <VStack space="md" className="items-center mb-6">
+            {/* Header */}
+            <VStack space="md" className="mb-8">
+              <HStack space="md" className="items-center">
                 <Box
                   style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 16,
                     backgroundColor: colors.successSoft,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
-                  <Lock size={32} color={colors.success} strokeWidth={2.5} />
+                  <Lock size={28} color={colors.success} strokeWidth={2.5} />
                 </Box>
-              </VStack>
-
-              {/* Password Input */}
-              <VStack space="sm" className="mb-4">
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "600",
-                    color: colors.primary_text,
-                  }}
-                >
-                  Mật khẩu <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <Box style={{ position: "relative" }}>
-                  <TextInput
-                    value={passwordInput}
-                    onChangeText={setPasswordInput}
-                    placeholder="Nhập mật khẩu"
-                    placeholderTextColor={colors.muted_text}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    autoCorrect={false}
+                <VStack className="flex-1">
+                  <Text
                     style={{
-                      backgroundColor: colors.card_surface,
-                      borderWidth: 2,
-                      borderColor: passwordInput.length > 0
+                      fontSize: 24,
+                      fontWeight: "bold",
+                      color: colors.primary_text,
+                    }}
+                  >
+                    Tạo mật khẩu
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: colors.secondary_text,
+                      marginTop: 2,
+                    }}
+                  >
+                    Hoàn tất đăng ký
+                  </Text>
+                </VStack>
+              </HStack>
+            </VStack>
+
+            {/* Password Input */}
+            <VStack space="sm" className="mb-4">
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: colors.primary_text,
+                }}
+              >
+                Mật khẩu <Text style={{ color: colors.error }}>*</Text>
+              </Text>
+              <Box style={{ position: "relative" }}>
+                <TextInput
+                  value={passwordInput}
+                  onChangeText={setPasswordInput}
+                  placeholder="Nhập mật khẩu"
+                  placeholderTextColor={colors.muted_text}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{
+                    backgroundColor: colors.background,
+                    borderWidth: 1.5,
+                    borderColor:
+                      passwordInput.length > 0
                         ? isPasswordValid
                           ? colors.success
                           : colors.error
                         : colors.frame_border,
-                      borderRadius: 12,
-                      paddingHorizontal: 16,
-                      paddingVertical: 14,
-                      paddingRight: 50,
-                      fontSize: 16,
-                      color: colors.primary_text,
-                      fontWeight: "500",
-                    }}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={{
-                      position: "absolute",
-                      right: 16,
-                      top: 14,
-                    }}
-                  >
-                    {showPassword ? (
-                      <EyeOff size={24} color={colors.muted_text} />
-                    ) : (
-                      <Eye size={24} color={colors.muted_text} />
-                    )}
-                  </TouchableOpacity>
-                </Box>
-
-                {/* Password Requirements */}
-                {passwordInput.length > 0 && (
-                  <VStack space="xs" className="mt-2">
-                    {passwordErrors.length > 0 ? (
-                      passwordErrors.map((error, index) => (
-                        <HStack key={index} space="xs" className="items-center">
-                          <XCircle size={16} color={colors.error} />
-                          <Text style={{ fontSize: 12, color: colors.error }}>
-                            {error}
-                          </Text>
-                        </HStack>
-                      ))
-                    ) : (
-                      <HStack space="xs" className="items-center">
-                        <CheckCircle2 size={16} color={colors.success} />
-                        <Text style={{ fontSize: 12, color: colors.success, fontWeight: "600" }}>
-                          Mật khẩu hợp lệ
-                        </Text>
-                      </HStack>
-                    )}
-                  </VStack>
-                )}
-              </VStack>
-
-              {/* Confirm Password Input */}
-              <VStack space="sm" className="mb-6">
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "600",
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    paddingRight: 50,
+                    fontSize: 16,
                     color: colors.primary_text,
+                    fontWeight: "500",
+                  }}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: 16,
+                    top: 14,
                   }}
                 >
-                  Xác nhận mật khẩu <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <Box style={{ position: "relative" }}>
-                  <TextInput
-                    value={confirmPasswordInput}
-                    onChangeText={setConfirmPasswordInput}
-                    placeholder="Nhập lại mật khẩu"
-                    placeholderTextColor={colors.muted_text}
-                    secureTextEntry={!showConfirmPassword}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    style={{
-                      backgroundColor: colors.card_surface,
-                      borderWidth: 2,
-                      borderColor: confirmPasswordInput.length > 0
+                  {showPassword ? (
+                    <EyeOff size={24} color={colors.muted_text} />
+                  ) : (
+                    <Eye size={24} color={colors.muted_text} />
+                  )}
+                </TouchableOpacity>
+              </Box>
+
+              {/* Password Requirements */}
+              {passwordInput.length > 0 && (
+                <VStack space="xs" className="mt-2">
+                  {passwordErrors.length > 0 ? (
+                    passwordErrors.map((error, index) => (
+                      <HStack key={index} space="xs" className="items-center">
+                        <XCircle size={16} color={colors.error} />
+                        <Text style={{ fontSize: 12, color: colors.error }}>
+                          {error}
+                        </Text>
+                      </HStack>
+                    ))
+                  ) : (
+                    <HStack space="xs" className="items-center">
+                      <CheckCircle2 size={16} color={colors.success} />
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: colors.success,
+                          fontWeight: "600",
+                        }}
+                      >
+                        Mật khẩu hợp lệ
+                      </Text>
+                    </HStack>
+                  )}
+                </VStack>
+              )}
+            </VStack>
+
+            {/* Confirm Password Input */}
+            <VStack space="sm" className="mb-6">
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: colors.primary_text,
+                }}
+              >
+                Xác nhận mật khẩu <Text style={{ color: colors.error }}>*</Text>
+              </Text>
+              <Box style={{ position: "relative" }}>
+                <TextInput
+                  value={confirmPasswordInput}
+                  onChangeText={setConfirmPasswordInput}
+                  placeholder="Nhập lại mật khẩu"
+                  placeholderTextColor={colors.muted_text}
+                  secureTextEntry={!showConfirmPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{
+                    backgroundColor: colors.background,
+                    borderWidth: 1.5,
+                    borderColor:
+                      confirmPasswordInput.length > 0
                         ? isPasswordMatch
                           ? colors.success
                           : colors.error
                         : colors.frame_border,
-                      borderRadius: 12,
-                      paddingHorizontal: 16,
-                      paddingVertical: 14,
-                      paddingRight: 50,
-                      fontSize: 16,
-                      color: colors.primary_text,
-                      fontWeight: "500",
-                    }}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                    style={{
-                      position: "absolute",
-                      right: 16,
-                      top: 14,
-                    }}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff size={24} color={colors.muted_text} />
-                    ) : (
-                      <Eye size={24} color={colors.muted_text} />
-                    )}
-                  </TouchableOpacity>
-                </Box>
-
-                {/* Match Indicator */}
-                {confirmPasswordInput.length > 0 && (
-                  <HStack space="xs" className="items-center mt-2">
-                    {isPasswordMatch ? (
-                      <>
-                        <CheckCircle2 size={16} color={colors.success} />
-                        <Text style={{ fontSize: 12, color: colors.success, fontWeight: "600" }}>
-                          Mật khẩu khớp
-                        </Text>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle size={16} color={colors.error} />
-                        <Text style={{ fontSize: 12, color: colors.error }}>
-                          Mật khẩu không khớp
-                        </Text>
-                      </>
-                    )}
-                  </HStack>
-                )}
-              </VStack>
-
-              {/* Submit Button */}
-              <TouchableOpacity
-                onPress={handleSubmit}
-                disabled={!isPasswordValid || !isPasswordMatch || signUpMutation.isPending}
-                style={{
-                  backgroundColor:
-                    !isPasswordValid || !isPasswordMatch || signUpMutation.isPending
-                      ? colors.muted_text
-                      : colors.success,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  marginBottom: 12,
-                  flexDirection: "row",
-                  justifyContent: "center",
-                }}
-              >
-                {signUpMutation.isPending && (
-                  <ActivityIndicator
-                    color={colors.primary_white_text}
-                    size="small"
-                    style={{ marginRight: 8 }}
-                  />
-                )}
-                <Text
-                  style={{
-                    color: colors.primary_white_text,
+                    borderRadius: 12,
+                    paddingHorizontal: 16,
+                    paddingVertical: 14,
+                    paddingRight: 50,
                     fontSize: 16,
-                    fontWeight: "700",
+                    color: colors.primary_text,
+                    fontWeight: "500",
                   }}
-                >
-                  {signUpMutation.isPending ? "Đang xử lý..." : "Hoàn tất đăng ký"}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Back Button */}
-              <TouchableOpacity
-                onPress={() => router.back()}
-                disabled={signUpMutation.isPending}
-                style={{
-                  backgroundColor: "transparent",
-                  borderWidth: 2,
-                  borderColor: colors.frame_border,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                }}
-              >
-                <ArrowLeft
-                  size={20}
-                  color={colors.secondary_text}
-                  style={{ marginRight: 8 }}
                 />
-                <Text
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                   style={{
-                    color: colors.secondary_text,
-                    fontSize: 16,
-                    fontWeight: "600",
+                    position: "absolute",
+                    right: 16,
+                    top: 14,
                   }}
                 >
-                  Quay lại
-                </Text>
-              </TouchableOpacity>
-            </Box>
+                  {showConfirmPassword ? (
+                    <EyeOff size={24} color={colors.muted_text} />
+                  ) : (
+                    <Eye size={24} color={colors.muted_text} />
+                  )}
+                </TouchableOpacity>
+              </Box>
 
-            {/* Completed Steps Summary */}
-            <Box
+              {/* Match Indicator */}
+              {confirmPasswordInput.length > 0 && (
+                <HStack space="xs" className="items-center mt-2">
+                  {isPasswordMatch ? (
+                    <>
+                      <CheckCircle2 size={16} color={colors.success} />
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: colors.success,
+                          fontWeight: "600",
+                        }}
+                      >
+                        Mật khẩu khớp
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={16} color={colors.error} />
+                      <Text style={{ fontSize: 12, color: colors.error }}>
+                        Mật khẩu không khớp
+                      </Text>
+                    </>
+                  )}
+                </HStack>
+              )}
+            </VStack>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={
+                !isPasswordValid || !isPasswordMatch || signUpMutation.isPending
+              }
               style={{
-                marginTop: 24,
-                backgroundColor: `${colors.success}20`,
-                borderRadius: 16,
-                padding: 16,
-                borderWidth: 2,
-                borderColor: `${colors.success}40`,
+                backgroundColor:
+                  !isPasswordValid ||
+                  !isPasswordMatch ||
+                  signUpMutation.isPending
+                    ? colors.muted_text
+                    : colors.success,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: "center",
+                marginBottom: 12,
+                flexDirection: "row",
+                justifyContent: "center",
               }}
             >
+              {signUpMutation.isPending && (
+                <ActivityIndicator
+                  color={colors.primary_white_text}
+                  size="small"
+                  style={{ marginRight: 8 }}
+                />
+              )}
+              <Text
+                style={{
+                  color: colors.primary_white_text,
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                {signUpMutation.isPending
+                  ? "Đang xử lý..."
+                  : "Hoàn tất đăng ký"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Back Button */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              disabled={signUpMutation.isPending}
+              style={{
+                backgroundColor: "transparent",
+                borderWidth: 1.5,
+                borderColor: colors.frame_border,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <ArrowLeft
+                size={20}
+                color={colors.secondary_text}
+                style={{ marginRight: 8 }}
+              />
+              <Text
+                style={{
+                  color: colors.secondary_text,
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Quay lại
+              </Text>
+            </TouchableOpacity>
+
+            {/* Completed Steps Summary */}
+            <VStack space="xs" className="mt-6">
               <Text
                 style={{
                   fontSize: 14,
-                  color: colors.primary_white_text,
-                  fontWeight: "700",
-                  marginBottom: 12,
+                  color: colors.secondary_text,
+                  fontWeight: "600",
+                  marginBottom: 8,
                 }}
               >
                 Thông tin đã nhập:
               </Text>
-              <VStack space="xs">
-                <HStack space="xs" className="items-center">
+              <Box
+                style={{
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  padding: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.success,
+                }}
+              >
+                <HStack space="sm" className="items-center">
                   <CheckCircle2 size={16} color={colors.success} />
-                  <Text style={{ fontSize: 13, color: colors.primary_white_text }}>
+                  <Text style={{ fontSize: 13, color: colors.primary_text }}>
                     Số điện thoại: {formData.phone}
                   </Text>
                 </HStack>
-                <HStack space="xs" className="items-center">
+              </Box>
+              <Box
+                style={{
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  padding: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.success,
+                }}
+              >
+                <HStack space="sm" className="items-center">
                   <CheckCircle2 size={16} color={colors.success} />
-                  <Text style={{ fontSize: 13, color: colors.primary_white_text }}>
+                  <Text style={{ fontSize: 13, color: colors.primary_text }}>
                     Email: {formData.email}
                   </Text>
                 </HStack>
-                <HStack space="xs" className="items-center">
+              </Box>
+              <Box
+                style={{
+                  backgroundColor: colors.background,
+                  borderRadius: 12,
+                  padding: 12,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.success,
+                }}
+              >
+                <HStack space="sm" className="items-center">
                   <CheckCircle2 size={16} color={colors.success} />
-                  <Text style={{ fontSize: 13, color: colors.primary_white_text }}>
+                  <Text style={{ fontSize: 13, color: colors.primary_text }}>
                     CCCD: {formData.national_id}
                   </Text>
                 </HStack>
-              </VStack>
-            </Box>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+              </Box>
+            </VStack>
+          </Box>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

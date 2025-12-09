@@ -89,7 +89,7 @@ export default function HomeScreen() {
       {/* Header Section with Greeting and InfoCards */}
       <View className="relative z-10 px-4 pt-20 pb-6">
         <View className="flex-row items-center justify-between mb-4">
-          <Text className="text-black text-lg">
+          <Text className="text-black text-2xl">
             <Text
               style={{ fontFamily: "DancingScript_400Regular" }}
               className="text-emerald-700 text-3xl"

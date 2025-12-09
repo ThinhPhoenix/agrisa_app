@@ -11,8 +11,6 @@ import {
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  Image,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -66,348 +64,231 @@ export default function CCCDInputScreen() {
   // 🎨 RENDER UI
   // ============================================
   return (
-    <ImageBackground
-      source={require("@/assets/images/Cover/Agrisa_Cover.png")}
-      style={{ flex: 1 }}
-      resizeMode="cover"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: colors.background }}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: "center",
-              padding: 24,
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            padding: 24,
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Form Container */}
+          <Box
+            style={{
+              backgroundColor: colors.card_surface,
+              borderRadius: 24,
+              padding: 28,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 12,
+              elevation: 5,
             }}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
           >
-            {/* Logo */}
-            <VStack space="xl" className="items-center mb-10">
-              <Image
-                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
-                style={{ width: 120, height: 120 }}
-                resizeMode="contain"
-              />
-              <VStack space="xs" className="items-center">
-                <Text
-                  style={{
-                    fontSize: 32,
-                    fontWeight: "bold",
-                    color: colors.primary_white_text,
-                    textAlign: "center",
-                  }}
-                >
-                  Thông tin CCCD
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 16,
-                    color: colors.primary_white_text,
-                    opacity: 0.9,
-                    textAlign: "center",
-                  }}
-                >
-                  Để xác thực danh tính
-                </Text>
-              </VStack>
-            </VStack>
-
-            {/* Form Container */}
-            <Box
-              style={{
-                backgroundColor: colors.background,
-                borderRadius: 24,
-                padding: 28,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.15,
-                shadowRadius: 16,
-                elevation: 8,
-              }}
-            >
-              {/* Progress Indicator */}
-              <HStack space="sm" className="mb-6">
+            {/* Header */}
+            <VStack space="md" className="mb-8">
+              <HStack space="md" className="items-center">
                 <Box
                   style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.success,
-                    borderRadius: 2,
-                  }}
-                />
-                <Box
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.success,
-                    borderRadius: 2,
-                  }}
-                />
-                <Box
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.success,
-                    borderRadius: 2,
-                  }}
-                />
-                <Box
-                  style={{
-                    flex: 1,
-                    height: 4,
-                    backgroundColor: colors.frame_border,
-                    borderRadius: 2,
-                  }}
-                />
-              </HStack>
-
-              {/* Step Indicator */}
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: colors.muted_text,
-                  textAlign: "center",
-                  marginBottom: 24,
-                  fontWeight: "600",
-                }}
-              >
-                Bước 3/4
-              </Text>
-
-              {/* Card Icon */}
-              <VStack space="md" className="items-center mb-6">
-                <Box
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 16,
                     backgroundColor: colors.warningSoft,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
                   <CreditCard
-                    size={32}
+                    size={28}
                     color={colors.warning}
                     strokeWidth={2.5}
                   />
                 </Box>
-              </VStack>
-
-              {/* CCCD Input */}
-              <VStack space="sm" className="mb-6">
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: "600",
-                    color: colors.primary_text,
-                  }}
-                >
-                  Số CCCD/CMND <Text style={{ color: colors.error }}>*</Text>
-                </Text>
-                <TextInput
-                  value={cccdInput}
-                  onChangeText={setCccdInput}
-                  placeholder="Nhập 9 hoặc 12 số"
-                  placeholderTextColor={colors.muted_text}
-                  keyboardType="number-pad"
-                  maxLength={12}
-                  style={{
-                    backgroundColor: colors.card_surface,
-                    borderWidth: 2,
-                    borderColor: colors.frame_border,
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 14,
-                    fontSize: 18,
-                    letterSpacing: 2,
-                    color: colors.primary_text,
-                    fontWeight: "600",
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: colors.muted_text,
-                  }}
-                >
-                  Số CCCD sẽ được dùng để xác thực danh tính khi đăng ký bảo
-                  hiểm
-                </Text>
-              </VStack>
-
-              {/* Info Cards */}
-              <VStack space="md" className="mb-6">
-                <Box
-                  style={{
-                    backgroundColor: colors.successSoft,
-                    borderRadius: 12,
-                    padding: 16,
-                    borderLeftWidth: 4,
-                    borderLeftColor: colors.success,
-                  }}
-                >
+                <VStack className="flex-1">
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      fontWeight: "bold",
+                      color: colors.primary_text,
+                    }}
+                  >
+                    Thông tin CCCD
+                  </Text>
                   <Text
                     style={{
                       fontSize: 14,
-                      color: colors.primary_text,
-                      lineHeight: 22,
+                      color: colors.secondary_text,
+                      marginTop: 2,
                     }}
                   >
-                    <Text style={{ fontWeight: "700" }}>Định dạng hợp lệ:</Text>
-                    {"\n"}• CMND cũ: 9 số (VD: 123456789){"\n"}• CCCD mới: 12 số
-                    (VD: 001234567890)
+                    Để xác thực danh tính
                   </Text>
-                </Box>
+                </VStack>
+              </HStack>
+            </VStack>
 
-                <Box
-                  style={{
-                    backgroundColor: colors.infoSoft,
-                    borderRadius: 12,
-                    padding: 16,
-                    borderLeftWidth: 4,
-                    borderLeftColor: colors.info,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: colors.primary_text,
-                      lineHeight: 22,
-                    }}
-                  >
-                    <Text style={{ fontWeight: "700" }}>
-                      Bảo mật thông tin:
-                    </Text>
-                    {"\n"}• Thông tin CCCD được mã hóa an toàn{"\n"}• Chỉ dùng
-                    để xác thực danh tính{"\n"}• Tuân thủ quy định bảo vệ dữ
-                    liệu cá nhân
-                  </Text>
-                </Box>
-              </VStack>
-
-              {/* Continue Button */}
-              <TouchableOpacity
-                onPress={handleContinue}
+            {/* CCCD Input */}
+            <VStack space="sm" className="mb-6">
+              <Text
                 style={{
-                  backgroundColor: colors.success,
-                  borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  marginBottom: 12,
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  fontSize: 15,
+                  fontWeight: "600",
+                  color: colors.primary_text,
                 }}
               >
-                <Text
-                  style={{
-                    color: colors.primary_white_text,
-                    fontSize: 16,
-                    fontWeight: "700",
-                  }}
-                >
-                  Tiếp theo
-                </Text>
-                <ArrowRight
-                  size={20}
-                  color={colors.primary_white_text}
-                  style={{ marginLeft: 8 }}
-                />
-              </TouchableOpacity>
-
-              {/* Back Button */}
-              <TouchableOpacity
-                onPress={() => router.back()}
+                Số CCCD/CMND <Text style={{ color: colors.error }}>*</Text>
+              </Text>
+              <TextInput
+                value={cccdInput}
+                onChangeText={setCccdInput}
+                placeholder="Nhập 9 hoặc 12 số"
+                placeholderTextColor={colors.muted_text}
+                keyboardType="number-pad"
+                maxLength={12}
                 style={{
-                  backgroundColor: "transparent",
-                  borderWidth: 2,
+                  backgroundColor: colors.background,
+                  borderWidth: 1.5,
                   borderColor: colors.frame_border,
                   borderRadius: 12,
-                  paddingVertical: 16,
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "center",
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  fontSize: 18,
+                  letterSpacing: 2,
+                  color: colors.primary_text,
+                  fontWeight: "600",
+                }}
+              />
+            </VStack>
+
+            {/* Lưu ý đơn giản */}
+            <VStack space="xs" className="mb-6">
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: colors.secondary_text,
+                  lineHeight: 20,
                 }}
               >
-                <ArrowLeft
-                  size={20}
-                  color={colors.secondary_text}
-                  style={{ marginRight: 8 }}
-                />
-                <Text
-                  style={{
-                    color: colors.secondary_text,
-                    fontSize: 16,
-                    fontWeight: "600",
-                  }}
-                >
-                  Quay lại
-                </Text>
-              </TouchableOpacity>
-            </Box>
+                • CMND cũ: 9 số (VD: 123456789){"\n"}• CCCD mới: 12 số (VD:
+                001234567890)
+              </Text>
+            </VStack>
+
+            {/* Continue Button */}
+            <TouchableOpacity
+              onPress={handleContinue}
+              style={{
+                backgroundColor: colors.success,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: "center",
+                marginBottom: 12,
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: colors.primary_white_text,
+                  fontSize: 16,
+                  fontWeight: "700",
+                }}
+              >
+                Tiếp theo
+              </Text>
+              <ArrowRight
+                size={20}
+                color={colors.primary_white_text}
+                style={{ marginLeft: 8 }}
+              />
+            </TouchableOpacity>
+
+            {/* Back Button */}
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{
+                backgroundColor: "transparent",
+                borderWidth: 1.5,
+                borderColor: colors.frame_border,
+                borderRadius: 12,
+                paddingVertical: 16,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              <ArrowLeft
+                size={20}
+                color={colors.secondary_text}
+                style={{ marginRight: 8 }}
+              />
+              <Text
+                style={{
+                  color: colors.secondary_text,
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Quay lại
+              </Text>
+            </TouchableOpacity>
 
             {/* Completed Steps */}
-            <VStack space="sm" className="mt-6">
+            <VStack space="xs" className="mt-6">
               <Box
                 style={{
-                  backgroundColor: `${colors.success}20`,
+                  backgroundColor: colors.background,
                   borderRadius: 12,
                   padding: 12,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  borderWidth: 2,
-                  borderColor: `${colors.success}40`,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.success,
                 }}
               >
-                <CheckCircle2
-                  size={20}
-                  color={colors.success}
-                  style={{ marginRight: 12 }}
-                />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: colors.primary_white_text,
-                    fontWeight: "600",
-                  }}
-                >
-                  Số điện thoại: {formData.phone}
-                </Text>
+                <HStack space="sm" className="items-center">
+                  <CheckCircle2 size={18} color={colors.success} />
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: colors.primary_text,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Số điện thoại: {formData.phone}
+                  </Text>
+                </HStack>
               </Box>
               <Box
                 style={{
-                  backgroundColor: `${colors.success}20`,
+                  backgroundColor: colors.background,
                   borderRadius: 12,
                   padding: 12,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  borderWidth: 2,
-                  borderColor: `${colors.success}40`,
+                  borderLeftWidth: 3,
+                  borderLeftColor: colors.success,
                 }}
               >
-                <CheckCircle2
-                  size={20}
-                  color={colors.success}
-                  style={{ marginRight: 12 }}
-                />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    color: colors.primary_white_text,
-                    fontWeight: "600",
-                  }}
-                >
-                  Email: {formData.email}
-                </Text>
+                <HStack space="sm" className="items-center">
+                  <CheckCircle2 size={18} color={colors.success} />
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      color: colors.primary_text,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Email: {formData.email}
+                  </Text>
+                </HStack>
               </Box>
             </VStack>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </ImageBackground>
+          </Box>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

@@ -27,13 +27,14 @@ const ResponsiveWrapper: React.FC<ResponsiveWrapperProps> = ({
   const fullScreenRoutes = [
     "/auth/sign-in",
     "/auth/sign-up",
-    "/auth/forgot-password",
+    "/auth/sign-up/forgot-password",
     "/auth/username-sign-in",
-    "/auth/cccd-input",
-    "/auth/email-input",
-    "/auth/otp-verification",
-    "/auth/phone-verification",
-    "/"
+    "/auth/sign-up/cccd-input",
+    "/auth/sign-up/email-input",
+    "/auth/sign-up/otp-verification",
+    "/auth/sign-up/phone-verification",
+    "/auth/sign-up/index",
+    "/",
   ];
 
   const isFullScreen = fullScreenRoutes.includes(pathname || "");

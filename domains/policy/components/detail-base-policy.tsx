@@ -25,7 +25,6 @@ import { router, useLocalSearchParams } from "expo-router";
 import {
   AlertCircle,
   AlertTriangle,
-  Bell,
   Building2,
   Calendar,
   CheckCircle2,

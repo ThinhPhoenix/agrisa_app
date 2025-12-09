@@ -1,5 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { Box, HStack, Pressable, Text, VStack } from "@gluestack-ui/themed";
+import { Box, Pressable, Text, VStack } from "@gluestack-ui/themed";
 import { FileWarning, Inbox } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Animated, RefreshControl } from "react-native";

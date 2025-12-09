@@ -124,27 +124,109 @@ export const usePolicy = () => {
       let errorMessage = "Không thể đăng ký bảo hiểm. Vui lòng thử lại.";
       let errorTitle = "Đăng ký thất bại";
 
-      // Lấy message từ response
+      // Lấy error code và message từ response
+      const errorCode = error?.response?.data?.code || "";
       const apiMessage = error?.response?.data?.message || error?.message || "";
+      const httpStatus = error?.response?.status || 0;
 
-      // Dịch các message thường gặp
-      if (
-        apiMessage
-          .toLowerCase()
-          .includes("enrollment date validation failed") ||
-        apiMessage.toLowerCase().includes("policy enrollment date is over")
-      ) {
-        errorTitle = "Hết hạn đăng ký";
+      // Xử lý theo error code từ API
+      if (errorCode === "INVALID_REQUEST") {
+        errorTitle = "Dữ liệu không hợp lệ";
         errorMessage =
-          "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác hoặc liên hệ hỗ trợ.";
-      } else if (apiMessage.toLowerCase().includes("farm already registered")) {
-        errorTitle = "Trang trại đã được bảo hiểm";
+          "Thông tin đăng ký không đúng định dạng. Vui lòng kiểm tra lại các trường thông tin.";
+      } else if (errorCode === "VALIDATION_FAILED") {
+        errorTitle = "Thông tin chưa đầy đủ";
+        // Parse validation errors từ message
+        if (apiMessage.toLowerCase().includes("base_policy_id")) {
+          errorMessage = "Vui lòng chọn gói bảo hiểm.";
+        } else if (apiMessage.toLowerCase().includes("farmer_id")) {
+          errorMessage =
+            "Không tìm thấy thông tin nông dân. Vui lòng đăng nhập lại.";
+        } else if (apiMessage.toLowerCase().includes("coverage_amount")) {
+          errorMessage = "Số tiền bảo hiểm phải lớn hơn 0.";
+        } else if (apiMessage.toLowerCase().includes("planting_date")) {
+          errorMessage =
+            "Ngày gieo trồng không hợp lệ hoặc không được để trống. Vui lòng chọn ngày trong quá khứ.";
+        } else if (apiMessage.toLowerCase().includes("area_multiplier")) {
+          errorMessage = "Hệ số diện tích không hợp lệ.";
+        } else if (
+          apiMessage.toLowerCase().includes("farm.id") ||
+          apiMessage.toLowerCase().includes("farm_name")
+        ) {
+          errorMessage =
+            "Vui lòng chọn trang trại hoặc nhập thông tin trang trại mới.";
+        } else if (apiMessage.toLowerCase().includes("farm.area_sqm")) {
+          errorMessage = "Diện tích trang trại phải lớn hơn 0.";
+        } else if (apiMessage.toLowerCase().includes("crop_type")) {
+          errorMessage = "Vui lòng chọn loại cây trồng.";
+        } else if (
+          apiMessage.toLowerCase().includes("boundary") ||
+          apiMessage.toLowerCase().includes("center_location")
+        ) {
+          errorMessage = "Vui lòng cung cấp thông tin vị trí trang trại.";
+        } else if (apiMessage.toLowerCase().includes("policy_tags")) {
+          errorMessage = "Thông tin tài liệu bảo hiểm không hợp lệ.";
+        } else {
+          errorMessage =
+            "Thông tin đăng ký chưa đầy đủ hoặc không hợp lệ. Vui lòng kiểm tra lại.";
+        }
+      } else if (errorCode === "UNAUTHORIZED" || httpStatus === 401) {
+        errorTitle = "Chưa đăng nhập";
         errorMessage =
-          "Trang trại này đã được đăng ký bảo hiểm. Vui lòng chọn trang trại khác hoặc kiểm tra lại danh sách bảo hiểm của bạn.";
-      } else if (apiMessage.toLowerCase().includes("invalid planting date")) {
-        errorTitle = "Ngày gieo trồng không hợp lệ";
+          "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.";
+      } else if (errorCode === "FORBIDDEN" || httpStatus === 403) {
+        errorTitle = "Không có quyền truy cập";
         errorMessage =
-          "Ngày gieo trồng không hợp lệ. Vui lòng kiểm tra và chọn lại ngày gieo trồng phù hợp.";
+          "Bạn không có quyền đăng ký bảo hiểm cho người khác. Vui lòng kiểm tra lại thông tin.";
+      } else if (errorCode === "INTERNAL") {
+        errorTitle = "Lỗi hệ thống";
+        if (apiMessage.toLowerCase().includes("partner user ids")) {
+          errorMessage =
+            "Không thể kết nối với đối tác bảo hiểm. Vui lòng thử lại sau.";
+        } else {
+          errorMessage =
+            "Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ.";
+        }
+      } else if (errorCode === "REGISTRATION_FAILED") {
+        errorTitle = "Đăng ký thất bại";
+        // Parse chi tiết lỗi từ service
+        if (
+          apiMessage
+            .toLowerCase()
+            .includes("enrollment date validation failed") ||
+          apiMessage.toLowerCase().includes("enrollment dates are required")
+        ) {
+          errorMessage =
+            "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác.";
+        } else if (
+          apiMessage.toLowerCase().includes("farm already registered")
+        ) {
+          errorTitle = "Trang trại đã được bảo hiểm";
+          errorMessage =
+            "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn trang trại khác.";
+        } else if (
+          apiMessage.toLowerCase().includes("base policy is not active") ||
+          apiMessage.toLowerCase().includes("base policy is invalid")
+        ) {
+          errorTitle = "Gói bảo hiểm không khả dụng";
+          errorMessage =
+            "Gói bảo hiểm này hiện không còn hoạt động. Vui lòng chọn gói khác.";
+        } else if (
+          apiMessage.toLowerCase().includes("database") ||
+          apiMessage.toLowerCase().includes("transaction")
+        ) {
+          errorMessage =
+            "Không thể lưu thông tin đăng ký. Vui lòng thử lại sau.";
+        } else if (
+          apiMessage.toLowerCase().includes("document") ||
+          apiMessage.toLowerCase().includes("signed")
+        ) {
+          errorMessage =
+            "Không thể tạo hợp đồng bảo hiểm. Vui lòng thử lại sau.";
+        } else {
+          errorMessage =
+            "Không thể hoàn tất đăng ký bảo hiểm. Vui lòng kiểm tra lại thông tin và thử lại.";
+        }
       } else if (
         apiMessage.toLowerCase().includes("insufficient balance") ||
         apiMessage.toLowerCase().includes("payment required")
@@ -153,11 +235,11 @@ export const usePolicy = () => {
         errorMessage =
           "Số dư trong tài khoản không đủ để thanh toán. Vui lòng nạp thêm tiền để tiếp tục.";
       } else if (apiMessage) {
-        // ✅ Case chung chung: Hiển thị message từ API nhưng thêm context
+        // Case chung chung: Hiển thị message từ API
         errorTitle = "Đăng ký thất bại";
         errorMessage = apiMessage;
       } else {
-        // ✅ Không có message gì từ API
+        // Không có message gì từ API
         errorTitle = "Lỗi không xác định";
         errorMessage =
           "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ.";

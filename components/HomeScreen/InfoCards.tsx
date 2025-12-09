@@ -73,7 +73,7 @@ export default function InfoCards() {
       icon: Wheat,
       iconColor: colors.success,
       iconBgColor: `${colors.success}15`,
-      label: "Trang trại đăng ký",
+      label: "Trang trại của tôi",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.success} />
       ) : (
@@ -94,15 +94,7 @@ export default function InfoCards() {
       ),
       gradient: ["rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.02)"],
     },
-    {
-      id: "weather",
-      icon: CloudRain,
-      iconColor: colors.warning,
-      iconBgColor: `${colors.warning}15`,
-      label: "Thời tiết",
-      value: "32°C • Mưa to",
-      gradient: ["rgba(245, 158, 11, 0.08)", "rgba(245, 158, 11, 0.02)"],
-    },
+    
   ];
 
   return (

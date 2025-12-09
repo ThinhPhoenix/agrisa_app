@@ -103,7 +103,6 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error("❌ [Profile] Lỗi load user:", error);
-      toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +134,6 @@ export default function ProfileScreen() {
       console.log("✅ [Profile] Refresh thành công");
     } catch (error) {
       console.error("❌ [Profile] Lỗi refresh:", error);
-      toast.error("Có lỗi khi tải thông tin. Vui lòng thử lại!");
     } finally {
       setIsRefreshing(false);
       isRefreshingRef.current = false;
@@ -241,7 +239,6 @@ export default function ProfileScreen() {
       logout();
     } catch (error) {
       console.error("❌ [Profile] Lỗi logout:", error);
-      toast.error("Có lỗi khi đăng xuất. Vui lòng thử lại!");
     }
   };
 
@@ -265,7 +262,6 @@ export default function ProfileScreen() {
       }
     } catch (error) {
       console.error("❌ [Profile] Lỗi share:", error);
-      toast.error("Có lỗi khi chia sẻ góp ý");
     }
   };
 

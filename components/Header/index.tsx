@@ -35,7 +35,7 @@ export const AgrisaHeader: React.FC<AgrisaHeaderProps> = ({
                 paddingHorizontal="$4"
                 height="$12"
             >
-                {/* Left side: Back Button or Title */}
+                {/* Left side: Back Button hoặc Spacer */}
                 {showBackButton ? (
                     <Pressable
                         onPress={handleBack}
@@ -45,18 +45,23 @@ export const AgrisaHeader: React.FC<AgrisaHeaderProps> = ({
                     >
                         <ChevronLeft size={24} color={colors.primary_text} />
                     </Pressable>
-                ) : title ? (
-                    <Text
-                        fontSize="$lg"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                        numberOfLines={1}
-                    >
-                        {title}
-                    </Text>
                 ) : (
                     <Box width="$8" />
                 )}
+
+                {/* Center: Title */}
+                <Box flex={1} alignItems="center" justifyContent="center" px="$2">
+                    {title && (
+                        <Text
+                            fontSize="$lg"
+                            fontWeight="$semibold"
+                            color={colors.primary_text}
+                            numberOfLines={1}
+                        >
+                            {title}
+                        </Text>
+                    )}
+                </Box>
 
                 {/* Right component or placeholder */}
                 {rightComponent ? rightComponent : <Box width="$8" />}

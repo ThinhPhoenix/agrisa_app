@@ -2,49 +2,49 @@ import { useGlobalNotification } from "@/components/modal/providers";
 import useAxios from "@/config/useAxios.config";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
-    Box,
-    Button,
-    ButtonIcon,
-    ButtonText,
-    FormControl,
-    FormControlError,
-    FormControlErrorText,
-    HStack,
-    Image,
-    Input,
-    InputField,
-    InputSlot,
-    Pressable,
-    Text,
-    VStack,
+  Box,
+  Button,
+  ButtonIcon,
+  ButtonText,
+  FormControl,
+  FormControlError,
+  FormControlErrorText,
+  HStack,
+  Image,
+  Input,
+  InputField,
+  InputSlot,
+  Pressable,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import { LinearGradient } from "expo-linear-gradient";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
 import {
-    Eye,
-    EyeOff,
-    Fingerprint,
-    Lock,
-    LogIn,
-    Mail,
-    Newspaper,
-    Phone,
-    PhoneIcon,
-    ScanFace,
-    ShieldCheck,
-    User,
+  Eye,
+  EyeOff,
+  Fingerprint,
+  Lock,
+  LogIn,
+  Mail,
+  Newspaper,
+  Phone,
+  PhoneIcon,
+  ScanFace,
+  ShieldCheck,
+  User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Control, Controller } from "react-hook-form";
 import {
-    Alert,
-    Dimensions,
-    ImageBackground,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    ScrollView,
+  Alert,
+  Dimensions,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { useAuthForm } from "../../hooks/use-auth-form";
@@ -416,9 +416,9 @@ const SignInComponentUI = () => {
             {/* Logo & Title */}
             <HStack alignItems="center" space="sm">
               <Image
-                source={require("@/assets/images/Logo/Agrisa.png")}
+                source={require("@/assets/images/Logo/Agrisa_Logo.png")}
                 alt="Agrisa Logo"
-                style={{ width: 100, height: 100 }}
+                style={{ width: 80, height: 80 }}
                 resizeMode="contain"
               />
             </HStack>

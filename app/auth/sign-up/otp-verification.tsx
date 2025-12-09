@@ -4,7 +4,7 @@ import { useAuth } from "@/domains/auth/hooks/use-auth";
 import { useSignUpStore } from "@/domains/auth/stores/signup.store";
 import { Box, HStack, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import { ArrowLeft, RefreshCw, ShieldCheck } from "lucide-react-native";
+import { ArrowLeft, ShieldCheck } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,

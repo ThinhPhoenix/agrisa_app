@@ -255,12 +255,6 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
             <InfoRow label="Tỉnh/Thành" value={farm.province} />
             <InfoRow label="Quận/Huyện" value={farm.district} />
             <InfoRow label="Phường/Xã" value={farm.commune} />
-
-            <Box bg={colors.card_surface} borderRadius={12} p="$3" mt="$2">
-              <Text fontSize={13} color={colors.primary_text} lineHeight={20}>
-                {farm.address}
-              </Text>
-            </Box>
           </VStack>
         </Box>
 
@@ -282,11 +276,11 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
           <VStack space="sm">
             <InfoRow
               label="Ngày gieo trồng"
-              value={Utils.formatDateForMS(farm.planting_date)}
+              value={Utils.formatDateForMS(farm.planting_date) ? Utils.formatDateForMS(farm.planting_date) : "Chưa cập nhật"}
             />
             <InfoRow
               label="Ngày thu hoạch dự kiến"
-              value={Utils.formatDateForMS(farm.expected_harvest_date)}
+              value={Utils.formatDateForMS(farm.expected_harvest_date) ? Utils.formatDateForMS(farm.expected_harvest_date) : "Chưa cập nhật"}
             />
             <InfoRow label="Loại đất canh tác" value={`${farm.soil_type}`} />
           </VStack>
@@ -315,101 +309,17 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
             {/* Certificate Number */}
             <HStack justifyContent="space-between" alignItems="center" py="$2">
               <VStack flex={1}>
-                <Text
-                  fontSize={12}
-                  color={colors.muted_text}
-                  fontWeight="500"
-                  mb="$1"
-                >
-                  Số giấy chứng nhận
-                </Text>
-                <Text
-                  fontSize={16}
-                  fontWeight="700"
-                  color={colors.primary_text}
-                >
-                  {farm.land_certificate_number}
-                </Text>
+                <InfoRow
+                  label="Số giấy chứng nhận"
+                  value={farm.land_certificate_number || "Chưa cập nhật"}
+                />
+                <InfoRow
+                  label="Quyền sở hữu đất"
+                  value={farm.land_ownership_verified ? "Đã xác minh" : "Chưa cập nhật"}
+                />
               </VStack>
-              {farm.land_ownership_verified && (
-                <Shield size={24} color={colors.success} strokeWidth={2.5} />
-              )}
             </HStack>
-
-            <Box height={1} bg={colors.frame_border} my="$2" />
-
-            {/* Verification Status */}
-            <VStack space="xs">
-              <HStack
-                justifyContent="space-between"
-                alignItems="center"
-                py="$1"
-              >
-                <Text fontSize={13} color={colors.muted_text}>
-                  Quyền sử dụng đất
-                </Text>
-                <HStack space="xs" alignItems="center">
-                  {farm.land_ownership_verified ? (
-                    <>
-                      <CheckCircle2
-                        size={16}
-                        color={colors.success}
-                        strokeWidth={2}
-                      />
-                      <Text
-                        fontSize={13}
-                        fontWeight="600"
-                        color={colors.success}
-                      >
-                        Đã xác minh
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle size={16} color={colors.error} strokeWidth={2} />
-                      <Text fontSize={13} fontWeight="600" color={colors.error}>
-                        Chờ xác minh
-                      </Text>
-                    </>
-                  )}
-                </HStack>
-              </HStack>
-
-              <HStack
-                justifyContent="space-between"
-                alignItems="center"
-                py="$1"
-              >
-                <Text fontSize={13} color={colors.muted_text}>
-                  Loại cây trồng
-                </Text>
-                <HStack space="xs" alignItems="center">
-                  {farm.crop_type_verified ? (
-                    <>
-                      <CheckCircle2
-                        size={16}
-                        color={colors.success}
-                        strokeWidth={2}
-                      />
-                      <Text
-                        fontSize={13}
-                        fontWeight="600"
-                        color={colors.success}
-                      >
-                        Đã xác minh
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle size={16} color={colors.error} strokeWidth={2} />
-                      <Text fontSize={13} fontWeight="600" color={colors.error}>
-                        Chờ xác minh
-                      </Text>
-                    </>
-                  )}
-                </HStack>
-              </HStack>
-            </VStack>
+            
           </VStack>
         </Box>
 

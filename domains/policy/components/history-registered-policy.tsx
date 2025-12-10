@@ -897,7 +897,8 @@ export const HistoryDetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps
                 textAlign="center"
                 px="$2"
               >
-                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa bao gồm nhân hệ số)
+                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa chỉ số
+                vượt ngưỡng)
               </Text>
             </VStack>
 
@@ -1525,29 +1526,29 @@ export const HistoryDetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps
               </Text>
             </HStack>
             {policy.premium_paid_by_farmer && (
-                          <Box
-                            bg={colors.successSoft}
-                            borderRadius="$lg"
-                            p="$3"
-                            borderWidth={1}
-                            borderColor={colors.success}
-                          >
-                            <HStack space="sm" alignItems="center" justifyContent="center">
-                              <CheckCircle2
-                                size={16}
-                                color={colors.success}
-                                strokeWidth={2}
-                              />
-                              <Text
-                                fontSize="$sm"
-                                fontWeight="$bold"
-                                color={colors.success}
-                              >
-                                Nông dân đã chi trả
-                              </Text>
-                            </HStack>
-                          </Box>
-                        )}
+              <Box
+                bg={colors.successSoft}
+                borderRadius="$lg"
+                p="$3"
+                borderWidth={1}
+                borderColor={colors.success}
+              >
+                <HStack space="sm" alignItems="center" justifyContent="center">
+                  <CheckCircle2
+                    size={16}
+                    color={colors.success}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    fontSize="$sm"
+                    fontWeight="$bold"
+                    color={colors.success}
+                  >
+                    Nông dân đã chi trả
+                  </Text>
+                </HStack>
+              </Box>
+            )}
           </VStack>
         </Box>
 

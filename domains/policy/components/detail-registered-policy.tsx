@@ -920,7 +920,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                 textAlign="center"
                 px="$2"
               >
-                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa bao gồm nhân hệ số)
+                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa chỉ số vượt ngưỡng)
               </Text>
             </VStack>
 

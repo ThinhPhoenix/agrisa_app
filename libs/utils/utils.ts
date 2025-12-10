@@ -62,6 +62,20 @@ export const Utils = {
     return `${day}/${month}/${year} ${hours}:${minutes}`;
   },
 
+  formatStringVietnameseDateTimeGMT14: (dateString: string): string => {
+    const date = new Date(dateString);
+
+    // Chuyển sang GMT+14 (thêm 14 giờ vào UTC)
+    const gmt14Date = new Date(date.getTime() + 14 * 60 * 60 * 1000);
+    const day = String(gmt14Date.getUTCDate()).padStart(2, "0");
+    const month = String(gmt14Date.getUTCMonth() + 1).padStart(2, "0");
+    const year = gmt14Date.getUTCFullYear();
+    const hours = String(gmt14Date.getUTCHours()).padStart(2, "0");
+    const minutes = String(gmt14Date.getUTCMinutes()).padStart(2, "0");
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  },
+
   formatCurrency: (value: number): string => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -652,11 +666,20 @@ export const Utils = {
     }
   ): { backgroundColor: string; textColor: string } => {
     const configs = {
-      success: { backgroundColor: colors.successSoft, textColor: colors.success },
+      success: {
+        backgroundColor: colors.successSoft,
+        textColor: colors.success,
+      },
       error: { backgroundColor: colors.errorSoft, textColor: colors.error },
-      warning: { backgroundColor: colors.warningSoft, textColor: colors.warning },
+      warning: {
+        backgroundColor: colors.warningSoft,
+        textColor: colors.warning,
+      },
       info: { backgroundColor: colors.infoSoft, textColor: colors.info },
-      default: { backgroundColor: colors.card_surface, textColor: colors.muted_text },
+      default: {
+        backgroundColor: colors.card_surface,
+        textColor: colors.muted_text,
+      },
     };
     return configs[variant] || configs.default;
   },
@@ -678,7 +701,10 @@ export const Utils = {
   getBadgeVariantFromStatus: (
     status: string
   ): "success" | "error" | "warning" | "info" | "default" => {
-    const statusMap: Record<string, "success" | "error" | "warning" | "info" | "default"> = {
+    const statusMap: Record<
+      string,
+      "success" | "error" | "warning" | "info" | "default"
+    > = {
       active: "success",
       verified: "success",
       completed: "success",

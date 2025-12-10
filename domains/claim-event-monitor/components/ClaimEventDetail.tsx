@@ -646,7 +646,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   </VStack>
                   <VStack flex={1} space="xs">
                     <Text fontSize="$xs" color={colors.secondary_text}>
-                      Giá trị bảo hiểm
+                      Giá trị bảo hiểm dự kiến
                     </Text>
                     <Text
                       fontSize="$sm"

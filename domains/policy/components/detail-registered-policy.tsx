@@ -908,7 +908,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Số tiền bảo hiểm tối đa
+                  Số tiền bảo hiểm dự kiến
                 </Text>
               </HStack>
               <Text fontSize="$3xl" fontWeight="$bold" color={colors.success}>
@@ -920,7 +920,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                 textAlign="center"
                 px="$2"
               >
-                Số tiền tối đa được chi trả khi xảy ra thiệt hại
+                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa bao gồm nhân hệ số)
               </Text>
             </VStack>
 

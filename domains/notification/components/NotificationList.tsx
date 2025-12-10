@@ -53,80 +53,73 @@ function NotificationItemCard({
     const { Icon, color } = getNotificationIcon();
 
     return (
-        <Box>
-            <Pressable onPress={() => onPress?.(item)} py="$4">
-                <HStack space="md" alignItems="flex-start">
-                    {/* Icon */}
-                    <Box
-                        bg={color}
-                        borderRadius="$full"
-                        p="$2.5"
-                        w={40}
-                        h={40}
-                        alignItems="center"
-                        justifyContent="center"
-                    >
-                        <Icon size={20} color="#fff" strokeWidth={2.5} />
-                    </Box>
+      <Box>
+        <Pressable onPress={() => onPress?.(item)} py="$4">
+          <HStack space="md" alignItems="flex-start">
+            {/* Icon */}
+            <Box
+              bg={color}
+              borderRadius="$full"
+              p="$2.5"
+              w={40}
+              h={40}
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Icon size={20} color="#fff" strokeWidth={2.5} />
+            </Box>
 
-                    {/* Content */}
-                    <VStack flex={1} space="xs">
-                        <HStack
-                            justifyContent="space-between"
-                            alignItems="flex-start"
-                        >
-                            <Text
-                                fontSize="$sm"
-                                fontWeight={
-                                    item.status === "sent" ? "$bold" : "$normal"
-                                }
-                                color={
-                                    item.status === "sent"
-                                        ? colors.primary_text
-                                        : colors.secondary_text
-                                }
-                                flex={1}
-                                mr="$2"
-                            >
-                                {item.title}
-                            </Text>
-                            {/* Badge cho trạng thái chưa đọc */}
-                            {item.status === "sent" && (
-                                <Box
-                                    w={8}
-                                    h={8}
-                                    borderRadius="$full"
-                                    bg={colors.primary}
-                                    borderWidth={2}
-                                    borderColor={colors.card_surface}
-                                />
-                            )}
-                        </HStack>
+            {/* Content */}
+            <VStack flex={1} space="xs">
+              <HStack justifyContent="space-between" alignItems="flex-start">
+                <Text
+                  fontSize="$sm"
+                  fontWeight={item.status === "sent" ? "$bold" : "$normal"}
+                  color={
+                    item.status === "sent"
+                      ? colors.primary_text
+                      : colors.secondary_text
+                  }
+                  flex={1}
+                  mr="$2"
+                >
+                  {item.title}
+                </Text>
+                {/* Badge cho trạng thái chưa đọc */}
+                {item.status === "sent" && (
+                  <Box
+                    w={8}
+                    h={8}
+                    borderRadius="$full"
+                    bg={colors.primary}
+                    borderWidth={2}
+                    borderColor={colors.card_surface}
+                  />
+                )}
+              </HStack>
 
-                        <Text
-                            fontSize="$xs"
-                            color={
-                                item.status === "sent"
-                                    ? colors.secondary_text
-                                    : colors.muted_text
-                            }
-                            lineHeight="$lg"
-                        >
-                            {item.body}
-                        </Text>
+              <Text
+                fontSize="$xs"
+                color={
+                  item.status === "sent"
+                    ? colors.secondary_text
+                    : colors.muted_text
+                }
+                lineHeight="$lg"
+              >
+                {item.body}
+              </Text>
 
-                        <Text fontSize="$xs" color={colors.muted_text} mt="$1">
-                            {Utils.formatStringVietnameseDateTimeGMT7(
-                                item.createdAt
-                            )}
-                        </Text>
-                    </VStack>
-                </HStack>
-            </Pressable>
+              <Text fontSize="$xs" color={colors.muted_text} mt="$1">
+                {Utils.formatStringVietnameseDateTimeGMT14(item.createdAt)}
+              </Text>
+            </VStack>
+          </HStack>
+        </Pressable>
 
-            {/* Divider */}
-            {!isLast && <Box h={1} bg={colors.frame_border} />}
-        </Box>
+        {/* Divider */}
+        {!isLast && <Box h={1} bg={colors.frame_border} />}
+      </Box>
     );
 }
 

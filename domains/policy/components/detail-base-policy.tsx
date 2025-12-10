@@ -180,16 +180,6 @@ export default function DetailBasePolicyScreen() {
               />
             </VStack>
 
-            {/* CHI PHÍ & QUYỀN LỢI */}
-            <VStack space="md">
-              <SectionTitle
-                title="Chi phí & Quyền lợi"
-                icon={TrendingUp}
-                colors={colors}
-              />
-              <CostPayoutGrid policy={base_policy} colors={colors} />
-            </VStack>
-
             {/* THỜI GIAN HIỆU LỰC */}
             <VStack space="md">
               <SectionTitle
@@ -220,7 +210,6 @@ export default function DetailBasePolicyScreen() {
                   />
                 ))}
               </VStack>
-              
             </VStack>
 
             {/* THÔNG TIN KỸ THUẬT */}
@@ -244,6 +233,15 @@ export default function DetailBasePolicyScreen() {
                 <ImportantNotesCard policy={base_policy} colors={colors} />
               </VStack>
             )}
+            {/* CHI PHÍ & QUYỀN LỢI */}
+            <VStack space="md">
+              <SectionTitle
+                title="Chi phí & Quyền lợi"
+                icon={TrendingUp}
+                colors={colors}
+              />
+              <CostPayoutGrid policy={base_policy} colors={colors} />
+            </VStack>
           </VStack>
         </ScrollView>
 
@@ -393,7 +391,7 @@ const ProductInfoCard = ({
             Loại cây bảo hiểm
           </Text>
           <HStack space="xs" alignItems="center">
-            <Box bg={colors.primarySoft} borderRadius="$md" p="$2">
+            <Box bg={colors.successSoft} borderRadius="$md" p="$2">
               <Leaf size={16} color={colors.primary} strokeWidth={2.5} />
             </Box>
             <Text fontSize="$sm" fontWeight="$bold" color={colors.primary}>
@@ -646,7 +644,7 @@ const CostPayoutGrid = ({
             fontWeight="$semibold"
             color={colors.primary_text}
           >
-            {policy.is_per_hectare ? "/ hecta" : "Phí cố định"}
+            {policy.is_per_hectare ? "Dựa trên hecta" : "Phí cố định"}
           </Text>
         </HStack>
 
@@ -681,21 +679,15 @@ const CostPayoutGrid = ({
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
-            Bồi thường cơ bản
+            Bồi thường từ
           </Text>
-          <Text fontSize="$xl" fontWeight="$bold" color={colors.success}>
-            {Utils.formatCurrency(policy.fix_payout_amount)}
-          </Text>
-        </HStack>
-
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$sm" color={colors.secondary_text}>
-            Bồi thường tối đa
-          </Text>
-          <Text fontSize="$xl" fontWeight="$bold" color={colors.error}>
+          <Text fontSize="$xl" fontWeight="$bold">
+            {Utils.formatCurrency(policy.fix_payout_amount)} -{" "}
             {Utils.formatCurrency(policy.payout_cap)}
           </Text>
         </HStack>
+
+       
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
@@ -725,7 +717,7 @@ const CostPayoutGrid = ({
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
-            Hệ số vượt ngưỡng
+            Chỉ số vượt ngưỡng
           </Text>
           <Text fontSize="$md" fontWeight="$semibold" color={colors.warning}>
             ×{policy.over_threshold_multiplier}
@@ -1238,10 +1230,9 @@ const TechnicalInfoCard = ({
       <Divider bg={colors.frame_border} />
 
       {/* Description */}
-      <Box bg={colors.primary} borderRadius="$lg" p="$3">
+      <Box borderRadius="$lg">
         <HStack space="sm" alignItems="flex-start">
-          <Info size={16} color="#fff" strokeWidth={2} />
-          <Text fontSize="$xs" color="#fff" lineHeight="$lg" flex={1}>
+          <Text fontSize="$xs" color={colors.primary_text} lineHeight="$lg" flex={1}>
             Chương trình bảo hiểm này sử dụng {metadata.data_source_count} nguồn
             dữ liệu vệ tinh và cảm biến để giám sát {metadata.total_conditions}{" "}
             điều kiện khác nhau. Hệ thống tự động phát hiện thiệt hại và chi trả
@@ -1626,8 +1617,8 @@ const ConditionItem = ({
 
                 <VStack space="xs">
                   {/* Ngưỡng kích hoạt */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1636,14 +1627,20 @@ const ConditionItem = ({
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
                       Ngưỡng kích hoạt
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.error}>
-                      {Utils.formatThresholdOperator(condition.threshold_operator).toUpperCase()}
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.error}
+                    >
+                      {Utils.formatThresholdOperator(
+                        condition.threshold_operator
+                      ).toUpperCase()}
                     </Text>
                   </HStack>
 
                   {/* Giá trị ngưỡng */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1652,40 +1649,54 @@ const ConditionItem = ({
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
                       Giá trị ngưỡng
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
-                      {condition.threshold_value}{formatUnit(dataSource?.unit, dataSource?.parameter_name)}
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {condition.threshold_value}
+                      {formatUnit(dataSource?.unit, dataSource?.parameter_name)}
                     </Text>
                   </HStack>
 
                   {/* Cảnh báo sớm */}
-                  {condition.early_warning_threshold && condition.early_warning_threshold > 0 && (
-                    <HStack 
-                      justifyContent="space-between" 
-                      alignItems="center"
-                      py="$2"
-                      borderBottomWidth={1}
-                      borderBottomColor={colors.frame_border}
-                      bg={colors.infoSoft}
-                      px="$2"
-                      borderRadius="$md"
-                    >
-                      <VStack flex={1}>
-                        <Text fontSize="$xs" color={colors.info} fontWeight="$semibold">
-                          Ngưỡng cảnh báo sớm
+                  {condition.early_warning_threshold &&
+                    condition.early_warning_threshold > 0 && (
+                      <HStack
+                        justifyContent="space-between"
+                        alignItems="center"
+                        py="$2"
+                        borderBottomWidth={1}
+                        borderBottomColor={colors.frame_border}
+                        bg={colors.infoSoft}
+                        px="$2"
+                        borderRadius="$md"
+                      >
+                        <VStack flex={1}>
+                          <Text
+                            fontSize="$xs"
+                            color={colors.info}
+                            fontWeight="$semibold"
+                          >
+                            Ngưỡng cảnh báo sớm
+                          </Text>
+                          <Text fontSize="$2xs" color={colors.secondary_text}>
+                            Nhận thông báo trước khi đạt ngưỡng nguy hiểm
+                          </Text>
+                        </VStack>
+                        <Text
+                          fontSize="$sm"
+                          fontWeight="$bold"
+                          color={colors.info}
+                        >
+                          {condition.early_warning_threshold}%
                         </Text>
-                        <Text fontSize="$2xs" color={colors.secondary_text}>
-                          Nhận thông báo trước khi đạt ngưỡng nguy hiểm
-                        </Text>
-                      </VStack>
-                      <Text fontSize="$sm" fontWeight="$bold" color={colors.info}>
-                        {condition.early_warning_threshold}%
-                      </Text>
-                    </HStack>
-                  )}
+                      </HStack>
+                    )}
 
                   {/* Cách tính dữ liệu */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1694,30 +1705,51 @@ const ConditionItem = ({
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
                       Cách tính dữ liệu
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
-                      {Utils.formatAggregationLabel(condition.aggregation_function)}
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {Utils.formatAggregationLabel(
+                        condition.aggregation_function
+                      )}
                     </Text>
                   </HStack>
 
                   {/* Thời gian tính toán */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
                     borderBottomColor={colors.frame_border}
                   >
-                    <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
-                      Thời gian tính toán (theo dõi)
-                    </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
+                    <VStack flex={1}>
+                      <Text
+                        fontSize="$xs"
+                        color={colors.secondary_text}
+                        flex={1}
+                      >
+                        Thời gian tính toán (theo dõi)
+                      </Text>
+                      <Text fontSize="$2xs" color={colors.muted_text}>
+                        Trong {condition.aggregation_window_days} ngày gần nhất
+                        có dữ liệu mới
+                      </Text>
+                    </VStack>
+
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
                       Trong {condition.aggregation_window_days} ngày
                     </Text>
                   </HStack>
 
                   {/* Yêu cầu liên tục */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1728,17 +1760,27 @@ const ConditionItem = ({
                         Yêu cầu liên tục
                       </Text>
                       <Text fontSize="$2xs" color={colors.muted_text}>
-                        Các ngày có giá trị {condition.consecutive_required ? "phải" : "không cần"} liên tiếp
+                        Các ngày có giá trị{" "}
+                        {condition.consecutive_required ? "phải" : "không cần"}{" "}
+                        liên tiếp
                       </Text>
                     </VStack>
-                    <Text fontSize="$sm" fontWeight="$bold" color={condition.consecutive_required ? colors.error : colors.success}>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={
+                        condition.consecutive_required
+                          ? colors.error
+                          : colors.success
+                      }
+                    >
                       {condition.consecutive_required ? "CÓ" : "KHÔNG"}
                     </Text>
                   </HStack>
 
                   {/* Thời gian xác nhận */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1752,32 +1794,44 @@ const ConditionItem = ({
                         Giám sát thêm sau khi đạt điều kiện
                       </Text>
                     </VStack>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
                       {condition.validation_window_days} ngày
                     </Text>
                   </HStack>
 
                   {/* Dữ liệu so sánh */}
                   {condition.baseline_window_days > 0 && (
-                    <HStack 
-                      justifyContent="space-between" 
+                    <HStack
+                      justifyContent="space-between"
                       alignItems="center"
                       py="$2"
                       borderBottomWidth={1}
                       borderBottomColor={colors.frame_border}
                     >
-                      <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                      <Text
+                        fontSize="$xs"
+                        color={colors.secondary_text}
+                        flex={1}
+                      >
                         So sánh với dữ liệu lịch sử
                       </Text>
-                      <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
                         {condition.baseline_window_days} ngày trước
                       </Text>
                     </HStack>
                   )}
 
                   {/* Tần suất cập nhật */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1786,14 +1840,19 @@ const ConditionItem = ({
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
                       Tần suất cập nhật dữ liệu
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
-                      {Utils.getFrequencyLabel(dataSource?.update_frequency) || "—"}
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      {Utils.getFrequencyLabel(dataSource?.update_frequency) ||
+                        "—"}
                     </Text>
                   </HStack>
 
                   {/* Nguồn vệ tinh */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1802,14 +1861,18 @@ const ConditionItem = ({
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
                       Nguồn dữ liệu vệ tinh
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
                       {dataSource?.data_provider || "—"}
                     </Text>
                   </HStack>
 
                   {/* Độ phân giải */}
-                  <HStack 
-                    justifyContent="space-between" 
+                  <HStack
+                    justifyContent="space-between"
                     alignItems="center"
                     py="$2"
                     borderBottomWidth={1}
@@ -1818,22 +1881,34 @@ const ConditionItem = ({
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
                       Độ phân giải ảnh
                     </Text>
-                    <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
                       {dataSource?.spatial_resolution || "—"}
                     </Text>
                   </HStack>
 
                   {/* Độ chính xác */}
                   {dataSource?.accuracy_rating && (
-                    <HStack 
-                      justifyContent="space-between" 
+                    <HStack
+                      justifyContent="space-between"
                       alignItems="center"
                       py="$2"
                     >
-                      <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
+                      <Text
+                        fontSize="$xs"
+                        color={colors.secondary_text}
+                        flex={1}
+                      >
                         Độ chính xác dữ liệu
                       </Text>
-                      <Text fontSize="$sm" fontWeight="$bold" color={colors.success}>
+                      <Text
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                        color={colors.success}
+                      >
                         {dataSource.accuracy_rating}
                       </Text>
                     </HStack>
@@ -2005,39 +2080,21 @@ const BottomCTA = ({
   >
     <VStack space="sm">
       {/* Premium & Payout Display - CẬP NHẬT */}
-      <HStack justifyContent="space-between" alignItems="center">
+      <HStack justifyContent="space-between" mb={5} alignItems="center">
         <VStack>
-          <Text fontSize="$xs" color={colors.secondary_text}>
+          <Text fontSize="$md" color={colors.secondary_text}>
             Phí bảo hiểm
           </Text>
-          <HStack space="xs" alignItems="baseline">
-            <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
-              {Utils.formatCurrency(policy.fix_premium_amount)}
-            </Text>
-            <Text fontSize="$xs" color={colors.muted_text}>
-              {policy.is_per_hectare ? "Dựa trên hecta" : ""}
-            </Text>
-          </HStack>
         </VStack>
 
-        <VStack alignItems="flex-end">
-          <Text fontSize="$xs" color={colors.secondary_text}>
-            Bồi thường
+        <HStack space="xs" alignItems="baseline">
+          <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
+            {Utils.formatCurrency(policy.fix_premium_amount)}
           </Text>
-          <VStack alignItems="flex-end" space="xs">
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.success}>
-              {Utils.formatCurrency(policy.fix_payout_amount)}
-            </Text>
-            <HStack space="xs" alignItems="center">
-              <Text fontSize="$2xs" color={colors.muted_text}>
-                tối đa
-              </Text>
-              <Text fontSize="$md" fontWeight="$bold" color={colors.warning}>
-                {Utils.formatCurrency(policy.payout_cap)}
-              </Text>
-            </HStack>
-          </VStack>
-        </VStack>
+          <Text fontSize="$xs" color={colors.muted_text}>
+            {policy.is_per_hectare ? "/hecta" : ""}
+          </Text>
+        </HStack>
       </HStack>
 
       {/* CTA Button */}

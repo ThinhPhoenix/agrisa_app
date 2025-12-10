@@ -44,6 +44,8 @@ import {
 import React, { useMemo, useState } from "react";
 import { RefreshControl } from "react-native";
 
+import { RegisteredPolicyStatus } from "@/domains/policy/enums/policy-status.enum";
+
 /**
  * Màn hình chi tiết theo dõi dữ liệu vệ tinh
  * Hiển thị biểu đồ chỉ số theo phong cách chứng khoán
@@ -120,6 +122,18 @@ export default function SatelliteDetailScreen() {
 
   const basePolicy = basePolicyData?.success ? basePolicyData.data : null;
 
+  // Kiểm tra policy mode: chỉ cho phép xem data nếu status là active hoặc pending_cancel
+  const isPolicyStatusValid = useMemo(() => {
+    if (viewMode !== "policy" || !registeredPolicy) {
+      return true; // Farm mode luôn valid (sẽ check ở phần khác)
+    }
+
+    return (
+      registeredPolicy.status === RegisteredPolicyStatus.ACTIVE ||
+      registeredPolicy.status === RegisteredPolicyStatus.PENDING_CANCEL
+    );
+  }, [viewMode, registeredPolicy]);
+
   // Get monitoring data
   const timeRangeParams = getTimeRangeTimestamps(timeRange);
   const { getPolicyDataMonitor } = useDataMonitor();
@@ -149,9 +163,47 @@ export default function SatelliteDetailScreen() {
 
   const monitoringData = monitorData?.success ? monitorData.data : null;
 
+  // Lấy danh sách data_source_id từ base policy (farm mode)
+  const allowedDataSourceIds = useMemo(() => {
+    if (viewMode !== "farm" || !allPoliciesData?.success || !farmIdToFetch) {
+      return null;
+    }
+
+    // Filter policies: chỉ lấy active hoặc pending_cancel cho farm này
+    const validPolicies = allPoliciesData.data.policies.filter(
+      (p: any) =>
+        p.farm_id === farmIdToFetch &&
+        (p.status === RegisteredPolicyStatus.ACTIVE ||
+          p.status === RegisteredPolicyStatus.PENDING_CANCEL)
+    );
+
+    // Không có policy hợp lệ -> không có data source
+    if (validPolicies.length === 0) {
+      return [];
+    }
+
+    // TODO: Cần lấy data_source_id từ base policy của các registered policies
+    // Tạm thời return null để cho phép hiện tất cả data
+    return null;
+  }, [viewMode, allPoliciesData, farmIdToFetch]);
+
   // Group data by parameter
   const groupedData = useMemo(() => {
     if (!monitoringData?.monitoring_data) return {};
+
+    // Policy mode: kiểm tra status trước
+    if (viewMode === "policy" && !isPolicyStatusValid) {
+      return {};
+    }
+
+    // Farm mode: chỉ hiện data nếu có policy active/pending_cancel
+    if (viewMode === "farm" && allowedDataSourceIds !== null) {
+      // Nếu allowedDataSourceIds là empty array -> không có policy hợp lệ
+      if (allowedDataSourceIds.length === 0) {
+        return {};
+      }
+      // TODO: Filter theo data_source_id khi có thông tin đầy đủ từ base policy
+    }
 
     const grouped: Record<string, MonitoringDataItem[]> = {};
 
@@ -164,7 +216,7 @@ export default function SatelliteDetailScreen() {
     });
 
     return grouped;
-  }, [monitoringData]);
+  }, [monitoringData, viewMode, allowedDataSourceIds, isPolicyStatusValid]);
 
   // Get data for selected parameter or all
   const displayData = useMemo(() => {
@@ -321,7 +373,13 @@ export default function SatelliteDetailScreen() {
                     textAlign="center"
                     mb="$2"
                   >
-                    Chưa có dữ liệu
+                    {viewMode === "farm" &&
+                    allowedDataSourceIds !== null &&
+                    allowedDataSourceIds.length === 0
+                      ? "Không có dữ liệu"
+                      : viewMode === "policy" && !isPolicyStatusValid
+                        ? "Không thể xem dữ liệu"
+                        : "Chưa có dữ liệu"}
                   </Text>
                   <Text
                     fontSize="$sm"
@@ -330,7 +388,13 @@ export default function SatelliteDetailScreen() {
                     lineHeight={20}
                     maxWidth={280}
                   >
-                    Đang cập nhật dữ liệu vệ tinh cho nông trại của bạn. Vui lòng quay lại sau.
+                    {viewMode === "farm" &&
+                    allowedDataSourceIds !== null &&
+                    allowedDataSourceIds.length === 0
+                      ? "Nông trại này chưa có hợp đồng bảo hiểm đang hoạt động. Vui lòng đăng ký bảo hiểm để xem dữ liệu vệ tinh."
+                      : viewMode === "policy" && !isPolicyStatusValid
+                        ? "Hợp đồng bảo hiểm này không ở trạng thái hoạt động. Chỉ có thể xem dữ liệu vệ tinh khi hợp đồng đang hoạt động hoặc chờ xử lý hủy."
+                        : "Đang cập nhật dữ liệu vệ tinh cho nông trại của bạn. Vui lòng quay lại sau."}
                   </Text>
                 </Box>
               ) : (
@@ -440,7 +504,9 @@ export default function SatelliteDetailScreen() {
                             fontWeight="$semibold"
                             color={colors.primary_text}
                           >
-                            {Utils.formatDateForMS(farmDetail.planting_date)}
+                            {farmDetail.planting_date ? Utils.formatDateForMS(
+                              farmDetail.planting_date
+                            ) : "Chưa cập nhật"}
                           </Text>
                         </VStack>
                         <VStack flex={1}>
@@ -455,9 +521,9 @@ export default function SatelliteDetailScreen() {
                             fontWeight="$semibold"
                             color={colors.primary_text}
                           >
-                            {Utils.formatDateForMS(
+                            {farmDetail.expected_harvest_date ? Utils.formatDateForMS(
                               farmDetail.expected_harvest_date
-                            )}
+                            ) : "Chưa cập nhật"}
                           </Text>
                         </VStack>
                       </HStack>

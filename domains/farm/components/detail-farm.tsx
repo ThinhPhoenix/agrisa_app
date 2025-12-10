@@ -458,7 +458,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
         </Box>
 
         {/* ===== ACTION BUTTON ===== */}
-        <Button
+        {/* <Button
           bg={colors.primary}
           borderRadius={16}
           size="lg"
@@ -482,7 +482,7 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
               Chỉnh sửa thông tin
             </ButtonText>
           </HStack>
-        </Button>
+        </Button> */}
       </VStack>
 
       {/* ===== FULLSCREEN IMAGE VIEWER ===== */}

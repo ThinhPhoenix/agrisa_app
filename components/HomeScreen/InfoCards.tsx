@@ -44,7 +44,7 @@ export default function InfoCards() {
       icon: Banknote,
       iconColor: colors.primary,
       iconBgColor: `${colors.primary}15`,
-      label: "Số tiền bồi thường bảo hiểm",
+      label: "Tiền bồi thường",
       value: (
         <View className="flex-row items-center gap-2">
           {isLoadingPayout ? (
@@ -73,7 +73,7 @@ export default function InfoCards() {
       icon: Wheat,
       iconColor: colors.success,
       iconBgColor: `${colors.success}15`,
-      label: "Trang trại của tôi",
+      label: "Trang trại Agrisa",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.success} />
       ) : (
@@ -86,7 +86,7 @@ export default function InfoCards() {
       icon: FileText,
       iconColor: colors.info,
       iconBgColor: `${colors.info}15`,
-      label: "Hợp đồng đã đăng ký",
+      label: "Hợp đồng đăng ký",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.info} />
       ) : (

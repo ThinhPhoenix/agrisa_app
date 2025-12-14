@@ -9,8 +9,8 @@
         "ios": "expo run:ios",
         "web": "expo start --web",
         "lint": "expo lint",
-        "build:apk": "bash ./run_build_apk.sh",
-        "build:ipa": "bash ./run_build_ipa.sh"
+        "build:apk": "bash ./codemagic_apk.bash",
+        "build:ipa": "bash ./codemagic_ipa.bash"
     },
     "dependencies": {
         "@expo-google-fonts/bricolage-grotesque": "^0.4.1",

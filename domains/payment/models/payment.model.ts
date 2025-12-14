@@ -122,7 +122,8 @@ export interface PaymentListMetadata {
  * Response danh sách giao dịch thanh toán
  */
 export interface PaymentListResponse {
-    items: PaymentTransaction[];
+  payments: PaymentTransaction[];
+  payouts: PaymentTransaction[];
 }
 
 

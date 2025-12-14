@@ -47,7 +47,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   const { data: payoutData, refetch: refetchPayout } = getTotalByType("policy_payout_payment");
   const totalCompensation = payoutData?.success ? payoutData.data : 0;
 
-  const payments = data?.success ? data.data.items : [];
+  const payments = data?.success && data.data ? [...(data.data.payments || []), ...(data.data.payouts || [])] : [];
 
   const handleRefresh = async () => {
     await Promise.all([refetch(), refetchRegistration(), refetchPayout()]);

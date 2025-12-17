@@ -20,6 +20,8 @@
                 "NSCameraUsageDescription": "Agrisa cần quyền truy cập camera",
                 "NSLocationWhenInUseUsageDescription": "Agrisa cần quyền vị trí để xác định tọa độ",
                 "NSFaceIDUsageDescription": "Agrisa cần quyền sử dụng Face ID để xác thực người dùng",
+                "NSPhotoLibraryUsageDescription": "Agrisa cần quyền truy cập thư viện ảnh để người dùng có thể chọn ảnh",
+                "NSPhotoLibraryAddUsageDescription": "Agrisa cần quyền lưu ảnh vào thư viện của thiết bị",
                 "UIBackgroundModes": [
                     "fetch",
                     "remote-notification",

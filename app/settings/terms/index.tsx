@@ -3,7 +3,6 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Box, ScrollView, Text, VStack } from "@gluestack-ui/themed";
 import { router } from "expo-router";
-import { Shield } from "lucide-react-native";
 import React from "react";
 
 /**

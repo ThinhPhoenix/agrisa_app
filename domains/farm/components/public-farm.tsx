@@ -1,7 +1,7 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
-import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Farm } from "@/domains/farm/models/farm.models";
 import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -22,7 +22,7 @@ import {
   Wheat,
 } from "lucide-react-native";
 import React from "react";
-import { Animated, RefreshControl, StyleSheet } from "react-native";
+import { Animated, RefreshControl } from "react-native";
 
 interface PublicFarmListProps {
   farms: Farm[];
@@ -64,7 +64,12 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
   };
 
   const renderFarmCard = ({ item: farm }: { item: Farm }) => {
-    const { icon: CropIcon, color, bgColor, isImage } = getCropIcon(farm.crop_type);
+    const {
+      icon: CropIcon,
+      color,
+      bgColor,
+      isImage,
+    } = getCropIcon(farm.crop_type);
 
     return (
       <Pressable
@@ -159,7 +164,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
                   fontSize={16}
                   fontWeight="700"
                 >
-                  {(farm.area_sqm)} ha
+                  {farm.area_sqm} ha
                 </Text>
               </VStack>
               <VStack flex={1} alignItems="center">
@@ -276,7 +281,6 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
             Đăng ký trang trại để bắt đầu sử dụng dịch vụ bảo hiểm nông nghiệp
           </Text>
         </VStack>
-       
       </VStack>
     </Box>
   );

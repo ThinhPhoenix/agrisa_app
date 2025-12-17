@@ -357,7 +357,7 @@ export default function ProfileScreen() {
                       capitalizeName(userProfile?.full_name) ||
                       capitalizeName(user?.email?.split("@")[0]) ||
                       "Người dùng"}
-                  </Text>                  
+                  </Text>
                 </HStack>
               </VStack>
             </VStack>
@@ -478,6 +478,17 @@ export default function ProfileScreen() {
             >
               <Text className="text-black font-medium flex-1">
                 Về chúng tôi
+              </Text>
+              <Text className="text-gray-400">›</Text>
+            </Pressable>
+            <View className="h-px bg-gray-200 my-2" />
+
+            <Pressable
+              onPress={() => router.push("/settings/terms")}
+              className="flex-row items-center py-3"
+            >
+              <Text className="text-black font-medium flex-1">
+                Điều khoản & Chính sách
               </Text>
               <Text className="text-gray-400">›</Text>
             </Pressable>

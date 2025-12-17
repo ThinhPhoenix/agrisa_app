@@ -328,7 +328,7 @@ const SignInComponentUI = () => {
   };
 
   const shortcuts = [
-    { label: "Điều khoản", icon: Newspaper, onPress: () => {} },
+    { label: "Điều khoản", icon: Newspaper, onPress: () => {router.push("/settings/terms")} },
     { label: "Liên hệ hỗ trợ", icon: PhoneIcon, onPress: handleContactSupport },
   ];
 

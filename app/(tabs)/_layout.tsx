@@ -2,7 +2,15 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { NotificationBadge } from "@/domains/notification/components/NotificationBadge";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Animated, Pressable, SafeAreaView, Text, View } from "react-native";
+import {
+  Animated,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { G, Path } from "react-native-svg";
 
 function HomeIcon(props: any) {
@@ -258,6 +266,14 @@ function AnimatedTabButton({
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const { colors } = useAgrisaColors();
   const indicatorAnim = React.useRef(new Animated.Value(0)).current;
+  const insets = useSafeAreaInsets();
+
+  // Phát hiện thanh điều hướng 3 nút trên Android
+  // Nếu bottom inset > 0 trên Android, có nghĩa là có navigation bar
+  const hasNavigationBar = Platform.OS === "android" && insets.bottom > 0;
+  const additionalPadding = hasNavigationBar
+    ? Math.max(insets.bottom - 10, 0)
+    : 0;
 
   React.useEffect(() => {
     Animated.spring(indicatorAnim, {
@@ -277,7 +293,12 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   });
 
   return (
-    <SafeAreaView style={{ backgroundColor: "white" }}>
+    <SafeAreaView
+      style={{
+        backgroundColor: "white",
+        paddingBottom: additionalPadding,
+      }}
+    >
       <View className="relative">
         <Animated.View
           className="absolute top-0 h-1 bg-green-600 rounded-full"

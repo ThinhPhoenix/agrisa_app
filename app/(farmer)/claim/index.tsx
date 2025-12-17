@@ -79,7 +79,7 @@ export default function ClaimListScreen() {
                 color={colors.primary_white_text}
                 ml="$2"
               >
-                Yêu cầu bồi thường
+                Quản lý các yêu cầu bồi thường
               </Text>
             </Box>
             <Text
@@ -100,7 +100,7 @@ export default function ClaimListScreen() {
     <VStack flex={1} bg={colors.background}>
       {/* Header */}
       <AgrisaHeader
-        title="Yêu cầu bồi thường"
+        title="Quản lý bồi thường"
         showBackButton={true}
         onBack={() => router.back()}
       />

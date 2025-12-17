@@ -47,8 +47,8 @@ interface UsernameFormData {
 }
 const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.45)";
 const CARD_GRADIENT = [
-  "rgba(255,255,255,0.7)",
-  "rgba(255,237,237,0.7)",
+  "rgba(255,255,255,0.9)",
+  "rgba(255,255,255,0.9)",
 ] as const;
 
 const UsernameSignInComponent = () => {
@@ -174,7 +174,7 @@ const UsernameSignInComponent = () => {
   };
 
   const shortcuts = [
-    { label: "Điều khoản sử dụng", icon: Newspaper, onPress: () => {} },
+    { label: "Điều khoản", icon: Newspaper, onPress: () => {} },
     { label: "Liên hệ hỗ trợ", icon: PhoneIcon, onPress: handleContactSupport },
   ];
 
@@ -211,285 +211,66 @@ const UsernameSignInComponent = () => {
         style={{
           flex: 1,
         }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             paddingTop: Platform.OS === "ios" ? 60 : 50,
-            paddingBottom: Platform.OS === "ios" ? 40 : 30,
+            paddingBottom: Platform.OS === "ios" ? 40 : 120,
           }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           bounces={false}
+          scrollEnabled={Platform.OS === "android"}
         >
           <VStack flex={1} px="$5" space="lg">
-            {/* Logo & Title */}
-            <HStack alignItems="center" space="sm">
+            {/* Logo & Shortcuts */}
+            <HStack alignItems="flex-start" justifyContent="space-between">
               <Image
                 source={require("@/assets/images/Logo/Agrisa_Logo.png")}
                 alt="Agrisa Logo"
                 style={{ width: 80, height: 80 }}
                 resizeMode="contain"
               />
-            </HStack>
 
-            {/* Spacer để đẩy content xuống */}
-            <Box flex={1} minHeight={20} />
-
-            {/* Login Box & Footer */}
-            <VStack space="lg">
-              <Box
-                borderRadius={32}
-                overflow="hidden"
-                borderWidth={1}
-                borderColor={CARD_BORDER_COLOR}
-                shadowColor="#63101B"
-                shadowOffset={{ width: 0, height: 20 }}
-                shadowOpacity={0.18}
-                shadowRadius={30}
-                elevation={18}
-              >
-                <LinearGradient
-                  colors={CARD_GRADIENT}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={{ flex: 1 }}
-                >
-                  <Box px="$6" py="$7">
-                    <HStack alignItems="center" space="md" mb="$5">
-                      <Box bg={colors.primary} borderRadius="$full" p="$2.5">
-                        <ShieldCheck
-                          size={22}
-                          color={colors.primary_white_text}
-                          strokeWidth={2.6}
-                        />
-                      </Box>
-                      <VStack>
-                        <Text
-                          style={{
-                            fontFamily: "DancingScript-Regular",
-                          }}
-                          fontSize="$md"
-                          color={colors.primary}
-                        >
-                          Xin chào,
-                        </Text>
-                        <Text
-                          fontSize="$xl"
-                          fontWeight="$bold"
-                          color={colors.primary_text}
-                        >
-                          Người dùng Agrisa
-                        </Text>
-                      </VStack>
-                    </HStack>
-
-                    <Box
-                      h={1}
-                      bg={colors.primary_text}
-                      mb="$5"
-                      borderRadius={999}
-                    />
-
-                    <VStack space="md">
-                      <Controller
-                        control={control}
-                        name="identifier"
-                        rules={{ validate: validateIdentifier }}
-                        render={({ field, fieldState }) => (
-                          <FormControl isInvalid={!!fieldState.error}>
-                            <VStack space="xs">
-                              <Input
-                                variant="outline"
-                                size="lg"
-                                borderWidth={1.5}
-                                borderRadius="$3xl"
-                                borderColor={
-                                  fieldState.error
-                                    ? colors.error
-                                    : identifierType === "unknown"
-                                      ? colors.frame_border
-                                      : colors.primary
-                                }
-                                bg="rgba(255,255,255,0.96)"
-                                h="$12"
-                                shadowColor={colors.shadow}
-                                shadowOffset={{ width: 0, height: 8 }}
-                                shadowOpacity={0.18}
-                                shadowRadius={16}
-                                elevation={8}
-                                $focus={{
-                                  borderColor: colors.primary,
-                                  borderWidth: 2,
-                                }}
-                              >
-                                <InputSlot pl="$4">
-                                  {identifierType === "email" ? (
-                                    <Mail
-                                      size={20}
-                                      color={
-                                        fieldState.error
-                                          ? colors.error
-                                          : identifierType !== "unknown"
-                                            ? colors.primary
-                                            : colors.muted_text
-                                      }
-                                      strokeWidth={2.5}
-                                    />
-                                  ) : (
-                                    <Phone
-                                      size={20}
-                                      color={
-                                        fieldState.error
-                                          ? colors.error
-                                          : identifierType !== "unknown"
-                                            ? colors.primary
-                                            : colors.muted_text
-                                      }
-                                      strokeWidth={2.5}
-                                    />
-                                  )}
-                                </InputSlot>
-                                <InputField
-                                  value={field.value}
-                                  onChangeText={(text) => {
-                                    const isPhone = /^[0-9+]/.test(text);
-                                    if (isPhone && !text.includes("@")) {
-                                      field.onChange(formatPhoneNumber(text));
-                                    } else {
-                                      field.onChange(text);
-                                    }
-                                  }}
-                                  placeholder="Email hoặc Số điện thoại"
-                                  placeholderTextColor={colors.muted_text}
-                                  autoCapitalize="none"
-                                  autoCorrect={false}
-                                  keyboardType="default"
-                                  pr="$4"
-                                  fontSize="$sm"
-                                  fontWeight="$medium"
-                                  color={colors.primary_text}
-                                />
-                              </Input>
-
-                              {fieldState.error && (
-                                <FormControlError>
-                                  <FormControlErrorText
-                                    fontSize="$xs"
-                                    color={colors.error}
-                                  >
-                                    {fieldState.error.message}
-                                  </FormControlErrorText>
-                                </FormControlError>
-                              )}
-                            </VStack>
-                          </FormControl>
-                        )}
-                      />
-
-                      <Button
-                        onPress={handleSubmit(onSubmit)}
-                        isDisabled={isSubmitting || isCheckingIdentifier}
-                        size="lg"
-                        bg={colors.primary}
-                        borderRadius="$full"
-                        h="$12"
-                        shadowColor={colors.shadow}
-                        shadowOffset={{ width: 0, height: 12 }}
-                        shadowOpacity={0.24}
-                        shadowRadius={16}
-                        elevation={12}
-                        $active={{
-                          bg: colors.primary,
-                          opacity: 0.95,
-                        }}
-                        mt="$5"
-                      >
-                        <ButtonText
-                          fontSize="$md"
-                          fontWeight="$bold"
-                          color="$white"
-                        >
-                          {isSubmitting || isCheckingIdentifier
-                            ? "Đang kiểm tra..."
-                            : "Tiếp theo"}
-                        </ButtonText>
-                        <ButtonIcon as={ArrowRight} ml="$2" color="$white" />
-                      </Button>
-
-                      <VStack space="sm" alignItems="center" mt="$4">
-                        <HStack space="xs" alignItems="center">
-                          <Text fontSize="$md" color={colors.secondary_text}>
-                            Chưa có tài khoản?
-                          </Text>
-                          <Pressable
-                            onPress={() => router.push("/auth/sign-up")}
-                            hitSlop={{
-                              top: 10,
-                              bottom: 10,
-                              left: 10,
-                              right: 10,
-                            }}
-                          >
-                            <Text
-                              fontSize="$md"
-                              fontWeight="$bold"
-                              color={colors.primary}
-                            >
-                              Đăng ký ngay
-                            </Text>
-                          </Pressable>
-                        </HStack>
-                      </VStack>
-                    </VStack>
-                  </Box>
-                </LinearGradient>
-              </Box>
-
-              {/* Footer */}
-              <HStack
-                alignItems="center"
-                justifyContent="space-between"
-                px="$1"
-                mt="$5"
-              >
+              <HStack space="md" mt="$2">
                 {shortcuts.map(({ label, icon: Icon, onPress }) => (
                   <Pressable
                     key={label}
                     accessibilityRole="button"
-                    style={{ flex: 1 }}
                     hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                     onPress={onPress}
                   >
                     <VStack alignItems="center" space="xs">
                       <Box
-                        bg="rgba(255,255,255,0.85)"
+                        bg="rgba(255,255,255,0.9)"
                         borderRadius="$full"
-                        w="$12"
-                        h="$12"
+                        w="$11"
+                        h="$11"
                         alignItems="center"
                         justifyContent="center"
                         borderWidth={1}
                         borderColor={colors.frame_border}
                         shadowColor={colors.shadow}
-                        shadowOffset={{ width: 0, height: 4 }}
-                        shadowOpacity={0.12}
-                        shadowRadius={8}
-                        elevation={4}
+                        shadowOffset={{ width: 0, height: 2 }}
+                        shadowOpacity={0.1}
+                        shadowRadius={4}
+                        elevation={3}
                       >
                         <Icon
-                          size={20}
+                          size={18}
                           color={colors.primary}
                           strokeWidth={2.5}
                         />
                       </Box>
                       <Text
-                        fontSize="$sm"
+                        fontSize="$xs"
                         fontWeight="$semibold"
                         color={colors.primary_white_text}
                         numberOfLines={2}
                         textAlign="center"
+                        maxWidth={60}
                         style={{
                           textShadowColor: "rgba(0, 0, 0, 0.3)",
                           textShadowOffset: { width: 0, height: 1 },
@@ -502,7 +283,228 @@ const UsernameSignInComponent = () => {
                   </Pressable>
                 ))}
               </HStack>
-            </VStack>
+            </HStack>
+
+            {/* Login Box - Positioned in center */}
+            <Box
+              flex={1}
+              justifyContent="center"
+              minHeight={Platform.OS === "android" ? 400 : undefined}
+            >
+              <VStack space="lg">
+                <Box
+                  borderRadius={32}
+                  overflow="hidden"
+                  borderWidth={1}
+                  borderColor={CARD_BORDER_COLOR}
+                  shadowColor="#000000"
+                  shadowOffset={{ width: 0, height: 15 }}
+                  shadowOpacity={0.25}
+                  shadowRadius={25}
+                  elevation={20}
+                  bg="rgba(255,255,255,0.5)"
+                  style={{
+                    backdropFilter: "blur(20px)",
+                  }}
+                >
+                  <LinearGradient
+                    colors={CARD_GRADIENT}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={{ flex: 1 }}
+                  >
+                    <Box px="$6" py="$7">
+                      <HStack alignItems="center" space="md" mb="$5">
+                        <Box bg={colors.primary} borderRadius="$full" p="$2.5">
+                          <ShieldCheck
+                            size={22}
+                            color={colors.primary_white_text}
+                            strokeWidth={2.6}
+                          />
+                        </Box>
+                        <VStack>
+                          <Text
+                            style={{
+                              fontFamily: "DancingScript-Regular",
+                            }}
+                            fontSize="$md"
+                            color={colors.primary}
+                          >
+                            Xin chào,
+                          </Text>
+                          <Text
+                            fontSize="$xl"
+                            fontWeight="$bold"
+                            color={colors.primary_text}
+                          >
+                            Người dùng Agrisa
+                          </Text>
+                        </VStack>
+                      </HStack>
+
+                      <Box
+                        h={1}
+                        bg={colors.primary_text}
+                        mb="$5"
+                        borderRadius={999}
+                      />
+
+                      <VStack space="md">
+                        <Controller
+                          control={control}
+                          name="identifier"
+                          rules={{ validate: validateIdentifier }}
+                          render={({ field, fieldState }) => (
+                            <FormControl isInvalid={!!fieldState.error}>
+                              <VStack space="xs">
+                                <Input
+                                  variant="outline"
+                                  size="lg"
+                                  borderWidth={1.5}
+                                  borderRadius="$3xl"
+                                  borderColor={
+                                    fieldState.error
+                                      ? colors.error
+                                      : identifierType === "unknown"
+                                        ? colors.frame_border
+                                        : colors.primary
+                                  }
+                                  bg="rgba(255,255,255,0.96)"
+                                  h="$12"
+                                  shadowColor={colors.shadow}
+                                  shadowOffset={{ width: 0, height: 8 }}
+                                  shadowOpacity={0.18}
+                                  shadowRadius={16}
+                                  elevation={8}
+                                  $focus={{
+                                    borderColor: colors.primary,
+                                    borderWidth: 2,
+                                  }}
+                                >
+                                  <InputSlot pl="$4">
+                                    {identifierType === "email" ? (
+                                      <Mail
+                                        size={20}
+                                        color={
+                                          fieldState.error
+                                            ? colors.error
+                                            : identifierType !== "unknown"
+                                              ? colors.primary
+                                              : colors.muted_text
+                                        }
+                                        strokeWidth={2.5}
+                                      />
+                                    ) : (
+                                      <Phone
+                                        size={20}
+                                        color={
+                                          fieldState.error
+                                            ? colors.error
+                                            : identifierType !== "unknown"
+                                              ? colors.primary
+                                              : colors.muted_text
+                                        }
+                                        strokeWidth={2.5}
+                                      />
+                                    )}
+                                  </InputSlot>
+                                  <InputField
+                                    value={field.value}
+                                    onChangeText={(text) => {
+                                      const isPhone = /^[0-9+]/.test(text);
+                                      if (isPhone && !text.includes("@")) {
+                                        field.onChange(formatPhoneNumber(text));
+                                      } else {
+                                        field.onChange(text);
+                                      }
+                                    }}
+                                    placeholder="Email hoặc Số điện thoại"
+                                    placeholderTextColor={colors.muted_text}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    keyboardType="default"
+                                    pr="$4"
+                                    fontSize="$sm"
+                                    fontWeight="$medium"
+                                    color={colors.primary_text}
+                                  />
+                                </Input>
+
+                                {fieldState.error && (
+                                  <FormControlError>
+                                    <FormControlErrorText
+                                      fontSize="$xs"
+                                      color={colors.error}
+                                    >
+                                      {fieldState.error.message}
+                                    </FormControlErrorText>
+                                  </FormControlError>
+                                )}
+                              </VStack>
+                            </FormControl>
+                          )}
+                        />
+
+                        <Button
+                          onPress={handleSubmit(onSubmit)}
+                          isDisabled={isSubmitting || isCheckingIdentifier}
+                          size="lg"
+                          bg={colors.primary}
+                          borderRadius="$full"
+                          h="$12"
+                          shadowColor={colors.shadow}
+                          shadowOffset={{ width: 0, height: 12 }}
+                          shadowOpacity={0.24}
+                          shadowRadius={16}
+                          elevation={12}
+                          $active={{
+                            bg: colors.primary,
+                            opacity: 0.95,
+                          }}
+                          mt="$5"
+                        >
+                          <ButtonText
+                            fontSize="$md"
+                            fontWeight="$bold"
+                            color="$white"
+                          >
+                            {isSubmitting || isCheckingIdentifier
+                              ? "Đang kiểm tra..."
+                              : "Tiếp theo"}
+                          </ButtonText>
+                          <ButtonIcon as={ArrowRight} ml="$2" color="$white" />
+                        </Button>
+
+                        <VStack space="sm" alignItems="center" mt="$4">
+                          <HStack space="xs" alignItems="center">
+                            <Text fontSize="$md" color={colors.secondary_text}>
+                              Chưa có tài khoản?
+                            </Text>
+                            <Pressable
+                              onPress={() => router.push("/auth/sign-up")}
+                              hitSlop={{
+                                top: 10,
+                                bottom: 10,
+                                left: 10,
+                                right: 10,
+                              }}
+                            >
+                              <Text
+                                fontSize="$md"
+                                fontWeight="$bold"
+                                color={colors.primary}
+                              >
+                                Đăng ký ngay
+                              </Text>
+                            </Pressable>
+                          </HStack>
+                        </VStack>
+                      </VStack>
+                    </Box>
+                  </LinearGradient>
+                </Box>
+              </VStack>
+            </Box>
           </VStack>
         </ScrollView>
       </KeyboardAvoidingView>

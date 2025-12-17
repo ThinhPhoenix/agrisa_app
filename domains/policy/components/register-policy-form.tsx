@@ -1,4 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Farm } from "@/domains/farm/models/farm.models";
 import { Utils } from "@/libs/utils/utils";
 import {
@@ -42,6 +43,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
   basePolicyId,
 }) => {
   const { colors } = useAgrisaColors();
+  const bottomPadding = useBottomInsets();
   const { base_policy, metadata } = policyDetail;
 
   const {
@@ -610,7 +612,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
         </Box>
 
         {/* Button */}
-        <Box px="$5" py="$5" bg={colors.background}>
+        <Box px="$5" pt="$5" pb={`$${5 + bottomPadding}`} bg={colors.background}>
           <Button
             bg={isFormValid ? colors.success : colors.frame_border}
             borderRadius="$xl"

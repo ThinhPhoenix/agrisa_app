@@ -1,5 +1,6 @@
 import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 import { useDataSource } from "@/domains/farm-data-monitor/hooks/use-data-source";
 import { getParameterLabel } from "@/domains/farm-data-monitor/utils/parameterUtils";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
@@ -65,6 +66,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
   isRefreshing = false,
 }) => {
   const { colors } = useAgrisaColors();
+  const { displayName, fullName } = useUserInfo();
 
   // State cho xác nhận nhận tiền
   const [rating, setRating] = useState<number>(0);
@@ -583,7 +585,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                       color={colors.primary_text}
                       textAlign="center"
                     >
-                      {registeredPolicy?.farmer_id || "Không có"}
+                      {fullName || displayName || "Không có"}
                     </Text>
                   </VStack>
                 </Box>

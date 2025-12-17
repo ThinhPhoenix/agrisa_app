@@ -1,6 +1,7 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import {
   DancingScript_400Regular,
   useFonts,
@@ -47,6 +48,7 @@ export default function HomeScreen() {
   const { getPublicBasePolicy } = usePolicy();
   const { refetch } = getPublicBasePolicy();
   const [refreshing, setRefreshing] = React.useState(false);
+  const bottomPadding = useBottomInsets();
 
   // Handle pull to refresh
   const onRefresh = React.useCallback(async () => {
@@ -119,7 +121,7 @@ export default function HomeScreen() {
       <View className="flex-1 bg-white rounded-tl-[2rem] rounded-tr-[2rem] shadow-sm relative z-20">
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 20 + bottomPadding }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

@@ -276,11 +276,11 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
           <VStack space="sm">
             <InfoRow
               label="Ngày gieo trồng"
-              value={Utils.formatDateForMS(farm.planting_date) ? Utils.formatDateForMS(farm.planting_date) : "Chưa cập nhật"}
+              value={farm.planting_date ? Utils.formatDateForMS(farm.planting_date) : "Chưa cập nhật"}
             />
             <InfoRow
               label="Ngày thu hoạch dự kiến"
-              value={Utils.formatDateForMS(farm.expected_harvest_date) ? Utils.formatDateForMS(farm.expected_harvest_date) : "Chưa cập nhật"}
+              value={farm.expected_harvest_date ? Utils.formatDateForMS(farm.expected_harvest_date) : "Chưa cập nhật"}
             />
             <InfoRow label="Loại đất canh tác" value={`${farm.soil_type}`} />
           </VStack>

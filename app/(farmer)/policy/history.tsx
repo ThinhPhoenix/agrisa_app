@@ -204,43 +204,50 @@ export default function PolicyHistoryScreen() {
       </Box>
 
       {/* Status Filter Tabs */}
-      <HStack
-        space="lg"
-        px="$4"
-        py="$2"
+      <Box
         bg={colors.background}
         borderBottomWidth={1}
         borderBottomColor={colors.frame_border}
       >
-        {STATUS_TABS.map((tab) => {
-          const isActive = activeTab === tab.key;
-          const count = statusCounts[tab.key];
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            gap: 24,
+          }}
+        >
+          {STATUS_TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            const count = statusCounts[tab.key];
 
-          return (
-            <Pressable
-              key={tab.key}
-              onPress={() => setActiveTab(tab.key)}
-            >
-              {({ pressed }) => (
-                <Box
-                  pb="$2"
-                  borderBottomWidth={isActive ? 2 : 0}
-                  borderBottomColor={colors.primary}
-                  opacity={pressed ? 0.7 : 1}
-                >
-                  <Text
-                    fontSize="$sm"
-                    fontWeight={isActive ? "$bold" : "$normal"}
-                    color={isActive ? colors.primary : colors.secondary_text}
+            return (
+              <Pressable
+                key={tab.key}
+                onPress={() => setActiveTab(tab.key)}
+              >
+                {({ pressed }) => (
+                  <Box
+                    pb="$2"
+                    borderBottomWidth={isActive ? 2 : 0}
+                    borderBottomColor={colors.primary}
+                    opacity={pressed ? 0.7 : 1}
                   >
-                    {tab.label} {count > 0 && `(${count})`}
-                  </Text>
-                </Box>
-              )}
-            </Pressable>
-          );
-        })}
-      </HStack>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight={isActive ? "$bold" : "$normal"}
+                      color={isActive ? colors.primary : colors.secondary_text}
+                    >
+                      {tab.label} {count > 0 && `(${count})`}
+                    </Text>
+                  </Box>
+                )}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </Box>
 
       {/* Content Area */}
       <ScrollView

@@ -2,6 +2,7 @@ import { AgrisaHeader } from "@/components/Header";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -35,6 +36,7 @@ export default function SatelliteListScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>("farm");
   const [refreshing, setRefreshing] = React.useState(false);
   const [scrollY] = useState(new Animated.Value(0));
+  const bottomPadding = useBottomInsets();
 
   // Get farms
   const { getListFarm } = useFarm();
@@ -309,7 +311,11 @@ export default function SatelliteListScreen() {
         {!isLoading && !error && isEmpty && (
           <Box py="$12" px="$6" alignItems="center">
             <Box bg={colors.success} p="$6" borderRadius="$full" mb="$4">
-              <Satellite size={64} color={colors.primary_white_text} strokeWidth={1.5} />
+              <Satellite
+                size={64}
+                color={colors.primary_white_text}
+                strokeWidth={1.5}
+              />
             </Box>
             <Text
               fontSize="$xl"
@@ -342,131 +348,131 @@ export default function SatelliteListScreen() {
           farms.length > 0 && (
             <VStack space="md">
               {farms.map((farm: any) => (
-              <Pressable
-                key={farm.id}
-                onPress={() =>
-                  router.push(`/(farmer)/satellite/${farm.id}?mode=farm`)
-                }
-              >
-                {({ pressed }) => (
-                  <Box
-                    bg={colors.card_surface}
-                    borderRadius="$xl"
-                    borderWidth={2}
-                    borderColor={colors.frame_border}
-                    overflow="hidden"
-                    opacity={pressed ? 0.7 : 1}
-                  >
-                    {/* Header */}
+                <Pressable
+                  key={farm.id}
+                  onPress={() =>
+                    router.push(`/(farmer)/satellite/${farm.id}?mode=farm`)
+                  }
+                >
+                  {({ pressed }) => (
                     <Box
-                      bg={colors.success + "10"}
-                      px="$4"
-                      py="$3"
-                      borderBottomWidth={1}
-                      borderBottomColor={colors.frame_border}
+                      bg={colors.card_surface}
+                      borderRadius="$xl"
+                      borderWidth={2}
+                      borderColor={colors.frame_border}
+                      overflow="hidden"
+                      opacity={pressed ? 0.7 : 1}
                     >
-                      <HStack
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <HStack space="sm" alignItems="center" flex={1}>
-                          <Leaf
-                            size={20}
-                            color={colors.success}
-                            strokeWidth={2}
-                          />
-                          <Text
-                            fontSize="$sm"
-                            fontWeight="$bold"
-                            color={colors.success}
-                            numberOfLines={1}
-                            flex={1}
-                          >
-                            {farm.farm_name}
-                          </Text>
-                        </HStack>
-                      </HStack>
-                    </Box>
-
-                    {/* Body */}
-                    <VStack space="sm" p="$4">
-                      {/* Farm info */}
-                      <HStack space="xs" alignItems="center">
-                        <MapPin
-                          size={14}
-                          color={colors.secondary_text}
-                          strokeWidth={2}
-                        />
-                        <Text
-                          fontSize="$sm"
-                          color={colors.secondary_text}
-                          flex={1}
-                        >
-                          {farm.province}
-                        </Text>
-                      </HStack>
-
-                      <HStack justifyContent="space-between">
-                        <VStack flex={1}>
-                          <Text fontSize="$xs" color={colors.secondary_text}>
-                            Diện tích
-                          </Text>
-                          <Text
-                            fontSize="$sm"
-                            fontWeight="$semibold"
-                            color={colors.primary_text}
-                          >
-                            {farm.area_sqm} ha
-                          </Text>
-                        </VStack>
-                        <VStack flex={1} alignItems="flex-end">
-                          <Text fontSize="$xs" color={colors.secondary_text}>
-                            Loại cây
-                          </Text>
-                          <Text
-                            fontSize="$sm"
-                            fontWeight="$semibold"
-                            color={colors.primary_text}
-                          >
-                            {Utils.getCropLabel(farm.crop_type)}
-                          </Text>
-                        </VStack>
-                      </HStack>
-
-                      {/* Footer - View data button */}
+                      {/* Header */}
                       <Box
-                        bg={colors.success}
-                        borderRadius="$lg"
+                        bg={colors.success + "10"}
                         px="$4"
                         py="$3"
-                        mt="$2"
+                        borderBottomWidth={1}
+                        borderBottomColor={colors.frame_border}
                       >
                         <HStack
-                          space="sm"
+                          justifyContent="space-between"
                           alignItems="center"
-                          justifyContent="center"
                         >
-                          <Satellite
-                            size={16}
-                            color={colors.primary_white_text}
+                          <HStack space="sm" alignItems="center" flex={1}>
+                            <Leaf
+                              size={20}
+                              color={colors.success}
+                              strokeWidth={2}
+                            />
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$bold"
+                              color={colors.success}
+                              numberOfLines={1}
+                              flex={1}
+                            >
+                              {farm.farm_name}
+                            </Text>
+                          </HStack>
+                        </HStack>
+                      </Box>
+
+                      {/* Body */}
+                      <VStack space="sm" p="$4">
+                        {/* Farm info */}
+                        <HStack space="xs" alignItems="center">
+                          <MapPin
+                            size={14}
+                            color={colors.secondary_text}
                             strokeWidth={2}
                           />
                           <Text
                             fontSize="$sm"
-                            fontWeight="$bold"
-                            color={colors.primary_white_text}
+                            color={colors.secondary_text}
+                            flex={1}
                           >
-                            Xem dữ liệu theo dõi
+                            {farm.province}
                           </Text>
                         </HStack>
-                      </Box>
-                    </VStack>
-                  </Box>
-                )}
-              </Pressable>
-            ))}
-          </VStack>
-        )}
+
+                        <HStack justifyContent="space-between">
+                          <VStack flex={1}>
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Diện tích
+                            </Text>
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$semibold"
+                              color={colors.primary_text}
+                            >
+                              {farm.area_sqm} ha
+                            </Text>
+                          </VStack>
+                          <VStack flex={1} alignItems="flex-end">
+                            <Text fontSize="$xs" color={colors.secondary_text}>
+                              Loại cây
+                            </Text>
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$semibold"
+                              color={colors.primary_text}
+                            >
+                              {Utils.getCropLabel(farm.crop_type)}
+                            </Text>
+                          </VStack>
+                        </HStack>
+
+                        {/* Footer - View data button */}
+                        <Box
+                          bg={colors.success}
+                          borderRadius="$lg"
+                          px="$4"
+                          py="$3"
+                          mt="$2"
+                        >
+                          <HStack
+                            space="sm"
+                            alignItems="center"
+                            justifyContent="center"
+                          >
+                            <Satellite
+                              size={16}
+                              color={colors.primary_white_text}
+                              strokeWidth={2}
+                            />
+                            <Text
+                              fontSize="$sm"
+                              fontWeight="$bold"
+                              color={colors.primary_white_text}
+                            >
+                              Xem dữ liệu theo dõi
+                            </Text>
+                          </HStack>
+                        </Box>
+                      </VStack>
+                    </Box>
+                  )}
+                </Pressable>
+              ))}
+            </VStack>
+          )}
 
         {/* Policy list */}
         {!isLoading &&
@@ -551,7 +557,9 @@ export default function SatelliteListScreen() {
                               fontWeight="$semibold"
                               color={colors.primary_text}
                             >
-                              {Utils.formatDateForMS(policy.coverage_start_date)}
+                              {Utils.formatDateForMS(
+                                policy.coverage_start_date
+                              )}
                             </Text>
                           </VStack>
                           <VStack flex={1} alignItems="center">
@@ -624,7 +632,10 @@ export default function SatelliteListScreen() {
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 100 + bottomPadding,
+        }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }

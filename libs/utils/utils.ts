@@ -634,7 +634,8 @@ export const Utils = {
   getPaymentTypeLabel: (type: string): string => {
     const typeMap: Record<string, string> = {
       policy_registration_payment: "Thanh toán phí bảo hiểm",
-      hopdong: "Thanh toán hợp đồng",
+
+      policy_payout_payment: "Thanh toán phí bồi thường",
       contract: "Thanh toán hợp đồng",
     };
     return typeMap[type] || "Thanh toán";

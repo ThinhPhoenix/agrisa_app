@@ -1,4 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Farm } from "@/domains/farm/models/farm.models";
 import { AgrisaColors } from "@/domains/shared/constants/AgrisaColors";
 import { Utils } from "@/libs/utils/utils";
@@ -43,6 +44,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
   onScroll,
 }) => {
   const { colors } = useAgrisaColors();
+  const bottomPadding = useBottomInsets();
 
   const getCropIcon = (cropType: string) => {
     if (cropType === "rice") {
@@ -296,7 +298,10 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
         data={farms}
         renderItem={renderFarmCard}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 16 + bottomPadding,
+        }}
         ListHeaderComponent={headerComponent}
         ListEmptyComponent={renderEmptyState()}
         showsVerticalScrollIndicator={false}
@@ -313,7 +318,3 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
     </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  list: { paddingHorizontal: 16, paddingBottom: 16 },
-});

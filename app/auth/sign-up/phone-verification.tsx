@@ -185,7 +185,7 @@ export default function PhoneVerificationScreen() {
               <TextInput
                 value={phoneInput}
                 onChangeText={setPhoneInput}
-                placeholder="Nhập số điện thoại (VD: 0901234567)"
+                placeholder="Số điện thoại"
                 placeholderTextColor={colors.muted_text}
                 keyboardType="phone-pad"
                 maxLength={10}

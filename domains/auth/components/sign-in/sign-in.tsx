@@ -56,8 +56,8 @@ const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const CARD_BORDER_COLOR = "rgba(255, 255, 255, 0.45)";
 const CARD_GRADIENT = [
-  "rgba(255,255,255,0.7)",
-  "rgba(255,237,237,0.7)",
+  "rgba(255,255,255,0.75)",
+  "rgba(255,255,255,0.75)",
 ] as const;
 
 const SignInComponentUI = () => {
@@ -328,7 +328,7 @@ const SignInComponentUI = () => {
   };
 
   const shortcuts = [
-    { label: "Điều khoản sử dụng", icon: Newspaper, onPress: () => {} },
+    { label: "Điều khoản", icon: Newspaper, onPress: () => {} },
     { label: "Liên hệ hỗ trợ", icon: PhoneIcon, onPress: handleContactSupport },
   ];
 
@@ -400,342 +400,66 @@ const SignInComponentUI = () => {
         style={{
           flex: 1,
         }}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             paddingTop: Platform.OS === "ios" ? 60 : 50,
-            paddingBottom: Platform.OS === "ios" ? 40 : 30,
+            paddingBottom: Platform.OS === "ios" ? 40 : 120,
           }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           bounces={false}
+          scrollEnabled={Platform.OS === "android"}
         >
           <VStack flex={1} px="$5" space="lg">
-            {/* Logo & Title */}
-            <HStack alignItems="center" space="sm">
+            {/* Logo & Shortcuts */}
+            <HStack alignItems="flex-start" justifyContent="space-between">
               <Image
                 source={require("@/assets/images/Logo/Agrisa_Logo.png")}
                 alt="Agrisa Logo"
                 style={{ width: 80, height: 80 }}
                 resizeMode="contain"
               />
-            </HStack>
 
-            {/* Spacer để đẩy content xuống */}
-            <Box flex={1} minHeight={20} />
-
-            {/* Login Box & Footer */}
-            <VStack space="lg">
-              <Box
-                borderRadius={32}
-                overflow="hidden"
-                borderWidth={1}
-                borderColor={CARD_BORDER_COLOR}
-                shadowColor="#63101B"
-                shadowOffset={{ width: 0, height: 20 }}
-                shadowOpacity={0.18}
-                shadowRadius={30}
-                elevation={18}
-              >
-                <LinearGradient
-                  colors={CARD_GRADIENT}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                  style={{ flex: 1 }}
-                >
-                  <Box px="$6" py="$7">
-                    {cachedIdentifier && (
-                      <VStack space="md" mb="$5">
-                        <HStack space="md" alignItems="center">
-                          <Box borderRadius="$full" p="$2.5">
-                            <ShieldCheck
-                              size={22}
-                              color={colors.primary}
-                              strokeWidth={2.6}
-                            />
-                          </Box>
-                          <VStack flex={1}>
-                            <Text
-                              style={{
-                                fontFamily: "DancingScript-Regular",
-                              }}
-                              fontSize="$md"
-                              color={colors.primary}
-                            >
-                              Xin chào,
-                            </Text>
-
-                            <Text
-                              fontSize="$xl"
-                              fontWeight="$bold"
-                              color={colors.primary_text}
-                              numberOfLines={1}
-                            >
-                              {getDisplayName()}
-                            </Text>
-                          </VStack>
-                        </HStack>
-                      </VStack>
-                    )}
-
-                    <Box
-                      h={1}
-                      bg={colors.primary_text}
-                      mb="$5"
-                      borderRadius={999}
-                    />
-
-                    <VStack space="md">
-                      <Controller
-                        control={signInFormControl}
-                        name="password"
-                        render={({ field, fieldState }) => (
-                          <FormControl isInvalid={!!fieldState.error}>
-                            <VStack space="xs">
-                              <HStack space="sm" alignItems="flex-start" pb={5}>
-                                <Box flex={1}>
-                                  <Input
-                                    variant="outline"
-                                    size="lg"
-                                    borderWidth={1.5}
-                                    borderRadius="$3xl"
-                                    borderColor={
-                                      fieldState.error
-                                        ? colors.error
-                                        : colors.frame_border
-                                    }
-                                    bg="rgba(255,255,255,0.96)"
-                                    h="$12"
-                                    shadowColor={colors.shadow}
-                                    shadowOffset={{ width: 0, height: 8 }}
-                                    shadowOpacity={0.18}
-                                    shadowRadius={16}
-                                    elevation={8}
-                                    $focus={{
-                                      borderColor: colors.primary,
-                                      borderWidth: 2,
-                                    }}
-                                  >
-                                    <InputSlot pl="$4">
-                                      <Lock
-                                        size={20}
-                                        color={
-                                          fieldState.error
-                                            ? colors.error
-                                            : colors.muted_text
-                                        }
-                                        strokeWidth={2.5}
-                                      />
-                                    </InputSlot>
-                                    <InputField
-                                      value={field.value}
-                                      onChangeText={field.onChange}
-                                      placeholder="Mật khẩu"
-                                      placeholderTextColor={colors.muted_text}
-                                      secureTextEntry={!showPassword}
-                                      autoCapitalize="none"
-                                      autoCorrect={false}
-                                      pr="$10"
-                                      fontSize="$sm"
-                                      fontWeight="$medium"
-                                      color={colors.primary_text}
-                                    />
-                                    <InputSlot pr="$4">
-                                      <Pressable
-                                        onPress={() =>
-                                          setShowPassword(!showPassword)
-                                        }
-                                        hitSlop={{
-                                          top: 10,
-                                          bottom: 10,
-                                          left: 10,
-                                          right: 10,
-                                        }}
-                                      >
-                                        {showPassword ? (
-                                          <EyeOff
-                                            size={18}
-                                            color={colors.muted_text}
-                                            strokeWidth={2.5}
-                                          />
-                                        ) : (
-                                          <Eye
-                                            size={18}
-                                            color={colors.muted_text}
-                                            strokeWidth={2.5}
-                                          />
-                                        )}
-                                      </Pressable>
-                                    </InputSlot>
-                                  </Input>
-
-                                  {fieldState.error && (
-                                    <FormControlError mt="$1">
-                                      <FormControlErrorText
-                                        fontSize="$xs"
-                                        color={colors.error}
-                                      >
-                                        {fieldState.error.message}
-                                      </FormControlErrorText>
-                                    </FormControlError>
-                                  )}
-                                </Box>
-
-                                {isBiometricEnabled && (
-                                  <Pressable
-                                    onPress={authenticateWithBiometrics}
-                                    disabled={isLoadingBiometric || isLoading}
-                                    style={{
-                                      opacity:
-                                        isLoadingBiometric || isLoading
-                                          ? 0.5
-                                          : 1,
-                                    }}
-                                  >
-                                    <Box
-                                      bg={colors.primary}
-                                      borderRadius="$full"
-                                      w="$12"
-                                      h="$12"
-                                      alignItems="center"
-                                      justifyContent="center"
-                                      shadowColor={colors.shadow}
-                                      shadowOffset={{ width: 0, height: 6 }}
-                                      shadowOpacity={0.24}
-                                      shadowRadius={8}
-                                      elevation={10}
-                                    >
-                                      {Platform.OS === "ios" ? (
-                                        <ScanFace
-                                          size={26}
-                                          color="#FFFFFF"
-                                          strokeWidth={2.5}
-                                        />
-                                      ) : (
-                                        <Fingerprint
-                                          size={26}
-                                          color="#FFFFFF"
-                                          strokeWidth={2.5}
-                                        />
-                                      )}
-                                    </Box>
-                                  </Pressable>
-                                )}
-                              </HStack>
-                            </VStack>
-                          </FormControl>
-                        )}
-                      />
-
-                      <HStack
-                        justifyContent="space-between"
-                        alignItems="center"
-                        mt="$2"
-                      >
-                        <Pressable
-                          onPress={handleChangeAccount}
-                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                          <Text
-                            fontSize="$md"
-                            fontWeight="$semibold"
-                            color={colors.primary}
-                          >
-                            Tài khoản khác
-                          </Text>
-                        </Pressable>
-
-                        <Pressable
-                          onPress={() => router.push("/auth/forgot-password")}
-                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                          <Text
-                            fontSize="$md"
-                            fontWeight="$semibold"
-                            color={colors.primary}
-                          >
-                            Quên mật khẩu?
-                          </Text>
-                        </Pressable>
-                      </HStack>
-
-                      <Button
-                        onPress={handleLoginPress} // ✅ FIX: Dùng custom handler
-                        isDisabled={isLoading || isLoadingBiometric}
-                        size="lg"
-                        bg={colors.primary}
-                        borderRadius="$full"
-                        h="$12"
-                        shadowColor={colors.shadow}
-                        shadowOffset={{ width: 0, height: 12 }}
-                        shadowOpacity={0.24}
-                        shadowRadius={16}
-                        elevation={12}
-                        $active={{
-                          bg: colors.primary,
-                          opacity: 0.95,
-                        }}
-                        mt="$5"
-                      >
-                        <ButtonText
-                          fontSize="$md"
-                          fontWeight="$bold"
-                          color="$white"
-                        >
-                          {isLoading ? "Đang xử lý..." : "Đăng nhập"}
-                        </ButtonText>
-                        <ButtonIcon as={LogIn} ml="$2" color="$white" />
-                      </Button>
-                    </VStack>
-                  </Box>
-                </LinearGradient>
-              </Box>
-
-              {/* Footer */}
-              <HStack
-                alignItems="center"
-                justifyContent="space-between"
-                px="$1"
-                mt="$5"
-              >
+              <HStack space="md" mt="$2">
                 {shortcuts.map(({ label, icon: Icon, onPress }) => (
                   <Pressable
                     key={label}
                     accessibilityRole="button"
-                    style={{ flex: 1 }}
                     hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                     onPress={onPress}
                   >
                     <VStack alignItems="center" space="xs">
                       <Box
-                        bg="rgba(255,255,255,0.85)"
+                        bg="rgba(255,255,255,0.9)"
                         borderRadius="$full"
-                        w="$12"
-                        h="$12"
+                        w="$11"
+                        h="$11"
                         alignItems="center"
                         justifyContent="center"
                         borderWidth={1}
                         borderColor={colors.frame_border}
                         shadowColor={colors.shadow}
-                        shadowOffset={{ width: 0, height: 4 }}
-                        shadowOpacity={0.12}
-                        shadowRadius={8}
-                        elevation={4}
+                        shadowOffset={{ width: 0, height: 2 }}
+                        shadowOpacity={0.1}
+                        shadowRadius={4}
+                        elevation={3}
                       >
                         <Icon
-                          size={20}
+                          size={18}
                           color={colors.primary}
                           strokeWidth={2.5}
                         />
                       </Box>
                       <Text
-                        fontSize="$sm"
+                        fontSize="$xs"
                         fontWeight="$semibold"
                         color={colors.primary_white_text}
                         numberOfLines={2}
                         textAlign="center"
+                        maxWidth={60}
                         style={{
                           textShadowColor: "rgba(0, 0, 0, 0.3)",
                           textShadowOffset: { width: 0, height: 1 },
@@ -748,7 +472,299 @@ const SignInComponentUI = () => {
                   </Pressable>
                 ))}
               </HStack>
-            </VStack>
+            </HStack>
+
+            {/* Login Box - Positioned in center */}
+            <Box
+              flex={1}
+              justifyContent="center"
+              minHeight={Platform.OS === "android" ? 400 : undefined}
+            >
+              <VStack space="lg">
+                <Box
+                  borderRadius={32}
+                  overflow="hidden"
+                  borderWidth={1}
+                  borderColor={CARD_BORDER_COLOR}
+                  shadowColor="#000000"
+                  shadowOffset={{ width: 0, height: 15 }}
+                  shadowOpacity={0.25}
+                  shadowRadius={25}
+                  elevation={20}
+                  bg="rgba(255,255,255,0.98)"
+                  style={{
+                    backdropFilter: "blur(20px)",
+                  }}
+                >
+                  <LinearGradient
+                    colors={CARD_GRADIENT}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={{ flex: 1 }}
+                  >
+                    <Box px="$6" py="$7">
+                      {cachedIdentifier && (
+                        <VStack space="md" mb="$5">
+                          <HStack space="md" alignItems="center">
+                            <Box borderRadius="$full" p="$2.5">
+                              <ShieldCheck
+                                size={22}
+                                color={colors.primary}
+                                strokeWidth={2.6}
+                              />
+                            </Box>
+                            <VStack flex={1}>
+                              <Text
+                                style={{
+                                  fontFamily: "DancingScript-Regular",
+                                }}
+                                fontSize="$md"
+                                color={colors.primary}
+                              >
+                                Xin chào,
+                              </Text>
+
+                              <Text
+                                fontSize="$xl"
+                                fontWeight="$bold"
+                                color={colors.primary_text}
+                                numberOfLines={1}
+                              >
+                                {getDisplayName()}
+                              </Text>
+                            </VStack>
+                          </HStack>
+                        </VStack>
+                      )}
+
+                      <Box
+                        h={1}
+                        bg={colors.primary_text}
+                        mb="$5"
+                        borderRadius={999}
+                      />
+
+                      <VStack space="md">
+                        <Controller
+                          control={signInFormControl}
+                          name="password"
+                          render={({ field, fieldState }) => (
+                            <FormControl isInvalid={!!fieldState.error}>
+                              <VStack space="xs">
+                                <HStack
+                                  space="sm"
+                                  alignItems="flex-start"
+                                  pb={5}
+                                >
+                                  <Box flex={1}>
+                                    <Input
+                                      variant="outline"
+                                      size="lg"
+                                      borderWidth={1.5}
+                                      borderRadius="$3xl"
+                                      borderColor={
+                                        fieldState.error
+                                          ? colors.error
+                                          : colors.frame_border
+                                      }
+                                      bg="rgba(255,255,255,0.96)"
+                                      h="$12"
+                                      shadowColor={colors.shadow}
+                                      shadowOffset={{ width: 0, height: 8 }}
+                                      shadowOpacity={0.18}
+                                      shadowRadius={16}
+                                      elevation={8}
+                                      $focus={{
+                                        borderColor: colors.primary,
+                                        borderWidth: 2,
+                                      }}
+                                    >
+                                      <InputSlot pl="$4">
+                                        <Lock
+                                          size={20}
+                                          color={
+                                            fieldState.error
+                                              ? colors.error
+                                              : colors.muted_text
+                                          }
+                                          strokeWidth={2.5}
+                                        />
+                                      </InputSlot>
+                                      <InputField
+                                        value={field.value}
+                                        onChangeText={field.onChange}
+                                        placeholder="Mật khẩu"
+                                        placeholderTextColor={colors.muted_text}
+                                        secureTextEntry={!showPassword}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                        pr="$10"
+                                        fontSize="$sm"
+                                        fontWeight="$medium"
+                                        color={colors.primary_text}
+                                      />
+                                      <InputSlot pr="$4">
+                                        <Pressable
+                                          onPress={() =>
+                                            setShowPassword(!showPassword)
+                                          }
+                                          hitSlop={{
+                                            top: 10,
+                                            bottom: 10,
+                                            left: 10,
+                                            right: 10,
+                                          }}
+                                        >
+                                          {showPassword ? (
+                                            <EyeOff
+                                              size={18}
+                                              color={colors.muted_text}
+                                              strokeWidth={2.5}
+                                            />
+                                          ) : (
+                                            <Eye
+                                              size={18}
+                                              color={colors.muted_text}
+                                              strokeWidth={2.5}
+                                            />
+                                          )}
+                                        </Pressable>
+                                      </InputSlot>
+                                    </Input>
+
+                                    {fieldState.error && (
+                                      <FormControlError mt="$1">
+                                        <FormControlErrorText
+                                          fontSize="$xs"
+                                          color={colors.error}
+                                        >
+                                          {fieldState.error.message}
+                                        </FormControlErrorText>
+                                      </FormControlError>
+                                    )}
+                                  </Box>
+
+                                  {isBiometricEnabled && (
+                                    <Pressable
+                                      onPress={authenticateWithBiometrics}
+                                      disabled={isLoadingBiometric || isLoading}
+                                      style={{
+                                        opacity:
+                                          isLoadingBiometric || isLoading
+                                            ? 0.5
+                                            : 1,
+                                      }}
+                                    >
+                                      <Box
+                                        bg={colors.primary}
+                                        borderRadius="$full"
+                                        w="$12"
+                                        h="$12"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                        shadowColor={colors.shadow}
+                                        shadowOffset={{ width: 0, height: 6 }}
+                                        shadowOpacity={0.24}
+                                        shadowRadius={8}
+                                        elevation={10}
+                                      >
+                                        {Platform.OS === "ios" ? (
+                                          <ScanFace
+                                            size={26}
+                                            color="#FFFFFF"
+                                            strokeWidth={2.5}
+                                          />
+                                        ) : (
+                                          <Fingerprint
+                                            size={26}
+                                            color="#FFFFFF"
+                                            strokeWidth={2.5}
+                                          />
+                                        )}
+                                      </Box>
+                                    </Pressable>
+                                  )}
+                                </HStack>
+                              </VStack>
+                            </FormControl>
+                          )}
+                        />
+
+                        <HStack
+                          justifyContent="space-between"
+                          alignItems="center"
+                          mt="$2"
+                        >
+                          <Pressable
+                            onPress={handleChangeAccount}
+                            hitSlop={{
+                              top: 10,
+                              bottom: 10,
+                              left: 10,
+                              right: 10,
+                            }}
+                          >
+                            <Text
+                              fontSize="$md"
+                              fontWeight="$semibold"
+                              color={colors.primary}
+                            >
+                              Tài khoản khác
+                            </Text>
+                          </Pressable>
+
+                          <Pressable
+                            onPress={() => router.push("/auth/forgot-password")}
+                            hitSlop={{
+                              top: 10,
+                              bottom: 10,
+                              left: 10,
+                              right: 10,
+                            }}
+                          >
+                            <Text
+                              fontSize="$md"
+                              fontWeight="$semibold"
+                              color={colors.primary}
+                            >
+                              Quên mật khẩu?
+                            </Text>
+                          </Pressable>
+                        </HStack>
+
+                        <Button
+                          onPress={handleLoginPress} // ✅ FIX: Dùng custom handler
+                          isDisabled={isLoading || isLoadingBiometric}
+                          size="lg"
+                          bg={colors.primary}
+                          borderRadius="$full"
+                          h="$12"
+                          shadowColor={colors.shadow}
+                          shadowOffset={{ width: 0, height: 12 }}
+                          shadowOpacity={0.24}
+                          shadowRadius={16}
+                          elevation={12}
+                          $active={{
+                            bg: colors.primary,
+                            opacity: 0.95,
+                          }}
+                          mt="$5"
+                        >
+                          <ButtonText
+                            fontSize="$md"
+                            fontWeight="$bold"
+                            color="$white"
+                          >
+                            {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+                          </ButtonText>
+                          <ButtonIcon as={LogIn} ml="$2" color="$white" />
+                        </Button>
+                      </VStack>
+                    </Box>
+                  </LinearGradient>
+                </Box>
+              </VStack>
+            </Box>
           </VStack>
         </ScrollView>
       </KeyboardAvoidingView>

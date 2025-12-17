@@ -407,31 +407,7 @@ export default function FAQScreen() {
             })}
           </VStack>
 
-          {/* Help Footer */}
-          <Box
-            bg={colors.warningSoft}
-            borderWidth={1}
-            borderColor={colors.warning}
-            p="$4"
-            borderRadius="$xl"
-          >
-            <HStack space="sm" alignItems="flex-start">
-              <HelpCircle size={20} color={colors.warning} strokeWidth={2} />
-              <VStack flex={1} space="xs">
-                <Text fontSize="$sm" fontWeight="$bold" color={colors.warning}>
-                  Vẫn còn thắc mắc?
-                </Text>
-                <Text
-                  fontSize="$sm"
-                  color={colors.primary_text}
-                  lineHeight="$lg"
-                >
-                  Nếu bạn không tìm thấy câu trả lời, hãy liên hệ bộ phận hỗ trợ
-                  của chúng tôi qua trang Trợ giúp hoặc Hotline: 1900-xxxx.
-                </Text>
-              </VStack>
-            </HStack>
-          </Box>
+          
         </VStack>
       </ScrollView>
     </Box>

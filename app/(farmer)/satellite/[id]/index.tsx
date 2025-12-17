@@ -15,6 +15,7 @@ import {
 } from "@/domains/farm-data-monitor/utils/parameterUtils";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
@@ -63,6 +64,7 @@ export default function SatelliteDetailScreen() {
   );
   const [timeRange, setTimeRange] = useState<TimeRange>("1m");
   const [refreshing, setRefreshing] = useState(false);
+  const bottomPadding = useBottomInsets();
 
   // Xác định mode: nếu có policy_id hoặc mode=policy thì là policy mode
   const viewMode = mode || (policy_id ? "policy" : "farm");
@@ -257,7 +259,7 @@ export default function SatelliteDetailScreen() {
       {/* Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100 + bottomPadding }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -504,9 +506,9 @@ export default function SatelliteDetailScreen() {
                             fontWeight="$semibold"
                             color={colors.primary_text}
                           >
-                            {farmDetail.planting_date ? Utils.formatDateForMS(
-                              farmDetail.planting_date
-                            ) : "Chưa cập nhật"}
+                            {farmDetail.planting_date
+                              ? Utils.formatDateForMS(farmDetail.planting_date)
+                              : "Chưa cập nhật"}
                           </Text>
                         </VStack>
                         <VStack flex={1}>
@@ -521,9 +523,11 @@ export default function SatelliteDetailScreen() {
                             fontWeight="$semibold"
                             color={colors.primary_text}
                           >
-                            {farmDetail.expected_harvest_date ? Utils.formatDateForMS(
-                              farmDetail.expected_harvest_date
-                            ) : "Chưa cập nhật"}
+                            {farmDetail.expected_harvest_date
+                              ? Utils.formatDateForMS(
+                                  farmDetail.expected_harvest_date
+                                )
+                              : "Chưa cập nhật"}
                           </Text>
                         </VStack>
                       </HStack>

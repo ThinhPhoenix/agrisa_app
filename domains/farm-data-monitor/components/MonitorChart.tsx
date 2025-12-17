@@ -3,7 +3,12 @@ import { Utils } from "@/libs/utils/utils";
 import { Box, Divider, HStack, Text, VStack } from "@gluestack-ui/themed";
 import { Clock } from "lucide-react-native";
 import React, { useState } from "react";
-import { Dimensions, ScrollView } from "react-native";
+import {
+  Dimensions,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { MonitoringDataItem } from "../models/data-monitor.model";
 import {
@@ -56,11 +61,12 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
     previousValue !== 0 ? ((change / previousValue) * 100).toFixed(2) : "0";
   const isPositive = change >= 0;
 
-  const maxValue = Math.max(...values);
-  const minValue = Math.min(...values);
-  const avgValue = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(
-    2
-  );
+  const maxValue = values.length > 0 ? Math.max(...values) : 0;
+  const minValue = values.length > 0 ? Math.min(...values) : 0;
+  const avgValue =
+    values.length > 0
+      ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+      : "0";
   const rangeValue = (maxValue - minValue).toFixed(2);
   const rangeAnalysis = analyzeRange(maxValue, minValue, parseFloat(avgValue));
   const lastUpdate = sortedData[sortedData.length - 1]?.measurement_timestamp;
@@ -122,19 +128,29 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
           {/* Header với tên parameter và timestamp */}
           <HStack justifyContent="space-between" alignItems="center">
             <HStack space="sm" alignItems="center">
-              <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text}>
+              <Text
+                fontSize="$md"
+                fontWeight="$bold"
+                color={colors.primary_text}
+              >
                 {parameterLabel}
               </Text>
-              <Box
-                bg={colors.primary + "15"}
-                px="$2"
-                py="$1"
-                borderRadius="$sm"
-              >
-                <Text fontSize="$2xs" fontWeight="$semibold" color={colors.primary}>
-                  {unit}
-                </Text>
-              </Box>
+              {unit && unit.toLowerCase() !== "index" && (
+                <Box
+                  bg={colors.primary + "15"}
+                  px="$2"
+                  py="$1"
+                  borderRadius="$sm"
+                >
+                  <Text
+                    fontSize="$2xs"
+                    fontWeight="$semibold"
+                    color={colors.primary}
+                  >
+                    {unit}
+                  </Text>
+                </Box>
+              )}
             </HStack>
             {lastUpdate && (
               <HStack space="xs" alignItems="center">
@@ -147,7 +163,7 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
           </HStack>
 
           <Divider bg={colors.frame_border} my="$2" />
-          
+
           {/* Stats ngang - 4 cột */}
           <HStack space="md" mt="$1">
             <VStack flex={1} alignItems="center">
@@ -155,10 +171,10 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                 Cao nhất
               </Text>
               <Text fontSize="$md" fontWeight="$bold" color={colors.success}>
-                {maxValue}
+                {maxValue?.toFixed(2) ?? "0"}
               </Text>
             </VStack>
-            
+
             <VStack flex={1} alignItems="center">
               <Text fontSize="$xs" color={colors.secondary_text} mb="$1">
                 Trung bình
@@ -167,21 +183,31 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                 {avgValue}
               </Text>
             </VStack>
-            
+
             <VStack flex={1} alignItems="center">
               <Text fontSize="$xs" color={colors.secondary_text} mb="$1">
                 Thấp nhất
               </Text>
               <Text fontSize="$md" fontWeight="$bold" color={colors.error}>
-                {minValue}
+                {minValue?.toFixed(2) ?? "0"}
               </Text>
             </VStack>
-            
+
             <VStack alignItems="center">
-              <Text fontSize="$xs" color={colors.secondary_text} mb="$1" textAlign="center">
+              <Text
+                fontSize="$xs"
+                color={colors.secondary_text}
+                mb="$1"
+                textAlign="center"
+              >
                 Mức độ đồng đều
               </Text>
-              <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text} textAlign="center">
+              <Text
+                fontSize="$sm"
+                fontWeight="$bold"
+                color={colors.primary_text}
+                textAlign="center"
+              >
                 {rangeAnalysis}
               </Text>
             </VStack>
@@ -198,60 +224,87 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
         borderColor={colors.frame_border}
       >
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <LineChart
-            data={{
-              labels:
-                labels.length > 12
-                  ? labels.filter((_, i) => i % Math.ceil(labels.length / 12) === 0)
-                  : labels,
-              datasets: [
-                {
-                  data: values,
-                  color: (opacity = 1) => colors.success,
-                  strokeWidth: 3,
-                },
-              ],
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => {
+              if (Platform.OS === "android") {
+                // Tính toán vị trí click tương đối trên chart
+                const chartWidth = Math.max(SCREEN_WIDTH, values.length * 120);
+                const clickX = e.nativeEvent.locationX;
+                const index = Math.round(
+                  (clickX / chartWidth) * (values.length - 1)
+                );
+
+                if (
+                  index >= 0 &&
+                  index < sortedData.length &&
+                  sortedData[index]
+                ) {
+                  setSelectedPoint(sortedData[index]);
+                  setSelectedIndex(index);
+                }
+              }
             }}
-            width={Math.max(SCREEN_WIDTH, values.length * 120)}
-            height={320}
-            chartConfig={chartConfig}
-            bezier
-            style={{
-              borderRadius: 12,
-              marginLeft: -20, // Bỏ padding trái
-            }}
-            withVerticalLines={true}
-            withHorizontalLines={true}
-            withDots={true}
-            withShadow={false}
-            withInnerLines={true}
-            withOuterLines={true}
-            withVerticalLabels={true}
-            withHorizontalLabels={true}
-            onDataPointClick={handleDataPointClick}
-            formatYLabel={(value) => parseFloat(value).toFixed(1)}
-            getDotColor={(dataPoint, dataPointIndex) => {
-              // Highlight điểm được chọn
-              return dataPointIndex === selectedIndex ? colors.warning : parameterColor;
-            }}
-            getDotProps={(dataPoint, index) => {
-              // Làm to điểm được chọn
-              if (index === selectedIndex) {
+          >
+            <LineChart
+              data={{
+                labels:
+                  labels.length > 12
+                    ? labels.filter(
+                        (_, i) => i % Math.ceil(labels.length / 12) === 0
+                      )
+                    : labels,
+                datasets: [
+                  {
+                    data: values,
+                    color: (opacity = 1) => colors.success,
+                    strokeWidth: 3,
+                  },
+                ],
+              }}
+              width={Math.max(SCREEN_WIDTH, values.length * 120)}
+              height={320}
+              chartConfig={chartConfig}
+              bezier
+              style={{
+                borderRadius: 12,
+                marginLeft: -20, // Bỏ padding trái
+              }}
+              withVerticalLines={true}
+              withHorizontalLines={true}
+              withDots={true}
+              withShadow={false}
+              withInnerLines={true}
+              withOuterLines={true}
+              withVerticalLabels={true}
+              withHorizontalLabels={true}
+              onDataPointClick={handleDataPointClick}
+              formatYLabel={(value) => parseFloat(value).toFixed(1)}
+              getDotColor={(dataPoint, dataPointIndex) => {
+                // Highlight điểm được chọn
+                return dataPointIndex === selectedIndex
+                  ? colors.warning
+                  : parameterColor;
+              }}
+              getDotProps={(dataPoint, index) => {
+                // Làm to điểm được chọn
+                if (index === selectedIndex) {
+                  return {
+                    r: "10",
+                    strokeWidth: "4",
+                    stroke: colors.warning,
+                    fill: colors.card_surface,
+                  };
+                }
                 return {
-                  r: "10",
-                  strokeWidth: "4",
-                  stroke: colors.warning,
+                  r: "6",
+                  strokeWidth: "3",
+                  stroke: parameterColor,
                   fill: colors.card_surface,
                 };
-              }
-              return {
-                r: "6",
-                strokeWidth: "3",
-                stroke: parameterColor,
-                fill: colors.card_surface,
-              };
-            }}
-          />
+              }}
+            />
+          </TouchableOpacity>
         </ScrollView>
 
         {/* Tooltip khi chọn điểm - CÓ PHÂN TÍCH VIỆT HÓA */}
@@ -268,8 +321,14 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                 <Text fontSize="$xs" color={colors.secondary_text}>
                   Thời gian đo:
                 </Text>
-                <Text fontSize="$sm" fontWeight="$bold" color={colors.primary_text}>
-                  {Utils.formatDateTimeForMS(selectedPoint.measurement_timestamp)}
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  {Utils.formatDateTimeForMS(
+                    selectedPoint.measurement_timestamp
+                  )}
                 </Text>
               </HStack>
 
@@ -279,59 +338,106 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                   Giá trị đo:
                 </Text>
                 <Text fontSize="$lg" fontWeight="$bold" color={colors.primary}>
-                  {selectedPoint.measured_value.toFixed(3)} {unit}
+                  {selectedPoint.measured_value?.toFixed(3) ?? "0"}
+                  {unit && unit.toLowerCase() !== "index" ? ` ${unit}` : ""}
                 </Text>
               </HStack>
 
-             
-
               {/* Thống kê vùng đo - Phân tích */}
-              <Box
-                bg={colors.primary + "10"}
-                p="$3"
-                borderRadius="$md"
-                borderWidth={1}
-                borderColor={colors.primary + "30"}
-              >
-                <Text fontSize="$xs" fontWeight="$bold" color={colors.primary} mb="$2">
-                  Tình trạng {parameterLabel} theo chỉ số:
-                </Text>
-                
-                <VStack space="xs">
-                  <HStack justifyContent="space-between">
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      - Cao nhất:
-                    </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary_text}>
-                      {selectedPoint.component_data.statistics.max.toFixed(3)}
-                    </Text>
-                  </HStack>
-                  <HStack justifyContent="space-between">
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      - Trung vị:
-                    </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary_text}>
-                      {selectedPoint.component_data.statistics.median.toFixed(3)}
-                    </Text>
-                  </HStack>
-                  <HStack justifyContent="space-between">
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      - Thấp nhất:
-                    </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary_text}>
-                      {selectedPoint.component_data.statistics.min.toFixed(3)}
-                    </Text>
-                  </HStack>
-                  <HStack justifyContent="space-between">
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      - Độ lệch:
-                    </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary_text}>
-                      {selectedPoint.component_data.statistics.stddev.toFixed(3)}
-                    </Text>
-                  </HStack>
-                </VStack>
-              </Box>
+              {selectedPoint.component_data?.statistics ? (
+                <Box
+                  bg={colors.primary + "10"}
+                  p="$3"
+                  borderRadius="$md"
+                  borderWidth={1}
+                  borderColor={colors.primary + "30"}
+                >
+                  <Text
+                    fontSize="$xs"
+                    fontWeight="$bold"
+                    color={colors.primary}
+                    mb="$2"
+                  >
+                    Tình trạng {parameterLabel}:
+                  </Text>
+
+                  <VStack space="xs">
+                    <HStack justifyContent="space-between">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        - Cao nhất:
+                      </Text>
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {selectedPoint.component_data.statistics.max?.toFixed(
+                          3
+                        ) ?? "0"}
+                      </Text>
+                    </HStack>
+                    <HStack justifyContent="space-between">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        - Trung vị:
+                      </Text>
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {selectedPoint.component_data.statistics.median?.toFixed(
+                          3
+                        ) ?? "0"}
+                      </Text>
+                    </HStack>
+                    <HStack justifyContent="space-between">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        - Thấp nhất:
+                      </Text>
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {selectedPoint.component_data.statistics.min?.toFixed(
+                          3
+                        ) ?? "0"}
+                      </Text>
+                    </HStack>
+                    <HStack justifyContent="space-between">
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        - Độ lệch:
+                      </Text>
+                      <Text
+                        fontSize="$xs"
+                        fontWeight="$semibold"
+                        color={colors.primary_text}
+                      >
+                        {selectedPoint.component_data.statistics.stddev?.toFixed(
+                          3
+                        ) ?? "0"}
+                      </Text>
+                    </HStack>
+                  </VStack>
+                </Box>
+              ) : (
+                <Box
+                  bg={colors.warningSoft}
+                  p="$3"
+                  borderRadius="$md"
+                  borderWidth={1}
+                  borderColor={colors.warning}
+                >
+                  <Text
+                    fontSize="$xs"
+                    fontWeight="$bold"
+                    color={colors.warning}
+                    textAlign="center"
+                  >
+                    Không có dữ liệu thống kê chi tiết
+                  </Text>
+                </Box>
+              )}
 
               <Divider bg={colors.frame_border} my="$2" />
 
@@ -343,7 +449,12 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                 borderWidth={1}
                 borderColor={colors.success + "30"}
               >
-                <Text fontSize="$xs" fontWeight="$bold" color={colors.success} mb="$2">
+                <Text
+                  fontSize="$xs"
+                  fontWeight="$bold"
+                  color={colors.success}
+                  mb="$2"
+                >
                   Đánh giá dữ liệu:
                 </Text>
                 <Divider bg={colors.frame_border + "50"} mb="$2" />
@@ -352,7 +463,11 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                     <Text fontSize="$xs" color={colors.secondary_text}>
                       - Chất lượng:
                     </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.success}>
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$semibold"
+                      color={colors.success}
+                    >
                       {analyzeDataQuality(selectedPoint.data_quality)}
                     </Text>
                   </HStack>
@@ -360,24 +475,45 @@ export const MonitorChart: React.FC<MonitorChartProps> = ({
                     <Text fontSize="$xs" color={colors.secondary_text}>
                       - Độ tin cậy:
                     </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.success}>
-                      {(selectedPoint.confidence_score * 100).toFixed(0)}% ({analyzeConfidence(selectedPoint.confidence_score)})
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$semibold"
+                      color={colors.success}
+                    >
+                      {((selectedPoint.confidence_score ?? 0) * 100).toFixed(0)}
+                      % (
+                      {analyzeConfidence(selectedPoint.confidence_score ?? 0)})
                     </Text>
                   </HStack>
                   <HStack justifyContent="space-between">
                     <Text fontSize="$xs" color={colors.secondary_text}>
                       - Mây che phủ:
                     </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.warning}>
-                      {selectedPoint.cloud_cover_percentage.toFixed(0)}% ({analyzeCloudCover(selectedPoint.cloud_cover_percentage)})
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$semibold"
+                      color={colors.warning}
+                    >
+                      {(selectedPoint.cloud_cover_percentage ?? 0).toFixed(0)}%
+                      (
+                      {analyzeCloudCover(
+                        selectedPoint.cloud_cover_percentage ?? 0
+                      )}
+                      )
                     </Text>
                   </HStack>
                   <HStack justifyContent="space-between">
                     <Text fontSize="$xs" color={colors.secondary_text}>
                       - Nguồn dữ liệu:
                     </Text>
-                    <Text fontSize="$xs" fontWeight="$semibold" color={colors.primary}>
-                      {analyzeMeasurementSource(selectedPoint.measurement_source)}
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$semibold"
+                      color={colors.primary}
+                    >
+                      {analyzeMeasurementSource(
+                        selectedPoint.measurement_source
+                      )}
                     </Text>
                   </HStack>
                 </VStack>

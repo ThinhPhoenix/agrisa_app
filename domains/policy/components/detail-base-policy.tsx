@@ -3,6 +3,7 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useDataSource } from "@/domains/farm-data-monitor/hooks/use-data-source";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
 import { InsurancePartnerResponse } from "@/domains/insurance-partner/models/insurance-partner.model";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { useToast } from "@/domains/shared/hooks/useToast";
 import { Utils } from "@/libs/utils/utils";
 import {
@@ -104,7 +105,7 @@ export default function DetailBasePolicyScreen() {
       >
         <Spinner size="large" color={colors.primary} />
         <Text color={colors.secondary_text} fontSize="$sm" mt="$3">
-          Đang tải chi tiết sản phẩm...
+          Đang tải chi tiết bảo hiểm...
         </Text>
       </Box>
     );
@@ -127,7 +128,7 @@ export default function DetailBasePolicyScreen() {
           color={colors.primary_text}
           mt="$4"
         >
-          Không tìm thấy sản phẩm
+          Không tìm thấy bảo hiểm
         </Text>
         <Button bg={colors.primary} mt="$4" onPress={() => router.back()}>
           <ButtonText color={colors.primary_white_text}>Quay lại</ButtonText>
@@ -579,7 +580,7 @@ const PolicyDocumentSection = ({
             >
               <Clock size={12} color={colors.muted_text} strokeWidth={2} />
               <Text fontSize="$2xs" color={colors.muted_text}>
-                Link hết hạn: {formatExpiryDate(document.presigned_url_expiry)}
+                Hợp đồng mẫu sẽ hết hạn vào lúc: {formatExpiryDate(document.presigned_url_expiry)}
               </Text>
             </HStack>
           )}
@@ -588,7 +589,6 @@ const PolicyDocumentSection = ({
 
       {/* Helper Text */}
       <HStack space="xs" alignItems="flex-start" mt="$1">
-        <Info size={12} color={colors.muted_text} strokeWidth={2} />
         <Text
           fontSize="$2xs"
           color={colors.muted_text}
@@ -686,8 +686,6 @@ const CostPayoutGrid = ({
             {Utils.formatCurrency(policy.payout_cap)}
           </Text>
         </HStack>
-
-       
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
@@ -1232,7 +1230,12 @@ const TechnicalInfoCard = ({
       {/* Description */}
       <Box borderRadius="$lg">
         <HStack space="sm" alignItems="flex-start">
-          <Text fontSize="$xs" color={colors.primary_text} lineHeight="$lg" flex={1}>
+          <Text
+            fontSize="$xs"
+            color={colors.primary_text}
+            lineHeight="$lg"
+            flex={1}
+          >
             Chương trình bảo hiểm này sử dụng {metadata.data_source_count} nguồn
             dữ liệu vệ tinh và cảm biến để giám sát {metadata.total_conditions}{" "}
             điều kiện khác nhau. Hệ thống tự động phát hiện thiệt hại và chi trả
@@ -1280,7 +1283,6 @@ const TriggerCard = ({
           <HStack space="sm" alignItems="center" justifyContent="space-between">
             {/* Left: Trigger Info */}
             <HStack space="sm" alignItems="center" flex={1}>
-              
               <VStack flex={1}>
                 <HStack space="xs" alignItems="center">
                   <Text
@@ -2059,76 +2061,81 @@ const BottomCTA = ({
   policy: PublicBasePolicyResponse;
   onEnroll: () => void;
   colors: ColorSet;
-}) => (
-  <Box
-    position="absolute"
-    bottom={0}
-    left={0}
-    right={0}
-    bg={colors.card_surface}
-    borderTopWidth={1}
-    borderTopColor={colors.frame_border}
-    px="$4"
-    py="$4"
-    sx={{
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: -4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 8,
-    }}
-  >
-    <VStack space="sm">
-      {/* Premium & Payout Display - CẬP NHẬT */}
-      <HStack justifyContent="space-between" mb={5} alignItems="center">
-        <VStack>
-          <Text fontSize="$md" color={colors.secondary_text}>
-            Phí bảo hiểm
-          </Text>
-        </VStack>
+}) => {
+  const bottomPadding = useBottomInsets();
 
-        <HStack space="xs" alignItems="baseline">
-          <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
-            {Utils.formatCurrency(policy.fix_premium_amount)}
-          </Text>
-          <Text fontSize="$xs" color={colors.muted_text}>
-            {policy.is_per_hectare ? "/hecta" : ""}
-          </Text>
-        </HStack>
-      </HStack>
+  return (
+    <Box
+      position="absolute"
+      bottom={0}
+      left={0}
+      right={0}
+      bg={colors.card_surface}
+      borderTopWidth={1}
+      borderTopColor={colors.frame_border}
+      px="$4"
+      py="$4"
+      paddingBottom={bottomPadding}
+      sx={{
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 8,
+      }}
+    >
+      <VStack space="sm">
+        {/* Premium & Payout Display - CẬP NHẬT */}
+        <HStack justifyContent="space-between" mb={5} alignItems="center">
+          <VStack>
+            <Text fontSize="$md" color={colors.secondary_text}>
+              Phí bảo hiểm
+            </Text>
+          </VStack>
 
-      {/* CTA Button */}
-      <Button
-        bg={colors.success}
-        size="xl"
-        onPress={onEnroll}
-        isDisabled={policy.status !== "active"}
-        sx={{
-          ":disabled": {
-            opacity: 0.5,
-          },
-        }}
-      >
-        <HStack space="sm" alignItems="center">
-          <FileCheck
-            size={22}
-            color={colors.primary_white_text}
-            strokeWidth={2}
-          />
-          <ButtonText
-            color={colors.primary_white_text}
-            fontWeight="$bold"
-            fontSize="$md"
-          >
-            {policy.status === "active"
-              ? "Đăng ký gói bảo hiểm"
-              : "Sản phẩm tạm ngưng"}
-          </ButtonText>
+          <HStack space="xs" alignItems="baseline">
+            <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
+              {Utils.formatCurrency(policy.fix_premium_amount)}
+            </Text>
+            <Text fontSize="$xs" color={colors.muted_text}>
+              {policy.is_per_hectare ? "/hecta" : ""}
+            </Text>
+          </HStack>
         </HStack>
-      </Button>
-    </VStack>
-  </Box>
-);
+
+        {/* CTA Button */}
+        <Button
+          bg={colors.success}
+          size="xl"
+          onPress={onEnroll}
+          isDisabled={policy.status !== "active"}
+          sx={{
+            ":disabled": {
+              opacity: 0.5,
+            },
+          }}
+        >
+          <HStack space="sm" alignItems="center">
+            <FileCheck
+              size={22}
+              color={colors.primary_white_text}
+              strokeWidth={2}
+            />
+            <ButtonText
+              color={colors.primary_white_text}
+              fontWeight="$bold"
+              fontSize="$md"
+            >
+              {policy.status === "active"
+                ? "Đăng ký gói bảo hiểm"
+                : "Sản phẩm tạm ngưng"}
+            </ButtonText>
+          </HStack>
+        </Button>
+      </VStack>
+    </Box>
+  );
+};
 
 // Status Badge
 const StatusBadge = ({

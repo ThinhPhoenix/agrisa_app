@@ -1,4 +1,5 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import { Box, Pressable, Text, VStack } from "@gluestack-ui/themed";
 import { FileWarning, Inbox } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
@@ -44,6 +45,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
   onScroll,
 }) => {
   const { colors } = useAgrisaColors();
+  const bottomPadding = useBottomInsets();
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
   // Lọc claims theo tab đang active
@@ -214,7 +216,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
       {showTabs && <TabsComponent />}
 
       {/* Content */}
-      <VStack space="md" px="$4" pb="$8">
+      <VStack space="md" px="$4" pb={`${bottomPadding}`}>
         {isLoading ? (
           <LoadingState />
         ) : filteredClaims.length === 0 ? (

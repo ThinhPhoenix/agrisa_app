@@ -1,8 +1,9 @@
 import { AgrisaColors } from '@/domains/shared/constants/AgrisaColors';
-import { Tabs } from 'expo-router';
-import { FileText, HelpCircle, History, Home } from 'lucide-react-native';
-import React from 'react';
-import { Animated, Pressable, SafeAreaView, Text, View } from 'react-native';
+import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
+import { Tabs } from "expo-router";
+import { FileText, HelpCircle, History, Home } from "lucide-react-native";
+import React from "react";
+import { Animated, Pressable, SafeAreaView, Text, View } from "react-native";
 
 function AnimatedTabButton({
   route,
@@ -66,27 +67,31 @@ function AnimatedTabButton({
       onPressOut={handlePressOut}
       style={{
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <Animated.View
         style={{
-          alignItems: 'center',
+          alignItems: "center",
           transform: [{ scale: scaleAnim }, { translateY: translateYAnim }],
         }}
       >
         {options.tabBarIcon &&
           options.tabBarIcon({
-            color: isFocused ? AgrisaColors.light.primary : AgrisaColors.light.muted_text,
+            color: isFocused
+              ? AgrisaColors.light.primary
+              : AgrisaColors.light.muted_text,
             size: isFocused ? 26 : 22,
           })}
         <Text
           style={{
             fontSize: 10,
             marginTop: 4,
-            fontWeight: '600',
-            color: isFocused ? AgrisaColors.light.primary : AgrisaColors.light.muted_text,
+            fontWeight: "600",
+            color: isFocused
+              ? AgrisaColors.light.primary
+              : AgrisaColors.light.muted_text,
           }}
         >
           {label}
@@ -98,6 +103,7 @@ function AnimatedTabButton({
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const indicatorAnim = React.useRef(new Animated.Value(0)).current;
+  const bottomPadding = useBottomInsets();
 
   React.useEffect(() => {
     Animated.spring(indicatorAnim, {
@@ -117,14 +123,19 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   });
 
   return (
-    <SafeAreaView style={{ backgroundColor: AgrisaColors.light.background }}>
-      <View style={{ position: 'relative' }}>
+    <SafeAreaView
+      style={{
+        backgroundColor: AgrisaColors.light.background,
+        paddingBottom: bottomPadding,
+      }}
+    >
+      <View style={{ position: "relative" }}>
         <Animated.View
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             height: 3,
-            width: '12%',
+            width: "12%",
             backgroundColor: AgrisaColors.light.primary,
             borderRadius: 2,
             transform: [{ translateX }],
@@ -132,7 +143,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         />
         <View
           style={{
-            flexDirection: 'row',
+            flexDirection: "row",
             backgroundColor: AgrisaColors.light.background,
             borderTopWidth: 1,
             borderTopColor: AgrisaColors.light.frame_border,
@@ -146,7 +157,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
             const onPress = () => {
               const event = navigation.emit({
-                type: 'tabPress',
+                type: "tabPress",
                 target: route.key,
                 canPreventDefault: true,
               });
@@ -158,7 +169,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
             const onLongPress = () => {
               navigation.emit({
-                type: 'tabLongPress',
+                type: "tabLongPress",
                 target: route.key,
               });
             };

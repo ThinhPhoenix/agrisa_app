@@ -87,10 +87,10 @@ export default function PublicBasePolicyScreen({
               fontWeight="$bold"
               color={colors.primary_text}
             >
-              Sản phẩm bảo hiểm
+              Chương trình bảo hiểm
             </Text>
             <Text fontSize="$sm" color={colors.secondary_text}>
-              Khám phá các gói bảo hiểm nông nghiệp được cung cấp
+              Khám phá các chương trình bảo hiểm nông nghiệp được cung cấp
             </Text>
           </VStack>
 
@@ -99,7 +99,7 @@ export default function PublicBasePolicyScreen({
             <Box alignItems="center" justifyContent="center" py="$10">
               <Spinner size="large" color={colors.primary} />
               <Text color={colors.secondary_text} fontSize="$sm" mt="$3">
-                Đang tải sản phẩm...
+                Đang tải bảo hiểm ...
               </Text>
             </Box>
           ) : policies.length === 0 ? (
@@ -119,7 +119,7 @@ export default function PublicBasePolicyScreen({
                 color={colors.primary_text}
                 mt="$3"
               >
-                Chưa có sản phẩm
+                Chưa có bảo hiểm
               </Text>
               <Text
                 fontSize="$sm"
@@ -127,7 +127,7 @@ export default function PublicBasePolicyScreen({
                 textAlign="center"
                 mt="$1"
               >
-                Hiện tại chưa có sản phẩm bảo hiểm nào được công bố
+                Hiện tại chưa có bảo hiểm bảo hiểm nào được công bố
               </Text>
             </Box>
           ) : (

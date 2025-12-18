@@ -645,11 +645,7 @@ export default function SatelliteDetailScreen() {
                                     </Text>
                                   </HStack>
                                   {Object.keys(groupedData).length > 0 && (
-                                    <HStack
-                                      justifyContent="space-between"
-                                      alignItems="center"
-                                      mt="$1"
-                                    >
+                                    <VStack space="xs" mt="$1">
                                       <Text
                                         fontSize="$2xs"
                                         color={colors.secondary_text}
@@ -685,7 +681,7 @@ export default function SatelliteDetailScreen() {
                                           )
                                         )}
                                       </HStack>
-                                    </HStack>
+                                    </VStack>
                                   )}
                                 </VStack>
                               </Box>

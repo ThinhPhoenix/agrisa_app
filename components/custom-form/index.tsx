@@ -661,7 +661,7 @@ export const CustomForm = forwardRef(function CustomForm(
               </SelectPortal>
             </Select>
             {field.helperText && (
-              <FormControlHelper style={{ marginTop: 8 }}>
+              <FormControlHelper style={{ marginTop: 20 }}>
                 <FormControlHelperText
                   style={{
                     fontSize: 13,

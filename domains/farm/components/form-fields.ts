@@ -35,7 +35,8 @@ export const createFarmFormFields = ({
     {
       name: "province",
       label: "Tỉnh/Thành phố",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập tỉnh",
+      placeholder:
+        mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập tỉnh",
       type: "input",
       required: true,
       disabled: shouldDisableField,
@@ -43,7 +44,10 @@ export const createFarmFormFields = ({
     {
       name: "district",
       label: "Quận/Huyện",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập quận/huyện",
+      placeholder:
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập quận/huyện",
       type: "input",
       required: true,
       disabled: shouldDisableField,
@@ -51,7 +55,10 @@ export const createFarmFormFields = ({
     {
       name: "commune",
       label: "Phường/Xã",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập phường/xã",
+      placeholder:
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập phường/xã",
       type: "input",
       required: true,
       disabled: shouldDisableField,
@@ -60,7 +67,9 @@ export const createFarmFormFields = ({
       name: "address",
       label: "Địa chỉ chi tiết",
       placeholder:
-        mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập địa chỉ đầy đủ",
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập địa chỉ đầy đủ",
       type: "textarea",
       required: true,
       disabled: shouldDisableField,
@@ -81,7 +90,10 @@ export const createFarmFormFields = ({
     {
       name: "area_sqm",
       label: "Diện tích (ha)",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập diện tích",
+      placeholder:
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập diện tích",
       type: "number",
       required: true,
       disabled: shouldDisableField,
@@ -112,7 +124,10 @@ export const createFarmFormFields = ({
     {
       name: "land_certificate_number",
       label: "Số giấy chứng nhận đất",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập số sổ đỏ",
+      placeholder:
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập số sổ đỏ",
       type: "input",
       required: true,
       disabled: shouldDisableField,
@@ -120,7 +135,10 @@ export const createFarmFormFields = ({
     {
       name: "owner_national_id",
       label: "Số CCCD chủ đất",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập số CCCD",
+      placeholder:
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập số CCCD",
       type: "input",
       required: true,
       disabled: shouldDisableField,
@@ -130,10 +148,22 @@ export const createFarmFormFields = ({
     {
       name: "soil_type",
       label: "Loại đất",
-      placeholder: mode === "create" && !isManualMode ? "Tự động từ sổ đỏ" : "Nhập loại đất",
-      type: "input",
+      placeholder:
+        mode === "create" && !isManualMode
+          ? "Tự động từ sổ đỏ"
+          : "Nhập loại đất",
+      type: "select",
       required: true,
       disabled: shouldDisableField,
+      options: [
+        {
+          label: "Đất chuyên trồng lúa (LUC)",
+          value: "Đất chuyên trồng lúa (LUC)",
+        },
+        { label: "Đất lúa nương (LUN) ", value: "Đất lúa nương (LUN) " },
+        { label: "Đất trồng lúa còn lại (LUK)", value: "Đất trồng lúa còn lại (LUK)" },
+        { label: "Đất trồng cây lâu năm (CLN)", value: "Đất trồng cây lâu năm (CLN)" },
+      ],
       helperText:
         "Chấp nhận các loại đất dựa trên cây trồng và sổ như sau:\n - Đất chuyên trồng lúa (LUC)\n - Đất trồng lúa còn lại (LUK) \n - Đất lúa nương (LUN) \n - Đất trồng cây lâu năm (CLN)",
     },

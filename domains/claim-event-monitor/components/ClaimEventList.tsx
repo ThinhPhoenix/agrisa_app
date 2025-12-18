@@ -65,27 +65,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
     return counts;
   }, [claims]);
 
-  // Lấy màu cho từng tab status
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case ClaimStatus.GENERATED:
-        return colors.info || colors.primary;
-      case ClaimStatus.PENDING_PARTNER_REVIEW:
-        return colors.pending || colors.warning;
-      case ClaimStatus.APPROVED:
-        return colors.success;
-      case ClaimStatus.REJECTED:
-        return colors.error;
-      case ClaimStatus.PAID:
-        return colors.primary;
-      default:
-        return colors.secondary_text;
-    }
-  };
 
-  /**
-   * Component hiển thị khi không có claims
-   */
   const EmptyState = () => (
     <Box flex={1} justifyContent="center" alignItems="center" py="$16" px="$4">
       <Box
@@ -216,7 +196,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
       {showTabs && <TabsComponent />}
 
       {/* Content */}
-      <VStack space="md" px="$4" pb={`${bottomPadding}`}>
+      <VStack space="md" px="$4" pb={20 + bottomPadding} mt="$4">
         {isLoading ? (
           <LoadingState />
         ) : filteredClaims.length === 0 ? (

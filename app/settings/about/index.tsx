@@ -2,22 +2,19 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { Box, Divider, HStack, Pressable, ScrollView, Text, VStack } from "@gluestack-ui/themed";
 import { Image } from "expo-image";
 import {
-    Activity,
-    BarChart3,
-    Bell,
-    Brain,
-    CheckCircle2,
-    CreditCard,
-    Globe,
-    Mail,
-    MapPin,
-    Phone,
-    Satellite,
-    Smartphone,
-    Sparkles,
-    Target,
-    TrendingUp,
-    Users
+  Activity,
+  BarChart3,
+  Bell,
+  Brain,
+  CheckCircle2,
+  CreditCard,
+  Globe,
+  Mail,
+  Phone,
+  Satellite,
+  Smartphone,
+  Target,
+  TrendingUp,
 } from "lucide-react-native";
 import { Linking } from "react-native";
 

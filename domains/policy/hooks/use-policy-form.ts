@@ -32,7 +32,7 @@ export const usePolicyForm = ({
     const { getListFarm } = useFarm();
 
     // Get danh sách farm
-    const { data: farmsResponse, isLoading: isLoadingFarms } = getListFarm();
+    const { data: farmsResponse, isLoading: isLoadingFarms } = getListFarm("");
     const farms: Farm[] =
         farmsResponse?.success && farmsResponse?.data ? farmsResponse.data : [];
 

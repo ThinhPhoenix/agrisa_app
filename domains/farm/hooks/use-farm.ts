@@ -11,10 +11,10 @@ export const useFarm = () => {
   const queryClient = useQueryClient();
   const notification = useNotificationModal();
   const resultStatus = useResultStatus();
-  const getListFarm = () => {
+  const getListFarm = (cropType: string) => {
     return useQuery({
-      queryKey: [QueryKey.FARM.LIST],
-      queryFn: () => farmServices.get.listFarm(),
+      queryKey: [QueryKey.FARM.LIST, cropType],
+      queryFn: () => farmServices.get.listFarm(cropType),
     });
   };
 

@@ -45,7 +45,7 @@ export default function SatelliteListScreen() {
     isLoading: isFarmsLoading,
     error: farmsError,
     refetch: refetchFarms,
-  } = getListFarm();
+  } = getListFarm("");
 
   // Get policies
   const { getRegisteredPolicy } = usePolicy();

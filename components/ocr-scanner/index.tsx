@@ -136,7 +136,7 @@ const OcrScanner: React.FC<OcrScannerProps> = ({
                 );
                 Alert.alert(
                     "Lỗi OCR",
-                    `Lỗi từ server OCR: ${geminiResp.status}`
+                    `Lỗi từ server OCR: ${geminiResp.status}. Hãy thử lại sau`
                 );
                 return;
             }

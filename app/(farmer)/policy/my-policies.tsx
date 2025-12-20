@@ -62,7 +62,7 @@ export default function MyPoliciesScreen() {
     },
     {
       key: "payout",
-      label: "Đang chi trả",
+      label: "Đang bồi thường",
       icon: DollarSign,
       color: "info",
     },

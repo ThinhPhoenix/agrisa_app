@@ -350,7 +350,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                 fontWeight="$semibold"
                 color={conditionColor}
               >
-                {isWarning ? "Cảnh báo sớm" : "Vượt ngưỡng"}
+                {isWarning ? "Cảnh báo sớm" : "Đủ điều kiện"}
               </Text>
             </Box>
           </HStack>
@@ -1266,8 +1266,8 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
             <Box
               bg={
                 claim.evidence_summary?.generation_method === "automatic"
-                  ? colors.warningSoft
-                  : colors.primarySoft || colors.background
+                  ? ""
+                  : ""
               }
               px="$3"
               py="$2"
@@ -1392,7 +1392,9 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     }
                     textTransform="capitalize"
                   >
-                    {claim.partner_decision ? claim.partner_decision : "Chưa cập nhật"}
+                    {claim.partner_decision
+                      ? claim.partner_decision
+                      : "Chưa cập nhật"}
                   </Text>
                 </VStack>
               </Box>
@@ -1413,7 +1415,9 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     color={colors.primary_text}
                     lineHeight="$lg"
                   >
-                    {claim.partner_notes ? claim.partner_notes : "Chưa cập nhật"}
+                    {claim.partner_notes
+                      ? claim.partner_notes
+                      : "Chưa cập nhật"}
                   </Text>
                 </Box>
               </VStack>
@@ -1455,7 +1459,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Xác nhận nhận tiền
+                  Xác nhận nhận bồi thường
                 </Text>
               </HStack>
 
@@ -1637,7 +1641,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     </HStack>
                   </VStack>
                 </VStack>
-              ) : payout.status === "paid" ? (
+              ) : payout.status === "completed" ? (
                 /* Payout đã thanh toán - hiển thị form xác nhận */
                 <VStack space="md">
                   {/* Thông báo đã chi trả */}
@@ -1704,7 +1708,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                           fontWeight="$semibold"
                           color={colors.success}
                         >
-                          Đã thanh toán
+                          Đã bồi thường
                         </Text>
                       </Box>
                     </HStack>
@@ -1820,7 +1824,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                           color={colors.primary_white_text}
                           fontWeight="$bold"
                         >
-                          Xác nhận đã nhận tiền
+                          Xác nhận đã nhận tiền bồi thường
                         </ButtonText>
                       </HStack>
                     )}

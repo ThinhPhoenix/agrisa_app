@@ -9,6 +9,7 @@ import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
+  Button,
   Checkbox,
   CheckboxIcon,
   CheckboxIndicator,
@@ -46,6 +47,7 @@ import React, { useState } from "react";
 import { Linking, RefreshControl } from "react-native";
 import { UnderwritingStatus } from "../enums/policy-status.enum";
 import { RegisteredPolicy } from "../models/policy.models";
+import { ReviewCancelRequestModal } from "./review-cancel-request-modal";
 
 interface DetailRegisteredPolicyProps {
   policy: RegisteredPolicy;
@@ -67,6 +69,8 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const { userProfile } = useAuthStore();
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedDataSharing, setAcceptedDataSharing] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
 
   // Fetch thông tin farm dựa trên farm_id
   const { getDetailFarm } = useFarm();
@@ -75,6 +79,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
     getDetailBasePolicy,
     getUnderwritingPolicy,
     getCancelRequestByPolicyId,
+    reviewCancelRequestMutation,
   } = usePolicy();
   const { mutate: createPayment, isPending: isCreatingPayment } =
     useCreatePayment();
@@ -134,7 +139,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           icon: CheckCircle2,
           bgColor: colors.infoSoft,
         };
-      
+
       case "pending_cancel":
         return {
           label: "Chờ xử lý hủy hợp đồng",
@@ -142,7 +147,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           icon: Clock,
           bgColor: colors.warningSoft,
         };
-      
+
       case "dispute":
         return {
           label: "Tranh chấp - Đang giải quyết",
@@ -150,7 +155,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           icon: AlertCircle,
           bgColor: colors.errorSoft,
         };
-      
+
       case "cancelled":
         return {
           label: "Hợp đồng đã bị hủy",
@@ -158,7 +163,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           icon: XCircle,
           bgColor: colors.errorSoft,
         };
-      
+
       case "expired":
         return {
           label: "Hợp đồng hết hạn",
@@ -166,7 +171,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           icon: XCircle,
           bgColor: colors.background,
         };
-      
+
       case "pending_payment":
         // Chờ thanh toán (sau khi được duyệt)
         if (policy.underwriting_status === UnderwritingStatus.APPROVED) {
@@ -178,7 +183,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           };
         }
         break;
-      
+
       case "draft":
         return {
           label: "Bản nháp",
@@ -328,6 +333,33 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
       },
     });
   };
+
+  // Handler cho việc review cancel request
+  const handleReview = (approved: boolean) => {
+    setIsApproving(approved);
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = (reviewNotes: string, approved: boolean) => {
+    if (!cancelRequest?.id) {
+      console.error("❌ Không có cancel request ID");
+      return;
+    }
+
+    reviewCancelRequestMutation.mutate({
+      cancel_request_id: cancelRequest.id,
+      payload: {
+        review_notes: reviewNotes,
+        approved: approved,
+      },
+    });
+
+    setShowReviewModal(false);
+  };
+
+  // Kiểm tra xem user có phải là người tạo yêu cầu không
+  const isRequestedByUser =
+    cancelRequest?.requested_by === userProfile?.user_id;
 
   return (
     <ScrollView
@@ -920,7 +952,8 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                 textAlign="center"
                 px="$2"
               >
-                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa chỉ số vượt ngưỡng)
+                Số tiền dự kiến được chi trả khi xảy ra thiệt hại (chưa chỉ số
+                vượt ngưỡng)
               </Text>
             </VStack>
 
@@ -1252,8 +1285,8 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           </Box>
         )}
 
-        {/* ========== THÔNG TIN THẨM ĐỊNH (UNDERWRITING) ========== */}
-        {underwritingLoading && (
+        {/* ========== THÔNG TIN YÊU CẦU HỦY HỢP ĐỒNG ========== */}
+        {cancelRequestLoading && (
           <Box
             bg={colors.card_surface}
             borderRadius="$2xl"
@@ -1272,7 +1305,13 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
 
         {!cancelRequestLoading && cancelRequest && (
           <Box
-            bg={colors.card_surface}
+            bg={
+              cancelRequest.status === "approved"
+                ? colors.successSoft
+                : cancelRequest.status === "rejected"
+                  ? colors.errorSoft
+                  : colors.warningSoft
+            }
             borderRadius="$2xl"
             borderWidth={2}
             borderColor={
@@ -1284,62 +1323,12 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
             }
             p="$5"
           >
-            <VStack space="md">
-              {/* Header */}
-              <HStack alignItems="center" space="sm" justifyContent="center">
-                <AlertTriangle
-                  size={20}
-                  color={
-                    cancelRequest.status === "approved"
-                      ? colors.success
-                      : cancelRequest.status === "rejected"
-                        ? colors.error
-                        : colors.warning
-                  }
-                  strokeWidth={2}
-                />
-                <Text
-                  fontSize="$lg"
-                  fontWeight="$bold"
-                  color={colors.primary_text}
-                >
-                  Yêu cầu hủy hợp đồng
-                </Text>
-              </HStack>
-
-              <Box height={1} bg={colors.frame_border} width="100%" />
-
-              {/* Trạng thái yêu cầu */}
-              <Box
-                bg={
-                  cancelRequest.status === "approved"
-                    ? colors.successSoft
-                    : cancelRequest.status === "rejected"
-                      ? colors.errorSoft
-                      : colors.warningSoft
-                }
-                p="$4"
-                borderRadius="$lg"
-              >
-                <HStack space="sm" alignItems="center" justifyContent="center">
-                  {cancelRequest.status === "approved" ? (
-                    <CheckCircle2
-                      size={18}
-                      color={colors.success}
-                      strokeWidth={2}
-                    />
-                  ) : cancelRequest.status === "rejected" ? (
-                    <XCircle size={18} color={colors.error} strokeWidth={2} />
-                  ) : (
-                    <AlertCircle
-                      size={18}
-                      color={colors.warning}
-                      strokeWidth={2}
-                    />
-                  )}
-                  <Text
-                    fontSize="$md"
-                    fontWeight="$bold"
+            <VStack space="lg">
+              {/* Header với badge */}
+              <HStack justifyContent="space-between" alignItems="center">
+                <HStack space="sm" alignItems="center" flex={1}>
+                  <AlertTriangle
+                    size={22}
                     color={
                       cancelRequest.status === "approved"
                         ? colors.success
@@ -1347,123 +1336,243 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                           ? colors.error
                           : colors.warning
                     }
-                  >
-                    {cancelRequest.status === "approved"
-                      ? "Đã chấp nhận"
-                      : cancelRequest.status === "rejected"
-                        ? "Đã từ chối"
-                        : "Đang chờ xử lý"}
-                  </Text>
+                    strokeWidth={2.5}
+                  />
+                  <VStack flex={1}>
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$bold"
+                      color={colors.primary_text}
+                    >
+                      Yêu cầu hủy hợp đồng
+                    </Text>
+                    <Text fontSize="$xs" color={colors.secondary_text}>
+                      Người tạo:{" "}
+                      {requestedByLoading ? (
+                        <Spinner size="small" color={colors.primary} />
+                      ) : isRequestedByUser ? (
+                        "Bạn"
+                      ) : requestedByData?.success ? (
+                        requestedByData.data?.partner_display_name
+                      ) : (
+                        "Đối tác bảo hiểm"
+                      )}
+                    </Text>
+                  </VStack>
                 </HStack>
-              </Box>
 
-              {/* Loại yêu cầu */}
-              <VStack space="xs">
-                <Text fontSize="$xs" color={colors.secondary_text}>
-                  Loại yêu cầu
-                </Text>
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$semibold"
-                  color={colors.primary_text}
+                {/* Badge trạng thái */}
+                <Box
+                  bg={colors.card_surface}
+                  px="$3"
+                  py="$2"
+                  borderRadius="$full"
+                  borderWidth={1}
+                  borderColor={
+                    cancelRequest.status === "approved"
+                      ? colors.success
+                      : cancelRequest.status === "rejected"
+                        ? colors.error
+                        : colors.warning
+                  }
                 >
-                  {cancelRequest.cancel_request_type === "contract_violation"
-                    ? "Vi phạm hợp đồng"
-                    : "Lý do khác"}
-                </Text>
-              </VStack>
-
-              {/* Lý do hủy */}
-              <VStack space="xs">
-                <Text fontSize="$xs" color={colors.secondary_text}>
-                  Lý do hủy
-                </Text>
-                <Box bg={colors.background} p="$3" borderRadius="$lg">
-                  <Text fontSize="$sm" color={colors.primary_text}>
-                    {cancelRequest.reason}
-                  </Text>
-                </Box>
-              </VStack>
-
-              {/* Bằng chứng */}
-              {cancelRequest.evidence && (
-                <VStack space="xs">
-                  <Text fontSize="$xs" color={colors.secondary_text}>
-                    Bằng chứng
-                  </Text>
-                  <Box bg={colors.background} p="$3" borderRadius="$lg">
-                    <VStack space="sm">
-                      <Text fontSize="$sm" color={colors.primary_text}>
-                        {cancelRequest.evidence.description}
-                      </Text>
-                      {cancelRequest.evidence.images &&
-                        cancelRequest.evidence.images.length > 0 && (
-                          <HStack space="xs" flexWrap="wrap">
-                            <ImageIcon
-                              size={14}
-                              color={colors.secondary_text}
-                            />
-                            <Text fontSize="$xs" color={colors.secondary_text}>
-                              {cancelRequest.evidence.images.length} ảnh đính
-                              kèm
-                            </Text>
-                          </HStack>
-                        )}
-                    </VStack>
-                  </Box>
-                </VStack>
-              )}
-
-              {/* Ngày yêu cầu */}
-              <VStack space="xs">
-                <Text fontSize="$xs" color={colors.secondary_text}>
-                  Ngày tạo yêu cầu
-                </Text>
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$semibold"
-                  color={colors.primary_text}
-                >
-                  {Utils.formatStringVietnameseDateTime(
-                    cancelRequest.requested_at
-                  )}
-                </Text>
-              </VStack>
-
-              {/* Người tạo yêu cầu */}
-              <VStack space="xs">
-                <Text fontSize="$xs" color={colors.secondary_text}>
-                  Người tạo yêu cầu
-                </Text>
-                <Box bg={colors.background} p="$3" borderRadius="$lg">
                   <HStack space="xs" alignItems="center">
-                    <User size={14} color={colors.primary} strokeWidth={2} />
-                    {requestedByLoading ? (
-                      <Spinner size="small" color={colors.primary} />
-                    ) : cancelRequest.requested_by === userProfile?.id ? (
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        {userProfile?.full_name ||
-                          userProfile?.display_name ||
-                          "Bạn"}
-                      </Text>
+                    {cancelRequest.status === "approved" ? (
+                      <CheckCircle2
+                        size={14}
+                        color={colors.success}
+                        strokeWidth={2}
+                      />
+                    ) : cancelRequest.status === "rejected" ? (
+                      <XCircle size={14} color={colors.error} strokeWidth={2} />
                     ) : (
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        {requestedByData?.success
-                          ? requestedByData.data?.partner_display_name
-                          : "Đối tác bảo hiểm"}
-                      </Text>
+                      <Clock size={14} color={colors.warning} strokeWidth={2} />
                     )}
+                    <Text
+                      fontSize="$xs"
+                      fontWeight="$bold"
+                      color={
+                        cancelRequest.status === "approved"
+                          ? colors.success
+                          : cancelRequest.status === "rejected"
+                            ? colors.error
+                            : colors.warning
+                      }
+                    >
+                      {cancelRequest.status === "approved"
+                        ? "Đã chấp nhận"
+                        : cancelRequest.status === "rejected"
+                          ? "Đã từ chối"
+                          : "Chờ xử lý"}
+                    </Text>
                   </HStack>
                 </Box>
-              </VStack>
+              </HStack>
+
+              {/* Nội dung chi tiết */}
+              <Box bg={colors.card_surface} borderRadius="$xl" p="$4">
+                <VStack space="md">
+                  {/* Loại yêu cầu */}
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <Text fontSize="$sm" color={colors.secondary_text}>
+                      Loại yêu cầu
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      {cancelRequest.cancel_request_type ===
+                      "contract_violation"
+                        ? "Vi phạm hợp đồng"
+                        : "Lý do khác"}
+                    </Text>
+                  </HStack>
+
+                  {/* Số tiền dự kiến bồi thường - Chỉ hiển thị khi không phải người tạo */}
+                  {!isRequestedByUser && cancelRequest.compensate_amount && (
+                    <>
+                      <Box height={1} bg={colors.frame_border} width="100%" />
+                      <HStack
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Text
+                          fontSize="$sm"
+                          color={colors.secondary_text}
+                          fontWeight="$medium"
+                        >
+                          Số tiền dự kiến bồi thường
+                        </Text>
+                        <Text
+                          fontSize="$md"
+                          fontWeight="$bold"
+                          color={colors.error}
+                        >
+                          {Utils.formatCurrency(
+                            cancelRequest.compensate_amount
+                          )}
+                        </Text>
+                      </HStack>
+                    </>
+                  )}
+
+                  <Box height={1} bg={colors.frame_border} width="100%" />
+
+                  {/* Lý do hủy */}
+                  <VStack space="xs">
+                    <Text
+                      fontSize="$sm"
+                      color={colors.secondary_text}
+                      fontWeight="$medium"
+                    >
+                      Lý do hủy
+                    </Text>
+                    <Text fontSize="$sm" color={colors.primary_text}>
+                      {cancelRequest.reason}
+                    </Text>
+                  </VStack>
+
+                  {/* Bằng chứng */}
+                  {cancelRequest.evidence && (
+                    <>
+                      <Box height={1} bg={colors.frame_border} width="100%" />
+                      <VStack space="xs">
+                        <Text
+                          fontSize="$sm"
+                          color={colors.secondary_text}
+                          fontWeight="$medium"
+                        >
+                          Bằng chứng
+                        </Text>
+                        <Text fontSize="$sm" color={colors.primary_text}>
+                          {cancelRequest.evidence.description}
+                        </Text>
+                        {cancelRequest.evidence.images &&
+                          cancelRequest.evidence.images.length > 0 && (
+                            <HStack space="xs" alignItems="center">
+                              <ImageIcon
+                                size={14}
+                                color={colors.secondary_text}
+                              />
+                              <Text
+                                fontSize="$xs"
+                                color={colors.secondary_text}
+                              >
+                                {cancelRequest.evidence.images.length} ảnh đính
+                                kèm
+                              </Text>
+                            </HStack>
+                          )}
+                      </VStack>
+                    </>
+                  )}
+
+                  <Box height={1} bg={colors.frame_border} width="100%" />
+
+                  {/* Ngày tạo yêu cầu */}
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <Text fontSize="$sm" color={colors.secondary_text}>
+                      Ngày tạo yêu cầu
+                    </Text>
+                    <Text
+                      fontSize="$sm"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      {Utils.formatStringVietnameseDateTime(
+                        cancelRequest.requested_at
+                      )}
+                    </Text>
+                  </HStack>
+                </VStack>
+              </Box>
+
+              {/* Nút hành động - Chỉ hiển thị khi không phải người tạo và trạng thái pending */}
+              {!isRequestedByUser &&
+                cancelRequest.status === "pending_review" && (
+                  <HStack space="md" width="100%">
+                    <Button
+                      flex={1}
+                      size="md"
+                      variant="outline"
+                      borderColor={colors.error}
+                      onPress={() => handleReview(false)}
+                    >
+                      <HStack space="xs" alignItems="center">
+                        <XCircle
+                          size={16}
+                          color={colors.error}
+                          strokeWidth={2}
+                        />
+                        <Text color={colors.error} fontWeight="$bold">
+                          Từ chối
+                        </Text>
+                      </HStack>
+                    </Button>
+
+                    <Button
+                      flex={1}
+                      size="md"
+                      bg={colors.success}
+                      onPress={() => handleReview(true)}
+                    >
+                      <HStack space="xs" alignItems="center">
+                        <CheckCircle2
+                          size={16}
+                          color={colors.primary_white_text}
+                          strokeWidth={2}
+                        />
+                        <Text
+                          color={colors.primary_white_text}
+                          fontWeight="$bold"
+                        >
+                          Chấp nhận
+                        </Text>
+                      </HStack>
+                    </Button>
+                  </HStack>
+                )}
             </VStack>
           </Box>
         )}
@@ -1484,7 +1593,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                Chi phí bảo hiểm
+                Các phí cần thanh toán
               </Text>
             </HStack>
 
@@ -1497,7 +1606,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                   color={colors.primary_text}
                   fontWeight="$medium"
                 >
-                  Phí bảo hiểm
+                  Phí mua gói bảo hiểm
                 </Text>
                 <Text
                   fontSize="$md"
@@ -1535,7 +1644,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                Tổng chi phí
+                Tổng phí thanh toán
               </Text>
               <Text fontSize="$lg" fontWeight="$bold" color={colors.primary}>
                 {Utils.formatCurrency(policy.total_farmer_premium)}
@@ -1562,7 +1671,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                     fontWeight="$bold"
                     color={colors.success}
                   >
-                    Nông dân đã chi trả
+                    Đã thanh toán
                   </Text>
                 </HStack>
               </Box>
@@ -1735,6 +1844,15 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           </VStack>
         </Box>
       </VStack>
+
+      {/* Modal Review Cancel Request */}
+      <ReviewCancelRequestModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        onSubmit={handleSubmitReview}
+        isApproving={isApproving}
+        isLoading={reviewCancelRequestMutation.isPending}
+      />
     </ScrollView>
   );
 };

@@ -42,12 +42,7 @@ interface FarmPhoto {
  */
 export enum CropType {
   RICE = "rice",
-  CORN = "corn",
   COFFEE = "coffee",
-  PEPPER = "pepper",
-  DRAGON_FRUIT = "dragon_fruit",
-  DURIAN = "durian",
-  OTHER = "other",
 }
 
 /**

@@ -53,22 +53,34 @@ export default function PolicyHistoryScreen() {
         );
       case "approved":
         return policies.filter(
-          (p: RegisteredPolicy) => p.underwriting_status === "approved"
+          (p: RegisteredPolicy) =>
+            p.underwriting_status === "approved" &&
+            // Loại trừ các status đặc biệt vào nhóm Khác
+            p.status !== "pending_cancel" &&
+            p.status !== "payout" &&
+            p.status !== "dispute" &&
+            p.status !== "cancelled" &&
+            p.status !== "expired"
         );
       case "rejected":
         return policies.filter(
           (p: RegisteredPolicy) => p.underwriting_status === "rejected"
         );
       case "other":
-        // Các status không thuộc pending/approved/rejected HOẶC
-        // policy status = cancelled HOẶC
-        // approved + paid nhưng status không phải active
+        // Các status đặc biệt hoặc không thuộc pending/approved/rejected
         return policies.filter(
           (p: RegisteredPolicy) =>
+            // Các status đặc biệt luôn vào Khác
+            p.status === "pending_cancel" ||
+            p.status === "payout" ||
+            p.status === "dispute" ||
             p.status === "cancelled" ||
+            p.status === "expired" ||
+            // Approved nhưng đã paid mà không active (trừ các status đặc biệt đã check ở trên)
             (p.underwriting_status === "approved" &&
               p.premium_paid_by_farmer === true &&
               p.status !== "active") ||
+            // Underwriting status không thuộc 3 loại chính
             (p.underwriting_status !== "pending" &&
               p.underwriting_status !== "approved" &&
               p.underwriting_status !== "rejected")
@@ -93,17 +105,31 @@ export default function PolicyHistoryScreen() {
         (p: RegisteredPolicy) => p.underwriting_status === "pending"
       ).length,
       approved: policies.filter(
-        (p: RegisteredPolicy) => p.underwriting_status === "approved"
+        (p: RegisteredPolicy) =>
+          p.underwriting_status === "approved" &&
+          // Loại trừ các status đặc biệt
+          p.status !== "pending_cancel" &&
+          p.status !== "payout" &&
+          p.status !== "dispute" &&
+          p.status !== "cancelled" &&
+          p.status !== "expired"
       ).length,
       rejected: policies.filter(
         (p: RegisteredPolicy) => p.underwriting_status === "rejected"
       ).length,
       other: policies.filter(
         (p: RegisteredPolicy) =>
+          // Các status đặc biệt
+          p.status === "pending_cancel" ||
+          p.status === "payout" ||
+          p.status === "dispute" ||
           p.status === "cancelled" ||
+          p.status === "expired" ||
+          // Approved nhưng đã paid mà không active
           (p.underwriting_status === "approved" &&
             p.premium_paid_by_farmer === true &&
             p.status !== "active") ||
+          // Underwriting status không thuộc 3 loại chính
           (p.underwriting_status !== "pending" &&
             p.underwriting_status !== "approved" &&
             p.underwriting_status !== "rejected")
@@ -223,10 +249,7 @@ export default function PolicyHistoryScreen() {
             const count = statusCounts[tab.key];
 
             return (
-              <Pressable
-                key={tab.key}
-                onPress={() => setActiveTab(tab.key)}
-              >
+              <Pressable key={tab.key} onPress={() => setActiveTab(tab.key)}>
                 {({ pressed }) => (
                   <Box
                     pb="$2"

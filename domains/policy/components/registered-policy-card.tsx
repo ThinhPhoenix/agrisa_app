@@ -41,7 +41,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
     switch (policy.status) {
       case "payout":
         return {
-          label: "Đang chi trả",
+          label: "Đang bồi thường",
           color: colors.info,
           bgColor: colors.infoSoft,
           icon: CheckCircle2,

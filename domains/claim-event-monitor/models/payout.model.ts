@@ -3,7 +3,7 @@
 /**
  * Trạng thái của payout
  */
-export type PayoutStatus = "processing" | "paid" | "failed" | "cancelled";
+export type PayoutStatus = "processing" | "completed" | "failed" | "cancelled";
 
 /**
  * Model cho một payout record

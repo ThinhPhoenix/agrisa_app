@@ -351,6 +351,7 @@ export interface CancelRequest {
   requested_at: string; // ISO timestamp
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
+  compensate_amount?: number; // Số tiền dự kiến bồi thường (optional)
 }
 
 /**
@@ -362,3 +363,10 @@ export interface CancelRequestsResponse {
   farmer_id: string;
 }
 
+/**
+ * Payload để review (phê duyệt/từ chối) yêu cầu hủy hợp đồng
+ */
+export interface ReviewCancelRequestPayload {
+  review_notes: string; // Ghi chú khi phê duyệt/từ chối
+  approved: boolean; // true = chấp nhận, false = từ chối
+}

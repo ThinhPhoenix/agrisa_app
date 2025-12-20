@@ -33,6 +33,7 @@ export const QueryKey = {
     CANCEL: "policy-cancel",
     GET_CANCEL_REASONS: "get-cancel-reasons",
     GET_CANCEL_REQUESTS: "get-cancel-requests",
+    REVIEW_CANCEL_REQUEST: "review-cancel-request",
   },
 
   FARM: {

@@ -4,14 +4,7 @@ import { useStats } from "@/domains/shared/hooks/use-stats";
 import { Utils } from "@/libs/utils/utils";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  Banknote,
-  CloudRain,
-  Eye,
-  EyeOff,
-  FileText,
-  Wheat,
-} from "lucide-react-native";
+import { Banknote, Eye, EyeOff, FileText, Wheat } from "lucide-react-native";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -34,7 +27,9 @@ export default function InfoCards() {
   const [moneyVisible, setMoneyVisible] = useState(false);
 
   // Lấy tổng số tiền bồi thường (payout)
-  const { data: payoutData, isLoading: isLoadingPayout } = getTotalByType("policy_payout_payment");
+  const { data: payoutData, isLoading: isLoadingPayout } = getTotalByType(
+    "policy_payout_payment"
+  );
   const totalPayout = payoutData?.success ? payoutData.data : 0;
 
   // Card data configuration
@@ -73,11 +68,11 @@ export default function InfoCards() {
       icon: Wheat,
       iconColor: colors.success,
       iconBgColor: `${colors.success}15`,
-      label: "Trang trại Agrisa",
+      label: "Trang trại của tôi",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.success} />
       ) : (
-        `${stats?.farm_active_count || 0} trang trại`
+        `${stats?.farm_active_count || 0} nông trại`
       ),
       gradient: ["rgba(34, 197, 94, 0.08)", "rgba(34, 197, 94, 0.02)"],
     },
@@ -86,7 +81,7 @@ export default function InfoCards() {
       icon: FileText,
       iconColor: colors.info,
       iconBgColor: `${colors.info}15`,
-      label: "Hợp đồng đăng ký",
+      label: "Hợp đồng hoạt động",
       value: isLoading ? (
         <ActivityIndicator size="small" color={colors.info} />
       ) : (
@@ -94,7 +89,6 @@ export default function InfoCards() {
       ),
       gradient: ["rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.02)"],
     },
-    
   ];
 
   return (
@@ -131,10 +125,7 @@ export default function InfoCards() {
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
         >
-          <BlurView
-            intensity={80}
-            tint="light"
-          >
+          <BlurView intensity={80} tint="light">
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -153,7 +144,11 @@ export default function InfoCards() {
                             backgroundColor: card.iconBgColor,
                           }}
                         >
-                          <Icon size={14} color={card.iconColor} strokeWidth={2.5} />
+                          <Icon
+                            size={14}
+                            color={card.iconColor}
+                            strokeWidth={2.5}
+                          />
                         </View>
                         <Text
                           className="text-sm font-semibold"

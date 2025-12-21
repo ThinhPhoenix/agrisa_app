@@ -6,7 +6,13 @@ import CoordinateConverter, {
 import { Box, Spinner, Text, VStack } from "@gluestack-ui/themed";
 import Constants from "expo-constants";
 import { AlertCircle, RotateCcw } from "lucide-react-native";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { WebView } from "react-native-webview";
 
@@ -193,7 +199,7 @@ const generateMapHTML = (
 /**
  * Component hiển thị bản đồ ranh giới nông trại với OpenMapVN Satellite
  * Sử dụng WebView + MapLibre GL để tránh dependency vào native modules
- * 
+ *
  * Features:
  * - ✅ Hiển thị polygon ranh giới nông trại trên satellite map
  * - ✅ Hỗ trợ chuyển đổi VN2000 -> WGS84 cho hiển thị
@@ -211,7 +217,9 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
   const { colors } = useAgrisaColors();
   const [mapReady, setMapReady] = useState(false);
   const [mapKey, setMapKey] = useState(0);
-  const [wgs84Boundary, setWgs84Boundary] = useState<BoundaryPolygon | null>(null);
+  const [wgs84Boundary, setWgs84Boundary] = useState<BoundaryPolygon | null>(
+    null
+  );
   const [isConverting, setIsConverting] = useState(false);
   const webViewRef = useRef<WebView>(null);
 
@@ -227,14 +235,20 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
       try {
         if (isVn2000) {
           setIsConverting(true);
-          console.log("🗺️ Converting VN2000 boundary to WGS84 via API", { province });
-          
-          const converted = await CoordinateConverter.convertBoundaryVn2000ToWgs84(
-            boundary,
-            province // ⭐ Pass province để auto-detect central meridian
-          );
-          
-          console.log("✅ Converted boundary:", JSON.stringify(converted.coordinates[0].slice(0, 2))); // Log first 2 points
+          console.log("🗺️ Converting VN2000 boundary to WGS84 via API", {
+            province,
+          });
+
+          const converted =
+            await CoordinateConverter.convertBoundaryVn2000ToWgs84(
+              boundary,
+              province // ⭐ Pass province để auto-detect central meridian
+            );
+
+          console.log(
+            "✅ Converted boundary:",
+            JSON.stringify(converted.coordinates[0].slice(0, 2))
+          ); // Log first 2 points
           setWgs84Boundary(converted);
         } else {
           console.log("✅ Using WGS84 boundary as-is");
@@ -252,12 +266,14 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
   }, [boundary, isVn2000, province]);
 
   // ===== API KEY =====
-  
-  const apiKey = Constants.expoConfig?.extra?.EXPO_PUBLIC_OPENMAPVN_KEY || 
-    process.env.EXPO_PUBLIC_OPENMAPVN_KEY || "";
+
+  const apiKey =
+    Constants.expoConfig?.extra?.EXPO_PUBLIC_OPENMAPVN_KEY ||
+    process.env.EXPO_PUBLIC_OPENMAPVN_KEY ||
+    "";
 
   // ===== GENERATE MAP HTML =====
-  
+
   const mapHTML = useMemo(() => {
     if (!wgs84Boundary || !apiKey) {
       console.log("⚠️ Warning: Missing boundary or API key");
@@ -271,13 +287,13 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
   const handleWebViewMessage = useCallback((event: any) => {
     try {
       const message = JSON.parse(event.nativeEvent.data);
-      
-      if (message.type === 'mapReady') {
-        console.log('✅ Map ready');
+
+      if (message.type === "mapReady") {
+        console.log("✅ Map ready");
         setMapReady(true);
       }
     } catch (error) {
-      console.error('❌ Error parsing WebView message:', error);
+      console.error("❌ Error parsing WebView message:", error);
     }
   }, []);
 
@@ -287,7 +303,7 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
     console.log("🔄 Reloading map...");
     setMapReady(false);
     // Force WebView re-mount bằng cách update key
-    setMapKey(prev => prev + 1);
+    setMapKey((prev) => prev + 1);
   }, []);
 
   // ===== RENDER =====
@@ -308,10 +324,18 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
         <VStack space="md" alignItems="center">
           <Spinner size="large" color={colors.primary} />
           <VStack space="xs" alignItems="center">
-            <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
+            <Text
+              fontSize="$md"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Đang chuyển đổi tọa độ...
             </Text>
-            <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
+            <Text
+              fontSize="$sm"
+              color={colors.secondary_text}
+              textAlign="center"
+            >
               VN2000 → WGS84 qua API
             </Text>
           </VStack>
@@ -333,13 +357,26 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
         alignItems="center"
       >
         <VStack space="md" alignItems="center">
-          <AlertCircle size={48} color={colors.secondary_text} strokeWidth={1.5} />
+          <AlertCircle
+            size={48}
+            color={colors.secondary_text}
+            strokeWidth={1.5}
+          />
           <VStack space="xs" alignItems="center">
-            <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
+            <Text
+              fontSize="$md"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Có lỗi khi tải bản đồ
             </Text>
-            <Text fontSize="$sm" color={colors.secondary_text} textAlign="center">
-              Vui lòng nhập tọa độ trang trại. Nếu lỗi còn xảy ra, hãy liên hệ bộ phận hỗ trợ.
+            <Text
+              fontSize="$sm"
+              color={colors.secondary_text}
+              textAlign="center"
+            >
+              Vui lòng nhập tọa độ nông trại. Nếu lỗi còn xảy ra, hãy liên hệ bộ
+              phận hỗ trợ.
             </Text>
           </VStack>
         </VStack>
@@ -388,7 +425,7 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
         )}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
-          console.error('❌ WebView error:', nativeEvent);
+          console.error("❌ WebView error:", nativeEvent);
         }}
       />
 
@@ -411,8 +448,6 @@ export const FarmBoundaryMap: React.FC<FarmBoundaryMapProps> = ({
           </TouchableOpacity>
         </Box>
       )}
-
-      
     </Box>
   );
 };

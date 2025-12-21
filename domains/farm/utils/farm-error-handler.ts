@@ -54,7 +54,7 @@ export const parseFarmError = (error: any): FarmErrorInfo => {
   const defaultError: FarmErrorInfo = {
     category: FarmErrorCategory.UNKNOWN,
     title: "Đăng ký thất bại",
-    message: "Không thể đăng ký trang trại. Vui lòng thử lại.",
+    message: "Không thể đăng ký nông trại. Vui lòng thử lại.",
     canRetry: true,
   };
 
@@ -63,9 +63,12 @@ export const parseFarmError = (error: any): FarmErrorInfo => {
   // Extract error information
   const httpStatus = error?.response?.status || error?.status;
   const responseData = error?.response?.data;
-  const errorCode = (responseData?.error?.code || error?.code || "").toUpperCase();
-  const errorMessage =
-    responseData?.error?.message || error?.message || "";
+  const errorCode = (
+    responseData?.error?.code ||
+    error?.code ||
+    ""
+  ).toUpperCase();
+  const errorMessage = responseData?.error?.message || error?.message || "";
 
   // 1. NETWORK ERRORS
   if (error.isNetworkError || errorCode === "NETWORK_OFFLINE") {
@@ -102,7 +105,8 @@ export const parseFarmError = (error: any): FarmErrorInfo => {
       category: FarmErrorCategory.AUTH,
       title: "Thiếu thông tin",
       message: "Bạn chưa cung cấp đầy đủ thông tin căn cước công dân.",
-      subMessage: "Vui lòng cập nhật thông tin cá nhân trước khi đăng ký trang trại.",
+      subMessage:
+        "Vui lòng cập nhật thông tin cá nhân trước khi đăng ký nông trại.",
       httpStatus,
       errorCode: errorCode || "NOT_FOUND",
       canRetry: false,
@@ -156,8 +160,10 @@ const parseByErrorCode = (
     return {
       category: FarmErrorCategory.NATIONAL_ID_MISMATCH,
       title: "CCCD không khớp",
-      message: "Số CCCD trên giấy chứng nhận không khớp với số CCCD trong hồ sơ của bạn.",
-      subMessage: "Vui lòng kiểm tra lại thông tin hoặc cập nhật CCCD trong hồ sơ.",
+      message:
+        "Số CCCD trên giấy chứng nhận không khớp với số CCCD trong hồ sơ của bạn.",
+      subMessage:
+        "Vui lòng kiểm tra lại thông tin hoặc cập nhật CCCD trong hồ sơ.",
       httpStatus,
       errorCode,
       canRetry: false,
@@ -397,7 +403,7 @@ const parseValidationError = (
       category: FarmErrorCategory.VALIDATION,
       title: "Thiếu loại cây trồng",
       message: "Bạn chưa chọn loại cây trồng.",
-      subMessage: "Vui lòng chọn loại cây trồng cho trang trại.",
+      subMessage: "Vui lòng chọn loại cây trồng cho nông trại.",
       httpStatus,
       errorCode: "VALIDATION_FAILED",
       canRetry: true,
@@ -426,7 +432,7 @@ const parseValidationError = (
     return {
       category: FarmErrorCategory.VALIDATION,
       title: "Diện tích không hợp lệ",
-      message: "Diện tích trang trại phải lớn hơn 0.",
+      message: "Diện tích nông trại phải lớn hơn 0.",
       subMessage: "Vui lòng nhập diện tích chính xác hoặc vẽ lại ranh giới.",
       httpStatus,
       errorCode: "VALIDATION_FAILED",
@@ -444,7 +450,7 @@ const parseValidationError = (
       category: FarmErrorCategory.VALIDATION,
       title: "Thiếu loại đất",
       message: "Bạn chưa chọn loại đất.",
-      subMessage: "Vui lòng chọn loại đất cho trang trại.",
+      subMessage: "Vui lòng chọn loại đất cho nông trại.",
       httpStatus,
       errorCode: "VALIDATION_FAILED",
       canRetry: true,
@@ -470,7 +476,9 @@ const parseValidationError = (
 
   // Date errors
   if (
-    msg.includes("planting_date is required when expected_harvest_date is provided")
+    msg.includes(
+      "planting_date is required when expected_harvest_date is provided"
+    )
   ) {
     return {
       category: FarmErrorCategory.VALIDATION,
@@ -511,18 +519,12 @@ const parseValidationError = (
       httpStatus,
       errorCode: "VALIDATION_FAILED",
       canRetry: false,
-      suggestions: [
-        "Truy cập Hồ sơ → Thông tin cá nhân",
-        "Cập nhật số CCCD",
-      ],
+      suggestions: ["Truy cập Hồ sơ → Thông tin cá nhân", "Cập nhật số CCCD"],
     };
   }
 
   // File validation errors
-  if (
-    msg.includes("invalid name") ||
-    msg.includes("please check it")
-  ) {
+  if (msg.includes("invalid name") || msg.includes("please check it")) {
     return {
       category: FarmErrorCategory.FILE_UPLOAD,
       title: "Tên file không hợp lệ",
@@ -560,10 +562,7 @@ const parseValidationError = (
       httpStatus,
       errorCode: "VALIDATION_FAILED",
       canRetry: true,
-      suggestions: [
-        "Nén ảnh trước khi tải lên",
-        "Kích thước tối đa: 5MB/file",
-      ],
+      suggestions: ["Nén ảnh trước khi tải lên", "Kích thước tối đa: 5MB/file"],
     };
   }
 
@@ -640,8 +639,8 @@ const parseServerError = (
   if (msg.includes("error creating farm")) {
     return {
       category: FarmErrorCategory.SYSTEM,
-      title: "Lỗi tạo trang trại",
-      message: "Hệ thống không thể tạo trang trại.",
+      title: "Lỗi tạo nông trại",
+      message: "Hệ thống không thể tạo nông trại.",
       subMessage: "Vui lòng thử lại sau hoặc liên hệ hỗ trợ.",
       technicalMessage: errorMessage,
       httpStatus,
@@ -659,7 +658,7 @@ const parseServerError = (
     return {
       category: FarmErrorCategory.SYSTEM,
       title: "Lỗi khởi tạo giám sát",
-      message: "Không thể khởi tạo hệ thống giám sát vệ tinh cho trang trại.",
+      message: "Không thể khởi tạo hệ thống giám sát vệ tinh cho nông trại.",
       subMessage:
         "Trang trại đã được tạo nhưng chức năng giám sát có thể chưa hoạt động. Vui lòng liên hệ hỗ trợ.",
       technicalMessage: errorMessage,
@@ -680,7 +679,10 @@ const parseServerError = (
     httpStatus,
     errorCode: "INTERNAL_SERVER_ERROR",
     canRetry: true,
-    suggestions: ["Thử lại sau 5-10 phút", "Liên hệ hỗ trợ nếu lỗi vẫn tiếp diễn"],
+    suggestions: [
+      "Thử lại sau 5-10 phút",
+      "Liên hệ hỗ trợ nếu lỗi vẫn tiếp diễn",
+    ],
   };
 };
 

@@ -103,7 +103,7 @@ export const createFarmFormFields = ({
     // ===== LỊCH CANH TÁC (TÙY CHỌN) =====
     {
       name: "planting_date",
-      label: "Ngày gieo trồng (không bắt buộc)",
+      label: "Ngày dự kiến gieo trồng (không bắt buộc)",
       placeholder: "Chọn ngày gieo trồng",
       type: "datepicker",
       required: false,
@@ -161,8 +161,14 @@ export const createFarmFormFields = ({
           value: "Đất chuyên trồng lúa (LUC)",
         },
         { label: "Đất lúa nương (LUN) ", value: "Đất lúa nương (LUN) " },
-        { label: "Đất trồng lúa còn lại (LUK)", value: "Đất trồng lúa còn lại (LUK)" },
-        { label: "Đất trồng cây lâu năm (CLN)", value: "Đất trồng cây lâu năm (CLN)" },
+        {
+          label: "Đất trồng lúa còn lại (LUK)",
+          value: "Đất trồng lúa còn lại (LUK)",
+        },
+        {
+          label: "Đất trồng cây lâu năm (CLN)",
+          value: "Đất trồng cây lâu năm (CLN)",
+        },
       ],
       helperText:
         "Chấp nhận các loại đất dựa trên cây trồng và sổ như sau:\n - Đất chuyên trồng lúa (LUC)\n - Đất trồng lúa còn lại (LUK) \n - Đất lúa nương (LUN) \n - Đất trồng cây lâu năm (CLN)",
@@ -174,7 +180,7 @@ export const createFarmFormFields = ({
       label: "Có hệ thống tưới tiêu?",
       type: "switch",
       required: true,
-      helperText: "Bật nếu trang trại có hệ thống tưới tiêu",
+      helperText: "Bật nếu nông trại có hệ thống tưới tiêu",
     },
 
     // Chỉ hiển thị khi has_irrigation = true

@@ -46,14 +46,14 @@ export const useFarm = () => {
 
             // Hiển thị Result Status Screen
             resultStatus.showSuccess({
-                title: "Đăng ký thành công!",
-                message: "Trang trại của bạn đã được đăng ký thành công.",
-                subMessage:
-                    "Bạn có thể bắt đầu đăng ký bảo hiểm cho trang trại này.",
-                autoRedirectSeconds: 5,
-                autoRedirectRoute: "/(tabs)",
-                showHomeButton: true,
-                lockNavigation: true,
+              title: "Đăng ký thành công!",
+              message: "Trang trại của bạn đã được đăng ký thành công.",
+              subMessage:
+                "Bạn có thể bắt đầu đăng ký bảo hiểm cho nông trại này.",
+              autoRedirectSeconds: 5,
+              autoRedirectRoute: "/(tabs)",
+              showHomeButton: true,
+              lockNavigation: true,
             });
         },
         onError: (error: any) => {

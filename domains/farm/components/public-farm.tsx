@@ -270,7 +270,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
             color={AgrisaColors.light.primary_text}
             textAlign="center"
           >
-            Chưa có trang trại nào
+            Chưa có nông trại nào
           </Text>
           <Text
             fontSize={14}
@@ -278,7 +278,7 @@ export const PublicFarmList: React.FC<PublicFarmListProps> = ({
             textAlign="center"
             px="$4"
           >
-            Đăng ký trang trại để bắt đầu sử dụng dịch vụ bảo hiểm nông nghiệp
+            Đăng ký nông trại để bắt đầu sử dụng dịch vụ bảo hiểm nông nghiệp
           </Text>
         </VStack>
       </VStack>

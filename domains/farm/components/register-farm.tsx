@@ -78,8 +78,8 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
   // ===== STATE =====
   // Input mode: 'selection' | 'ocr' | 'manual'
-  const [inputMode, setInputMode] = useState<'selection' | 'ocr' | 'manual'>(
-    mode === 'edit' ? 'manual' : 'selection' // Edit mode luôn là manual
+  const [inputMode, setInputMode] = useState<"selection" | "ocr" | "manual">(
+    mode === "edit" ? "manual" : "selection" // Edit mode luôn là manual
   );
   const [redBookImages, setRedBookImages] = useState<string[]>([]);
   const [ocrResult, setOcrResult] = useState<Partial<FormFarmDTO> | null>(null);
@@ -103,7 +103,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   const formValuesHashRef = useRef<string | null>(null);
   // Ref lưu formValues hiện tại để so sánh tránh setState thừa
   const formValuesRef = useRef(formValues);
-  
+
   // Sync ref với state khi hasIrrigation thay đổi
   useEffect(() => {
     hasIrrigationRef.current = hasIrrigation;
@@ -144,7 +144,10 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
   useEffect(() => {
     if (mode !== "create") return;
 
-    const hasData = redBookImages.length > 0 || ocrResult !== null || inputMode !== 'selection';
+    const hasData =
+      redBookImages.length > 0 ||
+      ocrResult !== null ||
+      inputMode !== "selection";
 
     navigation.setOptions({
       gestureEnabled: !hasData, // Disable swipe khi có dữ liệu
@@ -162,7 +165,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       }
 
       // Nếu không có dữ liệu thì cho thoát tự do
-      if (!redBookImages.length && !ocrResult && inputMode === 'selection') {
+      if (!redBookImages.length && !ocrResult && inputMode === "selection") {
         return;
       }
 
@@ -186,7 +189,10 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
           return false;
         }
 
-        if (mode === "create" && (redBookImages.length > 0 || ocrResult || inputMode !== 'selection')) {
+        if (
+          mode === "create" &&
+          (redBookImages.length > 0 || ocrResult || inputMode !== "selection")
+        ) {
           setShowExitConfirm(true);
           return true; // Block - chờ user confirm trong modal
         }
@@ -231,7 +237,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         mode,
         ocrResult,
         hasIrrigation,
-        isManualMode: inputMode === 'manual', // Enable fields trong manual mode
+        isManualMode: inputMode === "manual", // Enable fields trong manual mode
       }),
     [mode, ocrResult, hasIrrigation, inputMode]
   );
@@ -317,7 +323,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       setRedBookImages(limitedUris);
 
       notification.success(
-        "Quét thông tin thành công!\nVui lòng kiểm tra thông tin trang trại."
+        "Quét thông tin thành công!\nVui lòng kiểm tra thông tin nông trại."
       );
     } catch (error) {
       console.error("❌ OCR PARSE ERROR:", error);
@@ -335,17 +341,19 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       }
       formValuesHashRef.current = nextHash;
 
-       // Nếu không có thay đổi thực sự, bỏ qua để tránh setState lặp
-       const prev = formValuesRef.current || {};
-       let changed = false;
-       const keys = new Set([...Object.keys(prev), ...Object.keys(values)]);
-       for (const key of keys) {
-         if (JSON.stringify(prev[key]) !== JSON.stringify((values as any)[key])) {
-           changed = true;
-           break;
-         }
-       }
-       if (!changed) return;
+      // Nếu không có thay đổi thực sự, bỏ qua để tránh setState lặp
+      const prev = formValuesRef.current || {};
+      let changed = false;
+      const keys = new Set([...Object.keys(prev), ...Object.keys(values)]);
+      for (const key of keys) {
+        if (
+          JSON.stringify(prev[key]) !== JSON.stringify((values as any)[key])
+        ) {
+          changed = true;
+          break;
+        }
+      }
+      if (!changed) return;
 
       // Sync hasIrrigation state nếu thay đổi - dùng ref để so sánh
       if (
@@ -367,7 +375,9 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
       try {
         // Validate ảnh giấy tờ trong Create Mode
         if (mode === "create" && redBookImages.length === 0) {
-          notification.error("Vui lòng tải lên ít nhất 1 ảnh giấy chứng nhận đất!");
+          notification.error(
+            "Vui lòng tải lên ít nhất 1 ảnh giấy chứng nhận đất!"
+          );
           return;
         }
 
@@ -377,7 +387,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         }
 
         // Đảm bảo land_certificate_photos được set từ redBookImages (cho manual mode)
-        if (mode === "create" && inputMode === 'manual' && !values.land_certificate_photos) {
+        if (
+          mode === "create" &&
+          inputMode === "manual" &&
+          !values.land_certificate_photos
+        ) {
           // Convert ảnh thành base64 nếu chưa có
           const base64Images = await Promise.all(
             redBookImages.map(async (uri, index) => {
@@ -422,9 +436,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
         // Validate tọa độ boundary - BẮT BUỘC
         if (!finalValues.boundary && mode === "create") {
-          notification.error(
-            "Vui lòng nhập tọa độ ranh giới của nông trại!"
-          );
+          notification.error("Vui lòng nhập tọa độ ranh giới của nông trại!");
           return;
         }
 
@@ -534,7 +546,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
           </VStack>
 
           {/* ===== PROGRESS INDICATOR (CHỈ OCR MODE) ===== */}
-          {mode === "create" && inputMode === 'ocr' && (
+          {mode === "create" && inputMode === "ocr" && (
             <HStack
               justifyContent="center"
               alignItems="center"
@@ -548,12 +560,14 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   h={48}
                   borderRadius="$full"
                   bg={
-                    redBookImages.length > 0 || inputMode === 'manual' ? colors.success : colors.primary
+                    redBookImages.length > 0 || inputMode === "manual"
+                      ? colors.success
+                      : colors.primary
                   }
                   alignItems="center"
                   justifyContent="center"
                 >
-                  {redBookImages.length > 0 || inputMode === 'manual' ? (
+                  {redBookImages.length > 0 || inputMode === "manual" ? (
                     <CheckCircle2
                       size={24}
                       color={colors.primary_white_text}
@@ -575,7 +589,9 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   color={colors.primary_text}
                   textAlign="center"
                 >
-                  {inputMode === 'manual' ? 'Nhập thông tin thủ công' : 'Tải lên ảnh giấy chứng nhận'}
+                  {inputMode === "manual"
+                    ? "Nhập thông tin thủ công"
+                    : "Tải lên ảnh giấy chứng nhận"}
                 </Text>
               </VStack>
 
@@ -589,13 +605,13 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   h={48}
                   borderRadius="$full"
                   bg={
-                    redBookImages.length > 0 || inputMode === 'manual'
+                    redBookImages.length > 0 || inputMode === "manual"
                       ? colors.primary
                       : colors.card_surface
                   }
                   borderWidth={2}
                   borderColor={
-                    redBookImages.length > 0 || inputMode === 'manual'
+                    redBookImages.length > 0 || inputMode === "manual"
                       ? colors.primary
                       : colors.frame_border
                   }
@@ -606,7 +622,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     fontSize="$xl"
                     fontWeight="$bold"
                     color={
-                      redBookImages.length > 0 || inputMode === 'manual'
+                      redBookImages.length > 0 || inputMode === "manual"
                         ? colors.primary_white_text
                         : colors.secondary_text
                     }
@@ -617,10 +633,12 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                 <Text
                   fontSize="$xs"
                   fontWeight={
-                    redBookImages.length > 0 || inputMode === 'manual' ? "$semibold" : "$normal"
+                    redBookImages.length > 0 || inputMode === "manual"
+                      ? "$semibold"
+                      : "$normal"
                   }
                   color={
-                    redBookImages.length > 0 || inputMode === 'manual'
+                    redBookImages.length > 0 || inputMode === "manual"
                       ? colors.primary_text
                       : colors.secondary_text
                   }
@@ -633,7 +651,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
           )}
 
           {/* ===== MODE SELECTION (CHỈ CREATE MODE) ===== */}
-          {mode === "create" && inputMode === 'selection' && (
+          {mode === "create" && inputMode === "selection" && (
             <VStack space="lg">
               {/* Card hướng dẫn */}
               <Box
@@ -660,7 +678,8 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                       textAlign="center"
                       lineHeight={20}
                     >
-                      Bạn có thể quét tự động từ sổ đỏ hoặc nhập thông tin thủ công
+                      Bạn có thể quét tự động từ sổ đỏ hoặc nhập thông tin thủ
+                      công
                     </Text>
                   </VStack>
                 </VStack>
@@ -670,7 +689,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
               <HStack space="md">
                 {/* Option 1: OCR Mode */}
                 <TouchableOpacity
-                  onPress={() => setInputMode('ocr')}
+                  onPress={() => setInputMode("ocr")}
                   activeOpacity={0.7}
                   style={{ flex: 1 }}
                 >
@@ -680,7 +699,6 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     p="$4"
                     borderWidth={2}
                     borderColor={colors.primary}
-                    
                   >
                     <VStack space="md" flex={1} justifyContent="space-between">
                       <VStack space="md" alignItems="center">
@@ -691,7 +709,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                           alignItems="center"
                           justifyContent="center"
                         >
-                          <Camera size={28} color={colors.primary_white_text} strokeWidth={2} />
+                          <Camera
+                            size={28}
+                            color={colors.primary_white_text}
+                            strokeWidth={2}
+                          />
                         </Box>
                         <VStack space="xs" alignItems="center">
                           <Text
@@ -712,7 +734,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                           </Text>
                         </VStack>
                       </VStack>
-                      
+
                       <Box
                         bg={colors.successSoft}
                         borderRadius="$md"
@@ -720,7 +742,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         px="$2"
                         alignSelf="center"
                       >
-                        <Text fontSize="$xs" color={colors.success} fontWeight="$semibold">
+                        <Text
+                          fontSize="$xs"
+                          color={colors.success}
+                          fontWeight="$semibold"
+                        >
                           Khuyến nghị
                         </Text>
                       </Box>
@@ -730,7 +756,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
 
                 {/* Option 2: Manual Mode */}
                 <TouchableOpacity
-                  onPress={() => setInputMode('manual')}
+                  onPress={() => setInputMode("manual")}
                   activeOpacity={0.7}
                   style={{ flex: 1 }}
                 >
@@ -750,7 +776,11 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                           alignItems="center"
                           justifyContent="center"
                         >
-                          <FileText size={28} color={colors.primary_white_text} strokeWidth={2} />
+                          <FileText
+                            size={28}
+                            color={colors.primary_white_text}
+                            strokeWidth={2}
+                          />
                         </Box>
                         <VStack space="xs" alignItems="center">
                           <Text
@@ -777,9 +807,7 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                         py="$1"
                         px="$2"
                         alignSelf="center"
-                      >
-                       
-                      </Box>
+                      ></Box>
                     </VStack>
                   </Box>
                 </TouchableOpacity>
@@ -788,735 +816,176 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
           )}
 
           {/* ===== BƯỚC 1: TẢI ẢNH GIẤY TỜ (OCR MODE) ===== */}
-          {mode === "create" && inputMode === 'ocr' && redBookImages.length === 0 && (
-            <VStack space="lg">
-              {/* Card hướng dẫn */}
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$xl"
-                p="$4"
-                borderWidth={1}
-                borderColor={colors.shadow}
-              >
-                <VStack space="sm" alignItems="center">
-                  <FileText size={40} color={colors.primary} strokeWidth={2} />
-                  <VStack space="xs" alignItems="center">
-                    <Text
-                      fontSize="$lg"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                      textAlign="center"
-                    >
-                      Giấy chứng nhận quyền sử dụng đất
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      color={colors.secondary_text}
-                      textAlign="center"
-                    >
-                      Chụp hoặc chọn ảnh rõ nét - Tối đa {MAX_IMAGES} ảnh
-                    </Text>
-                  </VStack>
-                </VStack>
-              </Box>
-
-              {/* Nút chọn ảnh - 2 nút ngang */}
-              <HStack space="md">
-                <Button
-                  onPress={async () => {
-                    try {
-                      const { status } =
-                        await ImagePicker.requestCameraPermissionsAsync();
-                      if (status !== "granted") {
-                        notification.error("Cần cấp quyền sử dụng máy ảnh");
-                        return;
-                      }
-
-                      const result = await ImagePicker.launchCameraAsync({
-                        mediaTypes: ["images"],
-                        quality: 0.8,
-                        allowsEditing: false,
-                      });
-
-                      if (
-                        !result.canceled &&
-                        result.assets &&
-                        result.assets[0]
-                      ) {
-                        const newUri = result.assets[0].uri;
-                        setRedBookImages((prev) => {
-                          if (prev.length >= MAX_IMAGES) {
-                            notification.info(`Tối đa ${MAX_IMAGES} ảnh`);
-                            return prev;
-                          }
-                          return [...prev, newUri];
-                        });
-                        notification.success("Đã chụp ảnh thành công!");
-                      }
-                    } catch (error) {
-                      console.error("Camera error:", error);
-                      notification.error("Không thể mở máy ảnh");
-                    }
-                  }}
-                  bg={colors.primary}
-                  borderRadius="$xl"
-                  size="xl"
-                  flex={1}
-                >
-                  <HStack space="xs" alignItems="center">
-                    <Camera
-                      size={20}
-                      color={colors.primary_white_text}
-                      strokeWidth={2}
-                    />
-                    <ButtonText
-                      color={colors.primary_white_text}
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                    >
-                      Chụp ảnh
-                    </ButtonText>
-                  </HStack>
-                </Button>
-
-                <Button
-                  onPress={async () => {
-                    try {
-                      const { status } =
-                        await ImagePicker.requestMediaLibraryPermissionsAsync();
-                      if (status !== "granted") {
-                        notification.error("Cần cấp quyền truy cập thư viện");
-                        return;
-                      }
-
-                      const result = await ImagePicker.launchImageLibraryAsync({
-                        mediaTypes: ["images"],
-                        quality: 0.8,
-                        allowsMultipleSelection: true,
-                      });
-
-                      if (!result.canceled && result.assets) {
-                        const newUris = result.assets.map((a) => a.uri);
-                        const remainingSlots =
-                          MAX_IMAGES - redBookImages.length;
-                        const limitedUris = newUris.slice(0, remainingSlots);
-
-                        if (newUris.length > remainingSlots) {
-                          notification.info(
-                            `Chỉ thêm được ${remainingSlots} ảnh. Tối đa ${MAX_IMAGES} ảnh.`
-                          );
-                        }
-
-                        setRedBookImages((prev) => [...prev, ...limitedUris]);
-                        notification.success(
-                          `Đã chọn ${limitedUris.length} ảnh`
-                        );
-                      }
-                    } catch (error) {
-                      console.error("Library error:", error);
-                      notification.error("Không thể mở thư viện ảnh");
-                    }
-                  }}
-                  variant="outline"
-                  borderColor={colors.primary}
-                  borderWidth={2}
-                  bg={colors.card_surface}
-                  borderRadius="$xl"
-                  size="xl"
-                  flex={1}
-                >
-                  <HStack space="xs" alignItems="center">
-                    <Upload size={20} color={colors.primary} strokeWidth={2} />
-                    <ButtonText
-                      color={colors.primary}
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                    >
-                      Chọn ảnh
-                    </ButtonText>
-                  </HStack>
-                </Button>
-              </HStack>
-            </VStack>
-          )}
-
-          {/* ===== GALLERY ẢNH ĐÃ CHỌN & NÚT QUÉT (OCR MODE) ===== */}
-          {mode === "create" && inputMode === 'ocr' && redBookImages.length > 0 && !ocrResult && (
-            <VStack space="md">
-              {/* Gallery ảnh */}
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$xl"
-                p="$4"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-              >
-                <VStack space="md">
-                  <HStack justifyContent="space-between" alignItems="center">
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      Ảnh giấy chứng nhận đã đăng tải
-                    </Text>
-                    <Text fontSize="$xs" color={colors.secondary_text}>
-                      {redBookImages.length}/{MAX_IMAGES} ảnh
-                    </Text>
-                  </HStack>
-
-                  <HStack flexWrap="wrap" gap="$2">
-                    {redBookImages.map((uri, index) => (
-                      <Box
-                        key={index}
-                        borderRadius="$lg"
-                        overflow="hidden"
-                        borderWidth={2}
-                        borderColor={colors.primary}
-                        position="relative"
-                        style={{ width: "48%", aspectRatio: 1 }}
-                      >
-                        <Pressable onPress={() => handleViewImage(index)}>
-                          <Image
-                            source={{ uri }}
-                            style={{ width: "100%", height: "100%" }}
-                            resizeMode="cover"
-                          />
-                        </Pressable>
-
-                        {/* Delete button */}
-                        <TouchableOpacity
-                          onPress={() => handleDeleteImage(index)}
-                          style={{
-                            position: "absolute",
-                            top: 8,
-                            right: 8,
-                            backgroundColor: colors.error,
-                            borderRadius: 20,
-                            padding: 6,
-                          }}
-                        >
-                          <Trash2 size={16} color={"#fff"} strokeWidth={2} />
-                        </TouchableOpacity>
-
-                        {/* Image number */}
-                        <Box
-                          position="absolute"
-                          bottom={8}
-                          left={8}
-                          bg={colors.primary}
-                          borderRadius="$md"
-                          px="$2"
-                          py="$1"
-                        >
-                          <Text
-                            fontSize="$xs"
-                            fontWeight="$bold"
-                            color={colors.primary_white_text}
-                          >
-                            Ảnh {index + 1}
-                          </Text>
-                        </Box>
-                      </Box>
-                    ))}
-                  </HStack>
-
-                  {/* Nút thêm ảnh nếu chưa đủ */}
-                  {redBookImages.length < MAX_IMAGES && (
-                    <HStack space="sm">
-                      <Button
-                        onPress={async () => {
-                          try {
-                            const { status } =
-                              await ImagePicker.requestCameraPermissionsAsync();
-                            if (status !== "granted") {
-                              notification.error("Cần cấp quyền máy ảnh");
-                              return;
-                            }
-                            const result = await ImagePicker.launchCameraAsync({
-                              mediaTypes: ["images"],
-                              quality: 0.8,
-                            });
-                            if (!result.canceled && result.assets?.[0]) {
-                              setRedBookImages((prev) => [
-                                ...prev,
-                                result.assets[0].uri,
-                              ]);
-                              notification.success("Đã thêm ảnh");
-                            }
-                          } catch (error) {
-                            notification.error("Không thể mở máy ảnh");
-                          }
-                        }}
-                        variant="outline"
-                        borderColor={colors.primary}
-                        bg={colors.successSoft}
-                        borderRadius="$lg"
-                        size="sm"
-                        flex={1}
-                      >
-                        <HStack space="xs" alignItems="center">
-                          <Camera
-                            size={16}
-                            color={colors.primary}
-                            strokeWidth={2}
-                          />
-                          <ButtonText color={colors.primary} fontSize="$xs">
-                            Chụp thêm
-                          </ButtonText>
-                        </HStack>
-                      </Button>
-
-                      <Button
-                        onPress={async () => {
-                          try {
-                            const { status } =
-                              await ImagePicker.requestMediaLibraryPermissionsAsync();
-                            if (status !== "granted") {
-                              notification.error("Cần quyền thư viện");
-                              return;
-                            }
-                            const remainingSlots =
-                              MAX_IMAGES - redBookImages.length;
-                            const result =
-                              await ImagePicker.launchImageLibraryAsync({
-                                mediaTypes: ["images"],
-                                quality: 0.8,
-                                allowsMultipleSelection: true,
-                              });
-                            if (!result.canceled && result.assets) {
-                              const newUris = result.assets
-                                .map((a) => a.uri)
-                                .slice(0, remainingSlots);
-                              setRedBookImages((prev) => [...prev, ...newUris]);
-                              notification.success(
-                                `Đã thêm ${newUris.length} ảnh`
-                              );
-                            }
-                          } catch (error) {
-                            notification.error("Không thể mở thư viện");
-                          }
-                        }}
-                        variant="outline"
-                        borderColor={colors.primary}
-                        bg={colors.successSoft}
-                        borderRadius="$lg"
-                        size="sm"
-                        flex={1}
-                      >
-                        <HStack space="xs" alignItems="center">
-                          <Upload
-                            size={16}
-                            color={colors.primary}
-                            strokeWidth={2}
-                          />
-                          <ButtonText color={colors.primary} fontSize="$xs">
-                            Chọn thêm
-                          </ButtonText>
-                        </HStack>
-                      </Button>
-                    </HStack>
-                  )}
-                </VStack>
-              </Box>
-
-              {/* Nút xác nhận & quét - sử dụng OcrScanner */}
-              <OcrScanner
-                imageUris={redBookImages}
-                buttonLabel="Xác nhận & quét thông tin"
-                prompt={RED_BOOK_OCR_PROMPT}
-                onResult={handleOcrResult}
-              />
-
-              
-            </VStack>
-          )}
-
-          {/* ===== BƯỚC 2: THÔNG TIN NÔNG TRẠI ===== */}
-          {(mode === "edit" || inputMode === 'manual' || (inputMode === 'ocr' && redBookImages.length > 0 && ocrResult)) && (
-            <VStack space="lg">
-              {/* Thông báo kiểm tra thông tin */}
-              {mode === "create" && inputMode === 'ocr' && ocrResult && (
-                <HStack space="sm" alignItems="center" px="$2">
-                  <AlertCircle
-                    size={18}
-                    color={colors.warning}
-                    strokeWidth={2}
-                  />
-                  <Text
-                    flex={1}
-                    fontSize="$sm"
-                    color={colors.secondary_text}
-                    lineHeight={20}
-                  >
-                    Thông tin được nhận diện tự động. Vui lòng kiểm tra và chỉnh
-                    sửa nếu cần.
-                  </Text>
-                </HStack>
-              )}
-
-              {/* Nút quay lại chọn mode - Đã loại bỏ theo yêu cầu */}
-
-              {/* Upload ảnh sổ đỏ cho Manual mode */}
-              {mode === "create" && inputMode === 'manual' && (
+          {mode === "create" &&
+            inputMode === "ocr" &&
+            redBookImages.length === 0 && (
+              <VStack space="lg">
+                {/* Card hướng dẫn */}
                 <Box
                   bg={colors.card_surface}
                   borderRadius="$xl"
                   p="$4"
                   borderWidth={1}
-                  borderColor={colors.frame_border}
+                  borderColor={colors.shadow}
                 >
-                  <VStack space="md">
-                    <HStack justifyContent="space-between" alignItems="center">
+                  <VStack space="sm" alignItems="center">
+                    <FileText
+                      size={40}
+                      color={colors.primary}
+                      strokeWidth={2}
+                    />
+                    <VStack space="xs" alignItems="center">
                       <Text
-                        fontSize="$md"
+                        fontSize="$lg"
                         fontWeight="$bold"
                         color={colors.primary_text}
+                        textAlign="center"
                       >
-                        Ảnh giấy chứng nhận đất
+                        Giấy chứng nhận quyền sử dụng đất
                       </Text>
-                      <Text fontSize="$xs" color={colors.secondary_text}>
-                        {redBookImages.length}/{MAX_IMAGES} ảnh
+                      <Text
+                        fontSize="$sm"
+                        color={colors.secondary_text}
+                        textAlign="center"
+                      >
+                        Chụp hoặc chọn ảnh rõ nét - Tối đa {MAX_IMAGES} ảnh
                       </Text>
-                    </HStack>
-
-                    {redBookImages.length === 0 ? (
-                      // Chưa có ảnh - hiển thị nút upload
-                      <VStack space="sm">
-                        <Text fontSize="$sm" color={colors.secondary_text} lineHeight={18}>
-                          Tải lên ảnh giấy chứng nhận quyền sử dụng đất (Tối đa {MAX_IMAGES} ảnh)
-                        </Text>
-                        <HStack space="md">
-                          <Button
-                            onPress={async () => {
-                              try {
-                                const { status } =
-                                  await ImagePicker.requestCameraPermissionsAsync();
-                                if (status !== "granted") {
-                                  notification.error("Cần cấp quyền sử dụng máy ảnh");
-                                  return;
-                                }
-
-                                const result = await ImagePicker.launchCameraAsync({
-                                  mediaTypes: ["images"],
-                                  quality: 0.8,
-                                  allowsEditing: false,
-                                });
-
-                                if (
-                                  !result.canceled &&
-                                  result.assets &&
-                                  result.assets[0]
-                                ) {
-                                  const newUri = result.assets[0].uri;
-                                  setRedBookImages([newUri]);
-                                  
-                                  // Convert ảnh thành base64 và lưu vào formValues
-                                  const base64Data = await Utils.convertImageToBase64(newUri);
-                                  updateFormValues({
-                                    land_certificate_photos: [{
-                                      file_name: `land_certificate_${Date.now()}_1.jpg`,
-                                      field_name: "land_certificate_photos",
-                                      data: base64Data,
-                                    }],
-                                  });
-                                  
-                                  notification.success("Đã chụp ảnh thành công!");
-                                }
-                              } catch (error) {
-                                console.error("Camera error:", error);
-                                notification.error("Không thể mở máy ảnh");
-                              }
-                            }}
-                            bg={colors.primary}
-                            borderRadius="$xl"
-                            size="lg"
-                            flex={1}
-                          >
-                            <HStack space="xs" alignItems="center">
-                              <Camera
-                                size={20}
-                                color={colors.primary_white_text}
-                                strokeWidth={2}
-                              />
-                              <ButtonText
-                                color={colors.primary_white_text}
-                                fontSize="$sm"
-                                fontWeight="$bold"
-                              >
-                                Chụp ảnh
-                              </ButtonText>
-                            </HStack>
-                          </Button>
-
-                          <Button
-                            onPress={async () => {
-                              try {
-                                const { status } =
-                                  await ImagePicker.requestMediaLibraryPermissionsAsync();
-                                if (status !== "granted") {
-                                  notification.error("Cần cấp quyền truy cập thư viện");
-                                  return;
-                                }
-
-                                const result = await ImagePicker.launchImageLibraryAsync({
-                                  mediaTypes: ["images"],
-                                  quality: 0.8,
-                                  allowsMultipleSelection: true,
-                                });
-
-                                if (!result.canceled && result.assets) {
-                                  const newUris = result.assets.map((a) => a.uri);
-                                  const limitedUris = newUris.slice(0, MAX_IMAGES);
-
-                                  if (newUris.length > MAX_IMAGES) {
-                                    notification.info(
-                                      `Chỉ chọn được tối đa ${MAX_IMAGES} ảnh. Đã bỏ ${newUris.length - MAX_IMAGES} ảnh.`
-                                    );
-                                  }
-
-                                  setRedBookImages(limitedUris);
-                                  
-                                  // Convert tất cả ảnh thành base64
-                                  const base64Images = await Promise.all(
-                                    limitedUris.map(async (uri, index) => {
-                                      const base64Data = await Utils.convertImageToBase64(uri);
-                                      return {
-                                        file_name: `land_certificate_${Date.now()}_${index + 1}.jpg`,
-                                        field_name: "land_certificate_photos",
-                                        data: base64Data,
-                                      };
-                                    })
-                                  );
-                                  
-                                  updateFormValues({
-                                    land_certificate_photos: base64Images,
-                                  });
-                                  
-                                  notification.success(
-                                    `Đã chọn ${limitedUris.length} ảnh`
-                                  );
-                                }
-                              } catch (error) {
-                                console.error("Library error:", error);
-                                notification.error("Không thể mở thư viện ảnh");
-                              }
-                            }}
-                            variant="outline"
-                            borderColor={colors.primary}
-                            borderWidth={2}
-                            bg={colors.card_surface}
-                            borderRadius="$xl"
-                            size="lg"
-                            flex={1}
-                          >
-                            <HStack space="xs" alignItems="center">
-                              <Upload size={20} color={colors.primary} strokeWidth={2} />
-                              <ButtonText
-                                color={colors.primary}
-                                fontSize="$sm"
-                                fontWeight="$bold"
-                              >
-                                Chọn ảnh
-                              </ButtonText>
-                            </HStack>
-                          </Button>
-                        </HStack>
-                      </VStack>
-                    ) : (
-                      // Đã có ảnh - hiển thị gallery
-                      <VStack space="md">
-                        <HStack flexWrap="wrap" gap="$2">
-                          {redBookImages.map((uri, index) => (
-                            <Box
-                              key={index}
-                              borderRadius="$lg"
-                              overflow="hidden"
-                              borderWidth={2}
-                              borderColor={colors.primary}
-                              position="relative"
-                              style={{ width: "48%", aspectRatio: 1 }}
-                            >
-                              <Pressable onPress={() => handleViewImage(index)}>
-                                <Image
-                                  source={{ uri }}
-                                  style={{ width: "100%", height: "100%" }}
-                                  resizeMode="cover"
-                                />
-                              </Pressable>
-
-                              {/* Delete button */}
-                              <TouchableOpacity
-                                onPress={() => handleDeleteImage(index)}
-                                style={{
-                                  position: "absolute",
-                                  top: 8,
-                                  right: 8,
-                                  backgroundColor: colors.error,
-                                  borderRadius: 20,
-                                  padding: 6,
-                                }}
-                              >
-                                <Trash2 size={16} color={"#fff"} strokeWidth={2} />
-                              </TouchableOpacity>
-
-                              {/* Image number */}
-                              <Box
-                                position="absolute"
-                                bottom={8}
-                                left={8}
-                                bg={colors.primary}
-                                borderRadius="$md"
-                                px="$2"
-                                py="$1"
-                              >
-                                <Text
-                                  fontSize="$xs"
-                                  fontWeight="$bold"
-                                  color={colors.primary_white_text}
-                                >
-                                  Ảnh {index + 1}
-                                </Text>
-                              </Box>
-                            </Box>
-                          ))}
-                        </HStack>
-
-                        {/* Nút thêm ảnh nếu chưa đủ */}
-                        {redBookImages.length < MAX_IMAGES && (
-                          <HStack space="sm">
-                            <Button
-                              onPress={async () => {
-                                try {
-                                  const { status } =
-                                    await ImagePicker.requestCameraPermissionsAsync();
-                                  if (status !== "granted") {
-                                    notification.error("Cần cấp quyền máy ảnh");
-                                    return;
-                                  }
-                                  const result = await ImagePicker.launchCameraAsync({
-                                    mediaTypes: ["images"],
-                                    quality: 0.8,
-                                  });
-                                  if (!result.canceled && result.assets?.[0]) {
-                                    const newUri = result.assets[0].uri;
-                                    setRedBookImages((prev) => [...prev, newUri]);
-                                    
-                                    // Thêm ảnh mới vào formValues
-                                    const base64Data = await Utils.convertImageToBase64(newUri);
-                                    const currentPhotos = formValues.land_certificate_photos || [];
-                                    updateFormValues({
-                                      land_certificate_photos: [
-                                        ...currentPhotos,
-                                        {
-                                          file_name: `land_certificate_${Date.now()}_${currentPhotos.length + 1}.jpg`,
-                                          field_name: "land_certificate_photos",
-                                          data: base64Data,
-                                        },
-                                      ],
-                                    });
-                                    
-                                    notification.success("Đã thêm ảnh");
-                                  }
-                                } catch (error) {
-                                  notification.error("Không thể mở máy ảnh");
-                                }
-                              }}
-                              variant="outline"
-                              borderColor={colors.primary}
-                              bg={colors.successSoft}
-                              borderRadius="$lg"
-                              size="sm"
-                              flex={1}
-                            >
-                              <HStack space="xs" alignItems="center">
-                                <Camera
-                                  size={16}
-                                  color={colors.primary}
-                                  strokeWidth={2}
-                                />
-                                <ButtonText color={colors.primary} fontSize="$xs">
-                                  Chụp thêm
-                                </ButtonText>
-                              </HStack>
-                            </Button>
-
-                            <Button
-                              onPress={async () => {
-                                try {
-                                  const { status } =
-                                    await ImagePicker.requestMediaLibraryPermissionsAsync();
-                                  if (status !== "granted") {
-                                    notification.error("Cần quyền thư viện");
-                                    return;
-                                  }
-                                  const remainingSlots =
-                                    MAX_IMAGES - redBookImages.length;
-                                  const result =
-                                    await ImagePicker.launchImageLibraryAsync({
-                                      mediaTypes: ["images"],
-                                      quality: 0.8,
-                                      allowsMultipleSelection: true,
-                                    });
-                                  if (!result.canceled && result.assets) {
-                                    const newUris = result.assets
-                                      .map((a) => a.uri)
-                                      .slice(0, remainingSlots);
-                                    setRedBookImages((prev) => [...prev, ...newUris]);
-                                    
-                                    // Thêm các ảnh mới vào formValues
-                                    const currentPhotos = formValues.land_certificate_photos || [];
-                                    const newBase64Images = await Promise.all(
-                                      newUris.map(async (uri, index) => {
-                                        const base64Data = await Utils.convertImageToBase64(uri);
-                                        return {
-                                          file_name: `land_certificate_${Date.now()}_${currentPhotos.length + index + 1}.jpg`,
-                                          field_name: "land_certificate_photos",
-                                          data: base64Data,
-                                        };
-                                      })
-                                    );
-                                    
-                                    updateFormValues({
-                                      land_certificate_photos: [...currentPhotos, ...newBase64Images],
-                                    });
-                                    
-                                    notification.success(
-                                      `Đã thêm ${newUris.length} ảnh`
-                                    );
-                                  }
-                                } catch (error) {
-                                  notification.error("Không thể mở thư viện");
-                                }
-                              }}
-                              variant="outline"
-                              borderColor={colors.primary}
-                              bg={colors.successSoft}
-                              borderRadius="$lg"
-                              size="sm"
-                              flex={1}
-                            >
-                              <HStack space="xs" alignItems="center">
-                                <Upload
-                                  size={16}
-                                  color={colors.primary}
-                                  strokeWidth={2}
-                                />
-                                <ButtonText color={colors.primary} fontSize="$xs">
-                                  Chọn thêm
-                                </ButtonText>
-                              </HStack>
-                            </Button>
-                          </HStack>
-                        )}
-                      </VStack>
-                    )}
+                    </VStack>
                   </VStack>
                 </Box>
-              )}
 
-              {/* Gallery ảnh giấy chứng nhận (có thể thêm/xóa) - CHỈ OCR MODE */}
-              {mode === "create" && inputMode === 'ocr' && redBookImages.length > 0 && ocrResult && (
+                {/* Nút chọn ảnh - 2 nút ngang */}
+                <HStack space="md">
+                  <Button
+                    onPress={async () => {
+                      try {
+                        const { status } =
+                          await ImagePicker.requestCameraPermissionsAsync();
+                        if (status !== "granted") {
+                          notification.error("Cần cấp quyền sử dụng máy ảnh");
+                          return;
+                        }
+
+                        const result = await ImagePicker.launchCameraAsync({
+                          mediaTypes: ["images"],
+                          quality: 0.8,
+                          allowsEditing: false,
+                        });
+
+                        if (
+                          !result.canceled &&
+                          result.assets &&
+                          result.assets[0]
+                        ) {
+                          const newUri = result.assets[0].uri;
+                          setRedBookImages((prev) => {
+                            if (prev.length >= MAX_IMAGES) {
+                              notification.info(`Tối đa ${MAX_IMAGES} ảnh`);
+                              return prev;
+                            }
+                            return [...prev, newUri];
+                          });
+                          notification.success("Đã chụp ảnh thành công!");
+                        }
+                      } catch (error) {
+                        console.error("Camera error:", error);
+                        notification.error("Không thể mở máy ảnh");
+                      }
+                    }}
+                    bg={colors.primary}
+                    borderRadius="$xl"
+                    size="xl"
+                    flex={1}
+                  >
+                    <HStack space="xs" alignItems="center">
+                      <Camera
+                        size={20}
+                        color={colors.primary_white_text}
+                        strokeWidth={2}
+                      />
+                      <ButtonText
+                        color={colors.primary_white_text}
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                      >
+                        Chụp ảnh
+                      </ButtonText>
+                    </HStack>
+                  </Button>
+
+                  <Button
+                    onPress={async () => {
+                      try {
+                        const { status } =
+                          await ImagePicker.requestMediaLibraryPermissionsAsync();
+                        if (status !== "granted") {
+                          notification.error("Cần cấp quyền truy cập thư viện");
+                          return;
+                        }
+
+                        const result =
+                          await ImagePicker.launchImageLibraryAsync({
+                            mediaTypes: ["images"],
+                            quality: 0.8,
+                            allowsMultipleSelection: true,
+                          });
+
+                        if (!result.canceled && result.assets) {
+                          const newUris = result.assets.map((a) => a.uri);
+                          const remainingSlots =
+                            MAX_IMAGES - redBookImages.length;
+                          const limitedUris = newUris.slice(0, remainingSlots);
+
+                          if (newUris.length > remainingSlots) {
+                            notification.info(
+                              `Chỉ thêm được ${remainingSlots} ảnh. Tối đa ${MAX_IMAGES} ảnh.`
+                            );
+                          }
+
+                          setRedBookImages((prev) => [...prev, ...limitedUris]);
+                          notification.success(
+                            `Đã chọn ${limitedUris.length} ảnh`
+                          );
+                        }
+                      } catch (error) {
+                        console.error("Library error:", error);
+                        notification.error("Không thể mở thư viện ảnh");
+                      }
+                    }}
+                    variant="outline"
+                    borderColor={colors.primary}
+                    borderWidth={2}
+                    bg={colors.card_surface}
+                    borderRadius="$xl"
+                    size="xl"
+                    flex={1}
+                  >
+                    <HStack space="xs" alignItems="center">
+                      <Upload
+                        size={20}
+                        color={colors.primary}
+                        strokeWidth={2}
+                      />
+                      <ButtonText
+                        color={colors.primary}
+                        fontSize="$sm"
+                        fontWeight="$bold"
+                      >
+                        Chọn ảnh
+                      </ButtonText>
+                    </HStack>
+                  </Button>
+                </HStack>
+              </VStack>
+            )}
+
+          {/* ===== GALLERY ẢNH ĐÃ CHỌN & NÚT QUÉT (OCR MODE) ===== */}
+          {mode === "create" &&
+            inputMode === "ocr" &&
+            redBookImages.length > 0 &&
+            !ocrResult && (
+              <VStack space="md">
+                {/* Gallery ảnh */}
                 <Box
                   bg={colors.card_surface}
                   borderRadius="$xl"
@@ -1696,7 +1165,644 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     )}
                   </VStack>
                 </Box>
+
+                {/* Nút xác nhận & quét - sử dụng OcrScanner */}
+                <OcrScanner
+                  imageUris={redBookImages}
+                  buttonLabel="Xác nhận & quét thông tin"
+                  prompt={RED_BOOK_OCR_PROMPT}
+                  onResult={handleOcrResult}
+                />
+              </VStack>
+            )}
+
+          {/* ===== BƯỚC 2: THÔNG TIN NÔNG TRẠI ===== */}
+          {(mode === "edit" ||
+            inputMode === "manual" ||
+            (inputMode === "ocr" && redBookImages.length > 0 && ocrResult)) && (
+            <VStack space="lg">
+              {/* Thông báo kiểm tra thông tin */}
+              {mode === "create" && inputMode === "ocr" && ocrResult && (
+                <HStack space="sm" alignItems="center" px="$2">
+                  <AlertCircle
+                    size={18}
+                    color={colors.warning}
+                    strokeWidth={2}
+                  />
+                  <Text
+                    flex={1}
+                    fontSize="$sm"
+                    color={colors.secondary_text}
+                    lineHeight={20}
+                  >
+                    Thông tin được nhận diện tự động. Vui lòng kiểm tra và chỉnh
+                    sửa nếu cần.
+                  </Text>
+                </HStack>
               )}
+
+              {/* Nút quay lại chọn mode - Đã loại bỏ theo yêu cầu */}
+
+              {/* Upload ảnh sổ đỏ cho Manual mode */}
+              {mode === "create" && inputMode === "manual" && (
+                <Box
+                  bg={colors.card_surface}
+                  borderRadius="$xl"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <VStack space="md">
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Text
+                        fontSize="$md"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
+                        Ảnh giấy chứng nhận đất
+                      </Text>
+                      <Text fontSize="$xs" color={colors.secondary_text}>
+                        {redBookImages.length}/{MAX_IMAGES} ảnh
+                      </Text>
+                    </HStack>
+
+                    {redBookImages.length === 0 ? (
+                      // Chưa có ảnh - hiển thị nút upload
+                      <VStack space="sm">
+                        <Text
+                          fontSize="$sm"
+                          color={colors.secondary_text}
+                          lineHeight={18}
+                        >
+                          Tải lên ảnh giấy chứng nhận quyền sử dụng đất (Tối đa{" "}
+                          {MAX_IMAGES} ảnh)
+                        </Text>
+                        <HStack space="md">
+                          <Button
+                            onPress={async () => {
+                              try {
+                                const { status } =
+                                  await ImagePicker.requestCameraPermissionsAsync();
+                                if (status !== "granted") {
+                                  notification.error(
+                                    "Cần cấp quyền sử dụng máy ảnh"
+                                  );
+                                  return;
+                                }
+
+                                const result =
+                                  await ImagePicker.launchCameraAsync({
+                                    mediaTypes: ["images"],
+                                    quality: 0.8,
+                                    allowsEditing: false,
+                                  });
+
+                                if (
+                                  !result.canceled &&
+                                  result.assets &&
+                                  result.assets[0]
+                                ) {
+                                  const newUri = result.assets[0].uri;
+                                  setRedBookImages([newUri]);
+
+                                  // Convert ảnh thành base64 và lưu vào formValues
+                                  const base64Data =
+                                    await Utils.convertImageToBase64(newUri);
+                                  updateFormValues({
+                                    land_certificate_photos: [
+                                      {
+                                        file_name: `land_certificate_${Date.now()}_1.jpg`,
+                                        field_name: "land_certificate_photos",
+                                        data: base64Data,
+                                      },
+                                    ],
+                                  });
+
+                                  notification.success(
+                                    "Đã chụp ảnh thành công!"
+                                  );
+                                }
+                              } catch (error) {
+                                console.error("Camera error:", error);
+                                notification.error("Không thể mở máy ảnh");
+                              }
+                            }}
+                            bg={colors.primary}
+                            borderRadius="$xl"
+                            size="lg"
+                            flex={1}
+                          >
+                            <HStack space="xs" alignItems="center">
+                              <Camera
+                                size={20}
+                                color={colors.primary_white_text}
+                                strokeWidth={2}
+                              />
+                              <ButtonText
+                                color={colors.primary_white_text}
+                                fontSize="$sm"
+                                fontWeight="$bold"
+                              >
+                                Chụp ảnh
+                              </ButtonText>
+                            </HStack>
+                          </Button>
+
+                          <Button
+                            onPress={async () => {
+                              try {
+                                const { status } =
+                                  await ImagePicker.requestMediaLibraryPermissionsAsync();
+                                if (status !== "granted") {
+                                  notification.error(
+                                    "Cần cấp quyền truy cập thư viện"
+                                  );
+                                  return;
+                                }
+
+                                const result =
+                                  await ImagePicker.launchImageLibraryAsync({
+                                    mediaTypes: ["images"],
+                                    quality: 0.8,
+                                    allowsMultipleSelection: true,
+                                  });
+
+                                if (!result.canceled && result.assets) {
+                                  const newUris = result.assets.map(
+                                    (a) => a.uri
+                                  );
+                                  const limitedUris = newUris.slice(
+                                    0,
+                                    MAX_IMAGES
+                                  );
+
+                                  if (newUris.length > MAX_IMAGES) {
+                                    notification.info(
+                                      `Chỉ chọn được tối đa ${MAX_IMAGES} ảnh. Đã bỏ ${newUris.length - MAX_IMAGES} ảnh.`
+                                    );
+                                  }
+
+                                  setRedBookImages(limitedUris);
+
+                                  // Convert tất cả ảnh thành base64
+                                  const base64Images = await Promise.all(
+                                    limitedUris.map(async (uri, index) => {
+                                      const base64Data =
+                                        await Utils.convertImageToBase64(uri);
+                                      return {
+                                        file_name: `land_certificate_${Date.now()}_${index + 1}.jpg`,
+                                        field_name: "land_certificate_photos",
+                                        data: base64Data,
+                                      };
+                                    })
+                                  );
+
+                                  updateFormValues({
+                                    land_certificate_photos: base64Images,
+                                  });
+
+                                  notification.success(
+                                    `Đã chọn ${limitedUris.length} ảnh`
+                                  );
+                                }
+                              } catch (error) {
+                                console.error("Library error:", error);
+                                notification.error("Không thể mở thư viện ảnh");
+                              }
+                            }}
+                            variant="outline"
+                            borderColor={colors.primary}
+                            borderWidth={2}
+                            bg={colors.card_surface}
+                            borderRadius="$xl"
+                            size="lg"
+                            flex={1}
+                          >
+                            <HStack space="xs" alignItems="center">
+                              <Upload
+                                size={20}
+                                color={colors.primary}
+                                strokeWidth={2}
+                              />
+                              <ButtonText
+                                color={colors.primary}
+                                fontSize="$sm"
+                                fontWeight="$bold"
+                              >
+                                Chọn ảnh
+                              </ButtonText>
+                            </HStack>
+                          </Button>
+                        </HStack>
+                      </VStack>
+                    ) : (
+                      // Đã có ảnh - hiển thị gallery
+                      <VStack space="md">
+                        <HStack flexWrap="wrap" gap="$2">
+                          {redBookImages.map((uri, index) => (
+                            <Box
+                              key={index}
+                              borderRadius="$lg"
+                              overflow="hidden"
+                              borderWidth={2}
+                              borderColor={colors.primary}
+                              position="relative"
+                              style={{ width: "48%", aspectRatio: 1 }}
+                            >
+                              <Pressable onPress={() => handleViewImage(index)}>
+                                <Image
+                                  source={{ uri }}
+                                  style={{ width: "100%", height: "100%" }}
+                                  resizeMode="cover"
+                                />
+                              </Pressable>
+
+                              {/* Delete button */}
+                              <TouchableOpacity
+                                onPress={() => handleDeleteImage(index)}
+                                style={{
+                                  position: "absolute",
+                                  top: 8,
+                                  right: 8,
+                                  backgroundColor: colors.error,
+                                  borderRadius: 20,
+                                  padding: 6,
+                                }}
+                              >
+                                <Trash2
+                                  size={16}
+                                  color={"#fff"}
+                                  strokeWidth={2}
+                                />
+                              </TouchableOpacity>
+
+                              {/* Image number */}
+                              <Box
+                                position="absolute"
+                                bottom={8}
+                                left={8}
+                                bg={colors.primary}
+                                borderRadius="$md"
+                                px="$2"
+                                py="$1"
+                              >
+                                <Text
+                                  fontSize="$xs"
+                                  fontWeight="$bold"
+                                  color={colors.primary_white_text}
+                                >
+                                  Ảnh {index + 1}
+                                </Text>
+                              </Box>
+                            </Box>
+                          ))}
+                        </HStack>
+
+                        {/* Nút thêm ảnh nếu chưa đủ */}
+                        {redBookImages.length < MAX_IMAGES && (
+                          <HStack space="sm">
+                            <Button
+                              onPress={async () => {
+                                try {
+                                  const { status } =
+                                    await ImagePicker.requestCameraPermissionsAsync();
+                                  if (status !== "granted") {
+                                    notification.error("Cần cấp quyền máy ảnh");
+                                    return;
+                                  }
+                                  const result =
+                                    await ImagePicker.launchCameraAsync({
+                                      mediaTypes: ["images"],
+                                      quality: 0.8,
+                                    });
+                                  if (!result.canceled && result.assets?.[0]) {
+                                    const newUri = result.assets[0].uri;
+                                    setRedBookImages((prev) => [
+                                      ...prev,
+                                      newUri,
+                                    ]);
+
+                                    // Thêm ảnh mới vào formValues
+                                    const base64Data =
+                                      await Utils.convertImageToBase64(newUri);
+                                    const currentPhotos =
+                                      formValues.land_certificate_photos || [];
+                                    updateFormValues({
+                                      land_certificate_photos: [
+                                        ...currentPhotos,
+                                        {
+                                          file_name: `land_certificate_${Date.now()}_${currentPhotos.length + 1}.jpg`,
+                                          field_name: "land_certificate_photos",
+                                          data: base64Data,
+                                        },
+                                      ],
+                                    });
+
+                                    notification.success("Đã thêm ảnh");
+                                  }
+                                } catch (error) {
+                                  notification.error("Không thể mở máy ảnh");
+                                }
+                              }}
+                              variant="outline"
+                              borderColor={colors.primary}
+                              bg={colors.successSoft}
+                              borderRadius="$lg"
+                              size="sm"
+                              flex={1}
+                            >
+                              <HStack space="xs" alignItems="center">
+                                <Camera
+                                  size={16}
+                                  color={colors.primary}
+                                  strokeWidth={2}
+                                />
+                                <ButtonText
+                                  color={colors.primary}
+                                  fontSize="$xs"
+                                >
+                                  Chụp thêm
+                                </ButtonText>
+                              </HStack>
+                            </Button>
+
+                            <Button
+                              onPress={async () => {
+                                try {
+                                  const { status } =
+                                    await ImagePicker.requestMediaLibraryPermissionsAsync();
+                                  if (status !== "granted") {
+                                    notification.error("Cần quyền thư viện");
+                                    return;
+                                  }
+                                  const remainingSlots =
+                                    MAX_IMAGES - redBookImages.length;
+                                  const result =
+                                    await ImagePicker.launchImageLibraryAsync({
+                                      mediaTypes: ["images"],
+                                      quality: 0.8,
+                                      allowsMultipleSelection: true,
+                                    });
+                                  if (!result.canceled && result.assets) {
+                                    const newUris = result.assets
+                                      .map((a) => a.uri)
+                                      .slice(0, remainingSlots);
+                                    setRedBookImages((prev) => [
+                                      ...prev,
+                                      ...newUris,
+                                    ]);
+
+                                    // Thêm các ảnh mới vào formValues
+                                    const currentPhotos =
+                                      formValues.land_certificate_photos || [];
+                                    const newBase64Images = await Promise.all(
+                                      newUris.map(async (uri, index) => {
+                                        const base64Data =
+                                          await Utils.convertImageToBase64(uri);
+                                        return {
+                                          file_name: `land_certificate_${Date.now()}_${currentPhotos.length + index + 1}.jpg`,
+                                          field_name: "land_certificate_photos",
+                                          data: base64Data,
+                                        };
+                                      })
+                                    );
+
+                                    updateFormValues({
+                                      land_certificate_photos: [
+                                        ...currentPhotos,
+                                        ...newBase64Images,
+                                      ],
+                                    });
+
+                                    notification.success(
+                                      `Đã thêm ${newUris.length} ảnh`
+                                    );
+                                  }
+                                } catch (error) {
+                                  notification.error("Không thể mở thư viện");
+                                }
+                              }}
+                              variant="outline"
+                              borderColor={colors.primary}
+                              bg={colors.successSoft}
+                              borderRadius="$lg"
+                              size="sm"
+                              flex={1}
+                            >
+                              <HStack space="xs" alignItems="center">
+                                <Upload
+                                  size={16}
+                                  color={colors.primary}
+                                  strokeWidth={2}
+                                />
+                                <ButtonText
+                                  color={colors.primary}
+                                  fontSize="$xs"
+                                >
+                                  Chọn thêm
+                                </ButtonText>
+                              </HStack>
+                            </Button>
+                          </HStack>
+                        )}
+                      </VStack>
+                    )}
+                  </VStack>
+                </Box>
+              )}
+
+              {/* Gallery ảnh giấy chứng nhận (có thể thêm/xóa) - CHỈ OCR MODE */}
+              {mode === "create" &&
+                inputMode === "ocr" &&
+                redBookImages.length > 0 &&
+                ocrResult && (
+                  <Box
+                    bg={colors.card_surface}
+                    borderRadius="$xl"
+                    p="$4"
+                    borderWidth={1}
+                    borderColor={colors.frame_border}
+                  >
+                    <VStack space="md">
+                      <HStack
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Text
+                          fontSize="$md"
+                          fontWeight="$bold"
+                          color={colors.primary_text}
+                        >
+                          Ảnh giấy chứng nhận đã đăng tải
+                        </Text>
+                        <Text fontSize="$xs" color={colors.secondary_text}>
+                          {redBookImages.length}/{MAX_IMAGES} ảnh
+                        </Text>
+                      </HStack>
+
+                      <HStack flexWrap="wrap" gap="$2">
+                        {redBookImages.map((uri, index) => (
+                          <Box
+                            key={index}
+                            borderRadius="$lg"
+                            overflow="hidden"
+                            borderWidth={2}
+                            borderColor={colors.primary}
+                            position="relative"
+                            style={{ width: "48%", aspectRatio: 1 }}
+                          >
+                            <Pressable onPress={() => handleViewImage(index)}>
+                              <Image
+                                source={{ uri }}
+                                style={{ width: "100%", height: "100%" }}
+                                resizeMode="cover"
+                              />
+                            </Pressable>
+
+                            {/* Delete button */}
+                            <TouchableOpacity
+                              onPress={() => handleDeleteImage(index)}
+                              style={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                backgroundColor: colors.error,
+                                borderRadius: 20,
+                                padding: 6,
+                              }}
+                            >
+                              <Trash2
+                                size={16}
+                                color={"#fff"}
+                                strokeWidth={2}
+                              />
+                            </TouchableOpacity>
+
+                            {/* Image number */}
+                            <Box
+                              position="absolute"
+                              bottom={8}
+                              left={8}
+                              bg={colors.primary}
+                              borderRadius="$md"
+                              px="$2"
+                              py="$1"
+                            >
+                              <Text
+                                fontSize="$xs"
+                                fontWeight="$bold"
+                                color={colors.primary_white_text}
+                              >
+                                Ảnh {index + 1}
+                              </Text>
+                            </Box>
+                          </Box>
+                        ))}
+                      </HStack>
+
+                      {/* Nút thêm ảnh nếu chưa đủ */}
+                      {redBookImages.length < MAX_IMAGES && (
+                        <HStack space="sm">
+                          <Button
+                            onPress={async () => {
+                              try {
+                                const { status } =
+                                  await ImagePicker.requestCameraPermissionsAsync();
+                                if (status !== "granted") {
+                                  notification.error("Cần cấp quyền máy ảnh");
+                                  return;
+                                }
+                                const result =
+                                  await ImagePicker.launchCameraAsync({
+                                    mediaTypes: ["images"],
+                                    quality: 0.8,
+                                  });
+                                if (!result.canceled && result.assets?.[0]) {
+                                  setRedBookImages((prev) => [
+                                    ...prev,
+                                    result.assets[0].uri,
+                                  ]);
+                                  notification.success("Đã thêm ảnh");
+                                }
+                              } catch (error) {
+                                notification.error("Không thể mở máy ảnh");
+                              }
+                            }}
+                            variant="outline"
+                            borderColor={colors.primary}
+                            bg={colors.successSoft}
+                            borderRadius="$lg"
+                            size="sm"
+                            flex={1}
+                          >
+                            <HStack space="xs" alignItems="center">
+                              <Camera
+                                size={16}
+                                color={colors.primary}
+                                strokeWidth={2}
+                              />
+                              <ButtonText color={colors.primary} fontSize="$xs">
+                                Chụp thêm
+                              </ButtonText>
+                            </HStack>
+                          </Button>
+
+                          <Button
+                            onPress={async () => {
+                              try {
+                                const { status } =
+                                  await ImagePicker.requestMediaLibraryPermissionsAsync();
+                                if (status !== "granted") {
+                                  notification.error("Cần quyền thư viện");
+                                  return;
+                                }
+                                const remainingSlots =
+                                  MAX_IMAGES - redBookImages.length;
+                                const result =
+                                  await ImagePicker.launchImageLibraryAsync({
+                                    mediaTypes: ["images"],
+                                    quality: 0.8,
+                                    allowsMultipleSelection: true,
+                                  });
+                                if (!result.canceled && result.assets) {
+                                  const newUris = result.assets
+                                    .map((a) => a.uri)
+                                    .slice(0, remainingSlots);
+                                  setRedBookImages((prev) => [
+                                    ...prev,
+                                    ...newUris,
+                                  ]);
+                                  notification.success(
+                                    `Đã thêm ${newUris.length} ảnh`
+                                  );
+                                }
+                              } catch (error) {
+                                notification.error("Không thể mở thư viện");
+                              }
+                            }}
+                            variant="outline"
+                            borderColor={colors.primary}
+                            bg={colors.successSoft}
+                            borderRadius="$lg"
+                            size="sm"
+                            flex={1}
+                          >
+                            <HStack space="xs" alignItems="center">
+                              <Upload
+                                size={16}
+                                color={colors.primary}
+                                strokeWidth={2}
+                              />
+                              <ButtonText color={colors.primary} fontSize="$xs">
+                                Chọn thêm
+                              </ButtonText>
+                            </HStack>
+                          </Button>
+                        </HStack>
+                      )}
+                    </VStack>
+                  </Box>
+                )}
 
               {/* Tọa độ ranh giới */}
               <Box
@@ -1723,7 +1829,9 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                     onChange={(value) => setBoundaryCoords(value)}
                     label=""
                     helperText="Nhập tọa độ các điểm ranh giới của nông trại"
-                    disabled={mode === "create" && inputMode === 'ocr' && !ocrResult}
+                    disabled={
+                      mode === "create" && inputMode === "ocr" && !ocrResult
+                    }
                   />
 
                   {boundaryCoords && (

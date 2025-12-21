@@ -170,7 +170,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                             >
                                 {isPremium
                                     ? "Thanh toán phí bảo hiểm"
-                                    : payment.status.label}
+                                    : "Bồi thường phí được chi trả"}
                             </Text>
 
                             <HStack space="sm" alignItems="center">
@@ -246,7 +246,6 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                 <HStack space="sm">
                     <Box
                         flex={1}
-                        bg={colors.warningSoft}
                         borderRadius="$xl"
                         p="$4"
                         borderWidth={1}
@@ -255,25 +254,22 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                         <HStack space="xs" alignItems="center" mb="$2">
                             <Receipt
                                 size={16}
-                                color={colors.warning}
                                 strokeWidth={2.5}
                             />
                             <Text
                                 fontSize="$xs"
                                 fontWeight="$semibold"
-                                color={colors.warning}
                             >
-                                Phí chi trả bảo hiểm
+                                Thanh toán phí bảo hiểm
                             </Text>
                         </HStack>
                         <Text
                             fontSize="$lg"
                             fontWeight="$bold"
-                            color={colors.warning}
                         >
                             {Utils.formatCurrency(totalPremium)}
                         </Text>
-                        <Text fontSize="$2xs" color={colors.warning} mt="$1">
+                        <Text fontSize="$sm" mt="$1">
                             {
                                 payments.filter(
                                     (p) =>
@@ -286,7 +282,6 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
 
                     <Box
                         flex={1}
-                        bg={colors.successSoft}
                         borderRadius="$xl"
                         p="$4"
                         borderWidth={1}
@@ -295,25 +290,22 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                         <HStack space="xs" alignItems="center" mb="$2">
                             <ArrowDownLeft
                                 size={16}
-                                color={colors.success}
                                 strokeWidth={2.5}
                             />
                             <Text
                                 fontSize="$xs"
                                 fontWeight="$semibold"
-                                color={colors.success}
                             >
-                                Phí bảo hiểm bồi thường
+                                Bồi thường nhận được
                             </Text>
                         </HStack>
                         <Text
                             fontSize="$lg"
                             fontWeight="$bold"
-                            color={colors.success}
                         >
                             {Utils.formatCurrency(totalCompensation)}
                         </Text>
-                        <Text fontSize="$2xs" color={colors.success} mt="$1">
+                        <Text fontSize="$sm" mt="$1">
                             {
                                 payments.filter(
                                     (p) =>
@@ -392,7 +384,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
                                             : colors.secondary_text
                                     }
                                 >
-                                    Phí bảo hiểm
+                                    Phí thanh toán
                                 </Text>
                             </Box>
                         </Pressable>

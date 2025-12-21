@@ -4,8 +4,6 @@ import { Farm } from "@/domains/farm/models/farm.models";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
-  Button,
-  ButtonText,
   HStack,
   Image,
   Pressable,
@@ -15,15 +13,11 @@ import {
 } from "@gluestack-ui/themed";
 import {
   Calendar,
-  CheckCircle2,
-  Edit3,
   FileCheck,
   ImageIcon,
   MapPin,
-  Shield,
   Sprout,
   Wheat,
-  XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
 
@@ -275,12 +269,20 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
 
           <VStack space="sm">
             <InfoRow
-              label="Ngày gieo trồng"
-              value={farm.planting_date ? Utils.formatDateForMS(farm.planting_date) : "Chưa cập nhật"}
+              label="Ngày dự kiến gieo trồng"
+              value={
+                farm.planting_date
+                  ? Utils.formatDateForMS(farm.planting_date)
+                  : "Chưa cập nhật"
+              }
             />
             <InfoRow
               label="Ngày thu hoạch dự kiến"
-              value={farm.expected_harvest_date ? Utils.formatDateForMS(farm.expected_harvest_date) : "Chưa cập nhật"}
+              value={
+                farm.expected_harvest_date
+                  ? Utils.formatDateForMS(farm.expected_harvest_date)
+                  : "Chưa cập nhật"
+              }
             />
             <InfoRow label="Loại đất canh tác" value={`${farm.soil_type}`} />
           </VStack>
@@ -315,11 +317,14 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
                 />
                 <InfoRow
                   label="Quyền sở hữu đất"
-                  value={farm.land_ownership_verified ? "Đã xác minh" : "Chưa cập nhật"}
+                  value={
+                    farm.land_ownership_verified
+                      ? "Đã xác minh"
+                      : "Chưa cập nhật"
+                  }
                 />
               </VStack>
             </HStack>
-            
           </VStack>
         </Box>
 

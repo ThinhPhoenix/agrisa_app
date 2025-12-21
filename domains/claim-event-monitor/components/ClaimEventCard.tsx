@@ -36,7 +36,7 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
         return {
           label: "Chờ xét duyệt",
           color: colors.pending,
-          bgColor: colors.warningSoft || colors.background,
+          bgColor: "",
           icon: Clock,
         };
       case ClaimStatus.APPROVED:

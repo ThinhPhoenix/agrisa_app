@@ -853,7 +853,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   <HStack space="md">
                     <VStack flex={1} space="xs">
                       <Text fontSize="$xs" color={colors.secondary_text}>
-                        Tên trang trại
+                        Tên nông trại
                       </Text>
                       <Text
                         fontSize="$sm"
@@ -865,7 +865,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     </VStack>
                     <VStack flex={1} space="xs">
                       <Text fontSize="$xs" color={colors.secondary_text}>
-                        Mã trang trại
+                        Mã nông trại
                       </Text>
                       <Text
                         fontSize="$sm"
@@ -1193,7 +1193,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                Bằng chứng thiệt hại (
+                Bằng chứng rủi ro (
                 {claim.evidence_summary?.conditions_count || 0})
               </Text>
             </HStack>
@@ -1220,7 +1220,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   </Text>
                   <HStack space="md">
                     <VStack flex={1} space="xs">
-                      <Text fontSize="$2xs" color={colors.secondary_text}>
+                      <Text fontSize="$sm" color={colors.secondary_text}>
                         Giai đoạn sinh trưởng
                       </Text>
                       <Text
@@ -1232,7 +1232,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                       </Text>
                     </VStack>
                     <VStack flex={1} space="xs">
-                      <Text fontSize="$2xs" color={colors.secondary_text}>
+                      <Text fontSize="$sm" color={colors.secondary_text}>
                         Tần suất giám sát
                       </Text>
                       <Text
@@ -1248,7 +1248,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     </VStack>
                   </HStack>
                   <HStack space="xs" alignItems="center">
-                    <Text fontSize="$2xs" color={colors.secondary_text}>
+                    <Text fontSize="$sm" color={colors.secondary_text}>
                       Điều kiện kết hợp:
                     </Text>
                     <Text

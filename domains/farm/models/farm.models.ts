@@ -96,7 +96,7 @@ export interface Farm {
   id: string;
 
   /**
-   * Tên nông trại  
+   * Tên nông trại
    * @example "Trang trại lúa Đồng Tháp"
    */
   farm_name: string;
@@ -154,7 +154,7 @@ export interface Farm {
   crop_type: string;
 
   /**
-   * Ngày gieo trồng (Unix timestamp - giây)
+   * Ngày dự kiến gieo trồng (Unix timestamp - giây)
    * @example 1704067200
    */
   planting_date: number;

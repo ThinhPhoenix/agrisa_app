@@ -306,13 +306,14 @@ export interface UnderwritingDataResponse {
 /**
  * Loại yêu cầu hủy hợp đồng
  */
-export type CancelRequestType = "contract_violation" | "other";
+export type CancelRequestType = "contract_violation" | "policyholder_request" | "other";
 
 /**
  * Ảnh bằng chứng trong evidence
  */
 export interface EvidenceImage {
   url: string; // URL của ảnh
+  comment?: string; // Mô tả/ghi chú cho ảnh (optional)
 }
 
 /**
@@ -332,7 +333,13 @@ export interface CancelRequestPayload {
 /**
  * Trạng thái yêu cầu hủy hợp đồng
  */
-export type CancelRequestStatus = "pending" | "approved" | "rejected" | "pending_review" | "cancelled";
+export type CancelRequestStatus = 
+  | "pending_review"  // Chờ xét duyệt
+  | "approved"        // Đã chấp nhận
+  | "denied"          // Đã từ chối
+  | "cancelled"       // Đã hủy
+  | "litigation"      // Tranh chấp pháp lý
+  | "payment_failed"; // Thanh toán thất bại
 
 /**
  * Model cho yêu cầu hủy hợp đồng bảo hiểm
@@ -347,11 +354,17 @@ export interface CancelRequest {
     images: EvidenceImage[];
   };
   status: CancelRequestStatus;
-  requested_by: string;
+  requested_by: string; // User ID của người tạo yêu cầu
   requested_at: string; // ISO timestamp
+  compensate_amount: number; // Số tiền bồi thường
+  paid: boolean; // Đã thanh toán chưa
+  paid_at: string | null; // Thời gian thanh toán
+  during_notice_period: boolean; // Trong thời gian thông báo
+  reviewed_by: string | null; // User ID của người review
+  reviewed_at: string | null; // Thời gian review
+  review_notes: string | null; // Ghi chú khi review
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
-  compensate_amount?: number; // Số tiền dự kiến bồi thường (optional)
 }
 
 /**
@@ -369,4 +382,12 @@ export interface CancelRequestsResponse {
 export interface ReviewCancelRequestPayload {
   review_notes: string; // Ghi chú khi phê duyệt/từ chối
   approved: boolean; // true = chấp nhận, false = từ chối
+}
+
+/**
+ * Payload để giải quyết tranh chấp hủy hợp đồng
+ */
+export interface ResolveDisputePayload {
+  review_notes: string; // Ghi chú xem xét
+  final_decision: "approved" | "denied"; // Quyết định cuối cùng
 }

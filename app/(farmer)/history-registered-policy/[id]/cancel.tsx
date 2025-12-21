@@ -15,7 +15,7 @@ export default function CancelHistoryPolicyScreen() {
   return (
     <VStack flex={1} bg={colors.background}>
       <AgrisaHeader
-        title="Hủy đăng ký"
+        title="Đơn hủy đăng ký"
         showBackButton={true}
         onBack={() => router.back()}
       />

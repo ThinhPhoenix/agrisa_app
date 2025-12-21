@@ -46,7 +46,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           bgColor: colors.infoSoft,
           icon: CheckCircle2,
         };
-      
+
       case "pending_cancel":
         return {
           label: "Chờ xử lý hủy",
@@ -54,7 +54,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           bgColor: colors.warningSoft,
           icon: Clock,
         };
-      
+
       case "dispute":
         return {
           label: "Tranh chấp",
@@ -62,7 +62,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           bgColor: colors.errorSoft,
           icon: AlertCircle,
         };
-      
+
       case "cancelled":
         return {
           label: "Đã hủy",
@@ -70,7 +70,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           bgColor: colors.errorSoft,
           icon: XCircle,
         };
-      
+
       case "expired":
         return {
           label: "Hết hạn",
@@ -78,7 +78,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           bgColor: colors.background,
           icon: XCircle,
         };
-      
+
       case "pending_payment":
         // Chờ thanh toán (sau khi được duyệt)
         if (policy.underwriting_status === "approved") {
@@ -90,7 +90,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           };
         }
         break;
-      
+
       case "draft":
         return {
           label: "Bản nháp",
@@ -159,7 +159,9 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
 
   return (
     <Pressable
-      onPress={() => router.push(`/(farmer)/history-registered-policy/${policy.id}`)}
+      onPress={() =>
+        router.push(`/(farmer)/history-registered-policy/${policy.id}`)
+      }
     >
       {({ pressed }) => (
         <Box
@@ -171,7 +173,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
           overflow="hidden"
         >
           <VStack space="md" p="$4">
-            {/* Header: Số hợp đồng + Trạng thái */}
+            {/* Header: Mã hợp đồng + Trạng thái */}
             <HStack justifyContent="space-between" alignItems="center">
               <HStack space="sm" alignItems="center" flex={1}>
                 <Box
@@ -189,7 +191,7 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
                 </Box>
                 <VStack flex={1}>
                   <Text fontSize="$xs" color={colors.secondary_text} mb="$0.5">
-                    Số hợp đồng
+                    Mã hợp đồng
                   </Text>
                   <Text
                     fontSize="$md"

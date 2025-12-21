@@ -571,7 +571,7 @@ export const Utils = {
 
   /**
    * 📝 Generate payment description
-   * @param policyNumber - Số hợp đồng
+   * @param policyNumber - Mã hợp đồng
    * @returns Mô tả thanh toán
    */
   generatePaymentDescription: (policyNumber: string): string => {

@@ -39,7 +39,7 @@ export interface MonitoringDataItem {
   created_at: string; // ISO timestamp
   registered_policy_id: string; // ID của policy đã đăng ký liên quan
   policy_status: string; // Trạng thái policy (pending_payment, active, etc.)
-  policy_number: string; // Số hợp đồng policy
+  policy_number: string; // Mã hợp đồng policy
 }
 
 /**

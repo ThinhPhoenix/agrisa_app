@@ -48,23 +48,19 @@ export const DynamicDocumentTagsForm: React.FC<DynamicDocumentTagsFormProps> = m
     <VStack space="md">
       {/* Header */}
       <Box
-        bg={colors.infoSoft}
         borderRadius="$xl"
         p="$4"
         borderWidth={1}
         borderColor={colors.info}
       >
         <HStack space="sm" alignItems="center" mb="$2">
-          <Box bg={colors.info} p="$2" borderRadius="$md">
-            <FileText size={20} color={colors.primary_white_text} />
-          </Box>
-          <Text fontSize="$md" fontWeight="$bold" color={colors.info}>
-            Thông tin bổ sung từ tài liệu
+          
+          <Text fontSize="$md" fontWeight="$bold" >
+            Thông tin bổ sung cho hồ sơ đăng ký
           </Text>
         </HStack>
         <HStack space="xs" alignItems="flex-start">
-          <Info size={14} color={colors.info} style={{ marginTop: 2 }} />
-          <Text fontSize="$xs" color={colors.info} flex={1} lineHeight={18}>
+          <Text fontSize="$xs"flex={1} lineHeight={18}>
             Vui lòng điền các thông tin bên dưới để hoàn tất hồ sơ đăng ký bảo hiểm. 
             Các thông tin này sẽ được sử dụng để xác minh và xử lý hồ sơ của bạn.
           </Text>

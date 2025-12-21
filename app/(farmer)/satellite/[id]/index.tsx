@@ -619,7 +619,7 @@ export default function SatelliteDetailScreen() {
                                       fontSize="$xs"
                                       color={colors.secondary_text}
                                     >
-                                      Số hợp đồng:
+                                      Mã hợp đồng:
                                     </Text>
                                     <Text
                                       fontSize="$xs"
@@ -726,7 +726,7 @@ export default function SatelliteDetailScreen() {
                                     fontSize="$xs"
                                     color={colors.secondary_text}
                                   >
-                                    Số hợp đồng:
+                                    Mã hợp đồng:
                                   </Text>
                                   <Text
                                     fontSize="$xs"

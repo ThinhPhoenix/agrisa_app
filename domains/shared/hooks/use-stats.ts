@@ -4,7 +4,7 @@ import { StatsService } from "../services/stats.services";
 
 /**
  * Hook để fetch thống kê overview
- * Bao gồm: số lượng chính sách đã đăng ký, số trang trại active/inactive
+ * Bao gồm: số lượng chính sách đã đăng ký, số nông trại active/inactive
  */
 export const useStats = () => {
   const statsQuery = useQuery({

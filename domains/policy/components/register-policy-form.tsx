@@ -140,7 +140,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
             </Text>
           </Box>
 
-          {/* Section 1: Chọn trang trại */}
+          {/* Section 1: Chọn nông trại */}
           <VStack space="sm">
             <HStack space="xs" alignItems="center">
               <Text
@@ -148,7 +148,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                1. Chọn trang trại
+                1. Chọn nông trại cần bảo hiểm
               </Text>
               <Text fontSize="$xs" color={colors.error}>
                 *
@@ -164,7 +164,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
               >
                 <Spinner size="large" color={colors.primary} />
                 <Text color={colors.secondary_text} mt="$2" fontSize="$sm">
-                  Đang tải danh sách trang trại...
+                  Đang tải danh sách nông trại...
                 </Text>
               </Box>
             ) : farms.length === 0 ? (
@@ -185,14 +185,14 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                       fontWeight="$bold"
                       color={colors.primary_text}
                     >
-                      Chưa có trang trại
+                      Chưa có nông trại
                     </Text>
                     <Text
                       fontSize="$sm"
                       color={colors.secondary_text}
                       textAlign="center"
                     >
-                      Hãy đăng ký trang trại để tiếp tục
+                      Hãy đăng ký nông trại để tiếp tục
                     </Text>
                   </VStack>
                   <Button
@@ -203,7 +203,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     <HStack space="xs" alignItems="center">
                       <Plus size={18} color={colors.primary_white_text} />
                       <ButtonText color={colors.primary_white_text}>
-                        Đăng ký trang trại
+                        Đăng ký nông trại
                       </ButtonText>
                     </HStack>
                   </Button>
@@ -221,7 +221,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                   />
                 ))}
 
-                {/* Nút thêm trang trại mới */}
+                {/* Nút thêm nông trại mới */}
                 <Pressable onPress={handleRegisterNewFarm}>
                   <Box
                     bg={colors.card_surface}
@@ -242,7 +242,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                         fontWeight="$semibold"
                         color={colors.success}
                       >
-                        Thêm trang trại mới
+                        Thêm nông trại mới
                       </Text>
                     </HStack>
                   </Box>
@@ -251,7 +251,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
             )}
           </VStack>
 
-          {/* Section 2: Ngày gieo trồng */}
+          {/* Section 2: Ngày dự kiến gieo trồng */}
           <VStack space="sm">
             <HStack space="xs" alignItems="center">
               <Text
@@ -259,7 +259,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                2. Ngày gieo trồng
+                2. Ngày dự kiến gieo trồng
               </Text>
               <Text fontSize="$xs" color={colors.error}>
                 *
@@ -268,7 +268,6 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
 
             <Pressable onPress={() => setShowDatePicker(true)}>
               <Box
-                bg={colors.success}
                 borderRadius="$xl"
                 p="$4"
                 borderWidth={1}
@@ -280,21 +279,17 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                   justifyContent="space-between"
                 >
                   <HStack space="sm" alignItems="center" flex={1}>
-                    <Box
-                      bg={colors.primary_white_text}
-                      p="$2.5"
-                      borderRadius="$md"
-                    >
+                    <Box p="$2.5" borderRadius="$md">
                       <Calendar size={20} color={colors.success} />
                     </Box>
                     <VStack flex={1}>
-                      <Text fontSize="$xs" color={colors.primary_white_text}>
-                        Ngày gieo trồng
+                      <Text fontSize="$xs" color={colors.primary_text}>
+                        Ngày dự kiến gieo trồng
                       </Text>
                       <Text
                         fontSize="$md"
                         fontWeight="$semibold"
-                        color={colors.primary_white_text}
+                        color={colors.primary_text}
                       >
                         {plantingDate.toLocaleDateString("vi-VN", {
                           day: "2-digit",
@@ -304,7 +299,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                       </Text>
                     </VStack>
                   </HStack>
-                  <ChevronRight size={20} color={colors.primary_white_text} />
+                  <ChevronRight size={20} color={colors.primary_text} />
                 </HStack>
               </Box>
             </Pressable>
@@ -322,7 +317,26 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
             )}
           </VStack>
 
-          {/* Section 3: Thông tin tính toán (Read-only) */}
+          {/* Section 4: Dynamic Document Tags Form */}
+          {selectedFarm &&
+            base_policy.document_tags &&
+            Object.keys(base_policy.document_tags).length > 0 && (
+              <VStack space="sm">
+                <Text
+                  fontSize="$md"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  3. Thông tin bổ sung
+                </Text>
+
+                <DynamicDocumentTagsForm
+                  documentTags={base_policy.document_tags}
+                  onValuesChange={handleDocumentTagsChange}
+                />
+              </VStack>
+            )}
+          {/* Section 4: Thông tin tính toán (Read-only) */}
           {selectedFarm && (
             <VStack space="sm">
               <Text
@@ -330,24 +344,8 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                3. Thông tin đăng ký
+                4. Xác nhận thông tin đăng ký
               </Text>
-
-              <Box
-                bg={colors.infoSoft}
-                borderRadius="$xl"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.info}
-              >
-                <HStack space="xs" alignItems="flex-start">
-                  <Info size={16} color={colors.info} />
-                  <Text fontSize="$xs" color={colors.info} flex={1}>
-                    Các thông tin bên dưới được tính toán tự động dựa trên diện
-                    tích trang trại
-                  </Text>
-                </HStack>
-              </Box>
 
               <VStack space="sm">
                 {/* Thông tin gói bảo hiểm */}
@@ -359,7 +357,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                   borderColor={colors.frame_border}
                 >
                   <HStack space="sm" alignItems="center" mb="$3">
-                    <Box bg={colors.primarySoft} p="$2" borderRadius="$md">
+                    <Box p="$2" borderRadius="$md">
                       <Shield size={18} color={colors.primary} />
                     </Box>
                     <Text
@@ -367,17 +365,17 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                       fontWeight="$bold"
                       color={colors.primary_text}
                     >
-                      Thông tin gói bảo hiểm
+                      Thông tin đăng ký gói bảo hiểm
                     </Text>
                   </HStack>
 
                   <VStack space="sm">
                     <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$xs" color={colors.muted_text}>
-                        Diện tích trang trại
+                      <Text fontSize="$md">
+                        Diện tích nông trại của bạn
                       </Text>
                       <Text
-                        fontSize="$sm"
+                        fontSize="$md"
                         fontWeight="$semibold"
                         color={colors.primary_text}
                       >
@@ -386,11 +384,11 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     </HStack>
 
                     <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$xs" color={colors.muted_text}>
-                        Thời hạn bảo hiểm
+                      <Text fontSize="$md">
+                        Thời hạn gói bảo hiểm
                       </Text>
                       <Text
-                        fontSize="$sm"
+                        fontSize="$md"
                         fontWeight="$semibold"
                         color={colors.primary_text}
                       >
@@ -399,11 +397,11 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     </HStack>
 
                     <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$xs" color={colors.muted_text}>
-                        Số tiền bảo hiểm
+                      <Text fontSize="$md">
+                        Số tiền dự kiến bồi thường từ
                       </Text>
                       <Text
-                        fontSize="$sm"
+                        fontSize="$md"
                         fontWeight="$bold"
                         color={colors.success}
                       >
@@ -413,8 +411,9 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
 
                     {base_policy.is_payout_per_hectare && (
                       <Text fontSize="$xs" color={colors.secondary_text} italic>
-                        • Tính theo diện tích:{" "}
-                        {Utils.formatCurrency(base_policy.fix_payout_amount)}/ha
+                        Dựa trên mức phí bồi thường cơ bản từ{" "}
+                        {Utils.formatCurrency(base_policy.fix_payout_amount)}/
+                        {base_policy.is_payout_per_hectare ? "ha" : ""}{" "}
                       </Text>
                     )}
                   </VStack>
@@ -429,11 +428,11 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                   borderColor={colors.frame_border}
                 >
                   <HStack space="sm" alignItems="center" mb="$3">
-                    <Box bg={colors.warningSoft} p="$2" borderRadius="$md">
+                    <Box  p="$2" borderRadius="$md">
                       <Wallet size={18} color={colors.warning} />
                     </Box>
                     <Text
-                      fontSize="$sm"
+                      fontSize="$md"
                       fontWeight="$bold"
                       color={colors.primary_text}
                     >
@@ -445,11 +444,11 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     {/* Phí bảo hiểm cơ bản */}
                     <HStack justifyContent="space-between" alignItems="center">
                       <VStack flex={1}>
-                        <Text fontSize="$xs" color={colors.muted_text}>
-                          Phí BH cơ bản
+                        <Text fontSize="$md">
+                          Phí thanh toán cơ bản
                         </Text>
                         {base_policy.is_per_hectare ? (
-                          <Text fontSize="$xs" color={colors.secondary_text}>
+                          <Text fontSize="$md" color={colors.secondary_text}>
                             {Utils.formatCurrency(
                               base_policy.fix_premium_amount
                             )}
@@ -462,7 +461,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                         )}
                       </VStack>
                       <Text
-                        fontSize="$sm"
+                        fontSize="$md"
                         fontWeight="$semibold"
                         color={colors.primary_text}
                       >
@@ -480,9 +479,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                         <Text fontSize="$xs" color={colors.muted_text}>
                           Hệ số phí BH
                         </Text>
-                        <Text fontSize="$xs" color={colors.secondary_text}>
-                          Base rate áp dụng
-                        </Text>
+                        
                       </VStack>
                       <Text
                         fontSize="$sm"
@@ -499,15 +496,13 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     <HStack justifyContent="space-between" alignItems="center">
                       <VStack flex={1}>
                         <Text
-                          fontSize="$xs"
+                          fontSize="$md"
                           fontWeight="$bold"
                           color={colors.primary_text}
                         >
-                          Tổng phí bảo hiểm
+                          Tổng thanh toán phí
                         </Text>
-                        <Text fontSize="$xs" color={colors.secondary_text}>
-                          Số tiền bạn cần thanh toán
-                        </Text>
+                        
                       </VStack>
                       <Text
                         fontSize="$lg"
@@ -522,30 +517,8 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
               </VStack>
             </VStack>
           )}
-
-          {/* Section 4: Dynamic Document Tags Form */}
-          {selectedFarm &&
-            base_policy.document_tags &&
-            Object.keys(base_policy.document_tags).length > 0 && (
-              <VStack space="sm">
-                <Text
-                  fontSize="$md"
-                  fontWeight="$bold"
-                  color={colors.primary_text}
-                >
-                  4. Thông tin bổ sung
-                </Text>
-
-                <DynamicDocumentTagsForm
-                  documentTags={base_policy.document_tags}
-                  onValuesChange={handleDocumentTagsChange}
-                />
-              </VStack>
-            )}
-
           {/* Warning */}
           <Box
-            bg={colors.warningSoft}
             borderRadius="$xl"
             p="$4"
             borderWidth={1}
@@ -590,7 +563,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                 color={colors.muted_text}
                 fontWeight="$medium"
               >
-                Tổng phí bảo hiểm
+                Tổng thanh toán phí
               </Text>
               <Text fontSize="$2xl" fontWeight="$bold" color={colors.success}>
                 {Utils.formatCurrency(totalPremium)}
@@ -612,7 +585,12 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
         </Box>
 
         {/* Button */}
-        <Box px="$5" pt="$5" pb={`$${5 + bottomPadding}`} bg={colors.background}>
+        <Box
+          px="$5"
+          pt="$5"
+          pb={`$${5 + bottomPadding}`}
+          bg={colors.background}
+        >
           <Button
             bg={isFormValid ? colors.success : colors.frame_border}
             borderRadius="$xl"

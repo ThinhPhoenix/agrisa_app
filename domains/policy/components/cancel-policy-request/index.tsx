@@ -1,6 +1,7 @@
 import CustomForm from "@/components/custom-form";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { CancelRequestType } from "@/domains/policy/models/policy.models";
+import { useImageUpload } from "@/domains/shared/hooks/use-image-upload";
 import {
     Box,
     HStack,
@@ -21,8 +22,7 @@ import { usePolicy } from "../../hooks/use-policy";
 interface EvidencePhoto {
   id: string;
   uri: string;
-  isUploading?: boolean;
-  uploadedUrl?: string;
+  comment?: string; // Ghi chú/mô tả cho ảnh
 }
 
 /**
@@ -36,6 +36,7 @@ export const CancelPolicyRequest: React.FC = () => {
   const { colors } = useAgrisaColors();
   const { id: registeredPolicyId } = useLocalSearchParams<{ id: string }>();
   const { cancelPolicyMutation } = usePolicy();
+  const { uploadMultipleImages } = useImageUpload();
   const formRef = useRef<any>(null);
 
   // States
@@ -44,6 +45,7 @@ export const CancelPolicyRequest: React.FC = () => {
   const [evidenceDescription, setEvidenceDescription] = useState(""); // Mô tả bằng chứng
   const [evidencePhotos, setEvidencePhotos] = useState<EvidencePhoto[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadingProgress, setUploadingProgress] = useState<string>(""); // Progress message
 
   // Validation
   const isFormValid =
@@ -180,6 +182,17 @@ export const CancelPolicyRequest: React.FC = () => {
   };
 
   /**
+   * Cập nhật comment cho ảnh
+   */
+  const updatePhotoComment = (photoId: string, comment: string) => {
+    setEvidencePhotos((prev) =>
+      prev.map((photo) =>
+        photo.id === photoId ? { ...photo, comment } : photo
+      )
+    );
+  };
+
+  /**
    * Submit form
    */
   const handleSubmit = async () => {
@@ -192,54 +205,82 @@ export const CancelPolicyRequest: React.FC = () => {
       return;
     }
 
+    // Validate registered_policy_id exists
+    if (!registeredPolicyId) {
+      Alert.alert(
+        "Lỗi",
+        "Không tìm thấy thông tin hợp đồng. Vui lòng thử lại.",
+        [{ text: "Đóng" }]
+      );
+      return;
+    }
+
     try {
-        setIsSubmitting(true);
+      setIsSubmitting(true);
+      setUploadingProgress("Đang upload ảnh lên server...");
 
-        // Set compensate_amount = 0 (không cho người dùng nhập)
-        const amount = 0;
+      console.log("📤 Starting image upload process...");
+      console.log(`📸 Total images to upload: ${evidencePhotos.length}`);
 
-        // Tạo evidence object (description + images URLs)
-        const evidence = {
-          description: evidenceDescription,
-          images: evidencePhotos.map((photo) => ({
-            url: photo.uri, // TODO: Thay bằng URL thực sau khi upload
-          })),
-        };
+      // Bước 1: Upload tất cả ảnh lên imgbb
+      const imageUris = evidencePhotos.map((photo) => photo.uri);
+      let uploadedImageUrls: string[] = [];
 
-        // Validate registered_policy_id exists
-        if (!registeredPolicyId) {
-          Alert.alert(
-            "Lỗi",
-            "Không tìm thấy thông tin hợp đồng. Vui lòng thử lại.",
-            [{ text: "Đóng" }]
-          );
-          setIsSubmitting(false);
-          return;
-        }
+      try {
+        uploadedImageUrls = await uploadMultipleImages(imageUris);
+        console.log("✅ All images uploaded successfully:", uploadedImageUrls);
+      } catch (error: any) {
+        console.error("❌ Error during image upload:", error);
+        setUploadingProgress("");
+        setIsSubmitting(false);
 
-        console.log("📤 Submitting cancel request:", {
-          registered_policy_id: registeredPolicyId,
-          cancel_request_type: cancelType,
-          reason,
-          compensate_amount: amount,
-          evidence,
-        });
+        Alert.alert(
+          "Lỗi upload ảnh",
+          error.message || "Không thể upload ảnh. Vui lòng kiểm tra kết nối và thử lại.",
+          [{ text: "Đóng" }]
+        );
+        return;
+      }
 
-        // Call mutation
-        await cancelPolicyMutation.mutateAsync({
-          registered_policy_id: registeredPolicyId,
-          cancel_request_type: cancelType,
-          reason,
-          compensate_amount: amount,
-          evidence,
-        });
+      // Bước 2: Sau khi upload ảnh thành công, tạo evidence object
+      setUploadingProgress("Đang gửi yêu cầu hủy hợp đồng...");
 
-        // Success được xử lý trong mutation onSuccess
-      } catch (error) {
+      // Set compensate_amount = 0 (không cho người dùng nhập)
+      const amount = 0;
+
+      // Tạo evidence object với URLs đã upload và comments
+      const evidence = {
+        description: evidenceDescription,
+        images: uploadedImageUrls.map((url, index) => ({
+          url: url,
+          comment: evidencePhotos[index]?.comment || undefined,
+        })),
+      };
+
+      console.log("📤 Submitting cancel request with uploaded images:", {
+        registered_policy_id: registeredPolicyId,
+        cancel_request_type: cancelType,
+        reason,
+        compensate_amount: amount,
+        evidence,
+      });
+
+      // Bước 3: Call mutation để gửi cancel request
+      await cancelPolicyMutation.mutateAsync({
+        registered_policy_id: registeredPolicyId,
+        cancel_request_type: cancelType,
+        reason,
+        compensate_amount: amount,
+        evidence,
+      });
+
+      // Success được xử lý trong mutation onSuccess
+    } catch (error) {
       console.error("❌ Error submitting cancel request:", error);
       // Error được xử lý trong mutation onError
     } finally {
       setIsSubmitting(false);
+      setUploadingProgress("");
     }
   };
 
@@ -247,51 +288,87 @@ export const CancelPolicyRequest: React.FC = () => {
    * Render ảnh bằng chứng
    */
   const renderEvidencePhoto = (photo: EvidencePhoto, index: number) => (
-    <Box
+    <VStack
       key={photo.id}
-      position="relative"
+      space="xs"
       borderRadius="$lg"
-      overflow="hidden"
       borderWidth={1}
       borderColor={colors.frame_border}
+      p="$2"
+      bg={colors.background}
     >
-      {/* Image */}
-      <Image
-        source={{ uri: photo.uri }}
-        alt={`Evidence ${index + 1}`}
-        width="100%"
-        height={200}
-        resizeMode="cover"
-      />
-
-      {/* Delete button overlay */}
-      <Pressable
-        onPress={() => removePhoto(photo.id)}
-        position="absolute"
-        top="$2"
-        right="$2"
-        bg={colors.error}
-        borderRadius="$full"
-        p="$2"
-      >
-        <Trash2 size={16} color={colors.primary_white_text} strokeWidth={2} />
-      </Pressable>
-
-      {/* Index badge */}
+      {/* Image container */}
       <Box
-        position="absolute"
-        bottom="$2"
-        left="$2"
-        bg={colors.primary}
-        borderRadius="$md"
-        px="$2"
-        py="$1"
+        position="relative"
+        borderRadius="$lg"
+        overflow="hidden"
+        borderWidth={1}
+        borderColor={colors.frame_border}
       >
-        <Text fontSize="$xs" fontWeight="$bold" color={colors.primary_white_text}>
-          #{index + 1}
-        </Text>
+        {/* Image */}
+        <Image
+          source={{ uri: photo.uri }}
+          alt={`Evidence ${index + 1}`}
+          style={{ width: "100%", height: 180 }}
+          resizeMode="cover"
+        />
+
+        {/* Delete button */}
+        <Pressable
+          onPress={() => removePhoto(photo.id)}
+          position="absolute"
+          top="$2"
+          right="$2"
+          bg={colors.error}
+          borderRadius="$full"
+          p="$2"
+        >
+          <Trash2 size={16} color={colors.primary_white_text} strokeWidth={2} />
+        </Pressable>
+
+        {/* Index badge */}
+        <Box
+          position="absolute"
+          bottom="$2"
+          left="$2"
+          bg={colors.primary}
+          borderRadius="$md"
+          px="$2"
+          py="$1"
+        >
+          <Text fontSize="$xs" fontWeight="$bold" color={colors.primary_white_text}>
+            #{index + 1}
+          </Text>
+        </Box>
       </Box>
-    </Box>
+
+      {/* Comment input */}
+      <CustomForm
+        fields={[
+          {
+            name: "comment",
+            label: "",
+            type: "input",
+            placeholder: "Ghi chú cho ảnh này (tùy chọn)",
+            required: false,
+          },
+        ]}
+        initialValues={{
+          comment: photo.comment || "",
+        }}
+        onSubmit={() => {}}
+        showSubmitButton={false}
+        onValuesChange={(values) => {
+          if (values.comment !== undefined) {
+            updatePhotoComment(photo.id, values.comment);
+          }
+        }}
+        formStyle={{
+          padding: 0,
+          backgroundColor: "transparent",
+        }}
+      />
+    </VStack>
   );
 
   return (
@@ -300,7 +377,7 @@ export const CancelPolicyRequest: React.FC = () => {
         {/* Header */}
         <Box>
           <Text fontSize="$2xl" fontWeight="$bold" color={colors.primary_text}>
-            Đề nghị hủy hợp đồng
+            Đơn đề nghị hủy hợp đồng
           </Text>
           <Text fontSize="$sm" color={colors.secondary_text} mt="$1">
             Điền đầy đủ thông tin để gửi yêu cầu hủy hợp đồng bảo hiểm
@@ -309,7 +386,6 @@ export const CancelPolicyRequest: React.FC = () => {
 
         {/* Cảnh báo */}
         <Box
-          bg={colors.warningSoft}
           borderRadius="$xl"
           p="$4"
           borderWidth={1}
@@ -328,7 +404,7 @@ export const CancelPolicyRequest: React.FC = () => {
               <Text fontSize="$xs" color={colors.warning} lineHeight="$md">
                 • Yêu cầu hủy hợp đồng sẽ được xem xét trong 3-5 ngày làm việc
                 {"\n"}• Vui lòng cung cấp đầy đủ bằng chứng và lý do chính xác
-                {"\n"}• Số tiền bồi thường sẽ được đánh giá dựa trên thiệt hại
+                {"\n"}• Số tiền hoàn trả sẽ được đánh giá dựa trên thiệt hại
                 thực tế
               </Text>
             </VStack>
@@ -350,7 +426,7 @@ export const CancelPolicyRequest: React.FC = () => {
               color={colors.primary_text}
               textAlign="center"
             >
-              Thông tin yêu cầu
+              Đơn đề nghị huỷ bỏ hợp đồng
             </Text>
 
             {/* Loại hủy hợp đồng */}
@@ -360,7 +436,7 @@ export const CancelPolicyRequest: React.FC = () => {
                 fontWeight="$semibold"
                 color={colors.primary_text}
               >
-                Loại yêu cầu hủy <Text color={colors.error}>*</Text>
+                Lý do huỷ <Text color={colors.error}>*</Text>
               </Text>
               <HStack space="sm">
                 <Pressable
@@ -393,7 +469,7 @@ export const CancelPolicyRequest: React.FC = () => {
                       }
                       textAlign="center"
                     >
-                      Vi phạm hợp đồng
+                      Phát hiện vi phạm
                     </Text>
                   </Box>
                 </Pressable>
@@ -444,14 +520,13 @@ export const CancelPolicyRequest: React.FC = () => {
                 fields={[
                   {
                     name: "reason",
-                    label: "Lý do hủy hợp đồng",
+                    label: "Chi tiết lý do",
                     type: "textarea",
-                    placeholder:
-                      "VD: Cây trồng bị thiệt hại nặng do lũ lụt, không thể phục hồi...",
+                    
                     required: true,
-                    rows: 5,
+                    
                     helperText:
-                      "Mô tả chi tiết lý do và tình trạng thiệt hại của cây trồng",
+                      "Mô tả chi tiết lý do",
                   },
                 ]}
                 initialValues={{
@@ -489,10 +564,11 @@ export const CancelPolicyRequest: React.FC = () => {
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Bằng chứng thiệt hại
+                  Thông tin bổ sung
                 </Text>
                 <Text fontSize="$xs" color={colors.secondary_text} mt="$1">
-                  Mô tả + {evidencePhotos.length}/10 ảnh
+                  Cung cấp thêm các thông tin và bằng chứng bổ sung để hỗ trợ
+                  đơn đề nghị hủy
                 </Text>
               </VStack>
             </HStack>
@@ -501,19 +577,14 @@ export const CancelPolicyRequest: React.FC = () => {
 
             {/* Mô tả bằng chứng */}
             <VStack space="xs">
-              <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-                Mô tả bằng chứng <Text color={colors.error}>*</Text>
-              </Text>
+              
               <CustomForm
                 fields={[
                   {
                     name: "evidence_description",
-                    label: "",
+                    label: "Mô tả",
                     type: "textarea",
-                    placeholder:
-                      "VD: Hình ảnh cho thấy cây lúa bị ngập úng hoàn toàn sau cơn lũ ngày 5/12, khoảng 80% diện tích bị thiệt hại...",
                     required: true,
-                    rows: 4,
                   },
                 ]}
                 initialValues={{
@@ -535,8 +606,12 @@ export const CancelPolicyRequest: React.FC = () => {
 
             <Box height={1} bg={colors.frame_border} width="100%" />
 
-            <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
-              Hình ảnh bằng chứng <Text color={colors.error}>*</Text>
+            <Text
+              fontSize="$sm"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
+              Hình ảnh bổ sung <Text color={colors.error}>*</Text>
             </Text>
 
             {/* Upload buttons */}
@@ -585,7 +660,11 @@ export const CancelPolicyRequest: React.FC = () => {
                   borderColor={colors.primary}
                 >
                   <HStack space="xs" alignItems="center">
-                    <ImagePlus size={16} color={colors.primary} strokeWidth={2} />
+                    <ImagePlus
+                      size={16}
+                      color={colors.primary}
+                      strokeWidth={2}
+                    />
                     <Text
                       fontSize="$sm"
                       fontWeight="$semibold"
@@ -598,17 +677,13 @@ export const CancelPolicyRequest: React.FC = () => {
               </Pressable>
             </HStack>
 
-            {/* Danh sách ảnh - Grid 2 cột */}
+            {/* Danh sách ảnh - Full width với comment */}
             {evidencePhotos.length > 0 && (
-              <Box mt="$2">
-                <HStack flexWrap="wrap" gap="$3">
-                  {evidencePhotos.map((photo, index) => (
-                    <Box key={photo.id} width="48%">
-                      {renderEvidencePhoto(photo, index)}
-                    </Box>
-                  ))}
-                </HStack>
-              </Box>
+              <VStack space="md" mt="$2">
+                {evidencePhotos.map((photo, index) =>
+                  renderEvidencePhoto(photo, index)
+                )}
+              </VStack>
             )}
 
             {/* Empty state */}
@@ -661,23 +736,34 @@ export const CancelPolicyRequest: React.FC = () => {
             alignItems="center"
           >
             {isSubmitting ? (
-              <HStack space="sm" alignItems="center">
-                <Spinner size="small" color={colors.primary_white_text} />
-                <Text
-                  fontSize="$md"
-                  fontWeight="$bold"
-                  color={colors.primary_white_text}
-                >
-                  Đang gửi yêu cầu...
-                </Text>
-              </HStack>
+              <VStack space="xs" alignItems="center">
+                <HStack space="sm" alignItems="center">
+                  <Spinner size="small" color={colors.primary_white_text} />
+                  <Text
+                    fontSize="$md"
+                    fontWeight="$bold"
+                    color={colors.primary_white_text}
+                  >
+                    Đang xử lý...
+                  </Text>
+                </HStack>
+                {uploadingProgress && (
+                  <Text
+                    fontSize="$xs"
+                    color={colors.primary_white_text}
+                    textAlign="center"
+                  >
+                    {uploadingProgress}
+                  </Text>
+                )}
+              </VStack>
             ) : (
               <Text
                 fontSize="$md"
                 fontWeight="$bold"
                 color={colors.primary_white_text}
               >
-                Gửi yêu cầu hủy hợp đồng
+                Gửi đơn yêu cầu huỷ
               </Text>
             )}
           </Box>
@@ -693,7 +779,11 @@ export const CancelPolicyRequest: React.FC = () => {
             borderWidth={1}
             borderColor={colors.frame_border}
           >
-            <Text fontSize="$md" fontWeight="$semibold" color={colors.primary_text}>
+            <Text
+              fontSize="$md"
+              fontWeight="$semibold"
+              color={colors.primary_text}
+            >
               Hủy bỏ
             </Text>
           </Box>

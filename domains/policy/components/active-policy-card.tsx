@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Clock,
   Shield,
-  Sprout
+  Sprout,
 } from "lucide-react-native";
 import React from "react";
 
@@ -125,7 +125,9 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
       case RegisteredPolicyStatus.ACTIVE:
         // Kiểm tra xem đã đến ngày bắt đầu chưa
         if (now < policy.coverage_start_date) {
-          const daysUntil = Math.ceil((policy.coverage_start_date - now) / 86400);
+          const daysUntil = Math.ceil(
+            (policy.coverage_start_date - now) / 86400
+          );
           return {
             label: "Chờ hiệu lực",
             color: colors.warning,
@@ -181,7 +183,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
           {/* Header với gradient */}
           <Box bg={cardColor} p="$4">
             <VStack space="sm">
-              {/* Số hợp đồng + Badge đang hoạt động */}
+              {/* Mã hợp đồng + Badge đang hoạt động */}
               <HStack justifyContent="space-between" alignItems="center">
                 <HStack space="sm" alignItems="center" flex={1}>
                   <Box bg={colors.primary_white_text} p="$2" borderRadius="$lg">
@@ -194,7 +196,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                       opacity={0.9}
                       mb="$0.5"
                     >
-                      Mã số hợp đồng
+                      Mã hợp đồng
                     </Text>
                     <Text
                       fontSize="$md"
@@ -216,7 +218,11 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                   borderColor={cardColor}
                 >
                   <HStack space="xs" alignItems="center">
-                    <statusDisplay.icon size={14} color={cardColor} strokeWidth={2.5} />
+                    <statusDisplay.icon
+                      size={14}
+                      color={cardColor}
+                      strokeWidth={2.5}
+                    />
                     <Text fontSize="$xs" fontWeight="$bold" color={cardColor}>
                       {statusDisplay.label}
                     </Text>
@@ -238,11 +244,7 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                       <Text fontSize="$sm" color={colors.secondary_text}>
                         {statusDisplay.isWaiting ? "Còn:" : "Còn lại:"}
                       </Text>
-                      <Text
-                        fontSize="$xl"
-                        fontWeight="$bold"
-                        color={cardColor}
-                      >
+                      <Text fontSize="$xl" fontWeight="$bold" color={cardColor}>
                         {statusDisplay.daysCount}
                       </Text>
                       <Text fontSize="$sm" color={colors.secondary_text}>

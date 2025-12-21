@@ -145,7 +145,7 @@ export default function DetailBasePolicyScreen() {
       <Box flex={1}>
         {/* Header - Fixed */}
         <AgrisaHeader
-          title="Chi tiết chương trình bảo hiểm"
+          title="Chi tiết gói bảo hiểm"
           onBack={() => router.back()}
         />
 
@@ -168,7 +168,7 @@ export default function DetailBasePolicyScreen() {
             {/* THÔNG TIN CHƯƠNG TRÌNH BẢO HIỂM */}
             <VStack space="md">
               <SectionTitle
-                title="Thông tin chương trình"
+                title="Thông tin gói bảo hiểm"
                 icon={Shield}
                 colors={colors}
               />
@@ -371,7 +371,7 @@ const ProductInfoCard = ({
       {/* Description */}
       <VStack space="xs">
         <Text fontSize="$xs" color={colors.secondary_text} fontWeight="$medium">
-          Mô tả bảo hiểm
+          Mô tả chi tiết gói
         </Text>
         <Text fontSize="$sm" color={colors.primary_text} lineHeight="$lg">
           {policy.product_description}
@@ -511,7 +511,7 @@ const PolicyDocumentSection = ({
     <VStack space="xs">
       <HStack space="xs" alignItems="center" mb="$1">
         <Text fontSize="$xs" color={colors.secondary_text} fontWeight="$medium">
-          Hợp đồng bảo hiểm gốc
+          Hợp đồng gốc
         </Text>
       </HStack>
 
@@ -622,42 +622,30 @@ const CostPayoutGrid = ({
     >
       <VStack space="sm">
         <Text fontSize="$md" fontWeight="$bold" color={colors.primary}>
-          Phí bảo hiểm
+          Thanh toán phí bảo hiểm
         </Text>
         <Divider bg={colors.frame_border} />
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
-            Số tiền
+            Số tiền thanh toán
           </Text>
           <Text fontSize="$xl" fontWeight="$bold" color={colors.primary_text}>
-            {Utils.formatCurrency(policy.fix_premium_amount)}
+            {Utils.formatCurrency(policy.fix_premium_amount)} /{" "}
+            {policy.is_per_hectare ? "hecta" : "Phí cố định"}
           </Text>
         </HStack>
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
-            Loại phí
+            Tỷ lệ cơ bản
           </Text>
           <Text
             fontSize="$md"
             fontWeight="$semibold"
             color={colors.primary_text}
           >
-            {policy.is_per_hectare ? "Dựa trên hecta" : "Phí cố định"}
-          </Text>
-        </HStack>
-
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$sm" color={colors.secondary_text}>
-            Tỷ lệ phí cơ bản
-          </Text>
-          <Text
-            fontSize="$md"
-            fontWeight="$semibold"
-            color={colors.primary_text}
-          >
-            {(policy.premium_base_rate * 100).toFixed(1)}%
+            {policy.premium_base_rate * 100}%
           </Text>
         </HStack>
       </VStack>
@@ -681,24 +669,14 @@ const CostPayoutGrid = ({
           <Text fontSize="$sm" color={colors.secondary_text}>
             Bồi thường từ
           </Text>
-          <Text fontSize="$xl" fontWeight="$bold">
+          <Text fontSize="$md" fontWeight="$bold">
             {Utils.formatCurrency(policy.fix_payout_amount)} -{" "}
-            {Utils.formatCurrency(policy.payout_cap)}
+            {Utils.formatCurrency(policy.payout_cap)}{" "}
+            {policy.is_payout_per_hectare ? "/hecta" : "Tổng cộng"}
           </Text>
         </HStack>
 
-        <HStack justifyContent="space-between" alignItems="center">
-          <Text fontSize="$sm" color={colors.secondary_text}>
-            Loại bồi thường
-          </Text>
-          <Text
-            fontSize="$md"
-            fontWeight="$semibold"
-            color={colors.primary_text}
-          >
-            {policy.is_payout_per_hectare ? "Dựa trên hecta" : "Tổng cộng"}
-          </Text>
-        </HStack>
+        
 
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
@@ -866,9 +844,6 @@ const TimelineCard = ({
             </Text>
           </VStack>
         </HStack>
-        <Text fontSize="$xs" color={colors.secondary_text} ml="$10" mt="$1">
-          Chỉ có thể đăng ký trong khoảng thời gian này
-        </Text>
       </VStack>
 
       <Divider bg={colors.frame_border} />
@@ -880,7 +855,7 @@ const TimelineCard = ({
             <Shield size={16} color={colors.success} strokeWidth={2} />
           </Box>
           <Text fontSize="$xs" color={colors.secondary_text}>
-            Thời gian hiệu lực bảo hiểm
+            Thời gian bảo hiểm hiệu lực
           </Text>
         </HStack>
         <HStack justifyContent="space-between" alignItems="center" ml="$10">
@@ -904,9 +879,7 @@ const TimelineCard = ({
             </Text>
           </VStack>
         </HStack>
-        <Text fontSize="$xs" color={colors.secondary_text} ml="$10" mt="$1">
-          Bảo hiểm chỉ có hiệu lực trong khoảng thời gian này
-        </Text>
+       
       </VStack>
 
       <Divider bg={colors.frame_border} />
@@ -949,7 +922,7 @@ const FAQSection = ({
     {
       id: "payout-calculation",
       question: "Tôi sẽ nhận được bao nhiêu tiền bồi thường?",
-      answer: `Số tiền bồi thường phụ thuộc vào mức độ thiệt hại:\n\n📌 MỨC CƠ BẢN (Điều kiện thường):\n${Utils.formatCurrency(policy.fix_payout_amount)}${policy.is_payout_per_hectare ? " / hecta thiệt hại" : " (tổng số tiền)"}\n• Áp dụng khi đạt điều kiện kích hoạt bình thường\n• Đây là mức bồi thường tiêu chuẩn\n\n🔥 MỨC TỐI ĐA (Vượt ngưỡng nghiêm trọng):\n${Utils.formatCurrency(policy.payout_cap)}${policy.is_payout_per_hectare ? " / hecta thiệt hại" : " (tổng số tiền)"}\n• Áp dụng khi thiệt hại VỰA đạt điều kiện bình thường VỪA vượt ngưỡng nghiêm trọng\n• Công thức: ${Utils.formatCurrency(policy.fix_payout_amount)} × ${policy.over_threshold_multiplier} = ${Utils.formatCurrency(policy.payout_cap)}\n\n💡 Ví dụ thực tế:\n• Nếu ruộng lúa của bạn ${policy.is_payout_per_hectare ? "5 hecta" : ""} bị hạn hán nhẹ → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.fix_payout_amount * 5) : Utils.formatCurrency(policy.fix_payout_amount)}\n• Nếu ${policy.is_payout_per_hectare ? "cùng diện tích" : "ruộng"} bị hạn hán nặng (vượt ngưỡng) → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.payout_cap * 5) : Utils.formatCurrency(policy.payout_cap)}\n\n⚡ Lưu ý:\n${policy.is_payout_per_hectare ? "• Số tiền cuối cùng = Mức bồi thường × Diện tích thiệt hại thực tế\n" : ""}• Bồi thường được chi trả TỰ ĐỘNG khi hệ thống phát hiện thiệt hại qua vệ tinh\n• Không cần nộp đơn yêu cầu hay chờ thẩm định`,
+      answer: `Số tiền bồi thường phụ thuộc vào mức độ rủi ro:\n\n📌 MỨC CƠ BẢN (Điều kiện thường):\n${Utils.formatCurrency(policy.fix_payout_amount)}${policy.is_payout_per_hectare ? " / hecta rủi ro" : " (tổng số tiền)"}\n• Áp dụng khi đạt điều kiện kích hoạt bình thường\n• Đây là mức bồi thường tiêu chuẩn\n\n🔥 MỨC TỐI ĐA (Vượt ngưỡng nghiêm trọng):\n${Utils.formatCurrency(policy.payout_cap)}${policy.is_payout_per_hectare ? " / hecta rủi ro" : " (tổng số tiền)"}\n• Áp dụng khi rủi ro VỰA đạt điều kiện bình thường VỪA vượt ngưỡng nghiêm trọng\n• Công thức: ${Utils.formatCurrency(policy.fix_payout_amount)} × ${policy.over_threshold_multiplier} = ${Utils.formatCurrency(policy.payout_cap)}\n\n💡 Ví dụ thực tế:\n• Nếu ruộng lúa của bạn ${policy.is_payout_per_hectare ? "5 hecta" : ""} bị hạn hán nhẹ → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.fix_payout_amount * 5) : Utils.formatCurrency(policy.fix_payout_amount)}\n• Nếu ${policy.is_payout_per_hectare ? "cùng diện tích" : "ruộng"} bị hạn hán nặng (vượt ngưỡng) → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.payout_cap * 5) : Utils.formatCurrency(policy.payout_cap)}\n\n⚡ Lưu ý:\n${policy.is_payout_per_hectare ? "• Số tiền cuối cùng = Mức bồi thường × Diện tích rủi ro thực tế\n" : ""}• Bồi thường được chi trả TỰ ĐỘNG khi hệ thống phát hiện rủi ro qua vệ tinh\n• Không cần nộp đơn yêu cầu hay chờ thẩm định`,
       icon: TrendingUp,
       color: colors.success,
     },
@@ -957,7 +930,7 @@ const FAQSection = ({
       id: "ndmi",
       question: "NDMI (Chỉ số độ ẩm) là gì?",
       answer:
-        "NDMI (Normalized Difference Moisture Index) là chỉ số đo độ ẩm của đất và cây trồng thông qua ảnh vệ tinh.\n\n🌱 Giá trị NDMI:\n• 0.4 - 1.0: Độ ẩm tốt, cây khỏe mạnh\n• 0.2 - 0.4: Độ ẩm trung bình, cần theo dõi\n• < 0.2: Thiếu nước nghiêm trọng, nguy cơ hạn hán\n\n💧 Ứng dụng:\n• Phát hiện sớm hạn hán\n• Theo dõi sức khỏe cây trồng\n• Đánh giá nhu cầu tưới tiêu\n\n⚠️ Lưu ý: NDMI thấp kéo dài có thể dẫn đến thiệt hại cây trồng và kích hoạt bảo hiểm.",
+        "NDMI (Normalized Difference Moisture Index) là chỉ số đo độ ẩm của đất và cây trồng thông qua ảnh vệ tinh.\n\n🌱 Giá trị NDMI:\n• 0.4 - 1.0: Độ ẩm tốt, cây khỏe mạnh\n• 0.2 - 0.4: Độ ẩm trung bình, cần theo dõi\n• < 0.2: Thiếu nước nghiêm trọng, nguy cơ hạn hán\n\n💧 Ứng dụng:\n• Phát hiện sớm hạn hán\n• Theo dõi sức khỏe cây trồng\n• Đánh giá nhu cầu tưới tiêu\n\n⚠️ Lưu ý: NDMI thấp kéo dài có thể dẫn đến rủi ro cây trồng và kích hoạt bảo hiểm.",
       icon: Database,
       color: colors.info,
     },
@@ -965,7 +938,7 @@ const FAQSection = ({
       id: "ndvi",
       question: "NDVI (Chỉ số thực vật) là gì?",
       answer:
-        "NDVI (Normalized Difference Vegetation Index) là chỉ số đo mức độ xanh tươi và sức khỏe của cây trồng.\n\n🌾 Giá trị NDVI:\n• 0.6 - 0.9: Cây rất khỏe, sinh trưởng tốt\n• 0.3 - 0.6: Cây khỏe mạnh bình thường\n• 0.1 - 0.3: Cây yếu, thiếu dinh dưỡng\n• < 0.1: Đất trống hoặc cây chết\n\n📊 Ứng dụng:\n• Đánh giá sinh trưởng cây trồng\n• Phát hiện sâu bệnh\n• Dự đoán năng suất\n• Theo dõi giai đoạn phát triển\n\n✅ NDVI giảm đột ngột cho thấy cây bị stress hoặc thiệt hại.",
+        "NDVI (Normalized Difference Vegetation Index) là chỉ số đo mức độ xanh tươi và sức khỏe của cây trồng.\n\n🌾 Giá trị NDVI:\n• 0.6 - 0.9: Cây rất khỏe, sinh trưởng tốt\n• 0.3 - 0.6: Cây khỏe mạnh bình thường\n• 0.1 - 0.3: Cây yếu, thiếu dinh dưỡng\n• < 0.1: Đất trống hoặc cây chết\n\n📊 Ứng dụng:\n• Đánh giá sinh trưởng cây trồng\n• Phát hiện sâu bệnh\n• Dự đoán năng suất\n• Theo dõi giai đoạn phát triển\n\n✅ NDVI giảm đột ngột cho thấy cây bị stress hoặc rủi ro.",
       icon: Leaf,
       color: colors.success,
     },
@@ -1013,7 +986,7 @@ const FAQSection = ({
       id: "aggregation-window",
       question: "Thời gian theo dõi (Aggregation Window) là gì?",
       answer:
-        "Thời gian theo dõi là khoảng thời gian hệ thống thu thập và tính toán dữ liệu để đánh giá điều kiện.\n\n⏱️ Ví dụ:\n• 'Trung bình 7 ngày' = Thu thập dữ liệu liên tục 7 ngày rồi tính trung bình\n• 'Tối đa 14 ngày' = Lấy giá trị cao nhất trong 14 ngày\n• 'Tổng 30 ngày' = Cộng tổng các giá trị trong 30 ngày\n\n🎯 Mục đích:\n• Tránh kích hoạt nhầm do biến động ngắn hạn\n• Đảm bảo thiệt hại thực sự nghiêm trọng\n• Phản ánh chính xác tình trạng thực tế\n\n📌 Thời gian càng dài, điều kiện càng khắt khe nhưng càng đáng tin cậy.",
+        "Thời gian theo dõi là khoảng thời gian hệ thống thu thập và tính toán dữ liệu để đánh giá điều kiện.\n\n⏱️ Ví dụ:\n• 'Trung bình 7 ngày' = Thu thập dữ liệu liên tục 7 ngày rồi tính trung bình\n• 'Tối đa 14 ngày' = Lấy giá trị cao nhất trong 14 ngày\n• 'Tổng 30 ngày' = Cộng tổng các giá trị trong 30 ngày\n\n🎯 Mục đích:\n• Tránh kích hoạt nhầm do biến động ngắn hạn\n• Đảm bảo rủi ro thực sự nghiêm trọng\n• Phản ánh chính xác tình trạng thực tế\n\n📌 Thời gian càng dài, điều kiện càng khắt khe nhưng càng đáng tin cậy.",
       icon: Clock,
       color: colors.primary,
     },
@@ -1021,7 +994,7 @@ const FAQSection = ({
       id: "validation-window",
       question: "Thời gian xác minh (Validation Window) là gì?",
       answer:
-        "Thời gian xác minh là khoảng thời gian bổ sung sau khi đạt ngưỡng để kiểm tra lại tình trạng.\n\n🔍 Cách hoạt động:\n1. Điều kiện đạt ngưỡng (VD: NDMI < 0.2 trong 7 ngày)\n2. Hệ thống chờ thêm thời gian xác minh (VD: 3 ngày)\n3. Kiểm tra lại: Tình trạng có duy trì không?\n4. Nếu CÓ → Xác nhận thiệt hại, chi trả\n   Nếu KHÔNG → Hủy kích hoạt (do phục hồi)\n\n✅ Lợi ích:\n• Tránh chi trả nhầm do biến động tạm thời\n• Đảm bảo thiệt hại thực sự xảy ra\n• Bảo vệ cả nông dân và công ty bảo hiểm\n\n⏳ Thường từ 1-5 ngày tùy loại rủi ro.",
+        "Thời gian xác minh là khoảng thời gian bổ sung sau khi đạt ngưỡng để kiểm tra lại tình trạng.\n\n🔍 Cách hoạt động:\n1. Điều kiện đạt ngưỡng (VD: NDMI < 0.2 trong 7 ngày)\n2. Hệ thống chờ thêm thời gian xác minh (VD: 3 ngày)\n3. Kiểm tra lại: Tình trạng có duy trì không?\n4. Nếu CÓ → Xác nhận rủi ro, chi trả\n   Nếu KHÔNG → Hủy kích hoạt (do phục hồi)\n\n✅ Lợi ích:\n• Tránh chi trả nhầm do biến động tạm thời\n• Đảm bảo rủi ro thực sự xảy ra\n• Bảo vệ cả nông dân và công ty bảo hiểm\n\n⏳ Thường từ 1-5 ngày tùy loại rủi ro.",
       icon: CheckCircle2,
       color: colors.success,
     },
@@ -1053,7 +1026,7 @@ const FAQSection = ({
       id: "early-warning",
       question: "Cảnh báo sớm giúp gì cho tôi?",
       answer:
-        "Ngưỡng cảnh báo sớm được đặt trước ngưỡng kích hoạt chính. Khi đạt ngưỡng này, bạn sẽ nhận thông báo để có thời gian chuẩn bị biện pháp ứng phó, giảm thiểu thiệt hại trước khi tình huống trở nên nghiêm trọng.",
+        "Ngưỡng cảnh báo sớm được đặt trước ngưỡng kích hoạt chính. Khi đạt ngưỡng này, bạn sẽ nhận thông báo để có thời gian chuẩn bị biện pháp ứng phó, giảm thiểu rủi ro trước khi tình huống trở nên nghiêm trọng.",
       icon: AlertTriangle,
       color: colors.warning,
     },
@@ -1061,7 +1034,7 @@ const FAQSection = ({
       id: "consecutive",
       question: "Yêu cầu liên tiếp nghĩa là gì?",
       answer:
-        "Một số điều kiện yêu cầu hiện tượng xấu phải xảy ra liên tục không gián đoạn. VD: 'Không mưa trong 14 ngày liên tiếp' - nếu có 1 ngày mưa ở giữa thì đếm lại từ đầu. Điều này đảm bảo chỉ chi trả cho thiệt hại thực sự nghiêm trọng.",
+        "Một số điều kiện yêu cầu hiện tượng xấu phải xảy ra liên tục không gián đoạn. VD: 'Không mưa trong 14 ngày liên tiếp' - nếu có 1 ngày mưa ở giữa thì đếm lại từ đầu. Điều này đảm bảo chỉ chi trả cho rủi ro thực sự nghiêm trọng.",
       icon: TrendingUp,
       color: colors.error,
     },
@@ -1238,7 +1211,7 @@ const TechnicalInfoCard = ({
           >
             Chương trình bảo hiểm này sử dụng {metadata.data_source_count} nguồn
             dữ liệu vệ tinh và cảm biến để giám sát {metadata.total_conditions}{" "}
-            điều kiện khác nhau. Hệ thống tự động phát hiện thiệt hại và chi trả
+            điều kiện khác nhau. Hệ thống tự động phát hiện rủi ro và chi trả
             bồi thường.
           </Text>
         </HStack>
@@ -1379,7 +1352,7 @@ const TriggerCard = ({
                       fontWeight="$semibold"
                       color={colors.primary_text}
                     >
-                      Thời gian không kích hoạt
+                      Thời gian tạm ngưng bảo hiểm
                     </Text>
                   </HStack>
                   <VStack space="xs" ml="$6">
@@ -1612,9 +1585,6 @@ const ConditionItem = ({
                   >
                     Điều kiện {condition.condition_order}
                   </Text>
-                  <Text fontSize="$2xs" color={colors.secondary_text}>
-                    • Chi tiết đầy đủ
-                  </Text>
                 </HStack>
 
                 <VStack space="xs">
@@ -1627,7 +1597,7 @@ const ConditionItem = ({
                     borderBottomColor={colors.frame_border}
                   >
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
-                      Ngưỡng kích hoạt
+                      Điều kiện ngưỡng
                     </Text>
                     <Text
                       fontSize="$sm"
@@ -1649,7 +1619,7 @@ const ConditionItem = ({
                     borderBottomColor={colors.frame_border}
                   >
                     <Text fontSize="$xs" color={colors.secondary_text} flex={1}>
-                      Giá trị ngưỡng
+                      Ngưỡng kích hoạt rủi ro
                     </Text>
                     <Text
                       fontSize="$sm"
@@ -1670,28 +1640,18 @@ const ConditionItem = ({
                         py="$2"
                         borderBottomWidth={1}
                         borderBottomColor={colors.frame_border}
-                        bg={colors.infoSoft}
-                        px="$2"
                         borderRadius="$md"
                       >
                         <VStack flex={1}>
-                          <Text
-                            fontSize="$xs"
-                            color={colors.info}
-                            fontWeight="$semibold"
-                          >
+                          <Text fontSize="$xs" fontWeight="$semibold">
                             Ngưỡng cảnh báo sớm
                           </Text>
                           <Text fontSize="$2xs" color={colors.secondary_text}>
                             Nhận thông báo trước khi đạt ngưỡng nguy hiểm
                           </Text>
                         </VStack>
-                        <Text
-                          fontSize="$sm"
-                          fontWeight="$bold"
-                          color={colors.info}
-                        >
-                          {condition.early_warning_threshold}%
+                        <Text fontSize="$sm" fontWeight="$bold">
+                          {condition.early_warning_threshold}
                         </Text>
                       </HStack>
                     )}
@@ -1806,7 +1766,7 @@ const ConditionItem = ({
                   </HStack>
 
                   {/* Dữ liệu so sánh */}
-                  {condition.baseline_window_days > 0 && (
+                  {condition.baseline_window_days ? (
                     <HStack
                       justifyContent="space-between"
                       alignItems="center"
@@ -1827,6 +1787,25 @@ const ConditionItem = ({
                         color={colors.primary_text}
                       >
                         {condition.baseline_window_days} ngày trước
+                      </Text>
+                    </HStack>
+                  ) : (
+                    <HStack
+                      justifyContent="space-between"
+                      alignItems="center"
+                      py="$2"
+                      borderBottomWidth={1}
+                      borderBottomColor={colors.frame_border}
+                    >
+                      <Text
+                        fontSize="$xs"
+                        color={colors.secondary_text}
+                        flex={1}
+                      >
+                        So sánh dữ liệu lịch sử
+                      </Text>
+                      <Text fontSize="$sm" color={colors.muted_text}>
+                        Không có
                       </Text>
                     </HStack>
                   )}
@@ -2089,7 +2068,7 @@ const BottomCTA = ({
         <HStack justifyContent="space-between" mb={5} alignItems="center">
           <VStack>
             <Text fontSize="$md" color={colors.secondary_text}>
-              Phí bảo hiểm
+              Thanh toán phí
             </Text>
           </VStack>
 

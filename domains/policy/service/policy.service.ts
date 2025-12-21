@@ -7,6 +7,7 @@ import {
   RegisteredPoliciesResponse,
   RegisteredPolicyDetailResponse,
   RegisterPolicyPayload,
+  ResolveDisputePayload,
   ReviewCancelRequestPayload,
   UnderwritingData,
 } from "../models/policy.models";
@@ -28,6 +29,13 @@ export const policyServices = {
       return useAxios.post(
         `/policy/protected/api/v2/cancel_request?policy_id=${registered_policy_id}`,
         payload
+      );
+    },
+    revoke_cancel_request: async (
+      cancel_request_id: string
+    ): Promise<ApiResponse<any>> => {
+      return useAxios.post(
+        `/policy/protected/api/v2/cancel_request/revoke/${cancel_request_id}`
       );
     },
   },
@@ -87,6 +95,15 @@ export const policyServices = {
     ): Promise<ApiResponse<any>> => {
       return useAxios.put(
         `/policy/protected/api/v2/cancel_request/review/${cancel_request_id}`,
+        payload
+      );
+    },
+    resolve_dispute: async (
+      cancel_request_id: string,
+      payload: ResolveDisputePayload
+    ): Promise<ApiResponse<any>> => {
+      return useAxios.put(
+        `/policy/protected/api/v2/cancel_request/resolve-dispute/${cancel_request_id}`,
         payload
       );
     },

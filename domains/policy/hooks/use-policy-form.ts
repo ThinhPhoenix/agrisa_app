@@ -123,11 +123,11 @@ export const usePolicyForm = ({
         }
 
         if (!selectedFarm) {
-            return "Vui lòng chọn trang trại để đăng ký bảo hiểm.";
+          return "Vui lòng chọn nông trại để đăng ký bảo hiểm.";
         }
 
         if (!plantingDate) {
-            return "Vui lòng chọn ngày gieo trồng.";
+          return "Vui lòng chọn ngày gieo trồng.";
         }
 
         // Kiểm tra planting date không được trong quá khứ
@@ -137,7 +137,7 @@ export const usePolicyForm = ({
         selectedDate.setHours(0, 0, 0, 0);
 
         if (selectedDate < today) {
-            return "Ngày gieo trồng không được chọn ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc tương lai.";
+          return "Ngày dự kiến gieo trồng không được chọn ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc tương lai.";
         }
 
         // Validate document_tags nếu có

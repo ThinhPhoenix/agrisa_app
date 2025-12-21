@@ -3,6 +3,7 @@ import { QueryKey } from "@/domains/shared/stores/query-key";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CancelRequestPayload,
+  ResolveDisputePayload,
   ReviewCancelRequestPayload,
 } from "../models/policy.models";
 import { policyServices } from "../service/policy.service";
@@ -159,7 +160,7 @@ export const usePolicy = () => {
           errorMessage = "Số tiền bảo hiểm phải lớn hơn 0.";
         } else if (apiMessage.toLowerCase().includes("planting_date")) {
           errorMessage =
-            "Ngày gieo trồng không hợp lệ. Vui lòng chọn ngày trong quá khứ hoặc bỏ qua nếu chưa có.";
+            "Ngày dự kiến gieo trồng không hợp lệ. Vui lòng chọn ngày trong quá khứ hoặc bỏ qua nếu chưa có.";
         } else if (apiMessage.toLowerCase().includes("area_multiplier")) {
           errorMessage = "Hệ số diện tích không hợp lệ.";
         } else if (
@@ -167,16 +168,16 @@ export const usePolicy = () => {
           apiMessage.toLowerCase().includes("farm_name")
         ) {
           errorMessage =
-            "Vui lòng chọn trang trại hoặc nhập thông tin trang trại mới.";
+            "Vui lòng chọn nông trại hoặc nhập thông tin nông trại mới.";
         } else if (apiMessage.toLowerCase().includes("farm.area_sqm")) {
-          errorMessage = "Diện tích trang trại phải lớn hơn 0.";
+          errorMessage = "Diện tích nông trại phải lớn hơn 0.";
         } else if (apiMessage.toLowerCase().includes("crop_type")) {
           errorMessage = "Vui lòng chọn loại cây trồng.";
         } else if (
           apiMessage.toLowerCase().includes("boundary") ||
           apiMessage.toLowerCase().includes("center_location")
         ) {
-          errorMessage = "Vui lòng cung cấp thông tin vị trí trang trại.";
+          errorMessage = "Vui lòng cung cấp thông tin vị trí nông trại.";
         } else if (apiMessage.toLowerCase().includes("policy_tags")) {
           errorMessage = "Thông tin tài liệu bảo hiểm không hợp lệ.";
         } else {
@@ -216,7 +217,7 @@ export const usePolicy = () => {
         ) {
           errorTitle = "Trang trại đã được bảo hiểm";
           errorMessage =
-            "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn trang trại khác.";
+            "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
         } else if (
           apiMessage.toLowerCase().includes("base policy is not active") ||
           apiMessage.toLowerCase().includes("base policy is invalid")
@@ -441,6 +442,168 @@ export const usePolicy = () => {
     },
   });
 
+  const resolveDisputeMutation = useMutation({
+    mutationKey: [QueryKey.POLICY.RESOLVE_DISPUTE],
+    mutationFn: async ({
+      cancel_request_id,
+      payload,
+    }: {
+      cancel_request_id: string;
+      payload: ResolveDisputePayload;
+    }) => {
+      return await policyServices.put.resolve_dispute(
+        cancel_request_id,
+        payload
+      );
+    },
+    onSuccess: async (data: any, variables) => {
+      // Invalidate cache để refresh dữ liệu
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.POLICY.GET_CANCEL_REQUESTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.POLICY.REGISTERED_POLICIES],
+      });
+
+      const isApproved = variables.payload.final_decision === "approved";
+
+      // Hiển thị Result Status Screen với success
+      resultStatus.showSuccess({
+        title: isApproved
+          ? "Đã chấp nhận giải quyết tranh chấp"
+          : "Đã từ chối giải quyết tranh chấp",
+        message: isApproved
+          ? "Tranh chấp đã được giải quyết và chấp nhận yêu cầu hủy hợp đồng."
+          : "Tranh chấp đã được giải quyết và từ chối yêu cầu hủy hợp đồng.",
+        subMessage: isApproved
+          ? "Hợp đồng sẽ được xử lý hủy và thanh toán bồi thường."
+          : "Hợp đồng sẽ tiếp tục có hiệu lực như bình thường.",
+        autoRedirectSeconds: 3,
+        autoRedirectRoute: "/(tabs)",
+        showHomeButton: true,
+        lockNavigation: false,
+      });
+    },
+    onError: (error: any) => {
+      console.error("❌ Error resolving dispute:", error);
+
+      let errorMessage = "Không thể giải quyết tranh chấp. Vui lòng thử lại.";
+      let errorTitle = "Giải quyết thất bại";
+
+      const errorCode = error?.response?.data?.code || "";
+      const apiMessage = error?.response?.data?.message || error?.message || "";
+
+      if (errorCode === "INVALID_REQUEST") {
+        errorTitle = "Dữ liệu không hợp lệ";
+        errorMessage =
+          "Thông tin giải quyết tranh chấp không đúng định dạng. Vui lòng kiểm tra lại.";
+      } else if (errorCode === "NOT_FOUND") {
+        errorTitle = "Không tìm thấy";
+        errorMessage = "Yêu cầu hủy hợp đồng không tồn tại hoặc đã bị xóa.";
+      } else if (
+        apiMessage.toLowerCase().includes("not in litigation") ||
+        apiMessage.toLowerCase().includes("invalid status")
+      ) {
+        errorTitle = "Trạng thái không hợp lệ";
+        errorMessage =
+          "Chỉ có thể giải quyết tranh chấp khi yêu cầu đang ở trạng thái tranh chấp pháp lý.";
+      } else if (
+        apiMessage.toLowerCase().includes("already resolved") ||
+        apiMessage.toLowerCase().includes("already processed")
+      ) {
+        errorTitle = "Đã xử lý";
+        errorMessage =
+          "Tranh chấp này đã được giải quyết trước đó. Vui lòng kiểm tra lại.";
+      } else if (apiMessage.toLowerCase().includes("unauthorized")) {
+        errorTitle = "Không có quyền";
+        errorMessage = "Bạn không có quyền giải quyết tranh chấp này.";
+      } else if (apiMessage) {
+        errorMessage = apiMessage;
+      } else {
+        errorTitle = "Lỗi không xác định";
+        errorMessage =
+          "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.";
+      }
+
+      resultStatus.showError({
+        title: errorTitle,
+        message: errorMessage,
+        subMessage: "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ hỗ trợ.",
+        showHomeButton: true,
+        lockNavigation: false,
+      });
+    },
+  });
+
+  const revokeCancelRequestMutation = useMutation({
+    mutationKey: [QueryKey.POLICY.REVOKE_CANCEL_REQUEST],
+    mutationFn: async (cancel_request_id: string) => {
+      return await policyServices.post.revoke_cancel_request(cancel_request_id);
+    },
+    onSuccess: async () => {
+      // Invalidate cache để refresh dữ liệu
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.POLICY.GET_CANCEL_REQUESTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QueryKey.POLICY.REGISTERED_POLICIES],
+      });
+
+      // Hiển thị Result Status Screen với success
+      resultStatus.showSuccess({
+        title: "Đã hủy yêu cầu",
+        message: "Yêu cầu hủy hợp đồng của bạn đã được hủy bỏ thành công.",
+        subMessage:
+          "Hợp đồng bảo hiểm của bạn sẽ tiếp tục có hiệu lực như bình thường.",
+        autoRedirectSeconds: 3,
+        autoRedirectRoute: "/(tabs)",
+        showHomeButton: true,
+        lockNavigation: false,
+      });
+    },
+    onError: (error: any) => {
+      console.error("❌ Error revoking cancel request:", error);
+
+      let errorMessage = "Không thể hủy yêu cầu. Vui lòng thử lại.";
+      let errorTitle = "Hủy yêu cầu thất bại";
+
+      const errorCode = error?.response?.data?.code || "";
+      const apiMessage = error?.response?.data?.message || error?.message || "";
+
+      if (errorCode === "INVALID_REQUEST") {
+        errorTitle = "Yêu cầu không hợp lệ";
+        errorMessage = "Không thể hủy yêu cầu này. Vui lòng kiểm tra lại.";
+      } else if (errorCode === "NOT_FOUND") {
+        errorTitle = "Không tìm thấy";
+        errorMessage = "Yêu cầu hủy hợp đồng không tồn tại hoặc đã bị xóa.";
+      } else if (
+        apiMessage.toLowerCase().includes("already processed") ||
+        apiMessage.toLowerCase().includes("already reviewed") ||
+        apiMessage.toLowerCase().includes("cannot revoke")
+      ) {
+        errorTitle = "Không thể hủy";
+        errorMessage =
+          "Yêu cầu đã được xử lý hoặc không còn trong thời gian cho phép hủy.";
+      } else if (apiMessage.toLowerCase().includes("unauthorized")) {
+        errorTitle = "Không có quyền";
+        errorMessage = "Bạn không có quyền hủy yêu cầu này.";
+      } else if (apiMessage) {
+        errorMessage = apiMessage;
+      } else {
+        errorTitle = "Lỗi không xác định";
+        errorMessage = "Đã xảy ra lỗi không xác định. Vui lòng thử lại sau.";
+      }
+
+      resultStatus.showError({
+        title: errorTitle,
+        message: errorMessage,
+        subMessage: "Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ hỗ trợ.",
+        showHomeButton: true,
+        lockNavigation: false,
+      });
+    },
+  });
+
   return {
     useGetPublicBasePolicy,
     // backwards compatible alias
@@ -449,6 +612,8 @@ export const usePolicy = () => {
     registerPolicyMutation,
     cancelPolicyMutation,
     reviewCancelRequestMutation,
+    resolveDisputeMutation,
+    revokeCancelRequestMutation,
     getRegisteredPolicy,
     getRegisteredPolicyDetail,
     getUnderwritingPolicy,

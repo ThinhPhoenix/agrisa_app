@@ -366,9 +366,9 @@ export const HistoryDetailRegisteredPolicy: React.FC<
             </VStack>
           </Box>
 
-          {/* Số hợp đồng và Trạng thái */}
+          {/* Mã hợp đồng và Trạng thái */}
           <HStack space="sm">
-            {/* Số hợp đồng */}
+            {/* Mã hợp đồng */}
             <Box
               flex={1}
               bg={colors.card_surface}
@@ -381,7 +381,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                 <HStack space="xs" alignItems="center">
                   <FileText size={12} color={colors.primary} strokeWidth={2} />
                   <Text fontSize="$xs" color={colors.secondary_text}>
-                    Số hợp đồng
+                    Mã hợp đồng
                   </Text>
                 </HStack>
                 <Text
@@ -831,14 +831,14 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                     </VStack>
                   </HStack>
 
-                  {/* Ngày gieo trồng */}
+                  {/* Ngày dự kiến gieo trồng */}
                   <VStack space="xs">
                     <Text
                       fontSize="$xs"
                       color={colors.secondary_text}
                       fontWeight="$medium"
                     >
-                      Ngày gieo trồng
+                      Ngày dự kiến gieo trồng
                     </Text>
                     <HStack space="xs" alignItems="center">
                       <Calendar

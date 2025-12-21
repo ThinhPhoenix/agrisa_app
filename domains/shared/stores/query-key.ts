@@ -34,6 +34,8 @@ export const QueryKey = {
     GET_CANCEL_REASONS: "get-cancel-reasons",
     GET_CANCEL_REQUESTS: "get-cancel-requests",
     REVIEW_CANCEL_REQUEST: "review-cancel-request",
+    RESOLVE_DISPUTE: "resolve-dispute",
+    REVOKE_CANCEL_REQUEST: "revoke-cancel-request",
   },
 
   FARM: {
@@ -80,6 +82,8 @@ export const QueryKey = {
 
   SHARED: {
     BANKS: "shared-banks",
+    IMAGE_UPLOAD_SINGLE: "image-upload-single",
+    IMAGE_UPLOAD_MULTIPLE: "image-upload-multiple",
   },
 
   TEST: "test",

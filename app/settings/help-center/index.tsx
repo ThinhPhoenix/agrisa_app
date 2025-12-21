@@ -40,7 +40,7 @@ export default function HelpCenterScreen() {
       answer: "Bồi thường tự động khi các chỉ số môi trường vượt ngưỡng thiệt hại đã thỏa thuận trong hợp đồng. Ví dụ: hạn hán kéo dài, lượng mưa quá lớn, nhiệt độ cực đoan. Hệ thống AI của chúng tôi theo dõi liên tục và thông báo ngay khi có rủi ro."
     },
     {
-      question: "Phí bảo hiểm được tính như thế nào?",
+      question: "Phí bồi thường bảo hiểm được tính như thế nào?",
       answer: "Phí dựa trên: loại cây trồng, diện tích, vị trí địa lý, thời gian bảo hiểm, và mức độ rủi ro từ dữ liệu lịch sử. Hệ thống AI phân tích và đưa ra mức phí hợp lý nhất. Bạn có thể xem chi tiết trước khi quyết định."
     },
     {

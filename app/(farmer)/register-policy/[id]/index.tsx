@@ -21,7 +21,7 @@ export default function RegisterPolicyPage() {
   if (isLoading) {
     return (
       <Box flex={1} bg={colors.background}>
-        <AgrisaHeader title="Đăng ký bảo hiểm" showBackButton={true} />
+        <AgrisaHeader title="Đơn đăng ký gói bảo hiểm" showBackButton={true} />
         <Box flex={1} alignItems="center" justifyContent="center">
           <Spinner size="large" color={colors.primary} />
           <Text color={colors.secondary_text} mt="$3">
@@ -36,7 +36,7 @@ export default function RegisterPolicyPage() {
   if (isError || !policyDetail) {
     return (
       <Box flex={1} bg={colors.background}>
-        <AgrisaHeader title="Đăng ký bảo hiểm" showBackButton={true} />
+        <AgrisaHeader title="Đơn đăng ký gói bảo hiểm" showBackButton={true} />
         <Box flex={1} alignItems="center" justifyContent="center" px="$6">
           <Box bg={colors.errorSoft} p="$6" borderRadius="$full" mb="$4">
             <AlertCircle size={48} color={colors.error} />
@@ -48,7 +48,7 @@ export default function RegisterPolicyPage() {
               color={colors.primary_text}
               textAlign="center"
             >
-              Không tìm thấy thông tin bảo hiểm
+              Không tìm thấy thông tin gói bảo hiểm
             </Text>
             <Text
               fontSize="$sm"
@@ -65,7 +65,7 @@ export default function RegisterPolicyPage() {
 
   return (
     <Box flex={1} bg={colors.background}>
-      <AgrisaHeader title="Đăng ký bảo hiểm" showBackButton={true} />
+      <AgrisaHeader title="Đơn đăng ký gói bảo hiểm" showBackButton={true} />
       <RegisterPolicyForm policyDetail={policyDetail} basePolicyId={policyId} />
     </Box>
   );

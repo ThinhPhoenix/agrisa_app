@@ -60,7 +60,7 @@ export default function RegisteredPolicyDetailScreen() {
             textAlign="center"
             mt="$1"
           >
-            Đăng ký bảo hiểm không tồn tại hoặc đã bị xóa
+            Đơn đăng ký bảo hiểm không tồn tại hoặc đã bị xóa
           </Text>
         </Box>
       </VStack>

@@ -144,7 +144,7 @@ export default function TermsAndPolicyScreen() {
                   <Paragraph>
                     Nông dân là người sử dụng dịch vụ để tìm kiếm, lựa chọn và
                     mua các gói bảo hiểm phù hợp, có trách nhiệm: cung cấp thông
-                    tin chính xác và trung thực về trang trại, diện tích canh
+                    tin chính xác và trung thực về nông trại, diện tích canh
                     tác, loại cây trồng; thanh toán phí bảo hiểm đầy đủ và đúng
                     hạn; tuân thủ các điều khoản và điều kiện của hợp đồng bảo
                     hiểm đã ký kết.
@@ -188,13 +188,13 @@ export default function TermsAndPolicyScreen() {
               </Section>
 
               <Section title="4. ĐĂNG KÝ VÀ QUẢN LÝ THÔNG TIN TRANG TRẠI">
-                <SubSection title="4.1 Yêu cầu đối với trang trại">
+                <SubSection title="4.1 Yêu cầu đối với nông trại">
                   <Paragraph>
-                    Để đủ điều kiện đăng ký bảo hiểm, trang trại phải có diện
+                    Để đủ điều kiện đăng ký bảo hiểm, nông trại phải có diện
                     tích tối thiểu là một nghìn mét vuông và nằm hoàn toàn trong
                     lãnh thổ Việt Nam. Nông dân cần cung cấp tọa độ chính xác
-                    xác định ranh giới trang trại và phải có hình ảnh thực tế
-                    của trang trại khi tạo hồ sơ.
+                    xác định ranh giới nông trại và phải có hình ảnh thực tế của
+                    nông trại khi tạo hồ sơ.
                   </Paragraph>
                 </SubSection>
 
@@ -210,10 +210,10 @@ export default function TermsAndPolicyScreen() {
 
                 <SubSection title="4.3 Hạn chế bảo hiểm trùng lặp">
                   <Paragraph>
-                    Một trang trại không thể được bảo hiểm đồng thời bởi nhiều
+                    Một nông trại không thể được bảo hiểm đồng thời bởi nhiều
                     hợp đồng cho cùng một loại rủi ro trong cùng khoảng thời
                     gian. Tuy nhiên, nông dân có thể đăng ký nhiều gói bảo hiểm
-                    khác nhau từ các đối tác khác nhau cho cùng một trang trại.
+                    khác nhau từ các đối tác khác nhau cho cùng một nông trại.
                   </Paragraph>
                 </SubSection>
               </Section>
@@ -419,10 +419,10 @@ export default function TermsAndPolicyScreen() {
               <Section title="10. BẢO MẬT VÀ QUYỀN RIÊNG TƯ">
                 <SubSection title="10.1 Thu thập và sử dụng thông tin">
                   <Paragraph>
-                    Agrisa thu thập thông tin cá nhân, thông tin trang trại và
-                    dữ liệu giao dịch của người dùng để vận hành nền tảng và
-                    cung cấp dịch vụ. Thông tin này được bảo vệ và chỉ sử dụng
-                    cho các mục đích đã được công bố.
+                    Agrisa thu thập thông tin cá nhân, thông tin nông trại và dữ
+                    liệu giao dịch của người dùng để vận hành nền tảng và cung
+                    cấp dịch vụ. Thông tin này được bảo vệ và chỉ sử dụng cho
+                    các mục đích đã được công bố.
                   </Paragraph>
                 </SubSection>
 

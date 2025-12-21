@@ -216,14 +216,105 @@ export default function MyPoliciesScreen() {
 
   return (
     <VStack flex={1} bg={colors.background}>
-      {/* Header */}
+      {/* Header - Sticky */}
       <AgrisaHeader
         title="Bảo hiểm của tôi"
         showBackButton={true}
         onBack={() => router.back()}
       />
 
+      {/* Info Description - Sticky */}
+      <Box px="$4" pt="$4" pb="$2" bg={colors.background}>
+        <Box
+          bg={colors.infoSoft}
+          borderWidth={1}
+          borderColor={colors.info}
+          p="$3"
+          borderRadius="$lg"
+        >
+          <VStack space="xs">
+            <HStack alignItems="center" mb="$1">
+              <Box
+                bg={colors.info}
+                p="$1"
+                borderRadius="$sm"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Info
+                  size={14}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+              </Box>
+              <Text
+                fontSize="$sm"
+                fontWeight="$bold"
+                color={colors.info}
+                ml="$2"
+              >
+                Bảo hiểm của tôi
+              </Text>
+            </HStack>
+            <Text fontSize="$xs" color={colors.primary_text} lineHeight="$md">
+              Quản lý các hợp đồng bảo hiểm của bạn.
+            </Text>
+          </VStack>
+        </Box>
+      </Box>
+
+      {/* Status Filter Tabs - Sticky */}
+      <Box
+        px="$4"
+        pb="$2"
+        bg={colors.background}
+        borderBottomWidth={1}
+        borderBottomColor={colors.frame_border}
+      >
+        <RNScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 0,
+            gap: 12,
+          }}
+        >
+          {TABS_CONFIG.map((tab) => {
+            const isActive = selectedTab === tab.key;
+            const count = categorizedPolicies[tab.key].length;
+
+            return (
+              <Pressable
+                key={tab.key}
+                onPress={() => setSelectedTab(tab.key)}
+              >
+                {({ pressed }) => (
+                  <Box
+                    pb="$2"
+                    borderBottomWidth={isActive ? 2 : 0}
+                    borderBottomColor={colors.primary}
+                    opacity={pressed ? 0.7 : 1}
+                  >
+                    <Text
+                      fontSize="$sm"
+                      fontWeight={isActive ? "$bold" : "$normal"}
+                      color={
+                        isActive ? colors.primary : colors.secondary_text
+                      }
+                    >
+                      {tab.label} {count > 0 && `(${count})`}
+                    </Text>
+                  </Box>
+                )}
+              </Pressable>
+            );
+          })}
+        </RNScrollView>
+      </Box>
+
+      {/* Scrollable Content */}
       <ScrollView
+        flex={1}
         bg={colors.background}
         refreshControl={
           <RefreshControl
@@ -235,90 +326,6 @@ export default function MyPoliciesScreen() {
         }
       >
         <VStack space="md" p="$4">
-          {/* Info Description */}
-          <Box
-            bg={colors.infoSoft}
-            borderWidth={1}
-            borderColor={colors.info}
-            p="$3"
-            borderRadius="$lg"
-          >
-            <VStack space="xs">
-              <HStack alignItems="center" mb="$1">
-                <Box
-                  bg={colors.info}
-                  p="$1"
-                  borderRadius="$sm"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <Info
-                    size={14}
-                    color={colors.primary_white_text}
-                    strokeWidth={2.5}
-                  />
-                </Box>
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$bold"
-                  color={colors.info}
-                  ml="$2"
-                >
-                  Bảo hiểm của tôi
-                </Text>
-              </HStack>
-              <Text fontSize="$xs" color={colors.primary_text} lineHeight="$md">
-                Quản lý các hợp đồng bảo hiểm của bạn.
-              </Text>
-            </VStack>
-          </Box>
-
-          {/* Status Filter Tabs - Horizontal Scrollable */}
-          <Box
-            borderBottomWidth={1}
-            borderBottomColor={colors.frame_border}
-            pb="$2"
-          >
-            <RNScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 0,
-                gap: 12,
-              }}
-            >
-              {TABS_CONFIG.map((tab) => {
-                const isActive = selectedTab === tab.key;
-                const count = categorizedPolicies[tab.key].length;
-
-                return (
-                  <Pressable
-                    key={tab.key}
-                    onPress={() => setSelectedTab(tab.key)}
-                  >
-                    {({ pressed }) => (
-                      <Box
-                        pb="$2"
-                        borderBottomWidth={isActive ? 2 : 0}
-                        borderBottomColor={colors.primary}
-                        opacity={pressed ? 0.7 : 1}
-                      >
-                        <Text
-                          fontSize="$sm"
-                          fontWeight={isActive ? "$bold" : "$normal"}
-                          color={
-                            isActive ? colors.primary : colors.secondary_text
-                          }
-                        >
-                          {tab.label} {count > 0 && `(${count})`}
-                        </Text>
-                      </Box>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </RNScrollView>
-          </Box>
 
           {/* Summary Stats */}
           {!isLoading && currentPolicies.length > 0 && (

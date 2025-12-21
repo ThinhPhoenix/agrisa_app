@@ -77,7 +77,7 @@ export default function PolicyHomeScreen() {
               lineHeight="$md"
             >
               Khám phá và đăng ký các chương trình bảo hiểm nông nghiệp phù hợp
-              với trang trại của bạn.
+              với nông trại của bạn.
             </Text>
           </VStack>
         </Box>

@@ -30,13 +30,13 @@ const quickActionItems = [
     },
     {
         key: "satellite",
-        name: "Dữ liệu vệ tinh",
+        name: "Giám định vệ tinh",
         icon: Satellite,
         color: "#59AC77",
     },
     {
         key: "claim",
-        name: "Quản lý bồi thường",
+        name: "Yêu cầu bồi thường",
         icon: Scroll,
         color: "#C1856D",
     },

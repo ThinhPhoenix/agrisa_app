@@ -498,7 +498,7 @@ export default function SatelliteDetailScreen() {
                           <HStack space="xs" alignItems="center" mb="$1">
                             <Calendar size={12} color={colors.secondary_text} />
                             <Text fontSize="$xs" color={colors.secondary_text}>
-                              Ngày gieo trồng
+                              Ngày dự kiến gieo trồng
                             </Text>
                           </HStack>
                           <Text

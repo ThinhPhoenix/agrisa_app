@@ -79,7 +79,7 @@ export default function ClaimListScreen() {
                 color={colors.primary_white_text}
                 ml="$2"
               >
-                Quản lý các yêu cầu bồi thường
+                Quản lý các đơn yêu cầu bồi thường
               </Text>
             </Box>
             <Text

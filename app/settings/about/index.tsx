@@ -273,7 +273,7 @@ export default function AboutScreen() {
                   {
                     icon: Brain,
                     title: "Đánh giá AI",
-                    desc: "Phát hiện thiệt hại tự động",
+                    desc: "Phát hiện rủi ro tự động",
                     color: colors.info,
                   },
                   {

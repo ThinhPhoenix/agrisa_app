@@ -1,19 +1,18 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import {
-    Button,
-    HStack,
-    Modal,
-    ModalBackdrop,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-    Spinner,
-    Text,
-    Textarea,
-    TextareaInput,
-    VStack,
-    Box
+  Button,
+  HStack,
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Spinner,
+  Text,
+  Textarea,
+  TextareaInput,
+  VStack,
 } from "@gluestack-ui/themed";
 import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react-native";
 import React, { useState } from "react";

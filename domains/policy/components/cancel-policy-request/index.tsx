@@ -3,14 +3,14 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { CancelRequestType } from "@/domains/policy/models/policy.models";
 import { useImageUpload } from "@/domains/shared/hooks/use-image-upload";
 import {
-    Box,
-    HStack,
-    Image,
-    Pressable,
-    ScrollView,
-    Spinner,
-    Text,
-    VStack,
+  Box,
+  HStack,
+  Image,
+  Pressable,
+  ScrollView,
+  Spinner,
+  Text,
+  VStack,
 } from "@gluestack-ui/themed";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";

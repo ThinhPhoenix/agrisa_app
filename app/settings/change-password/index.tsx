@@ -17,7 +17,7 @@ import {
 import { router } from "expo-router";
 import { KeyRound } from "lucide-react-native";
 import React, { useRef, useState } from "react";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, Pressable } from "react-native";
 
 export default function ChangePasswordScreen() {
     const { colors } = useAgrisaColors();
@@ -82,18 +82,18 @@ export default function ChangePasswordScreen() {
     };
 
     // Auto-send once on mount if phone exists (keeps previous behavior)
-    React.useEffect(() => {
-        const phone = user?.phone_number
-            ? String(user.phone_number)
-                  .trim()
-                  .replace(/^['"]+|['"]+$/g, "")
-            : null;
-        if (phone) {
-            // fire and forget - sendOtpToPhone will handle notifications/state
-            sendOtpToPhone();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.phone_number]);
+    // React.useEffect(() => {
+    //     const phone = user?.phone_number
+    //         ? String(user.phone_number)
+    //               .trim()
+    //               .replace(/^['"]+|['"]+$/g, "")
+    //         : null;
+    //     if (phone) {
+    //         // fire and forget - sendOtpToPhone will handle notifications/state
+    //         sendOtpToPhone();
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [user?.phone_number]);
 
     // Countdown timer for resend
     React.useEffect(() => {
@@ -122,7 +122,7 @@ export default function ChangePasswordScreen() {
         {
             name: "otp",
             label: "Mã OTP",
-            type: "number",
+            type: "input",
             placeholder: "Nhập mã OTP (6 chữ số)",
             required: true,
             validation: (value) => {
@@ -141,7 +141,6 @@ export default function ChangePasswordScreen() {
                 return { isValid: true };
             },
         },
-
         {
             name: "newPassword",
             label: "Mật khẩu mới",
@@ -326,44 +325,56 @@ export default function ChangePasswordScreen() {
 
                     {/* Custom Submit Button with Icon */}
                     <Box mt="$4">
-                        <Button
+                        <Pressable
                             onPress={() => {
                                 if (formRef.current) {
-                                    formRef.current.submit();
+                                    const values =
+                                        formRef.current.validateFields();
+                                    if (values) {
+                                        handleSubmit(values);
+                                    }
                                 }
                             }}
                             disabled={
                                 changePassMutation.isPending || isSubmitting
                             }
-                            bg={colors.primary}
-                            borderRadius="$xl"
-                            p="$4"
-                            shadowColor="$black"
-                            shadowOffset={{ width: 0, height: 4 }}
-                            shadowOpacity={0.3}
-                            shadowRadius={8}
-                            elevation={8}
-                            opacity={
-                                changePassMutation.isPending || isSubmitting
-                                    ? 0.6
-                                    : 1
-                            }
+                            style={{
+                                backgroundColor: colors.primary,
+                                borderRadius: 12,
+                                padding: 16,
+                                height: 56,
+                                flexDirection: "row",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 8,
+                                elevation: 8,
+                                opacity:
+                                    changePassMutation.isPending || isSubmitting
+                                        ? 0.6
+                                        : 1,
+                            }}
                         >
                             {changePassMutation.isPending || isSubmitting ? (
                                 <ActivityIndicator color="white" />
                             ) : (
                                 <>
                                     <KeyRound size={20} color="white" />
-                                    <ButtonText
-                                        fontSize="$md"
-                                        fontWeight="$bold"
-                                        ml="$2"
+                                    <Text
+                                        style={{
+                                            fontSize: 18,
+                                            fontWeight: "bold",
+                                            marginLeft: 8,
+                                            color: "white",
+                                        }}
                                     >
                                         Đổi mật khẩu
-                                    </ButtonText>
+                                    </Text>
                                 </>
                             )}
-                        </Button>
+                        </Pressable>
                     </Box>
                 </VStack>
             </ScrollView>

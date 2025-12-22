@@ -11,7 +11,7 @@ workflows:
                 GRADLE_OPTS: "-Xmx4096m -XX:MaxMetaspaceSize=1024m"
             node: 18
         cache:
-            cache_paths: 
+            cache_paths:
                 - $CM_BUILD_DIR/node_modules
                 - $HOME/.gradle/caches
                 - $HOME/.gradle/wrapper
@@ -30,6 +30,7 @@ workflows:
                   export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
                   export EXPO_PUBLIC_OPENMAPVN_KEY=$EXPO_PUBLIC_OPENMAPVN_KEY
                   export EXPO_PUBLIC_GEMINI_KEY=$EXPO_PUBLIC_GEMINI_KEY
+                  export EXPO_PUBLIC_IMG_API_KEY=$EXPO_PUBLIC_IMG_API_KEY
 
                   rm -rf ~/.gradle/caches/transforms-*
                   rm -rf ~/.gradle/caches/*/transforms
@@ -88,7 +89,7 @@ workflows:
             xcode: latest
             cocoapods: default
         cache:
-            cache_paths: 
+            cache_paths:
                 - $CM_BUILD_DIR/node_modules
                 - $HOME/Library/Caches/CocoaPods
         scripts:
@@ -106,6 +107,7 @@ workflows:
                   export EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL
                   export EXPO_PUBLIC_OPENMAPVN_KEY=$EXPO_PUBLIC_OPENMAPVN_KEY
                   export EXPO_PUBLIC_GEMINI_KEY=$EXPO_PUBLIC_GEMINI_KEY
+                  export EXPO_PUBLIC_IMG_API_KEY=$EXPO_PUBLIC_IMG_API_KEY
 
                   rm -rf ios
                   bunx expo prebuild --platform ios

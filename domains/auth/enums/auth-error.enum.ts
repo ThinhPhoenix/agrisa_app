@@ -52,7 +52,7 @@ export const AuthErrorMessages: Record<AuthErrorCode, string> = {
   // Credential errors
   [AuthErrorCode.INVALID_CREDENTIALS]: "Tên đăng nhập hoặc mật khẩu không đúng",
   [AuthErrorCode.INVALID_PHONE_FORMAT]:
-    "Số điện thoại Việt Nam không hợp lệ. VD: +84901234567",
+    "Số điện thoại Việt Nam không hợp lệ. VD: 0901234567",
   [AuthErrorCode.INVALID_EMAIL_FORMAT]: "Email không hợp lệ",
   [AuthErrorCode.INVALID_NATIONAL_ID]: "Số CCCD phải có đúng 12 số",
 

@@ -80,22 +80,7 @@ const UsernameSignInComponent = () => {
     }
   }, [isAuthenticated]);
 
-  // ============================================
-  // 🔄 HELPERS
-  // ============================================
-  const formatPhoneNumber = (phone: string): string => {
-    const cleaned = phone.replace(/\s+/g, "").replace(/\D/g, "");
-
-    if (cleaned.startsWith("0")) {
-      return "+84" + cleaned.substring(1);
-    }
-
-    if (cleaned.startsWith("84") && !cleaned.startsWith("+84")) {
-      return "+" + cleaned;
-    }
-
-    return phone;
-  };
+  
 
   const detectIdentifierType = (
     value: string
@@ -106,8 +91,9 @@ const UsernameSignInComponent = () => {
       return "email";
     }
 
+    // Pattern mới: 0XXXXXXXXX (10 số, bắt đầu bằng 0)
     if (
-      /^(\+84|84|0)(3|5|7|8|9)([0-9]{8})$/.test(trimmed.replace(/\s+/g, ""))
+      /^(0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(trimmed.replace(/\s+/g, ""))
     ) {
       return "phone";
     }
@@ -135,11 +121,8 @@ const UsernameSignInComponent = () => {
     try {
       const trimmedIdentifier = data.identifier.trim();
 
-      const isPhone = detectIdentifierType(trimmedIdentifier) === "phone";
-
-      const finalIdentifier = isPhone
-        ? formatPhoneNumber(trimmedIdentifier)
-        : trimmedIdentifier;
+      // Giữ nguyên identifier, không cần chuyển đổi format
+      const finalIdentifier = trimmedIdentifier;
 
       console.log("✅ [Username Sign-In] Identifier:", finalIdentifier);
 
@@ -413,7 +396,7 @@ const UsernameSignInComponent = () => {
                                     onChangeText={(text) => {
                                       const isPhone = /^[0-9+]/.test(text);
                                       if (isPhone && !text.includes("@")) {
-                                        field.onChange(formatPhoneNumber(text));
+                                        field.onChange((text));
                                       } else {
                                         field.onChange(text);
                                       }

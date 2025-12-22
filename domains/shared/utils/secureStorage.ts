@@ -28,7 +28,7 @@ export const STORAGE_KEYS = {
  *
  * @example
  * - "user@email.com" → "user_email_com"
- * - "+84987654321" → "84987654321"
+ * - "0987654321" → "0987654321"
  * - "test.user-123" → "test_user_123"
  */
 const sanitizeIdentifier = (identifier: string): string => {

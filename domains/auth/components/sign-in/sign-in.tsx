@@ -100,23 +100,8 @@ const SignInComponentUI = () => {
       return { email: trimmedIdentifier, password };
     }
 
-    const isPhoneVN = /^(\+84|84|0)(3|5|7|8|9)([0-9]{8})$/.test(
-      trimmedIdentifier.replace(/\s+/g, "")
-    );
-
-    if (isPhoneVN) {
-      let normalizedPhone = trimmedIdentifier.replace(/\s+/g, "");
-
-      if (normalizedPhone.startsWith("0")) {
-        normalizedPhone = "+84" + normalizedPhone.substring(1);
-      } else if (normalizedPhone.startsWith("84")) {
-        normalizedPhone = "+" + normalizedPhone;
-      }
-
-      return { phone: normalizedPhone, password };
-    }
-
-    throw new Error("Định dạng không hợp lệ");
+    // Nếu không phải email, coi như là số điện thoại (0XXXXXXXXX)
+    return { phone: trimmedIdentifier, password };
   };
 
   // ============================================
@@ -302,22 +287,11 @@ const SignInComponentUI = () => {
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
     }
-
     // Fallback: parse từ identifier nếu chưa có fullName
-    if (!cachedIdentifier) return "Nông dân";
+    if (!cachedIdentifier || !cachedFullName) return "Nông dân";
 
-    // Nếu là email, lấy phần trước @
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cachedIdentifier)) {
-      const name = cachedIdentifier.split("@")[0];
-      return name
-        .split(/[._-]/)
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    }
-
+    
     // Nếu là số điện thoại, format lại
-    const phone = cachedIdentifier.replace("+84", "0");
-    return phone.replace(/(\d{4})(\d{3})(\d{3})/, "$1 $2 $3");
   };
 
   const handleContactSupport = () => {

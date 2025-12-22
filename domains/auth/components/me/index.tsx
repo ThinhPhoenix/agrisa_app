@@ -109,27 +109,7 @@ const MeComponentUI: React.FC = () => {
   }, [profileData, userProfile]);
 
   // Helper format phone number cho người Việt
-  const formatPhoneNumber = (phone: string): string => {
-    const cleaned = phone.replace(/\s+/g, "").replace(/\D/g, "");
-
-    if (cleaned.startsWith("0")) {
-      return "+84" + cleaned.substring(1);
-    }
-
-    if (cleaned.startsWith("84") && !cleaned.startsWith("+84")) {
-      return "+" + cleaned;
-    }
-
-    if (cleaned.startsWith("+84")) {
-      return cleaned;
-    }
-
-    if (cleaned.length >= 9 && cleaned.length <= 10) {
-      return "+84" + cleaned;
-    }
-
-    return phone;
-  };
+  
 
   // Get current form values
   const getCurrentValues = () => form.getValues();
@@ -192,7 +172,7 @@ const MeComponentUI: React.FC = () => {
       name: "primary_phone",
       label: "Số điện thoại chính",
       type: "input",
-      placeholder: "0987654321 hoặc +84987654321",
+      placeholder: "0987654321",
       required: false,
       helperText: "Số điện thoại để xác thực và nhận thông báo",
     },
@@ -341,10 +321,10 @@ const MeComponentUI: React.FC = () => {
 
     // Format phone numbers
     if (values.primary_phone) {
-      values.primary_phone = formatPhoneNumber(values.primary_phone);
+      values.primary_phone = values.primary_phone;
     }
     if (values.alternate_phone && values.alternate_phone.trim()) {
-      values.alternate_phone = formatPhoneNumber(values.alternate_phone);
+      values.alternate_phone = values.alternate_phone;
     }
 
     // Sync values to react-hook-form với dirty marking

@@ -92,12 +92,12 @@ export default function EmailInputScreen() {
                     width: 56,
                     height: 56,
                     borderRadius: 16,
-                    backgroundColor: colors.infoSoft,
+                    backgroundColor: colors.frame_border,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
-                  <Mail size={28} color={colors.info} strokeWidth={2.5} />
+                  <Mail size={28} strokeWidth={2.5} />
                 </Box>
                 <VStack className="flex-1">
                   <Text
@@ -107,7 +107,7 @@ export default function EmailInputScreen() {
                       color: colors.primary_text,
                     }}
                   >
-                    Thông tin email
+                    Thông tin thư điện tử
                   </Text>
                   <Text
                     style={{
@@ -116,18 +116,13 @@ export default function EmailInputScreen() {
                       marginTop: 2,
                     }}
                   >
-                    Để nhận thông báo quan trọng
+                    Cập nhật thư điện tử của bạn để nhận các thông báo sớm nhất
                   </Text>
                 </VStack>
               </HStack>
             </VStack>
             <Box
-              style={{
-                flex: 1,
-                height: 4,
-                backgroundColor: colors.frame_border,
-                borderRadius: 2,
-              }}
+              
             />
             {/* Email Input */}
             <VStack space="sm" className="mb-6">
@@ -143,7 +138,7 @@ export default function EmailInputScreen() {
               <TextInput
                 value={emailInput}
                 onChangeText={setEmailInput}
-                placeholder="example@email.com"
+                placeholder=""
                 placeholderTextColor={colors.muted_text}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -221,41 +216,7 @@ export default function EmailInputScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Verified Phone Info */}
-            <Box
-              style={{
-                marginTop: 20,
-                backgroundColor: colors.background,
-                borderRadius: 12,
-                padding: 14,
-                borderLeftWidth: 3,
-                borderLeftColor: colors.success,
-              }}
-            >
-              <HStack space="sm" className="items-center">
-                <CheckCircle2 size={20} color={colors.success} />
-                <VStack className="flex-1">
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: colors.secondary_text,
-                    }}
-                  >
-                    Số điện thoại đã xác thực
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: colors.primary_text,
-                      fontWeight: "600",
-                      marginTop: 2,
-                    }}
-                  >
-                    {formData.phone}
-                  </Text>
-                </VStack>
-              </HStack>
-            </Box>
+            
           </Box>
         </ScrollView>
       </TouchableWithoutFeedback>

@@ -193,8 +193,8 @@ export default function OTPVerificationScreen() {
                 borderRadius: 12,
                 padding: 14,
                 marginBottom: 20,
-                borderLeftWidth: 3,
-                borderLeftColor: colors.success,
+                borderWidth: 1,
+                borderColor: colors.frame_border,
               }}
             >
               <Text

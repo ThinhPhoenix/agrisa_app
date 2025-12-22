@@ -205,6 +205,7 @@ export default function ChangePasswordScreen() {
             await changePassMutation.mutateAsync({
                 otp: String(values.otp).trim(),
                 new_password: values.newPassword,
+                phone: String(user?.phone_number).trim(),
             });
 
             notification.success("Đổi mật khẩu thành công!");

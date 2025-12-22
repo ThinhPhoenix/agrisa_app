@@ -210,7 +210,7 @@ export default function PolicyTabsLayout() {
       <Tabs.Screen
         name="my-policies"
         options={{
-          title: "Bảo hiểm của tôi",
+          title: "Hợp đồng của tôi",
           tabBarIcon: ({ color, size }) => (
             <FileText size={size} color={color} />
           ),

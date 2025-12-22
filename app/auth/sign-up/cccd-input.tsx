@@ -99,14 +99,14 @@ export default function CCCDInputScreen() {
                     width: 56,
                     height: 56,
                     borderRadius: 16,
-                    backgroundColor: colors.warningSoft,
+                    backgroundColor: colors.frame_border,
                     justifyContent: "center",
                     alignItems: "center",
                   }}
                 >
                   <CreditCard
                     size={28}
-                    color={colors.warning}
+                    
                     strokeWidth={2.5}
                   />
                 </Box>
@@ -127,7 +127,7 @@ export default function CCCDInputScreen() {
                       marginTop: 2,
                     }}
                   >
-                    Để xác thực danh tính
+                    Xác thực danh tính
                   </Text>
                 </VStack>
               </HStack>
@@ -142,12 +142,12 @@ export default function CCCDInputScreen() {
                   color: colors.primary_text,
                 }}
               >
-                Số CCCD/CMND <Text style={{ color: colors.error }}>*</Text>
+                CCCD <Text style={{ color: colors.error }}>*</Text>
               </Text>
               <TextInput
                 value={cccdInput}
                 onChangeText={setCccdInput}
-                placeholder="Nhập 9 hoặc 12 số"
+                placeholder=""
                 placeholderTextColor={colors.muted_text}
                 keyboardType="number-pad"
                 maxLength={12}
@@ -166,19 +166,7 @@ export default function CCCDInputScreen() {
               />
             </VStack>
 
-            {/* Lưu ý đơn giản */}
-            <VStack space="xs" className="mb-6">
-              <Text
-                style={{
-                  fontSize: 13,
-                  color: colors.secondary_text,
-                  lineHeight: 20,
-                }}
-              >
-                • CMND cũ: 9 số (VD: 123456789){"\n"}• CCCD mới: 12 số (VD:
-                001234567890)
-              </Text>
-            </VStack>
+            
 
             {/* Continue Button */}
             <TouchableOpacity
@@ -239,53 +227,7 @@ export default function CCCDInputScreen() {
               </Text>
             </TouchableOpacity>
 
-            {/* Completed Steps */}
-            <VStack space="xs" className="mt-6">
-              <Box
-                style={{
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.success,
-                }}
-              >
-                <HStack space="sm" className="items-center">
-                  <CheckCircle2 size={18} color={colors.success} />
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: colors.primary_text,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Số điện thoại: {formData.phone}
-                  </Text>
-                </HStack>
-              </Box>
-              <Box
-                style={{
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.success,
-                }}
-              >
-                <HStack space="sm" className="items-center">
-                  <CheckCircle2 size={18} color={colors.success} />
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: colors.primary_text,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Email: {formData.email}
-                  </Text>
-                </HStack>
-              </Box>
-            </VStack>
+            
           </Box>
         </ScrollView>
       </TouchableWithoutFeedback>

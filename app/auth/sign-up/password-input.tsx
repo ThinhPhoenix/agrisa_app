@@ -176,7 +176,7 @@ export default function PasswordInputScreen() {
                       color: colors.primary_text,
                     }}
                   >
-                    Tạo mật khẩu
+                    Đặt mật khẩu
                   </Text>
                   <Text
                     style={{
@@ -430,66 +430,7 @@ export default function PasswordInputScreen() {
             </TouchableOpacity>
 
             {/* Completed Steps Summary */}
-            <VStack space="xs" className="mt-6">
-              <Text
-                style={{
-                  fontSize: 14,
-                  color: colors.secondary_text,
-                  fontWeight: "600",
-                  marginBottom: 8,
-                }}
-              >
-                Thông tin đã nhập:
-              </Text>
-              <Box
-                style={{
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.success,
-                }}
-              >
-                <HStack space="sm" className="items-center">
-                  <CheckCircle2 size={16} color={colors.success} />
-                  <Text style={{ fontSize: 13, color: colors.primary_text }}>
-                    Số điện thoại: {formData.phone}
-                  </Text>
-                </HStack>
-              </Box>
-              <Box
-                style={{
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.success,
-                }}
-              >
-                <HStack space="sm" className="items-center">
-                  <CheckCircle2 size={16} color={colors.success} />
-                  <Text style={{ fontSize: 13, color: colors.primary_text }}>
-                    Email: {formData.email}
-                  </Text>
-                </HStack>
-              </Box>
-              <Box
-                style={{
-                  backgroundColor: colors.background,
-                  borderRadius: 12,
-                  padding: 12,
-                  borderLeftWidth: 3,
-                  borderLeftColor: colors.success,
-                }}
-              >
-                <HStack space="sm" className="items-center">
-                  <CheckCircle2 size={16} color={colors.success} />
-                  <Text style={{ fontSize: 13, color: colors.primary_text }}>
-                    CCCD: {formData.national_id}
-                  </Text>
-                </HStack>
-              </Box>
-            </VStack>
+            
           </Box>
         </ScrollView>
       </TouchableWithoutFeedback>

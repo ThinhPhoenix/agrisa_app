@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-const REGEX_PHONE_VN = /^(\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
+// Pattern mới: 0XXXXXXXXX (10 số, bắt đầu bằng 0, số thứ 2 là 3,5,7,8,9)
+const REGEX_PHONE_VN = /^(0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
 const REGEX_PASSWORD =
   /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,7 +52,7 @@ export const signInSchema = z.object({
       },
       {
         message:
-          "Số điện thoại hoặc email không hợp lệ. Ví dụ: +84901234567 hoặc ten@email.com",
+          "Số điện thoại hoặc email không hợp lệ. Ví dụ: 0901234567 hoặc ten@email.com",
       }
     ),
 
@@ -67,7 +68,7 @@ export const signUpSchema = z
       .string()
       .regex(
         REGEX_PHONE_VN,
-        "Số điện thoại Việt Nam không hợp lệ. VD: +84901234567"
+        "Số điện thoại Việt Nam không hợp lệ. VD: 0901234567"
       ),
     email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
     password: z
@@ -111,7 +112,7 @@ export const userProfileSchema = z.object({
   // Liên hệ - BẮT BUỘC
   primary_phone: z
     .string()
-    .regex(REGEX_PHONE_VN, "Số điện thoại không hợp lệ. VD: +84901234567"),
+    .regex(REGEX_PHONE_VN, "Số điện thoại không hợp lệ. VD: 0901234567"),
   alternate_phone: z
     .string()
     .regex(REGEX_PHONE_VN, "Số điện thoại phụ không hợp lệ")

@@ -136,18 +136,7 @@ export default function PhoneVerificationScreen() {
             {/* Header với Logo bên trong Box */}
             <VStack space="md" className="mb-8">
               <HStack space="md" className="items-center">
-                <Box
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 16,
-                    backgroundColor: colors.successSoft,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Phone size={28} color={colors.success} strokeWidth={2.5} />
-                </Box>
+                
                 <VStack className="flex-1">
                   <Text
                     style={{
@@ -156,8 +145,8 @@ export default function PhoneVerificationScreen() {
                       color: colors.primary_text,
                     }}
                   >
-                    Đăng ký tài khoản
-                  </Text>
+                    Đăng ký tài khoản Agrisa
+                  </Text> 
                   <Text
                     style={{
                       fontSize: 14,
@@ -165,7 +154,7 @@ export default function PhoneVerificationScreen() {
                       marginTop: 2,
                     }}
                   >
-                    Nhập số điện thoại để bắt đầu
+                    Bắt đầu với số điện thoại của bạn
                   </Text>
                 </VStack>
               </HStack>

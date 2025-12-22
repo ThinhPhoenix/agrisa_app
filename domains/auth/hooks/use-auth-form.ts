@@ -28,7 +28,7 @@ const isEmail = (value: string): boolean => {
 };
 
 const isPhoneVN = (value: string): boolean => {
-  return /^(\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(
+  return /^(0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(
     value.trim()
   );
 };
@@ -47,19 +47,14 @@ const transformIdentifierToPayload = (
     return { email: trimmedIdentifier, password };
   }
 
-  const isPhoneFormat = /^(\+84|84|0)(3|5|7|8|9)([0-9]{8})$/.test(
+  // Kiểm tra format số điện thoại: 0XXXXXXXXX (10 số)
+  const isPhoneFormat = /^(0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(
     trimmedIdentifier.replace(/\s+/g, "")
   );
 
   if (isPhoneFormat) {
-    let normalizedPhone = trimmedIdentifier.replace(/\s+/g, "");
-
-    if (normalizedPhone.startsWith("0")) {
-      normalizedPhone = "+84" + normalizedPhone.substring(1);
-    } else if (normalizedPhone.startsWith("84")) {
-      normalizedPhone = "+" + normalizedPhone;
-    }
-
+    // Giữ nguyên format 0XXXXXXXXX, không cần chuyển đổi
+    const normalizedPhone = trimmedIdentifier.replace(/\s+/g, "");
     return { phone: normalizedPhone, password };
   }
 
@@ -103,12 +98,14 @@ export const useAuthForm = ({ type }: AuthFormHooks) => {
       const { identifier, password } = data;
       let payload: SignInPayload;
 
+      // Xác định loại identifier và tạo payload tương ứng
       if (isEmail(identifier)) {
         payload = {
           email: identifier,
           password,
         };
       } else if (isPhoneVN(identifier)) {
+        // Giữ nguyên format 0XXXXXXXXX, không cần chuyển đổi
         payload = {
           phone: identifier,
           password,

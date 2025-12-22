@@ -64,28 +64,7 @@ const SignUpComponentUI = () => {
     }
   }, [isAuthenticated]);
 
-  // Helper format phone number
-  const formatPhoneNumber = (phone: string): string => {
-    const cleaned = phone.replace(/\s+/g, "").replace(/\D/g, "");
-
-    if (cleaned.startsWith("0")) {
-      return "+84" + cleaned.substring(1);
-    }
-
-    if (cleaned.startsWith("84") && !cleaned.startsWith("+84")) {
-      return "+" + cleaned;
-    }
-
-    if (cleaned.startsWith("+84")) {
-      return cleaned;
-    }
-
-    if (cleaned.length >= 9 && cleaned.length <= 10) {
-      return "+84" + cleaned;
-    }
-
-    return phone;
-  };
+  
 
   // Helper format CCCD
   const formatCCCD = (value: string): string => {
@@ -188,11 +167,8 @@ const SignUpComponentUI = () => {
                             </InputSlot>
                             <InputField
                               value={field.value}
-                              onChangeText={(text) => {
-                                const formatted = formatPhoneNumber(text);
-                                field.onChange(formatted);
-                              }}
-                              placeholder="+84987654321"
+                              onChangeText={field.onChange}
+                              placeholder="0987654321"
                               placeholderTextColor={colors.muted_text}
                               keyboardType="phone-pad"
                               fontSize="$sm"

@@ -194,7 +194,7 @@ export default function DetailBasePolicyScreen() {
             {/* ĐIỀU KIỆN BỒI THƯỜNG TỰ ĐỘNG */}
             <VStack space="md">
               <SectionTitle
-                title="Điều kiện bồi thường tự động"
+                title="Điều kiện chi trả tự động"
                 icon={AlertCircle}
                 colors={colors}
               />

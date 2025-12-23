@@ -798,6 +798,96 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
           </Box>
         ) : null}
 
+        {/* ========== ĐIỀU KIỆN CHI TRẢ TỰ ĐỘNG (từ base policy) ========== */}
+        {triggers && triggers.length > 0 && (
+          <VStack space="md">
+            <HStack space="sm" alignItems="center">
+              <Box
+                bg={colors.primary}
+                borderRadius="$md"
+                p="$2"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <AlertCircle
+                  size={20}
+                  color={colors.primary_white_text}
+                  strokeWidth={2.5}
+                />
+              </Box>
+              <Text
+                fontSize="$lg"
+                fontWeight="$bold"
+                color={colors.primary_text}
+              >
+                Điều kiện chi trả tự động
+              </Text>
+            </HStack>
+
+            <VStack space="sm">
+              {triggers.map((trigger: any, idx: number) => (
+                <Box
+                  key={trigger.id || idx}
+                  bg={colors.card_surface}
+                  borderRadius="$lg"
+                  p="$3"
+                  mb="$2"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <VStack space="sm">
+                    <Text
+                      fontSize="$md"
+                      fontWeight="$semibold"
+                      color={colors.primary_text}
+                    >
+                      {trigger.name || `Trigger ${idx + 1}`}
+                    </Text>
+
+                    {(trigger.conditions || []).map(
+                      (cond: any, cidx: number) => {
+                        const param =
+                          cond.parameter ||
+                          cond.parameter_name ||
+                          cond.name ||
+                          "-";
+                        const op =
+                          cond.comparator ||
+                          cond.operator ||
+                          cond.comparison ||
+                          cond.logical_operator ||
+                          "";
+                        const val =
+                          cond.threshold || cond.value || cond.target || "";
+                        const unit = cond.unit || "";
+                        return (
+                          <HStack
+                            key={cidx}
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Text fontSize="$sm" color={colors.secondary_text}>
+                              {param}
+                              {unit ? ` (${unit})` : ""}
+                            </Text>
+                            <Text
+                              fontSize="$sm"
+                              color={colors.primary_text}
+                              fontWeight="$semibold"
+                            >
+                              {op} {val}
+                            </Text>
+                          </HStack>
+                        );
+                      }
+                    )}
+                  </VStack>
+                </Box>
+              ))}
+            </VStack>
+          </VStack>
+        )}
+
         {/* NÔNG TRẠI */}
         {farmLoading ? (
           <Box
@@ -1193,7 +1283,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                Bằng chứng rủi ro (
+                Bằng chứng thiệt hại (
                 {claim.evidence_summary?.conditions_count || 0})
               </Text>
             </HStack>
@@ -1221,7 +1311,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   <HStack space="md">
                     <VStack flex={1} space="xs">
                       <Text fontSize="$sm" color={colors.secondary_text}>
-                        Giai đoạn sinh trưởng
+                        Giai đoạn
                       </Text>
                       <Text
                         fontSize="$sm"
@@ -1249,7 +1339,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   </HStack>
                   <HStack space="xs" alignItems="center">
                     <Text fontSize="$sm" color={colors.secondary_text}>
-                      Điều kiện kết hợp:
+                      Điều kiện kết hợp của gói:
                     </Text>
                     <Text
                       fontSize="$sm"
@@ -1877,7 +1967,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
               color={colors.secondary_text}
               textAlign="center"
             >
-              Yêu cầu bồi thường được tạo bởi hệ thống Agrisa
+              Yêu cầu chi trả được tạo bởi hệ thống Agrisa
             </Text>
             <Text
               fontSize="$xs"

@@ -288,7 +288,7 @@ const SignInComponentUI = () => {
         .join(" ");
     }
     // Fallback: parse từ identifier nếu chưa có fullName
-    if (!cachedIdentifier || !cachedFullName) return "Nông dân";
+    if (!cachedIdentifier || !cachedFullName) return "Người dùng Agrisa";
 
     
     // Nếu là số điện thoại, format lại

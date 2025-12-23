@@ -36,7 +36,7 @@ const quickActionItems = [
     },
     {
         key: "claim",
-        name: "Yêu cầu bồi thường",
+        name: "Yêu cầu chi trả",
         icon: Scroll,
         color: "#C1856D",
     },

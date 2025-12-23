@@ -112,7 +112,7 @@ export default function ClaimDetailScreen() {
         mt="$2"
         lineHeight="$lg"
       >
-        Yêu cầu bồi thường này không tồn tại hoặc đã bị xóa.
+        Yêu cầu chi trả này không tồn tại hoặc đã bị xóa.
       </Text>
     </VStack>
   );

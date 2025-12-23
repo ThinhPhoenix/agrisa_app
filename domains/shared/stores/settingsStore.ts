@@ -14,12 +14,12 @@ import { createJSONStorage, persist } from "zustand/middleware";
  * - Thông báo hệ thống
  */
 interface NotificationSettings {
-    enabled: boolean; // Nhận thông báo tổng thể
-    weather: boolean; // Thông báo thời tiết
-    farmStatus: boolean; // Tình trạng thửa ruộng
-    claims: boolean; // Yêu cầu bồi thường
-    promotions: boolean; // Khuyến mãi/ưu đãi
-    system: boolean; // Thông báo hệ thống
+  enabled: boolean; // Nhận thông báo tổng thể
+  weather: boolean; // Thông báo thời tiết
+  farmStatus: boolean; // Tình trạng thửa ruộng
+  claims: boolean; // Yêu cầu chi trả
+  promotions: boolean; // Khuyến mãi/ưu đãi
+  system: boolean; // Thông báo hệ thống
 }
 
 /**

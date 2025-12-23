@@ -982,6 +982,102 @@ export const HistoryDetailRegisteredPolicy: React.FC<
           </VStack>
         </Box>
 
+        {/* ========== ĐIỀU KIỆN CHI TRẢ TỰ ĐỘNG (từ base policy) ========== */}
+        {basePolicyData?.success &&
+          basePolicyData.data?.triggers?.length > 0 && (
+            <VStack space="md">
+              <HStack space="sm" alignItems="center">
+                <Box
+                  bg={colors.primary}
+                  borderRadius="$md"
+                  p="$2"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <AlertCircle
+                    size={20}
+                    color={colors.primary_white_text}
+                    strokeWidth={2.5}
+                  />
+                </Box>
+                <Text
+                  fontSize="$lg"
+                  fontWeight="$bold"
+                  color={colors.primary_text}
+                >
+                  Điều kiện chi trả tự động
+                </Text>
+              </HStack>
+
+              <VStack space="sm">
+                {basePolicyData.data.triggers.map(
+                  (trigger: any, idx: number) => (
+                    <Box
+                      key={trigger.id || idx}
+                      bg={colors.card_surface}
+                      borderRadius="$lg"
+                      p="$3"
+                      mb="$2"
+                      borderWidth={1}
+                      borderColor={colors.frame_border}
+                    >
+                      <VStack space="sm">
+                        <Text
+                          fontSize="$md"
+                          fontWeight="$semibold"
+                          color={colors.primary_text}
+                        >
+                          {trigger.name || `Trigger ${idx + 1}`}
+                        </Text>
+
+                        {(trigger.conditions || []).map(
+                          (cond: any, cidx: number) => {
+                            const param =
+                              cond.parameter ||
+                              cond.parameter_name ||
+                              cond.name ||
+                              "-";
+                            const op =
+                              cond.comparator ||
+                              cond.operator ||
+                              cond.comparison ||
+                              cond.logical_operator ||
+                              "";
+                            const val =
+                              cond.threshold || cond.value || cond.target || "";
+                            const unit = cond.unit || "";
+                            return (
+                              <HStack
+                                key={cidx}
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Text
+                                  fontSize="$sm"
+                                  color={colors.secondary_text}
+                                >
+                                  {param}
+                                  {unit ? ` (${unit})` : ""}
+                                </Text>
+                                <Text
+                                  fontSize="$sm"
+                                  color={colors.primary_text}
+                                  fontWeight="$semibold"
+                                >
+                                  {op} {val}
+                                </Text>
+                              </HStack>
+                            );
+                          }
+                        )}
+                      </VStack>
+                    </Box>
+                  )
+                )}
+              </VStack>
+            </VStack>
+          )}
+
         {/* ========== PHÂN TÍCH RỦI RO ========== */}
         <RiskAnalysisDisplay
           policyId={policy.id}
@@ -1283,7 +1379,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
             bg={
               cancelRequest.status === "approved"
                 ? colors.successSoft
-                : cancelRequest.status === "rejected"
+                : cancelRequest.status === "denied"
                   ? colors.errorSoft
                   : colors.warningSoft
             }
@@ -1292,7 +1388,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
             borderColor={
               cancelRequest.status === "approved"
                 ? colors.success
-                : cancelRequest.status === "rejected"
+                : cancelRequest.status === "denied"
                   ? colors.error
                   : colors.warning
             }
@@ -1307,7 +1403,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                     color={
                       cancelRequest.status === "approved"
                         ? colors.success
-                        : cancelRequest.status === "rejected"
+                        : cancelRequest.status === "denied"
                           ? colors.error
                           : colors.warning
                     }
@@ -1346,7 +1442,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                   borderColor={
                     cancelRequest.status === "approved"
                       ? colors.success
-                      : cancelRequest.status === "rejected"
+                      : cancelRequest.status === "denied"
                         ? colors.error
                         : colors.warning
                   }
@@ -1358,7 +1454,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                         color={colors.success}
                         strokeWidth={2}
                       />
-                    ) : cancelRequest.status === "rejected" ? (
+                    ) : cancelRequest.status === "denied" ? (
                       <XCircle size={14} color={colors.error} strokeWidth={2} />
                     ) : (
                       <Clock size={14} color={colors.warning} strokeWidth={2} />
@@ -1369,14 +1465,14 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                       color={
                         cancelRequest.status === "approved"
                           ? colors.success
-                          : cancelRequest.status === "rejected"
+                          : cancelRequest.status === "denied"
                             ? colors.error
                             : colors.warning
                       }
                     >
                       {cancelRequest.status === "approved"
                         ? "Đã chấp nhận"
-                        : cancelRequest.status === "rejected"
+                        : cancelRequest.status === "denied"
                           ? "Đã từ chối"
                           : "Chờ xử lý"}
                     </Text>

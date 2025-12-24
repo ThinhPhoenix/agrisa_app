@@ -45,6 +45,7 @@ import {
   XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
+import { TriggerCard, ConditionItem } from "./detail-base-policy";
 import { Image, Linking, RefreshControl } from "react-native";
 import { UnderwritingStatus } from "../enums/policy-status.enum";
 import { CancelRequestStatus, RegisteredPolicy } from "../models/policy.models";
@@ -134,6 +135,17 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
       : null;
 
   const farm = farmData?.success ? farmData.data : null;
+
+  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
+
+  const toggleTrigger = (triggerId: string) => {
+    setExpandedTriggers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(triggerId)) newSet.delete(triggerId);
+      else newSet.add(triggerId);
+      return newSet;
+    });
+  };
 
   const getPolicyStatusDisplay = () => {
     // Lấy timestamp hiện tại (giây)
@@ -393,6 +405,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
 
     setShowDisputeModal(false);
   };
+  
 
   // Handler cho việc revoke cancel request
   const handleRevokeRequest = () => {
@@ -1103,19 +1116,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           basePolicyData.data?.triggers?.length > 0 && (
             <VStack space="md">
               <HStack space="sm" alignItems="center">
-                <Box
-                  bg={colors.primary}
-                  borderRadius="$md"
-                  p="$2"
-                  alignItems="center"
-                  justifyContent="center"
-                >
-                  <AlertCircle
-                    size={20}
-                    color={colors.primary_white_text}
-                    strokeWidth={2.5}
-                  />
-                </Box>
+                
                 <Text
                   fontSize="$lg"
                   fontWeight="$bold"
@@ -1126,70 +1127,16 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
               </HStack>
 
               <VStack space="sm">
-                {basePolicyData.data.triggers.map(
-                  (trigger: any, idx: number) => (
-                    <Box
-                      key={trigger.id || idx}
-                      bg={colors.card_surface}
-                      borderRadius="$lg"
-                      p="$3"
-                      mb="$2"
-                      borderWidth={1}
-                      borderColor={colors.frame_border}
-                    >
-                      <VStack space="sm">
-                        <Text
-                          fontSize="$md"
-                          fontWeight="$semibold"
-                          color={colors.primary_text}
-                        >
-                          {trigger.name || `Trigger ${idx + 1}`}
-                        </Text>
-
-                        {(trigger.conditions || []).map(
-                          (cond: any, cidx: number) => {
-                            const param =
-                              cond.parameter ||
-                              cond.parameter_name ||
-                              cond.name ||
-                              "-";
-                            const op =
-                              cond.comparator ||
-                              cond.operator ||
-                              cond.comparison ||
-                              cond.logical_operator ||
-                              "";
-                            const val =
-                              cond.threshold || cond.value || cond.target || "";
-                            const unit = cond.unit || "";
-                            return (
-                              <HStack
-                                key={cidx}
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Text
-                                  fontSize="$sm"
-                                  color={colors.secondary_text}
-                                >
-                                  {param}
-                                  {unit ? ` (${unit})` : ""}
-                                </Text>
-                                <Text
-                                  fontSize="$sm"
-                                  color={colors.primary_text}
-                                  fontWeight="$semibold"
-                                >
-                                  {op} {val}
-                                </Text>
-                              </HStack>
-                            );
-                          }
-                        )}
-                      </VStack>
-                    </Box>
-                  )
-                )}
+                {basePolicyData.data.triggers.map((trigger: any, idx: number) => (
+                  <TriggerCard
+                    key={trigger.id || idx}
+                    trigger={trigger}
+                    index={idx}
+                    isExpanded={expandedTriggers.has(trigger.id)}
+                    onToggle={() => toggleTrigger(trigger.id)}
+                    colors={colors}
+                  />
+                ))}
               </VStack>
             </VStack>
           )}

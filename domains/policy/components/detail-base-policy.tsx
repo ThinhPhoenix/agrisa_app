@@ -1221,7 +1221,7 @@ const TechnicalInfoCard = ({
 );
 
 // 4. Trigger Card Component - Hiển thị chi tiết trigger và điều kiện
-const TriggerCard = ({
+export const TriggerCard = ({
   trigger,
   index,
   isExpanded,
@@ -1407,7 +1407,7 @@ const TriggerCard = ({
 };
 
 // 5. Condition Item Component - Gọn gàng, rõ ràng
-const ConditionItem = ({
+export const ConditionItem = ({
   condition,
   index,
   logicalOperator,

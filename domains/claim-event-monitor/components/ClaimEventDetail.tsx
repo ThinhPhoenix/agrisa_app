@@ -49,6 +49,7 @@ import {
   ClaimEvidenceCondition,
 } from "../models/claim-event-data.models";
 import { ConfirmPayoutPayload } from "../models/payout.model";
+import { TriggerCard, ConditionItem } from "@/domains/policy/components/detail-base-policy";
 
 interface ClaimEventDetailProps {
   claim: ClaimEvent;
@@ -78,7 +79,17 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
     claim.id
   );
   const payout = payoutData?.success ? payoutData.data : null;
+  
+  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
 
+  const toggleTrigger = (triggerId: string) => {
+    setExpandedTriggers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(triggerId)) newSet.delete(triggerId);
+      else newSet.add(triggerId);
+      return newSet;
+    });
+  };
   // Mutation xác nhận nhận tiền - sử dụng payout_id
   const confirmPayoutMutation = useConfirmPayout();
 
@@ -176,7 +187,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
           bgColor: colors.infoSoft || colors.primarySoft,
           icon: CheckCircle2,
         };
-      case ClaimStatus.CANCELLED:
+      case ClaimStatus.REJECTED:
         return {
           label: "Đã hủy",
           color: colors.muted_text,
@@ -1288,70 +1299,23 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
               </Text>
             </HStack>
 
+            
+
             <Box height={1} bg={colors.frame_border} width="100%" />
 
-            {/* Điều kiện kích hoạt từ gói bảo hiểm */}
-            {relatedTrigger && (
-              <Box
-                bg={colors.background}
-                borderRadius="$lg"
-                p="$3"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-                mb="$2"
-              >
-                <VStack space="sm">
-                  <Text
-                    fontSize="$xs"
-                    fontWeight="$bold"
-                    color={colors.primary_text}
-                  >
-                    Điều kiện kích hoạt từ gói bảo hiểm
-                  </Text>
-                  <HStack space="md">
-                    <VStack flex={1} space="xs">
-                      <Text fontSize="$sm" color={colors.secondary_text}>
-                        Giai đoạn
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        {relatedTrigger.growth_stage}
-                      </Text>
-                    </VStack>
-                    <VStack flex={1} space="xs">
-                      <Text fontSize="$sm" color={colors.secondary_text}>
-                        Tần suất giám sát
-                      </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                        color={colors.primary_text}
-                      >
-                        {relatedTrigger.monitor_interval}{" "}
-                        {Utils.getFrequencyLabel(
-                          relatedTrigger.monitor_frequency_unit
-                        )}
-                      </Text>
-                    </VStack>
-                  </HStack>
-                  <HStack space="xs" alignItems="center">
-                    <Text fontSize="$sm" color={colors.secondary_text}>
-                      Điều kiện kết hợp của gói:
-                    </Text>
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$bold"
-                      color={colors.primary}
-                    >
-                      {Utils.getOperatorLabel(relatedTrigger.logical_operator)}
-                    </Text>
-                  </HStack>
-                </VStack>
-              </Box>
-            )}
+           
+
+            <VStack space="sm">
+              {relatedTrigger && (
+                <TriggerCard
+                  trigger={relatedTrigger}
+                  index={0}
+                  isExpanded={expandedTriggers.has(relatedTrigger.id)}
+                  onToggle={() => toggleTrigger(relatedTrigger.id)}
+                  colors={colors}
+                />
+              )}
+            </VStack>
 
             <Box
               bg={

@@ -14,13 +14,12 @@ import {
   ButtonSpinner,
   ButtonText,
   HStack,
-  Pressable,
   ScrollView,
   Spinner,
   Text,
   Textarea,
   TextareaInput,
-  VStack,
+  VStack
 } from "@gluestack-ui/themed";
 import {
   AlertCircle,
@@ -36,11 +35,10 @@ import {
   Scale,
   Shield,
   Sprout,
-  Star,
   Target,
   User,
   XCircle,
-  Zap,
+  Zap
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Alert, RefreshControl } from "react-native";

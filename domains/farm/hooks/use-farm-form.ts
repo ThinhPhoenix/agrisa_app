@@ -1,6 +1,6 @@
+import { Utils } from "@/libs/utils/utils";
 import { useCallback, useState } from "react";
 import { Farm, FormFarmDTO } from "../models/farm.models";
-import { Utils } from "@/libs/utils/utils";
 import { useFarm } from "./use-farm";
 
 interface UseFarmFormProps {
@@ -13,7 +13,11 @@ interface UseFarmFormProps {
  * Hook quản lý form đăng ký/cập nhật farm
  * Tích hợp với CustomForm và xử lý OCR
  */
-export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => {
+export const useFarmForm = ({
+  mode,
+  farmId,
+  initialData,
+}: UseFarmFormProps) => {
   const { createFarmMutation, updateFarmMutation } = useFarm();
 
   const [formValues, setFormValues] = useState<Partial<FormFarmDTO>>(() => {
@@ -104,7 +108,10 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         };
 
         // Merge submitted values over existing formValues (so edit can send partial payload)
-        const mergedValues = { ...(formValues as any), ...(values || {}) } as Record<string, any>;
+        const mergedValues = {
+          ...(formValues as any),
+          ...(values || {}),
+        } as Record<string, any>;
 
         const farmData: FormFarmDTO = {
           farm_name: mergedValues.farm_name as string,
@@ -118,13 +125,15 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
           expected_harvest_date: parseDateToTimestamp(
             mergedValues.expected_harvest_date
           ),
-          land_certificate_number: mergedValues.land_certificate_number as string,
+          land_certificate_number:
+            mergedValues.land_certificate_number as string,
           owner_national_id: mergedValues.owner_national_id as string,
           soil_type: mergedValues.soil_type as string,
           has_irrigation: Boolean(mergedValues.has_irrigation),
           irrigation_type: (mergedValues.irrigation_type as string) || "none",
           boundary: mergedValues.boundary || formValues.boundary,
-          center_location: mergedValues.center_location || formValues.center_location,
+          center_location:
+            mergedValues.center_location || formValues.center_location,
           land_certificate_photos:
             mergedValues.land_certificate_photos ||
             formValues.land_certificate_photos,

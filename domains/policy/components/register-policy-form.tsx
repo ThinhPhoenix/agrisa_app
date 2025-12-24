@@ -20,7 +20,6 @@ import {
   Calendar,
   CheckCircle2,
   ChevronRight,
-  Info,
   Leaf,
   MapPin,
   Plus,

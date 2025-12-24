@@ -7,6 +7,7 @@ import { RegisteredPolicy } from "@/domains/policy/models/policy.models";
 import { Utils } from "@/libs/utils/utils";
 import {
     Box,
+    Divider,
     HStack,
     Pressable,
     Spinner,
@@ -629,6 +630,16 @@ export const ActivePolicyCard: React.FC<ActivePolicyCardProps> = ({
                                         )}
                                     </Text>
                                 </HStack>
+                                <Divider />
+                                <VStack space="xs">
+                                    <Text
+                                            fontSize="$xs"
+                                        >
+                                            Cập nhật vào: {Utils.formatStringVietnameseDateTime(
+                                                policy.updated_at
+                                            )}
+                                        </Text>
+                                        </VStack>
                             </>
                         )}
                     </VStack>

@@ -20,4 +20,15 @@ export const farmServices = {
             return useAxios.get(`/policy/protected/api/v2/farms/${farm_id}`);
         },
     },
+    put: {
+        updateFarm: async (
+            farm_id: string,
+            payload: FormFarmDTO
+        ): Promise<ApiResponse<FarmModel>> => {
+            return useAxios.put(
+                `/policy/protected/api/v2/farms/${farm_id}`,
+                payload
+            );
+        },
+    }
 };

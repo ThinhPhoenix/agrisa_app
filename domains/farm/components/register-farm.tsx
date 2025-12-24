@@ -238,8 +238,9 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
         ocrResult,
         hasIrrigation,
         isManualMode: inputMode === "manual", // Enable fields trong manual mode
+        currentValues: formValues,
       }),
-    [mode, ocrResult, hasIrrigation, inputMode]
+    [mode, ocrResult, hasIrrigation, inputMode, formValues]
   );
 
   // ===== OCR RESULT HANDLER =====
@@ -1804,73 +1805,75 @@ export const RegisterFarmForm: React.FC<RegisterFarmFormProps> = ({
                   </Box>
                 )}
 
-              {/* Tọa độ ranh giới */}
-              <Box
-                bg={colors.card_surface}
-                borderRadius="$xl"
-                p="$4"
-                borderWidth={1}
-                borderColor={colors.frame_border}
-              >
-                <VStack space="md">
-                  <HStack space="sm" alignItems="center">
-                    <MapPin size={18} color={colors.primary} strokeWidth={2} />
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$bold"
-                      color={colors.primary_text}
-                    >
-                      Tọa độ ranh giới
-                    </Text>
-                  </HStack>
+              {/* Tọa độ ranh giới (ẩn khi edit mode) */}
+              {mode !== "edit" && (
+                <Box
+                  bg={colors.card_surface}
+                  borderRadius="$xl"
+                  p="$4"
+                  borderWidth={1}
+                  borderColor={colors.frame_border}
+                >
+                  <VStack space="md">
+                    <HStack space="sm" alignItems="center">
+                      <MapPin size={18} color={colors.primary} strokeWidth={2} />
+                      <Text
+                        fontSize="$md"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
+                        Tọa độ ranh giới
+                      </Text>
+                    </HStack>
 
-                  <BoundaryCoordinatesInput
-                    value={boundaryCoords}
-                    onChange={(value) => setBoundaryCoords(value)}
-                    label=""
-                    helperText="Nhập tọa độ các điểm ranh giới của nông trại"
-                    disabled={
-                      mode === "create" && inputMode === "ocr" && !ocrResult
-                    }
-                  />
+                    <BoundaryCoordinatesInput
+                      value={boundaryCoords}
+                      onChange={(value) => setBoundaryCoords(value)}
+                      label=""
+                      helperText="Nhập tọa độ các điểm ranh giới của nông trại"
+                      disabled={
+                        mode === "create" && inputMode === "ocr" && !ocrResult
+                      }
+                    />
 
-                  {boundaryCoords && (
-                    <Button
-                      onPress={() => {
-                        const parsed =
-                          Utils.parseBoundaryCoordinates(boundaryCoords);
-                        if (parsed) {
-                          const firstCoord = parsed.coordinates[0][0];
-                          const isVn =
-                            firstCoord[0] > 100000 || firstCoord[1] > 100000;
-                          setIsVn2000(isVn);
-                          setBoundaryPolygon(parsed);
-                          notification.success("Đã cập nhật bản đồ!");
-                        } else {
-                          notification.error("Tọa độ không hợp lệ");
-                        }
-                      }}
-                      bg={colors.primary}
-                      borderRadius="$lg"
-                      size="md"
-                    >
-                      <HStack space="xs" alignItems="center">
-                        <MapPin
-                          size={16}
-                          color={colors.primary_white_text}
-                          strokeWidth={2}
-                        />
-                        <ButtonText color={colors.primary_white_text}>
-                          Xem trên bản đồ
-                        </ButtonText>
-                      </HStack>
-                    </Button>
-                  )}
-                </VStack>
-              </Box>
+                    {boundaryCoords && (
+                      <Button
+                        onPress={() => {
+                          const parsed =
+                            Utils.parseBoundaryCoordinates(boundaryCoords);
+                          if (parsed) {
+                            const firstCoord = parsed.coordinates[0][0];
+                            const isVn =
+                              firstCoord[0] > 100000 || firstCoord[1] > 100000;
+                            setIsVn2000(isVn);
+                            setBoundaryPolygon(parsed);
+                            notification.success("Đã cập nhật bản đồ!");
+                          } else {
+                            notification.error("Tọa độ không hợp lệ");
+                          }
+                        }}
+                        bg={colors.primary}
+                        borderRadius="$lg"
+                        size="md"
+                      >
+                        <HStack space="xs" alignItems="center">
+                          <MapPin
+                            size={16}
+                            color={colors.primary_white_text}
+                            strokeWidth={2}
+                          />
+                          <ButtonText color={colors.primary_white_text}>
+                            Xem trên bản đồ
+                          </ButtonText>
+                        </HStack>
+                      </Button>
+                    )}
+                  </VStack>
+                </Box>
+              )}
 
               {/* Bản đồ */}
-              {boundaryPolygon && (
+              {(mode !== "edit" && boundaryPolygon) && (
                 <Box
                   bg={colors.card_surface}
                   borderRadius="$xl"

@@ -36,6 +36,7 @@ export const QueryKey = {
     REVIEW_CANCEL_REQUEST: "review-cancel-request",
     RESOLVE_DISPUTE: "resolve-dispute",
     REVOKE_CANCEL_REQUEST: "revoke-cancel-request",
+    GET_TRANSFERABLE_POLICIES: "get-transferable-policies",
   },
 
   FARM: {

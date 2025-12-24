@@ -98,12 +98,10 @@ export const Utils = {
   },
 
   getCropLabel: (cropType: string): string => {
-    const labels: Record<string, string> = {
-      rice: "Lúa",
-      coffee: "Cà phê",
-    };
-    return labels[cropType] || cropType;
+    if (!cropType) return "";
+    return cropType === "rice" ? "Lúa" : "Cà phê";
   },
+
 
   formatArea: (areaSqm: number): string => {
     const areaHa = (areaSqm / 10000).toFixed(2);

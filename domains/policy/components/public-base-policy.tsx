@@ -950,7 +950,7 @@ const PolicyCard = ({
                         >
                             <Text fontSize="$2xs" color={colors.muted_text}>
                                 Cập nhật{" "}
-                                {Utils.formatVietnameseDate(
+                                {Utils.formatStringVietnameseDateTime(
                                     new Date(policy.updated_at)
                                 )}
                             </Text>

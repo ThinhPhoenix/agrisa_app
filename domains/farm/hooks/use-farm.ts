@@ -103,7 +103,7 @@ export const useFarm = () => {
         }: {
             farmId: string;
             payload: FormFarmDTO;
-        }) => farmServices.post.createFarm(payload),
+        }) => farmServices.put.updateFarm(farmId, payload),
         onSuccess: (response, variables) => {
             console.log("✅ Farm updated successfully:", response);
 

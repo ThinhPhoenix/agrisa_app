@@ -311,7 +311,6 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={handleDateChange}
-                minimumDate={new Date()} // Không cho chọn quá khứ
                 locale="vi-VN"
               />
             )}

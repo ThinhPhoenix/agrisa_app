@@ -130,15 +130,7 @@ export const usePolicyForm = ({
           return "Vui lòng chọn ngày gieo trồng.";
         }
 
-        // Kiểm tra planting date không được trong quá khứ
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const selectedDate = new Date(plantingDate);
-        selectedDate.setHours(0, 0, 0, 0);
-
-        if (selectedDate < today) {
-          return "Ngày dự kiến gieo trồng không được chọn ngày trong quá khứ. Vui lòng chọn ngày hôm nay hoặc tương lai.";
-        }
+                // NOTE: Removed past-date restriction — allow any planting date
 
         // Validate document_tags nếu có
         if (documentTags && Object.keys(documentTags).length > 0) {

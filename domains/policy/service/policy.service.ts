@@ -87,6 +87,13 @@ export const policyServices = {
         `/policy/protected/api/v2/cancel_request/read-own/me`
       );
     },
+    get_transferable_policies: async (): Promise<
+      ApiResponse<RegisteredPoliciesResponse>
+      > => {
+      return useAxios.get(
+        `/policy/protected/api/v2/cancel_request/read-own/transfer`
+      );
+    },
   },
   put: {
     review_cancel_request: async (

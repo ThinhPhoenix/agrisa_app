@@ -36,6 +36,13 @@ export const usePolicy = () => {
       queryFn: () => policyServices.get.get_cancel_requests(),
     });
   };
+
+  const useGetTransferablePolicies = () => {
+    return useQuery({
+      queryKey: [QueryKey.POLICY.GET_TRANSFERABLE_POLICIES],
+      queryFn: () => policyServices.get.get_transferable_policies(),
+    });
+  };
   const getCancelRequests = useGetCancelRequests;
 
   const useGetCancelRequestByPolicyId = (registered_policy_id: string) => {
@@ -205,42 +212,49 @@ export const usePolicy = () => {
         errorTitle = "Đăng ký thất bại";
         // Parse chi tiết lỗi từ service
         if (
-          apiMessage
-            .toLowerCase()
-            .includes("enrollment date validation failed") ||
-          apiMessage.toLowerCase().includes("enrollment dates are required")
+          apiMessage ===
+          "Failed to register policy: farm already registered to this base policy"
         ) {
-          errorMessage =
-            "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác.";
-        } else if (
-          apiMessage.toLowerCase().includes("farm already registered")
-        ) {
-          errorTitle = "Trang trại đã được bảo hiểm";
-          errorMessage =
-            "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
-        } else if (
-          apiMessage.toLowerCase().includes("base policy is not active") ||
-          apiMessage.toLowerCase().includes("base policy is invalid")
-        ) {
-          errorTitle = "Gói bảo hiểm không khả dụng";
-          errorMessage =
-            "Gói bảo hiểm này hiện không còn hoạt động. Vui lòng chọn gói khác.";
-        } else if (
-          apiMessage.toLowerCase().includes("database") ||
-          apiMessage.toLowerCase().includes("transaction")
-        ) {
-          errorMessage =
-            "Không thể lưu thông tin đăng ký. Vui lòng thử lại sau.";
-        } else if (
-          apiMessage.toLowerCase().includes("document") ||
-          apiMessage.toLowerCase().includes("signed")
-        ) {
-          errorMessage =
-            "Không thể tạo hợp đồng bảo hiểm. Vui lòng thử lại sau.";
-        } else {
-          errorMessage =
-            "Không thể hoàn tất đăng ký bảo hiểm. Vui lòng kiểm tra lại thông tin và thử lại.";
+          errorMessage = "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
         }
+          
+          if (
+            apiMessage
+              .toLowerCase()
+              .includes("enrollment date validation failed") ||
+            apiMessage.toLowerCase().includes("enrollment dates are required")
+          ) {
+            errorMessage =
+              "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác.";
+          } else if (
+            apiMessage.toLowerCase().includes("farm already registered")
+          ) {
+            errorTitle = "Trang trại đã được bảo hiểm";
+            errorMessage =
+              "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
+          } else if (
+            apiMessage.toLowerCase().includes("base policy is not active") ||
+            apiMessage.toLowerCase().includes("base policy is invalid")
+          ) {
+            errorTitle = "Gói bảo hiểm không khả dụng";
+            errorMessage =
+              "Gói bảo hiểm này hiện không còn hoạt động. Vui lòng chọn gói khác.";
+          } else if (
+            apiMessage.toLowerCase().includes("database") ||
+            apiMessage.toLowerCase().includes("transaction")
+          ) {
+            errorMessage =
+              "Không thể lưu thông tin đăng ký. Vui lòng thử lại sau.";
+          } else if (
+            apiMessage.toLowerCase().includes("document") ||
+            apiMessage.toLowerCase().includes("signed")
+          ) {
+            errorMessage =
+              "Không thể tạo hợp đồng bảo hiểm. Vui lòng thử lại sau.";
+          } else {
+            errorMessage =
+              "Không thể hoàn tất đăng ký bảo hiểm. Vui lòng kiểm tra lại thông tin và thử lại.";
+          }
       } else if (
         apiMessage.toLowerCase().includes("insufficient balance") ||
         apiMessage.toLowerCase().includes("payment required")
@@ -620,5 +634,6 @@ export const usePolicy = () => {
     getCancelReason,
     getCancelRequests,
     getCancelRequestByPolicyId,
+    useGetTransferablePolicies,
   };
 };

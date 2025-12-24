@@ -4,6 +4,7 @@ import { Farm } from "@/domains/farm/models/farm.models";
 import { Utils } from "@/libs/utils/utils";
 import {
   Box,
+  Button,
   HStack,
   Image,
   Pressable,
@@ -463,31 +464,28 @@ export const DetailFarm: React.FC<DetailFarmProps> = ({
         </Box>
 
         {/* ===== ACTION BUTTON ===== */}
-        {/* <Button
-          bg={colors.primary}
-          borderRadius={16}
-          size="lg"
-          onPress={onEdit}
-          shadowColor={colors.primary}
-          shadowOffset={{ width: 0, height: 4 }}
-          shadowOpacity={0.3}
-          shadowRadius={8}
-        >
-          <HStack space="sm" alignItems="center">
-            <Edit3
-              size={20}
-              color={colors.primary_white_text}
-              strokeWidth={2.5}
-            />
-            <ButtonText
-              color={colors.primary_white_text}
-              fontWeight="700"
-              fontSize={16}
-            >
-              Chỉnh sửa thông tin
-            </ButtonText>
-          </HStack>
-        </Button> */}
+        <Box px="$4" py="$6">
+          <Button
+            bg={colors.primary}
+            borderRadius={16}
+            size="lg"
+            onPress={onEdit}
+            shadowColor={colors.primary}
+            shadowOffset={{ width: 0, height: 4 }}
+            shadowOpacity={0.3}
+            shadowRadius={8}
+          >
+            <HStack space="sm" alignItems="center" justifyContent="center">
+              <Text
+                color={colors.primary_white_text}
+                fontWeight="700"
+                fontSize={16}
+              >
+                Chỉnh sửa thông tin
+              </Text>
+            </HStack>
+          </Button>
+        </Box>
       </VStack>
 
       {/* ===== FULLSCREEN IMAGE VIEWER ===== */}

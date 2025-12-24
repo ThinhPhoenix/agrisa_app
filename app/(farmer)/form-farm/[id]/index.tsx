@@ -74,7 +74,7 @@ export default function FarmFormScreen() {
   const handleEditClick = () => {
     console.log("✏️ [FarmForm] Switching to Edit Mode");
     router.push(`/(farmer)/form-farm/${farmId}?mode=edit`);
-  };
+  }; 
 
   // ===== LOADING STATE =====
   if (!isCreateMode && isLoadingFarm) {

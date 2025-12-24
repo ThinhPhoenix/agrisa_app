@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { Farm, FormFarmDTO } from "../models/farm.models";
+import { Utils } from "@/libs/utils/utils";
 import { useFarm } from "./use-farm";
 
 interface UseFarmFormProps {
@@ -38,8 +39,12 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
         address: initialData.address,
         crop_type: initialData.crop_type,
         area_sqm: initialData.area_sqm, // Giữ nguyên giá trị từ backend (đã là ha)
-        planting_date: initialData.planting_date,
-        expected_harvest_date: initialData.expected_harvest_date,
+        planting_date: initialData.planting_date
+          ? Utils.formatDateForMS(initialData.planting_date)
+          : undefined,
+        expected_harvest_date: initialData.expected_harvest_date
+          ? Utils.formatDateForMS(initialData.expected_harvest_date)
+          : undefined,
         land_certificate_number: initialData.land_certificate_number,
         owner_national_id: (initialData as any).owner_national_id, // Might not exist in old data
         soil_type: initialData.soil_type,
@@ -98,32 +103,32 @@ export const useFarmForm = ({ mode, farmId, initialData }: UseFarmFormProps) => 
           );
         };
 
+        // Merge submitted values over existing formValues (so edit can send partial payload)
+        const mergedValues = { ...(formValues as any), ...(values || {}) } as Record<string, any>;
+
         const farmData: FormFarmDTO = {
-          farm_name: values.farm_name as string,
-          province: values.province as string,
-          district: values.district as string,
-          commune: values.commune as string,
-          address: values.address as string,
-          crop_type: values.crop_type as string,
-          area_sqm: Number(values.area_sqm), // Giữ nguyên giá trị ha (đã được convert từ OCR hoặc user nhập)
-          planting_date: parseDateToTimestamp(values.planting_date),
+          farm_name: mergedValues.farm_name as string,
+          province: mergedValues.province as string,
+          district: mergedValues.district as string,
+          commune: mergedValues.commune as string,
+          address: mergedValues.address as string,
+          crop_type: mergedValues.crop_type as string,
+          area_sqm: Number(mergedValues.area_sqm), // Giữ nguyên giá trị ha (đã được convert từ OCR hoặc user nhập)
+          planting_date: parseDateToTimestamp(mergedValues.planting_date),
           expected_harvest_date: parseDateToTimestamp(
-            values.expected_harvest_date
+            mergedValues.expected_harvest_date
           ),
-          land_certificate_number: values.land_certificate_number as string,
-          owner_national_id: values.owner_national_id as string,
-          soil_type: values.soil_type as string,
-          has_irrigation: Boolean(values.has_irrigation),
-          irrigation_type: (values.irrigation_type as string) || "none",
-          boundary: values.boundary || formValues.boundary,
-          center_location: values.center_location || formValues.center_location,
+          land_certificate_number: mergedValues.land_certificate_number as string,
+          owner_national_id: mergedValues.owner_national_id as string,
+          soil_type: mergedValues.soil_type as string,
+          has_irrigation: Boolean(mergedValues.has_irrigation),
+          irrigation_type: (mergedValues.irrigation_type as string) || "none",
+          boundary: mergedValues.boundary || formValues.boundary,
+          center_location: mergedValues.center_location || formValues.center_location,
           land_certificate_photos:
-            values.land_certificate_photos ||
+            mergedValues.land_certificate_photos ||
             formValues.land_certificate_photos,
-          status: "active",
-          ...(mode === "edit" && values.status
-            ? { status: values.status as string }
-            : {}),
+          status: mergedValues.status || "active",
         };
 
         if (mode === "edit" && farmId) {

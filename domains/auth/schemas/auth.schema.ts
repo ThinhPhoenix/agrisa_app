@@ -137,7 +137,7 @@ export const userProfileSchema = z.object({
   ward_name: z.string().min(1, "Vui lòng nhập tên phường/xã"),
   postal_code: z.string().optional().or(z.literal("")),
 
-  // Thông tin ngân hàng - để nhận bồi thường bảo hiểm
+  // Thông tin ngân hàng - để nhận chi trả bảo hiểm
   account_number: z
     .string()
     .min(8, "Số tài khoản phải có ít nhất 8 ký tự")

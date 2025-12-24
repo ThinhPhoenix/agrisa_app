@@ -180,16 +180,8 @@ export default function PartnerDetailScreen() {
             {/* Rating */}
             {partner.partner_rating_score > 0 && (
               <HStack space="xs" alignItems="center">
-                <Star
-                  size={14}
-                  color={colors.warning}
-                  fill={colors.warning}
-                />
-                <Text
-                  fontSize="$sm"
-                  fontWeight="$bold"
-                  color={colors.warning}
-                >
+                <Star size={14} color={colors.warning} fill={colors.warning} />
+                <Text fontSize="$sm" fontWeight="$bold" color={colors.warning}>
                   {partner.partner_rating_score.toFixed(1)}
                 </Text>
                 <Text fontSize="$xs" color={colors.muted_text}>
@@ -331,7 +323,7 @@ export default function PartnerDetailScreen() {
               </Box>
             )}
 
-            {/* Tỷ lệ bồi thường */}
+            {/* Tỷ lệ chi trả */}
             {partner.trust_metric_claim_rate > 0 && (
               <Box
                 w="48%"
@@ -346,7 +338,7 @@ export default function PartnerDetailScreen() {
                   <TrendingUp size={20} color={colors.primary} />
                   <VStack flex={1}>
                     <Text fontSize="$xs" color={colors.muted_text}>
-                      Tỷ lệ bồi thường
+                      Tỷ lệ chi trả
                     </Text>
                     <Text
                       fontSize="$md"
@@ -361,7 +353,7 @@ export default function PartnerDetailScreen() {
             )}
           </HStack>
 
-          {/* Thông tin bồi thường */}
+          {/* Thông tin chi trả */}
           {(partner.total_payouts || partner.average_payout_time) && (
             <Box
               bg={colors.card_surface}
@@ -376,12 +368,15 @@ export default function PartnerDetailScreen() {
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Cam kết bồi thường
+                  Cam kết chi trả
                 </Text>
               </HStack>
               <VStack space="sm">
                 {partner.total_payouts && (
-                  <HStack justifyContent="space-between" alignItems="flex-start">
+                  <HStack
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                  >
                     <Text fontSize="$sm" color={colors.muted_text}>
                       Tổng đã chi trả
                     </Text>
@@ -401,7 +396,10 @@ export default function PartnerDetailScreen() {
                   <Box height={1} bg={colors.frame_border} width="100%" />
                 )}
                 {partner.average_payout_time && (
-                  <HStack justifyContent="space-between" alignItems="flex-start">
+                  <HStack
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                  >
                     <Text fontSize="$sm" color={colors.muted_text}>
                       Thời gian chi trả TB
                     </Text>
@@ -451,10 +449,7 @@ export default function PartnerDetailScreen() {
                       <Text fontSize="$xs" color={colors.muted_text}>
                         Hotline CSKH
                       </Text>
-                      <Text
-                        fontSize="$sm"
-                        fontWeight="$semibold"
-                      >
+                      <Text fontSize="$sm" fontWeight="$semibold">
                         {partner.customer_service_hotline}
                       </Text>
                     </VStack>

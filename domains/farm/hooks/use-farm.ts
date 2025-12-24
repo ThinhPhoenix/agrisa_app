@@ -43,6 +43,10 @@ export const useFarm = () => {
             await queryClient.invalidateQueries({
                 queryKey: [QueryKey.FARM.LIST],
             });
+            
+            await queryClient.invalidateQueries({
+                queryKey: [QueryKey.STATS.OVERVIEW],
+            });
 
             // Hiển thị Result Status Screen
             resultStatus.showSuccess({
@@ -117,11 +121,18 @@ export const useFarm = () => {
                 queryClient.invalidateQueries({
                     queryKey: [QueryKey.FARM.DETAIL, variables.farmId],
                 });
-
-                // Navigate về detail mode
-                router.replace(
-                    `/(farmer)/form-farm/${variables.farmId}?mode=detail`
-                );
+                resultStatus.showSuccess({
+                  title: "Đăng ký thành công!",
+                  message: "Trang trại của bạn đã được đăng ký thành công.",
+                  subMessage:
+                    "Bạn có thể bắt đầu đăng ký bảo hiểm cho nông trại này.",
+                  autoRedirectSeconds: 5,
+                  autoRedirectRoute:
+                    `/(farmer)/form-farm/${variables.farmId}?mode=detail`,
+                  showHomeButton: true,
+                  lockNavigation: true,
+                });
+                
             }
         },
         onError: (error: any, variables) => {

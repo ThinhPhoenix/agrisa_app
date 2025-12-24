@@ -47,8 +47,8 @@ import React, { useState } from "react";
 import { Linking, RefreshControl } from "react-native";
 import { UnderwritingStatus } from "../enums/policy-status.enum";
 import { RegisteredPolicy } from "../models/policy.models";
+import { TriggerCard } from "./detail-base-policy";
 import { ReviewCancelRequestModal } from "./review-cancel-request-modal";
-import { TriggerCard, ConditionItem } from "./detail-base-policy";
 
 interface DetailRegisteredPolicyProps {
   policy: RegisteredPolicy;
@@ -129,7 +129,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
     switch (policy.status) {
       case "payout":
         return {
-          label: "Đang chi trả bồi thường",
+          label: "Đã chi trả",
           color: colors.info,
           icon: CheckCircle2,
           bgColor: colors.infoSoft,
@@ -241,7 +241,9 @@ export const HistoryDetailRegisteredPolicy: React.FC<
         };
     }
   };
-  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
+  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(
+    new Set()
+  );
 
   const toggleTrigger = (triggerId: string) => {
     setExpandedTriggers((prev) => {
@@ -251,7 +253,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
       return newSet;
     });
   };
-  
+
   const statusDisplay = getPolicyStatusDisplay();
   const StatusIcon = statusDisplay.icon;
 
@@ -1446,7 +1448,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                     </Text>
                   </HStack>
 
-                  {/* Số tiền dự kiến bồi thường - Chỉ hiển thị khi không phải người tạo */}
+                  {/* Số tiền dự kiến chi trả - Chỉ hiển thị khi không phải người tạo */}
                   {!isRequestedByUser && cancelRequest.compensate_amount && (
                     <>
                       <Box height={1} bg={colors.frame_border} width="100%" />
@@ -1459,7 +1461,7 @@ export const HistoryDetailRegisteredPolicy: React.FC<
                           color={colors.secondary_text}
                           fontWeight="$medium"
                         >
-                          Số tiền dự kiến bồi thường
+                          Số tiền dự kiến chi trả
                         </Text>
                         <Text
                           fontSize="$md"

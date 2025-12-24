@@ -633,7 +633,7 @@ export const Utils = {
     const typeMap: Record<string, string> = {
       policy_registration_payment: "Thanh toán phí bảo hiểm",
 
-      policy_payout_payment: "Thanh toán phí bồi thường",
+      policy_payout_payment: "Thanh toán phí chi trả",
       contract: "Thanh toán hợp đồng",
     };
     return typeMap[type] || "Thanh toán";

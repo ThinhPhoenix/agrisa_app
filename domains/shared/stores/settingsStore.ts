@@ -9,7 +9,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
  * - Nhận thông báo (bật/tắt tổng thể)
  * - Thông báo thời tiết (dự báo mưa, nắng nóng...)
  * - Thông báo tình trạng thửa ruộng (từ vệ tinh)
- * - Thông báo yêu cầu bồi thường
+ * - Thông báo yêu cầu chi trả
  * - Thông báo khuyến mãi/ưu đãi
  * - Thông báo hệ thống
  */

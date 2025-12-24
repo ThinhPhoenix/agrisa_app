@@ -52,7 +52,7 @@ export type PublicBasePolicyResponse = {
   premium_base_rate: number; // Tỷ lệ phí cơ bản (0.05 = 5%)
   max_premium_payment_prolong: number; // Thời gian gia hạn thanh toán tối đa (giây)
 
-  // Thông tin chi trả bồi thường (Payout)
+  // Thông tin chi trả chi trả (Payout)
   fix_payout_amount: number; // Số tiền chi trả cố định
   is_payout_per_hectare: boolean; // Chi trả tính theo hecta
   over_threshold_multiplier: number; // Hệ số nhân khi vượt ngưỡng
@@ -306,7 +306,10 @@ export interface UnderwritingDataResponse {
 /**
  * Loại yêu cầu hủy hợp đồng
  */
-export type CancelRequestType = "contract_violation" | "policyholder_request" | "other";
+export type CancelRequestType =
+  | "contract_violation"
+  | "policyholder_request"
+  | "other";
 
 /**
  * Ảnh bằng chứng trong evidence
@@ -323,7 +326,7 @@ export interface EvidenceImage {
 export interface CancelRequestPayload {
   cancel_request_type: CancelRequestType; // Loại hủy: vi phạm hợp đồng hoặc lý do khác
   reason: string; // Lý do chi tiết (mô tả văn bản)
-  compensate_amount: number; // Số tiền đề nghị bồi thường
+  compensate_amount: number; // Số tiền đề nghị chi trả
   evidence: {
     description: string; // Mô tả bằng chứng (text)
     images: EvidenceImage[]; // Danh sách ảnh bằng chứng (chỉ URL)
@@ -333,12 +336,12 @@ export interface CancelRequestPayload {
 /**
  * Trạng thái yêu cầu hủy hợp đồng
  */
-export type CancelRequestStatus = 
-  | "pending_review"  // Chờ xét duyệt
-  | "approved"        // Đã chấp nhận
-  | "denied"          // Đã từ chối
-  | "cancelled"       // Đã hủy
-  | "litigation"      // Tranh chấp pháp lý
+export type CancelRequestStatus =
+  | "pending_review" // Chờ xét duyệt
+  | "approved" // Đã chấp nhận
+  | "denied" // Đã từ chối
+  | "cancelled" // Đã hủy
+  | "litigation" // Tranh chấp pháp lý
   | "payment_failed"; // Thanh toán thất bại
 
 /**
@@ -356,7 +359,7 @@ export interface CancelRequest {
   status: CancelRequestStatus;
   requested_by: string; // User ID của người tạo yêu cầu
   requested_at: string; // ISO timestamp
-  compensate_amount: number; // Số tiền bồi thường
+  compensate_amount: number; // Số tiền chi trả
   paid: boolean; // Đã thanh toán chưa
   paid_at: string | null; // Thời gian thanh toán
   during_notice_period: boolean; // Trong thời gian thông báo

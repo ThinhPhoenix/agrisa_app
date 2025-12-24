@@ -2,7 +2,7 @@
  * ============================================
  * 🏦 MY BANK INFO SCREEN
  * ============================================
- * Màn hình nhập thông tin ngân hàng để nhận bồi thường
+ * Màn hình nhập thông tin ngân hàng để nhận chi trả
  * - Hiển thị card ngân hàng động
  * - Form nhập số tài khoản, tên chủ tài khoản, chọn ngân hàng
  * - Update vào profile thông qua API /me
@@ -547,7 +547,7 @@ export default function MyBankInfoScreen() {
         resultStatus.showSuccess({
           title: "Cập nhật thành công!",
           message: "Thông tin ngân hàng đã được lưu.",
-          subMessage: "Bạn có thể nhận bồi thường qua tài khoản này.",
+          subMessage: "Bạn có thể nhận chi trả qua tài khoản này.",
           autoRedirectSeconds: 3,
           autoRedirectRoute: "/settings/verify/status",
           showHomeButton: true,
@@ -599,7 +599,7 @@ export default function MyBankInfoScreen() {
               Thông tin ngân hàng
             </Text>
             <Text fontSize="$sm" color={colors.secondary_text}>
-              Nhập thông tin tài khoản ngân hàng để nhận bồi thường
+              Nhập thông tin tài khoản ngân hàng để nhận chi trả
             </Text>
           </VStack>
 
@@ -624,7 +624,7 @@ export default function MyBankInfoScreen() {
               <HStack space="sm" alignItems="center">
                 <Text fontSize="$xs" color={colors.secondary_text}>-</Text>
                 <Text fontSize="$sm" color={colors.secondary_text} flex={1}>
-                  Thông tin tài khoản sẽ được chúng tôi bảo mật và chỉ dùng để chi trả bồi thường
+                  Thông tin tài khoản sẽ được chúng tôi bảo mật và chỉ dùng để chi trả chi trả
                 </Text>
               </HStack>
             </VStack>

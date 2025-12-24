@@ -60,7 +60,7 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
           bgColor: colors.infoSoft || colors.primarySoft,
           icon: CheckCircle2,
         };
-      case ClaimStatus.CANCELLED:
+      case ClaimStatus.REJECTED:
         return {
           label: "Đã hủy",
           color: colors.muted_text,
@@ -110,7 +110,7 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
                 </Box>
                 <VStack flex={1}>
                   <Text fontSize="$xs" color={colors.secondary_text} mb="$0.5">
-                    Số yêu cầu bồi thường
+                    Số yêu cầu chi trả
                   </Text>
                   <Text
                     fontSize="$md"
@@ -193,7 +193,7 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
 
               <VStack flex={1} space="xs" alignItems="flex-end">
                 <Text fontSize="$xs" color={colors.secondary_text}>
-                  Số tiền bồi thường
+                  Số tiền chi trả
                 </Text>
                 <Text
                   fontSize="$lg"

@@ -52,7 +52,13 @@ export const PingScreen = () => {
   };
 
   return (
-    <VStack flex={1} bg={colors.background} paddingVertical={50} padding={20} space="md">
+    <VStack
+      flex={1}
+      bg={colors.background}
+      paddingVertical={50}
+      padding={20}
+      space="md"
+    >
       {/* Header với icon Agrisa */}
       <HStack alignItems="center" space="sm" marginBottom={16}>
         <Wifi size={24} color={colors.primary} />
@@ -271,7 +277,7 @@ export const PingScreen = () => {
         <Text color={colors.textSecondary} fontSize="$xs" lineHeight={16}>
           • Hệ thống tự động kiểm tra mỗi 30 giây{"\n"}• Giúp đảm bảo dữ liệu
           nông trại được đồng bộ{"\n"}• Quan trọng cho việc báo cáo thiệt hại
-          cây trồng{"\n"}• Kết nối tốt = xử lý bồi thường nhanh hơn
+          cây trồng{"\n"}• Kết nối tốt = xử lý chi trả nhanh hơn
         </Text>
       </Box>
     </VStack>

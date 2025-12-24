@@ -3,14 +3,14 @@ import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { CancelRequestType } from "@/domains/policy/models/policy.models";
 import { useImageUpload } from "@/domains/shared/hooks/use-image-upload";
 import {
-  Box,
-  HStack,
-  Image,
-  Pressable,
-  ScrollView,
-  Spinner,
-  Text,
-  VStack,
+    Box,
+    HStack,
+    Image,
+    Pressable,
+    ScrollView,
+    Spinner,
+    Text,
+    VStack,
 } from "@gluestack-ui/themed";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
@@ -29,7 +29,7 @@ interface EvidencePhoto {
  * Component form đề nghị hủy hợp đồng bảo hiểm
  * Bao gồm:
  * - Lý do hủy (reason)
- * - Số tiền đề nghị bồi thường (compensate_amount)
+ * - Số tiền đề nghị chi trả (compensate_amount)
  * - Bằng chứng (evidence_photos) - tối đa 10 ảnh với ghi chú
  */
 export const CancelPolicyRequest: React.FC = () => {

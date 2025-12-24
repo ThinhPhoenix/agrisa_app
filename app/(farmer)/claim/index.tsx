@@ -39,7 +39,7 @@ export default function ClaimListScreen() {
             width: "100%",
           }}
         >
-          {/* Sử dụng ảnh cover cho yêu cầu bồi thường */}
+          {/* Sử dụng ảnh cover cho yêu cầu chi trả */}
           <ImageBackground
             source={require("@/assets/images/Cover/Agrisa-Cover-Claim.png")}
             style={{ width: "100%", aspectRatio: 16 / 9 }}
@@ -79,7 +79,7 @@ export default function ClaimListScreen() {
                 color={colors.primary_white_text}
                 ml="$2"
               >
-                Quản lý các đơn yêu cầu bồi thường
+                Quản lý các đơn yêu cầu chi trả
               </Text>
             </Box>
             <Text
@@ -87,7 +87,7 @@ export default function ClaimListScreen() {
               color={colors.primary_white_text}
               lineHeight="$md"
             >
-              Theo dõi và quản lý các yêu cầu bồi thường từ hệ thống giám sát vệ
+              Theo dõi và quản lý các yêu cầu chi trả từ hệ thống giám sát vệ
               tinh tự động phát hiện thiệt hại cây trồng.
             </Text>
           </VStack>
@@ -100,7 +100,7 @@ export default function ClaimListScreen() {
     <VStack flex={1} bg={colors.background}>
       {/* Header */}
       <AgrisaHeader
-        title="Quản lý bồi thường"
+        title="Quản lý chi trả"
         showBackButton={true}
         onBack={() => router.back()}
       />
@@ -112,7 +112,7 @@ export default function ClaimListScreen() {
         isRefreshing={isRefetching}
         onRefresh={refetch}
         headerComponent={<CoverImage />}
-        emptyMessage="Chưa có yêu cầu bồi thường nào"
+        emptyMessage="Chưa có yêu cầu chi trả nào"
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }

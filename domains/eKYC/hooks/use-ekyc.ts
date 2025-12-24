@@ -129,7 +129,7 @@ export const useEkyc = () => {
       resultStatus.showSuccess({
         title: "Xác nhận thành công!",
         message: "Thông tin CCCD đã được cập nhật.",
-        subMessage: "Tiếp tục nhập thông tin ngân hàng để nhận bồi thường.",
+        subMessage: "Tiếp tục nhập thông tin ngân hàng để nhận chi trả.",
         autoRedirectSeconds: 3,
         autoRedirectRoute: "/settings/verify/bank-info",
         showHomeButton: false,

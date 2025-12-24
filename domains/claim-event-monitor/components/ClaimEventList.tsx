@@ -4,7 +4,7 @@ import { Box, Pressable, Text, VStack } from "@gluestack-ui/themed";
 import { FileWarning, Inbox } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Animated, RefreshControl } from "react-native";
-import { ClaimStatus, ClaimStatusTabs } from "../enums/claim-status.enum";
+import { ClaimStatusTabs } from "../enums/claim-status.enum";
 import { ClaimEvent } from "../models/claim-event-data.models";
 import { ClaimEventCard } from "./ClaimEventCard";
 
@@ -39,7 +39,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
   isRefreshing = false,
   isLoading = false,
   headerComponent,
-  emptyMessage = "Chưa có yêu cầu bồi thường nào",
+  emptyMessage = "Chưa có yêu cầu chi trả nào",
   showTabs = true,
   defaultTab = "all",
   onScroll,
@@ -65,15 +65,9 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
     return counts;
   }, [claims]);
 
-
   const EmptyState = () => (
     <Box flex={1} justifyContent="center" alignItems="center" py="$16" px="$4">
-      <Box
-        bg={colors.success}
-        p="$6"
-        borderRadius="$full"
-        mb="$4"
-      >
+      <Box bg={colors.success} p="$6" borderRadius="$full" mb="$4">
         <Inbox size={48} color={colors.primary_white_text} strokeWidth={1.5} />
       </Box>
       <Text
@@ -91,7 +85,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
         textAlign="center"
         lineHeight="$lg"
       >
-        Các yêu cầu bồi thường sẽ được tạo tự động khi điều kiện kích hoạt được
+        Các yêu cầu chi trả sẽ được tạo tự động khi điều kiện kích hoạt được
         phát hiện từ dữ liệu vệ tinh.
       </Text>
     </Box>
@@ -125,11 +119,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
    * Component Tabs - Simple text + count style (giống my-policies.tsx)
    */
   const TabsComponent = () => (
-    <Box
-      borderBottomWidth={1}
-      borderBottomColor={colors.frame_border}
-      pb="$2"
-    >
+    <Box borderBottomWidth={1} borderBottomColor={colors.frame_border} pb="$2">
       <Animated.ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -143,10 +133,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
           const count = countByStatus[tab.value] || 0;
 
           return (
-            <Pressable
-              key={tab.value}
-              onPress={() => setActiveTab(tab.value)}
-            >
+            <Pressable key={tab.value} onPress={() => setActiveTab(tab.value)}>
               {({ pressed }) => (
                 <Box
                   pb="$2"
@@ -157,9 +144,7 @@ export const ClaimEventList: React.FC<ClaimEventListProps> = ({
                   <Text
                     fontSize="$sm"
                     fontWeight={isActive ? "$bold" : "$normal"}
-                    color={
-                      isActive ? colors.primary : colors.secondary_text
-                    }
+                    color={isActive ? colors.primary : colors.secondary_text}
                   >
                     {tab.label} {count > 0 && `(${count})`}
                   </Text>

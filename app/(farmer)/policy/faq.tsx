@@ -51,25 +51,25 @@ export default function FAQScreen() {
       category: "general",
       question: "Bảo hiểm này hoạt động như thế nào?",
       answer:
-        "Bảo hiểm nông nghiệp của chúng tôi sử dụng công nghệ vệ tinh hiện đại để theo dõi tình trạng cây trồng của bạn 24/7.\n\n🛰️ Quy trình hoạt động:\n1. Đăng ký: Bạn cung cấp thông tin nông trại và cây trồng\n2. Giám sát: Hệ thống vệ tinh theo dõi liên tục\n3. Phát hiện: Tự động nhận biết khi có dấu hiệu thiệt hại\n4. Chi trả: Tiền bồi thường được chuyển tự động vào tài khoản\n\n✨ Ưu điểm:\n• Không cần đợi thẩm định viên đến kiểm tra\n• Nhanh chóng, minh bạch\n• Không thể gian lận\n• Dữ liệu khách quan từ vệ tinh",
+        "Bảo hiểm nông nghiệp của chúng tôi sử dụng công nghệ vệ tinh hiện đại để theo dõi tình trạng cây trồng của bạn 24/7.\n\n🛰️ Quy trình hoạt động:\n1. Đăng ký: Bạn cung cấp thông tin nông trại và cây trồng\n2. Giám sát: Hệ thống vệ tinh theo dõi liên tục\n3. Phát hiện: Tự động nhận biết khi có dấu hiệu thiệt hại\n4. Chi trả: Tiền chi trả được chuyển tự động vào tài khoản\n\n✨ Ưu điểm:\n• Không cần đợi thẩm định viên đến kiểm tra\n• Nhanh chóng, minh bạch\n• Không thể gian lận\n• Dữ liệu khách quan từ vệ tinh",
       icon: Shield,
       color: "#10b981",
     },
     {
       id: "payout-calculation",
       category: "general",
-      question: "Số tiền bồi thường được tính như thế nào?",
+      question: "Số tiền chi trả được tính như thế nào?",
       answer:
-        "Số tiền bồi thường phụ thuộc vào gói bảo hiểm bạn chọn và mức độ thiệt hại thực tế.\n\n📊 Các yếu tố ảnh hưởng:\n\n1️⃣ DIỆN TÍCH THIỆT HẠI:\n• Hệ thống vệ tinh xác định chính xác diện tích bị ảnh hưởng\n• Không tính toàn bộ nông trại, chỉ tính phần thiệt hại\n\n2️⃣ MỨC ĐỘ THIỆT HẠI:\n• Thiệt hại nhẹ: Mức bồi thường cơ bản\n• Thiệt hại nặng: Mức bồi thường cao hơn (có thể gấp 1.5-2 lần)\n\n3️⃣ LOẠI GÓI BẢO HIỂM:\n• Mỗi gói có mức bồi thường khác nhau\n• Gói cao cấp thường bồi thường nhiều hơn\n\n💡 Ví dụ minh họa:\n• Nông trại 10 hecta\n• Thiệt hại thực tế: 3 hecta\n• Mức bồi thường: 5 triệu/hecta\n→ Nhận được: 3 × 5 triệu = 15 triệu đồng\n\n⚡ Lưu ý:\n• Tất cả được tính toán TỰ ĐỘNG\n• Minh bạch, có thể kiểm tra trên app",
+        "Số tiền chi trả phụ thuộc vào gói bảo hiểm bạn chọn và mức độ thiệt hại thực tế.\n\n📊 Các yếu tố ảnh hưởng:\n\n1️⃣ DIỆN TÍCH THIỆT HẠI:\n• Hệ thống vệ tinh xác định chính xác diện tích bị ảnh hưởng\n• Không tính toàn bộ nông trại, chỉ tính phần thiệt hại\n\n2️⃣ MỨC ĐỘ THIỆT HẠI:\n• Thiệt hại nhẹ: Mức chi trả cơ bản\n• Thiệt hại nặng: Mức chi trả cao hơn (có thể gấp 1.5-2 lần)\n\n3️⃣ LOẠI GÓI BẢO HIỂM:\n• Mỗi gói có mức chi trả khác nhau\n• Gói cao cấp thường chi trả nhiều hơn\n\n💡 Ví dụ minh họa:\n• Nông trại 10 hecta\n• Thiệt hại thực tế: 3 hecta\n• Mức chi trả: 5 triệu/hecta\n→ Nhận được: 3 × 5 triệu = 15 triệu đồng\n\n⚡ Lưu ý:\n• Tất cả được tính toán TỰ ĐỘNG\n• Minh bạch, có thể kiểm tra trên app",
       icon: TrendingUp,
       color: "#10b981",
     },
     {
       id: "claim-process",
       category: "general",
-      question: "Tôi có cần làm gì để nhận bồi thường không?",
+      question: "Tôi có cần làm gì để nhận chi trả không?",
       answer:
-        "Không! Đây là điểm đặc biệt của bảo hiểm vệ tinh - TỰ ĐỘNG 100%\n\n✨ Quy trình tự động:\n\n1️⃣ HỆ THỐNG PHÁT HIỆN:\n• Vệ tinh theo dõi liên tục\n• Phát hiện thiệt hại tự động\n• Không cần bạn báo cáo\n\n2️⃣ XÁC MINH:\n• Kiểm tra điều kiện kích hoạt\n• Xác nhận mức độ thiệt hại\n• Tính toán số tiền bồi thường\n\n3️⃣ CHI TRẢ:\n• Chuyển tiền trực tiếp vào tài khoản\n• Thường trong 3-5 ngày làm việc\n• Bạn nhận thông báo qua ứng dụng\n\n📱 Bạn chỉ cần:\n• Cập nhật thông tin tài khoản chính xác\n• Theo dõi thông báo trên ứng dụng\n• Nhận tiền!\n\n🎯 Không cần:\n❌ Gọi điện báo thiệt hại\n❌ Chụp ảnh hiện trường\n❌ Viết đơn yêu cầu\n❌ Chờ thẩm định viên\n❌ Nộp chứng từ",
+        "Không! Đây là điểm đặc biệt của bảo hiểm vệ tinh - TỰ ĐỘNG 100%\n\n✨ Quy trình tự động:\n\n1️⃣ HỆ THỐNG PHÁT HIỆN:\n• Vệ tinh theo dõi liên tục\n• Phát hiện thiệt hại tự động\n• Không cần bạn báo cáo\n\n2️⃣ XÁC MINH:\n• Kiểm tra điều kiện kích hoạt\n• Xác nhận mức độ thiệt hại\n• Tính toán số tiền chi trả\n\n3️⃣ CHI TRẢ:\n• Chuyển tiền trực tiếp vào tài khoản\n• Thường trong 3-5 ngày làm việc\n• Bạn nhận thông báo qua ứng dụng\n\n📱 Bạn chỉ cần:\n• Cập nhật thông tin tài khoản chính xác\n• Theo dõi thông báo trên ứng dụng\n• Nhận tiền!\n\n🎯 Không cần:\n❌ Gọi điện báo thiệt hại\n❌ Chụp ảnh hiện trường\n❌ Viết đơn yêu cầu\n❌ Chờ thẩm định viên\n❌ Nộp chứng từ",
       icon: Shield,
       color: "#10b981",
     },
@@ -77,9 +77,9 @@ export default function FAQScreen() {
       id: "contract-coverage-period",
       category: "general",
       question:
-        "Khi nào hợp đồng có hiệu lực và khi nào tôi được nhận bồi thường?",
+        "Khi nào hợp đồng có hiệu lực và khi nào tôi được nhận chi trả?",
       answer:
-        "Hợp đồng bảo hiểm có 2 mốc thời gian quan trọng bạn cần lưu ý:\n\n📅 THỜI GIAN BẮT ĐẦU HỢP ĐỒNG:\n• Tính từ ngày thanh toán thành công\n• Hợp đồng chính thức có hiệu lực\n• Bạn có thể theo dõi dữ liệu vệ tinh ngay lập tức\n• Xem các chỉ số NDVI, NDMI, NDWI của nông trại\n\n⏰ THỜI GIAN BẮT ĐẦU BẢO VỆ (Waiting Period):\n• Thường sau 7-14 ngày kể từ ngày thanh toán\n• Chỉ từ thời điểm này mới được nhận bồi thường\n• Thời gian cụ thể tùy theo loại cây trồng và gói bảo hiểm\n\n🎯 Ví dụ minh họa:\n\n📆 Ngày 1/1: Thanh toán hợp đồng\n→ Hợp đồng có hiệu lực ✅\n→ Bắt đầu theo dõi dữ liệu ✅\n→ CHƯA được bồi thường ❌\n\n📆 Ngày 8/1: Bắt đầu thời gian bảo vệ\n→ Được nhận bồi thường nếu có thiệt hại ✅\n\n💡 Tại sao có thời gian chờ:\n• Tránh trường hợp mua bảo hiểm khi đã biết thiệt hại sắp xảy ra\n• Đảm bảo tính công bằng cho tất cả nông dân\n• Phù hợp với thông lệ quốc tế\n\n✨ Trong thời gian chờ:\n• Hợp đồng vẫn hợp lệ\n• Vẫn được theo dõi dữ liệu vệ tinh\n• Nhận cảnh báo và thông báo\n• Chỉ chưa được chi trả bồi thường\n\n📱 Kiểm tra trên app:\nBạn có thể xem chính xác thời gian bắt đầu bảo vệ trong phần chi tiết hợp đồng của mình.",
+        "Hợp đồng bảo hiểm có 2 mốc thời gian quan trọng bạn cần lưu ý:\n\n📅 THỜI GIAN BẮT ĐẦU HỢP ĐỒNG:\n• Tính từ ngày thanh toán thành công\n• Hợp đồng chính thức có hiệu lực\n• Bạn có thể theo dõi dữ liệu vệ tinh ngay lập tức\n• Xem các chỉ số NDVI, NDMI, NDWI của nông trại\n\n⏰ THỜI GIAN BẮT ĐẦU BẢO VỆ (Waiting Period):\n• Thường sau 7-14 ngày kể từ ngày thanh toán\n• Chỉ từ thời điểm này mới được nhận chi trả\n• Thời gian cụ thể tùy theo loại cây trồng và gói bảo hiểm\n\n🎯 Ví dụ minh họa:\n\n📆 Ngày 1/1: Thanh toán hợp đồng\n→ Hợp đồng có hiệu lực ✅\n→ Bắt đầu theo dõi dữ liệu ✅\n→ CHƯA được chi trả ❌\n\n📆 Ngày 8/1: Bắt đầu thời gian bảo vệ\n→ Được nhận chi trả nếu có thiệt hại ✅\n\n💡 Tại sao có thời gian chờ:\n• Tránh trường hợp mua bảo hiểm khi đã biết thiệt hại sắp xảy ra\n• Đảm bảo tính công bằng cho tất cả nông dân\n• Phù hợp với thông lệ quốc tế\n\n✨ Trong thời gian chờ:\n• Hợp đồng vẫn hợp lệ\n• Vẫn được theo dõi dữ liệu vệ tinh\n• Nhận cảnh báo và thông báo\n• Chỉ chưa được chi trả chi trả\n\n📱 Kiểm tra trên app:\nBạn có thể xem chính xác thời gian bắt đầu bảo vệ trong phần chi tiết hợp đồng của mình.",
       icon: Clock,
       color: "#f59e0b",
     },
@@ -106,7 +106,7 @@ export default function FAQScreen() {
       category: "indices",
       question: "NDMI (Chỉ số độ ẩm) là gì?",
       answer:
-        "NDMI (Normalized Difference Moisture Index) là chỉ số đo độ ẩm của đất và cây trồng thông qua ảnh vệ tinh.\n\n🌱 Giá trị NDMI:\n• 0.4 - 1.0: Độ ẩm tốt, cây khỏe mạnh 💚\n• 0.2 - 0.4: Độ ẩm trung bình, cần theo dõi 💛\n• < 0.2: Thiếu nước nghiêm trọng, nguy cơ hạn hán 💔\n\n💧 Ứng dụng thực tế:\n• Phát hiện sớm hạn hán trước khi cây chết\n• Theo dõi sức khỏe cây trồng\n• Đánh giá nhu cầu tưới tiêu\n• Quyết định thời điểm tưới nước\n\n⚠️ Lưu ý quan trọng:\nNDMI thấp kéo dài có thể dẫn đến thiệt hại cây trồng và kích hoạt bồi thường bảo hiểm tự động.",
+        "NDMI (Normalized Difference Moisture Index) là chỉ số đo độ ẩm của đất và cây trồng thông qua ảnh vệ tinh.\n\n🌱 Giá trị NDMI:\n• 0.4 - 1.0: Độ ẩm tốt, cây khỏe mạnh 💚\n• 0.2 - 0.4: Độ ẩm trung bình, cần theo dõi 💛\n• < 0.2: Thiếu nước nghiêm trọng, nguy cơ hạn hán 💔\n\n💧 Ứng dụng thực tế:\n• Phát hiện sớm hạn hán trước khi cây chết\n• Theo dõi sức khỏe cây trồng\n• Đánh giá nhu cầu tưới tiêu\n• Quyết định thời điểm tưới nước\n\n⚠️ Lưu ý quan trọng:\nNDMI thấp kéo dài có thể dẫn đến thiệt hại cây trồng và kích hoạt chi trả bảo hiểm tự động.",
       icon: Database,
       color: "#3b82f6",
     },
@@ -151,7 +151,7 @@ export default function FAQScreen() {
       category: "technical",
       question: "Trigger (Bộ kích hoạt) là gì?",
       answer:
-        'Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả bồi thường.\n\n🎯 Cách hiểu đơn giản:\nGiống như "công tắc tự động" - khi tất cả điều kiện đều đạt, hệ thống sẽ tự động bật và chi tiền.\n\n📋 Đặc điểm:\n• Mỗi gói bảo hiểm có nhiều trigger\n• Mỗi trigger áp dụng cho giai đoạn khác nhau\n• VD: Trigger cho giai đoạn nảy mầm, trigger cho giai đoạn ra hoa...\n\n✅ Khi nào kích hoạt:\nKhi TẤT CẢ các điều kiện trong trigger được đáp ứng đồng thời, hệ thống sẽ tự động chi trả bồi thường cho bạn.',
+        'Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả chi trả.\n\n🎯 Cách hiểu đơn giản:\nGiống như "công tắc tự động" - khi tất cả điều kiện đều đạt, hệ thống sẽ tự động bật và chi tiền.\n\n📋 Đặc điểm:\n• Mỗi gói bảo hiểm có nhiều trigger\n• Mỗi trigger áp dụng cho giai đoạn khác nhau\n• VD: Trigger cho giai đoạn nảy mầm, trigger cho giai đoạn ra hoa...\n\n✅ Khi nào kích hoạt:\nKhi TẤT CẢ các điều kiện trong trigger được đáp ứng đồng thời, hệ thống sẽ tự động chi trả chi trả cho bạn.',
       icon: Shield,
       color: "#10b981",
     },
@@ -205,7 +205,7 @@ export default function FAQScreen() {
       category: "technical",
       question: "Yêu cầu liên tiếp nghĩa là gì?",
       answer:
-        "Yêu cầu liên tiếp có nghĩa là hiện tượng xấu phải xảy ra LIÊN TỤC không gián đoạn.\n\n📅 Ví dụ 'Không mưa 14 ngày liên tiếp':\n\n❌ KHÔNG ĐẠT:\nNgày 1-6: Không mưa ☀️\nNgày 7: Có mưa 🌧️ ← Gián đoạn\nNgày 8-14: Không mưa ☀️\n→ Đếm lại từ ngày 8\n\n✅ ĐẠT ĐIỀU KIỆN:\nNgày 1-14: Không mưa liên tục ☀️☀️☀️\n→ Đủ 14 ngày, kích hoạt bồi thường\n\n🎯 Tại sao cần liên tiếp:\n• Đảm bảo thiệt hại thực sự nghiêm trọng\n• Tránh kích hoạt nhầm\n• Có 1 ngày mưa = cây có cơ hội phục hồi\n\n💡 Lưu ý:\nKhông phải tất cả điều kiện đều yêu cầu liên tiếp, chỉ một số điều kiện quan trọng.",
+        "Yêu cầu liên tiếp có nghĩa là hiện tượng xấu phải xảy ra LIÊN TỤC không gián đoạn.\n\n📅 Ví dụ 'Không mưa 14 ngày liên tiếp':\n\n❌ KHÔNG ĐẠT:\nNgày 1-6: Không mưa ☀️\nNgày 7: Có mưa 🌧️ ← Gián đoạn\nNgày 8-14: Không mưa ☀️\n→ Đếm lại từ ngày 8\n\n✅ ĐẠT ĐIỀU KIỆN:\nNgày 1-14: Không mưa liên tục ☀️☀️☀️\n→ Đủ 14 ngày, kích hoạt chi trả\n\n🎯 Tại sao cần liên tiếp:\n• Đảm bảo thiệt hại thực sự nghiêm trọng\n• Tránh kích hoạt nhầm\n• Có 1 ngày mưa = cây có cơ hội phục hồi\n\n💡 Lưu ý:\nKhông phải tất cả điều kiện đều yêu cầu liên tiếp, chỉ một số điều kiện quan trọng.",
       icon: TrendingUp,
       color: "#ef4444",
     },
@@ -271,9 +271,7 @@ export default function FAQScreen() {
                     >
                       {({ pressed }) => (
                         <Box
-                          bg={
-                            isSelected ? colors.primary : colors.card_surface
-                          }
+                          bg={isSelected ? colors.primary : colors.card_surface}
                           borderWidth={1}
                           borderColor={
                             isSelected ? colors.primary : colors.frame_border
@@ -346,7 +344,9 @@ export default function FAQScreen() {
                             {/* Icon */}
                             <IconComponent
                               size={20}
-                              color={isExpanded ? faq.color : colors.secondary_text}
+                              color={
+                                isExpanded ? faq.color : colors.secondary_text
+                              }
                               strokeWidth={2}
                             />
 
@@ -406,8 +406,6 @@ export default function FAQScreen() {
               );
             })}
           </VStack>
-
-          
         </VStack>
       </ScrollView>
     </Box>

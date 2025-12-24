@@ -109,8 +109,8 @@ export default function TermsAndPolicyScreen() {
                   hiểm và không chịu trách nhiệm về các quyết định bảo hiểm, bồi
                   thường hay tranh chấp pháp lý. Tất cả các gói bảo hiểm được
                   cung cấp bởi các đối tác bảo hiểm độc lập, và mọi nghĩa vụ
-                  thanh toán, bồi thường đều thuộc trách nhiệm của đối tác bảo
-                  hiểm tương ứng.
+                  thanh toán, chi trả đều thuộc trách nhiệm của đối tác bảo hiểm
+                  tương ứng.
                 </Paragraph>
               </Section>
 
@@ -124,7 +124,7 @@ export default function TermsAndPolicyScreen() {
                     vệ tinh, thời tiết để phục vụ việc theo dõi và đánh giá rủi
                     ro; cung cấp công cụ quản lý và theo dõi hợp đồng bảo hiểm.
                     Agrisa không tham gia vào việc định giá, phê duyệt hay từ
-                    chối các yêu cầu bồi thường.
+                    chối các yêu cầu chi trả.
                   </Paragraph>
                 </SubSection>
 
@@ -134,9 +134,9 @@ export default function TermsAndPolicyScreen() {
                     hoàn toàn về các gói bảo hiểm của mình, bao gồm: thiết kế
                     sản phẩm bảo hiểm và xác định mức phí, điều kiện bảo hiểm;
                     xem xét và quyết định phê duyệt hoặc từ chối hồ sơ đăng ký
-                    bảo hiểm; xử lý và giải quyết các yêu cầu bồi thường; thực
-                    hiện nghĩa vụ thanh toán bồi thường cho nông dân; giải quyết
-                    mọi tranh chấp phát sinh liên quan đến hợp đồng bảo hiểm.
+                    bảo hiểm; xử lý và giải quyết các yêu cầu chi trả; thực hiện
+                    nghĩa vụ thanh toán chi trả cho nông dân; giải quyết mọi
+                    tranh chấp phát sinh liên quan đến hợp đồng bảo hiểm.
                   </Paragraph>
                 </SubSection>
 
@@ -236,7 +236,7 @@ export default function TermsAndPolicyScreen() {
                     nhận được xác nhận thanh toán thành công. Quyền bảo hiểm chỉ
                     bắt đầu có hiệu lực sau một khoảng thời gian chờ đợi bắt
                     buộc kể từ ngày mua. Bất kỳ sự cố nào xảy ra trong thời gian
-                    chờ đợi này đều không được bồi thường.
+                    chờ đợi này đều không được chi trả.
                   </Paragraph>
                 </SubSection>
 
@@ -290,7 +290,7 @@ export default function TermsAndPolicyScreen() {
                     từ các nhà cung cấp độc lập để theo dõi tình trạng trang
                     trại và môi trường canh tác. Dữ liệu này được cập nhật hàng
                     ngày và sử dụng làm cơ sở chính để đánh giá rủi ro và xác
-                    định quyền lợi bồi thường.
+                    định quyền lợi chi trả.
                   </Paragraph>
                 </SubSection>
 
@@ -300,8 +300,8 @@ export default function TermsAndPolicyScreen() {
                     đưa ra các khuyến nghị về rủi ro. Tuy nhiên, các khuyến nghị
                     này chỉ mang tính tham khảo. Quyết định cuối cùng về việc
                     chấp nhận hay từ chối hồ sơ bảo hiểm, cũng như phê duyệt hay
-                    từ chối các yêu cầu bồi thường, hoàn toàn thuộc về đối tác
-                    bảo hiểm.
+                    từ chối các yêu cầu chi trả, hoàn toàn thuộc về đối tác bảo
+                    hiểm.
                   </Paragraph>
                 </SubSection>
 
@@ -310,65 +310,63 @@ export default function TermsAndPolicyScreen() {
                     Nông dân có thể nhận được các thông báo cảnh báo sớm về điều
                     kiện thời tiết bất lợi hoặc nguy cơ rủi ro. Những thông báo
                     này chỉ nhằm mục đích giúp nông dân chuẩn bị và không tự
-                    động dẫn đến việc được bồi thường. Chỉ khi các điều kiện đạt
-                    đến ngưỡng quy định trong hợp đồng, yêu cầu bồi thường mới
-                    được tạo ra.
+                    động dẫn đến việc được chi trả. Chỉ khi các điều kiện đạt
+                    đến ngưỡng quy định trong hợp đồng, yêu cầu chi trả mới được
+                    tạo ra.
                   </Paragraph>
                 </SubSection>
               </Section>
 
               <Section title="8. BỒI THƯỜNG VÀ QUYỀN LỢI">
-                <SubSection title="8.1 Cơ sở xác định bồi thường">
+                <SubSection title="8.1 Cơ sở xác định chi trả">
                   <Paragraph>
-                    Quyền lợi bồi thường được xác định dựa trên dữ liệu khách
-                    quan từ vệ tinh và thời tiết đã được ghi nhận trong hệ
-                    thống, so sánh với các ngưỡng đã được quy định rõ ràng trong
-                    hợp đồng. Công thức tính toán số tiền bồi thường được thiết
-                    lập trước và áp dụng một cách minh bạch cho tất cả các
-                    trường hợp.
+                    Quyền lợi chi trả được xác định dựa trên dữ liệu khách quan
+                    từ vệ tinh và thời tiết đã được ghi nhận trong hệ thống, so
+                    sánh với các ngưỡng đã được quy định rõ ràng trong hợp đồng.
+                    Công thức tính toán số tiền chi trả được thiết lập trước và
+                    áp dụng một cách minh bạch cho tất cả các trường hợp.
                   </Paragraph>
                 </SubSection>
 
-                <SubSection title="8.2 Quy trình xử lý yêu cầu bồi thường">
+                <SubSection title="8.2 Quy trình xử lý yêu cầu chi trả">
                   <Paragraph>
-                    Khi điều kiện kích hoạt bồi thường được phát hiện, hệ thống
-                    sẽ tự động tạo yêu cầu bồi thường và thông báo cho nông dân.
-                    Yêu cầu này sẽ được chuyển đến đối tác bảo hiểm để xem xét
-                    và đưa ra quyết định. Đối tác bảo hiểm có trách nhiệm xử lý
-                    yêu cầu trong thời gian hợp lý. Trong khi chờ đối tác xem
-                    xét, nông dân không thể tạo thêm yêu cầu bồi thường mới cho
-                    cùng hợp đồng đó.
+                    Khi điều kiện kích hoạt chi trả được phát hiện, hệ thống sẽ
+                    tự động tạo yêu cầu chi trả và thông báo cho nông dân. Yêu
+                    cầu này sẽ được chuyển đến đối tác bảo hiểm để xem xét và
+                    đưa ra quyết định. Đối tác bảo hiểm có trách nhiệm xử lý yêu
+                    cầu trong thời gian hợp lý. Trong khi chờ đối tác xem xét,
+                    nông dân không thể tạo thêm yêu cầu chi trả mới cho cùng hợp
+                    đồng đó.
                   </Paragraph>
                 </SubSection>
 
                 <SubSection title="8.3 Phê duyệt và thanh toán">
                   <Paragraph>
-                    Khi đối tác bảo hiểm phê duyệt yêu cầu bồi thường, số tiền
-                    bồi thường sẽ được giải ngân trực tiếp cho nông dân theo
-                    thỏa thuận mức độ dịch vụ. Đối tác bảo hiểm chịu hoàn toàn
-                    trách nhiệm về việc thanh toán này. Sau khi bồi thường được
-                    chi trả, hợp đồng sẽ kết thúc hiệu lực bảo hiểm cho phần
-                    thời gian còn lại, và không thể phát sinh thêm quyền lợi bồi
-                    thường mới.
+                    Khi đối tác bảo hiểm phê duyệt yêu cầu chi trả, số tiền chi
+                    trả sẽ được giải ngân trực tiếp cho nông dân theo thỏa thuận
+                    mức độ dịch vụ. Đối tác bảo hiểm chịu hoàn toàn trách nhiệm
+                    về việc thanh toán này. Sau khi chi trả được chi trả, hợp
+                    đồng sẽ kết thúc hiệu lực bảo hiểm cho phần thời gian còn
+                    lại, và không thể phát sinh thêm quyền lợi bồi thường mới.
                   </Paragraph>
                 </SubSection>
 
-                <SubSection title="8.4 Từ chối yêu cầu bồi thường">
+                <SubSection title="8.4 Từ chối yêu cầu chi trả">
                   <Paragraph>
-                    Đối tác bảo hiểm có quyền từ chối yêu cầu bồi thường nếu xét
+                    Đối tác bảo hiểm có quyền từ chối yêu cầu chi trả nếu xét
                     thấy các điều kiện chưa đủ để thanh toán, ngay cả khi các
                     ngưỡng kỹ thuật đã được đáp ứng. Khi từ chối, đối tác phải
                     cung cấp lý do chi tiết và rõ ràng. Nông dân sẽ nhận được
                     thông báo kèm giải thích. Sau khi bị từ chối, hợp đồng tiếp
-                    tục có hiệu lực và có thể phát sinh yêu cầu bồi thường mới
-                    nếu tình hình xấu đi.
+                    tục có hiệu lực và có thể phát sinh yêu cầu chi trả mới nếu
+                    tình hình xấu đi.
                   </Paragraph>
                 </SubSection>
 
-                <SubSection title="8.5 Giới hạn bồi thường">
+                <SubSection title="8.5 Giới hạn chi trả">
                   <Paragraph>
-                    Mỗi hợp đồng bảo hiểm chỉ được bồi thường một lần duy nhất
-                    trong suốt thời gian hiệu lực. Sau khi nhận được bồi thường,
+                    Mỗi hợp đồng bảo hiểm chỉ được chi trả một lần duy nhất
+                    trong suốt thời gian hiệu lực. Sau khi nhận được chi trả,
                     nông dân muốn tiếp tục được bảo vệ cần đợi đến khi hợp đồng
                     hết hạn tự nhiên để gia hạn hoặc đăng ký hợp đồng mới.
                   </Paragraph>
@@ -380,9 +378,9 @@ export default function TermsAndPolicyScreen() {
                   <Paragraph>
                     Đối tác bảo hiểm có toàn quyền thiết kế sản phẩm, định giá,
                     quyết định chấp nhận hay từ chối hồ sơ, và giải quyết các
-                    yêu cầu bồi thường. Agrisa không can thiệp vào các quyết
-                    định kinh doanh này và không chịu trách nhiệm về hậu quả của
-                    các quyết định đó.
+                    yêu cầu chi trả. Agrisa không can thiệp vào các quyết định
+                    kinh doanh này và không chịu trách nhiệm về hậu quả của các
+                    quyết định đó.
                   </Paragraph>
                 </SubSection>
 
@@ -492,9 +490,9 @@ export default function TermsAndPolicyScreen() {
                 <SubSection title="12.2 Xử lý hợp đồng đang hiệu lực">
                   <Paragraph>
                     Các hợp đồng bảo hiểm đang có hiệu lực sẽ tiếp tục được thực
-                    hiện và bồi thường theo đúng cam kết đến khi hết hạn tự
-                    nhiên. Các đăng ký đã được chấp nhận nhưng chưa thanh toán
-                    sẽ bị hủy và không được hoàn phí.
+                    hiện và chi trả theo đúng cam kết đến khi hết hạn tự nhiên.
+                    Các đăng ký đã được chấp nhận nhưng chưa thanh toán sẽ bị
+                    hủy và không được hoàn phí.
                   </Paragraph>
                 </SubSection>
 

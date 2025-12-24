@@ -4,7 +4,7 @@ import { ConfirmPayoutPayload, Payout } from "../models/payout.model";
 export const payoutService = {
   put: {
     /**
-     * Xác nhận đã nhận tiền bồi thường
+     * Xác nhận đã nhận tiền chi trả
      * @param payoutId - ID của payout (không phải claim_id)
      * @param payload - Thông tin xác nhận từ nông dân
      */
@@ -24,7 +24,9 @@ export const payoutService = {
      * Lấy thông tin payout theo claim ID
      * @param claimId - ID của claim
      */
-    getPayoutByClaimId: async (claimId: string): Promise<ApiResponse<Payout>> => {
+    getPayoutByClaimId: async (
+      claimId: string
+    ): Promise<ApiResponse<Payout>> => {
       return useAxios.get(
         `/policy/protected/api/v2/payouts/read-own/by-claim/${claimId}`
       );

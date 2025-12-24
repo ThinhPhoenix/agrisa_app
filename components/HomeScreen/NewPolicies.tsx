@@ -307,7 +307,7 @@ export const NewPolicies: React.FC<NewPoliciesProps> = ({
                                             fontSize="$xs"
                                             color={colors.muted_text}
                                         >
-                                            Phí bồi thường:
+                                            Phí bảo hiểm:
                                         </Text>
                                         <Text
                                             fontSize="$sm"

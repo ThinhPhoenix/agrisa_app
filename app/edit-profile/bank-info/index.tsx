@@ -2,7 +2,7 @@
  * ============================================
  * 🏦 CHỈNH SỬA THÔNG TIN NGÂN HÀNG
  * ============================================
- * Trang chỉnh sửa thông tin ngân hàng để nhận bồi thường:
+ * Trang chỉnh sửa thông tin ngân hàng để nhận chi trả:
  * - Số tài khoản
  * - Tên chủ tài khoản
  * - Ngân hàng (với logo và combobox)
@@ -406,7 +406,7 @@ export default function BankInfoScreen() {
               Thông tin ngân hàng
             </Text>
             <Text fontSize="$sm" color={colors.secondary_text} mt="$2">
-              Vui lòng cung cấp thông tin tài khoản ngân hàng của bạn. Thông tin này sẽ được sử dụng để chi trả bồi thường bảo hiểm khi có sự cố.
+              Vui lòng cung cấp thông tin tài khoản ngân hàng của bạn. Thông tin này sẽ được sử dụng để chi trả chi trả bảo hiểm khi có sự cố.
             </Text>
           </Box>
 
@@ -464,7 +464,7 @@ export default function BankInfoScreen() {
                   </FormControlError>
                 )}
                 <Text fontSize="$xs" color={colors.secondary_text} mt="$1">
-                  Nhập chính xác số tài khoản để nhận tiền bồi thường
+                  Nhập chính xác số tài khoản để nhận tiền chi trả
                 </Text>
               </FormControl>
 

@@ -580,7 +580,8 @@ const PolicyDocumentSection = ({
             >
               <Clock size={12} color={colors.muted_text} strokeWidth={2} />
               <Text fontSize="$2xs" color={colors.muted_text}>
-                Hợp đồng mẫu sẽ hết hạn vào lúc: {formatExpiryDate(document.presigned_url_expiry)}
+                Hợp đồng mẫu sẽ hết hạn vào lúc:{" "}
+                {formatExpiryDate(document.presigned_url_expiry)}
               </Text>
             </HStack>
           )}
@@ -661,7 +662,7 @@ const CostPayoutGrid = ({
     >
       <VStack space="sm">
         <Text fontSize="$md" fontWeight="$bold" color={colors.success}>
-          Quyền lợi bồi thường
+          Quyền lợi chi trả
         </Text>
         <Divider bg={colors.frame_border} />
 
@@ -676,11 +677,9 @@ const CostPayoutGrid = ({
           </Text>
         </HStack>
 
-        
-
         <HStack justifyContent="space-between" alignItems="center">
           <Text fontSize="$sm" color={colors.secondary_text}>
-            Tỷ lệ bồi thường
+            Tỷ lệ chi trả
           </Text>
           <Text
             fontSize="$md"
@@ -879,7 +878,6 @@ const TimelineCard = ({
             </Text>
           </VStack>
         </HStack>
-       
       </VStack>
 
       <Divider bg={colors.frame_border} />
@@ -921,8 +919,8 @@ const FAQSection = ({
   const faqs = [
     {
       id: "payout-calculation",
-      question: "Tôi sẽ nhận được bao nhiêu tiền bồi thường?",
-      answer: `Số tiền bồi thường phụ thuộc vào mức độ rủi ro:\n\n📌 MỨC CƠ BẢN (Điều kiện thường):\n${Utils.formatCurrency(policy.fix_payout_amount)}${policy.is_payout_per_hectare ? " / hecta rủi ro" : " (tổng số tiền)"}\n• Áp dụng khi đạt điều kiện kích hoạt bình thường\n• Đây là mức bồi thường tiêu chuẩn\n\n🔥 MỨC TỐI ĐA (Vượt ngưỡng nghiêm trọng):\n${Utils.formatCurrency(policy.payout_cap)}${policy.is_payout_per_hectare ? " / hecta rủi ro" : " (tổng số tiền)"}\n• Áp dụng khi rủi ro VỰA đạt điều kiện bình thường VỪA vượt ngưỡng nghiêm trọng\n• Công thức: ${Utils.formatCurrency(policy.fix_payout_amount)} × ${policy.over_threshold_multiplier} = ${Utils.formatCurrency(policy.payout_cap)}\n\n💡 Ví dụ thực tế:\n• Nếu ruộng lúa của bạn ${policy.is_payout_per_hectare ? "5 hecta" : ""} bị hạn hán nhẹ → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.fix_payout_amount * 5) : Utils.formatCurrency(policy.fix_payout_amount)}\n• Nếu ${policy.is_payout_per_hectare ? "cùng diện tích" : "ruộng"} bị hạn hán nặng (vượt ngưỡng) → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.payout_cap * 5) : Utils.formatCurrency(policy.payout_cap)}\n\n⚡ Lưu ý:\n${policy.is_payout_per_hectare ? "• Số tiền cuối cùng = Mức bồi thường × Diện tích rủi ro thực tế\n" : ""}• Bồi thường được chi trả TỰ ĐỘNG khi hệ thống phát hiện rủi ro qua vệ tinh\n• Không cần nộp đơn yêu cầu hay chờ thẩm định`,
+      question: "Tôi sẽ nhận được bao nhiêu tiền chi trả?",
+      answer: `Số tiền chi trả phụ thuộc vào mức độ rủi ro:\n\n📌 MỨC CƠ BẢN (Điều kiện thường):\n${Utils.formatCurrency(policy.fix_payout_amount)}${policy.is_payout_per_hectare ? " / hecta rủi ro" : " (tổng số tiền)"}\n• Áp dụng khi đạt điều kiện kích hoạt bình thường\n• Đây là mức chi trả tiêu chuẩn\n\n🔥 MỨC TỐI ĐA (Vượt ngưỡng nghiêm trọng):\n${Utils.formatCurrency(policy.payout_cap)}${policy.is_payout_per_hectare ? " / hecta rủi ro" : " (tổng số tiền)"}\n• Áp dụng khi rủi ro VỰA đạt điều kiện bình thường VỪA vượt ngưỡng nghiêm trọng\n• Công thức: ${Utils.formatCurrency(policy.fix_payout_amount)} × ${policy.over_threshold_multiplier} = ${Utils.formatCurrency(policy.payout_cap)}\n\n💡 Ví dụ thực tế:\n• Nếu ruộng lúa của bạn ${policy.is_payout_per_hectare ? "5 hecta" : ""} bị hạn hán nhẹ → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.fix_payout_amount * 5) : Utils.formatCurrency(policy.fix_payout_amount)}\n• Nếu ${policy.is_payout_per_hectare ? "cùng diện tích" : "ruộng"} bị hạn hán nặng (vượt ngưỡng) → Nhận ${policy.is_payout_per_hectare ? Utils.formatCurrency(policy.payout_cap * 5) : Utils.formatCurrency(policy.payout_cap)}\n\n⚡ Lưu ý:\n${policy.is_payout_per_hectare ? "• Số tiền cuối cùng = Mức chi trả × Diện tích rủi ro thực tế\n" : ""}• Bồi thường được chi trả TỰ ĐỘNG khi hệ thống phát hiện rủi ro qua vệ tinh\n• Không cần nộp đơn yêu cầu hay chờ thẩm định`,
       icon: TrendingUp,
       color: colors.success,
     },
@@ -970,7 +968,7 @@ const FAQSection = ({
       id: "trigger",
       question: "Trigger (Bộ kích hoạt) là gì?",
       answer:
-        "Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả. Mỗi gói bảo hiểm có thể có nhiều trigger áp dụng cho các giai đoạn khác nhau của cây trồng. Khi tất cả điều kiện trong trigger được đáp ứng, hệ thống sẽ tự động kích hoạt chi trả bồi thường.",
+        "Trigger là tập hợp các điều kiện cần thiết để bảo hiểm tự động chi trả. Mỗi gói bảo hiểm có thể có nhiều trigger áp dụng cho các giai đoạn khác nhau của cây trồng. Khi tất cả điều kiện trong trigger được đáp ứng, hệ thống sẽ tự động kích hoạt chi trả chi trả.",
       icon: Shield,
       color: colors.success,
     },
@@ -1212,7 +1210,7 @@ const TechnicalInfoCard = ({
             Chương trình bảo hiểm này sử dụng {metadata.data_source_count} nguồn
             dữ liệu vệ tinh và cảm biến để giám sát {metadata.total_conditions}{" "}
             điều kiện khác nhau. Hệ thống tự động phát hiện rủi ro và chi trả
-            bồi thường.
+            chi trả.
           </Text>
         </HStack>
       </Box>
@@ -1527,7 +1525,7 @@ export const ConditionItem = ({
                   fontWeight="$medium"
                   color={colors.secondary_text}
                 >
-                  Điều kiện kích hoạt bồi thường
+                  Điều kiện kích hoạt chi trả
                 </Text>
                 <Box
                   bg={colors.errorSoft}

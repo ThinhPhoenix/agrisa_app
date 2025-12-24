@@ -72,9 +72,12 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Memoize callback để tránh re-render liên tục
-  const handleDocumentTagsChange = useCallback((values: Record<string, any>) => {
-    setDocumentTagsData(values);
-  }, [setDocumentTagsData]);
+  const handleDocumentTagsChange = useCallback(
+    (values: Record<string, any>) => {
+      setDocumentTagsData(values);
+    },
+    [setDocumentTagsData]
+  );
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -369,9 +372,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
 
                   <VStack space="sm">
                     <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$md">
-                        Diện tích nông trại của bạn
-                      </Text>
+                      <Text fontSize="$md">Diện tích nông trại của bạn</Text>
                       <Text
                         fontSize="$md"
                         fontWeight="$semibold"
@@ -382,9 +383,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     </HStack>
 
                     <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$md">
-                        Thời hạn gói bảo hiểm
-                      </Text>
+                      <Text fontSize="$md">Thời hạn gói bảo hiểm</Text>
                       <Text
                         fontSize="$md"
                         fontWeight="$semibold"
@@ -395,9 +394,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     </HStack>
 
                     <HStack justifyContent="space-between" alignItems="center">
-                      <Text fontSize="$md">
-                        Số tiền dự kiến bồi thường từ
-                      </Text>
+                      <Text fontSize="$md">Số tiền dự kiến chi trả từ</Text>
                       <Text
                         fontSize="$md"
                         fontWeight="$bold"
@@ -409,7 +406,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
 
                     {base_policy.is_payout_per_hectare && (
                       <Text fontSize="$xs" color={colors.secondary_text} italic>
-                        Dựa trên mức phí bồi thường cơ bản từ{" "}
+                        Dựa trên mức phí chi trả cơ bản từ{" "}
                         {Utils.formatCurrency(base_policy.fix_payout_amount)}/
                         {base_policy.is_payout_per_hectare ? "ha" : ""}{" "}
                       </Text>
@@ -426,7 +423,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                   borderColor={colors.frame_border}
                 >
                   <HStack space="sm" alignItems="center" mb="$3">
-                    <Box  p="$2" borderRadius="$md">
+                    <Box p="$2" borderRadius="$md">
                       <Wallet size={18} color={colors.warning} />
                     </Box>
                     <Text
@@ -442,9 +439,7 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                     {/* Phí bảo hiểm cơ bản */}
                     <HStack justifyContent="space-between" alignItems="center">
                       <VStack flex={1}>
-                        <Text fontSize="$md">
-                          Phí thanh toán cơ bản
-                        </Text>
+                        <Text fontSize="$md">Phí thanh toán cơ bản</Text>
                         {base_policy.is_per_hectare ? (
                           <Text fontSize="$md" color={colors.secondary_text}>
                             {Utils.formatCurrency(
@@ -477,7 +472,6 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                         <Text fontSize="$xs" color={colors.muted_text}>
                           Hệ số phí BH
                         </Text>
-                        
                       </VStack>
                       <Text
                         fontSize="$sm"
@@ -500,7 +494,6 @@ export const RegisterPolicyForm: React.FC<RegisterPolicyFormProps> = ({
                         >
                           Tổng thanh toán phí
                         </Text>
-                        
                       </VStack>
                       <Text
                         fontSize="$lg"

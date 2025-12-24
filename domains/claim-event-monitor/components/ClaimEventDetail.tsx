@@ -25,6 +25,7 @@ import {
 import {
   AlertCircle,
   AlertTriangle,
+  Banknote,
   Building2,
   Calendar,
   CheckCircle2,
@@ -208,6 +209,9 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
   const statusDisplay = getClaimStatusDisplay(claim.status);
   const StatusIcon = statusDisplay.icon;
+  const partnerDecisionNormalized = (
+    (claim.partner_decision || "") as string
+  ).toString().toLowerCase();
 
   const formatAmount = (amount: number): string => {
     return (
@@ -231,10 +235,10 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
     }
 
     // Kiểm tra payout status phải là "paid" mới cho phép xác nhận
-    if (payout.status !== "paid") {
+    if (payout.status !== "completed") {
       Alert.alert(
         "Chưa thể xác nhận",
-        "Tiền bồi thường đang được xử lý. Vui lòng chờ đến khi đối tác hoàn tất chi trả.",
+        "Tiền chi trả đang được xử lý. Vui lòng chờ đến khi đối tác hoàn tất chi trả.",
         [{ text: "Đã hiểu" }]
       );
       return;
@@ -251,7 +255,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
     Alert.alert(
       "Xác nhận nhận tiền",
-      "Bạn xác nhận đã nhận được tiền bồi thường từ đối tác bảo hiểm. Hành động này không thể hoàn tác.",
+      "Bạn xác nhận đã nhận được tiền chi trả từ đối tác bảo hiểm. Hành động này không thể hoàn tác.",
       [
         { text: "Hủy", style: "cancel" },
         {
@@ -295,22 +299,6 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
       ]
     );
   };
-
-  // Component đánh giá sao
-  const StarRating = () => (
-    <HStack space="sm" justifyContent="center">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Pressable key={star} onPress={() => setRating(star)} p="$1">
-          <Star
-            size={32}
-            color={star <= rating ? colors.warning : colors.muted_text}
-            fill={star <= rating ? colors.warning : "transparent"}
-            strokeWidth={1.5}
-          />
-        </Pressable>
-      ))}
-    </HStack>
-  );
 
   const ConditionCard = ({
     condition,
@@ -422,12 +410,27 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
             </VStack>
           </HStack>
 
-          <HStack space="xs" alignItems="center">
-            <Calendar size={12} color={colors.secondary_text} strokeWidth={2} />
-            <Text fontSize="$2xs" color={colors.secondary_text}>
-              Thời điểm đo: {Utils.formatDateTimeForMS(condition.timestamp)}
-            </Text>
-          </HStack>
+          <VStack space="xs">
+            <HStack space="xs" alignItems="center">
+              <Calendar size={12} color={colors.secondary_text} strokeWidth={2} />
+              <Text fontSize="$2xs" color={colors.secondary_text}>
+                Thời điểm đo:
+              </Text>
+              <Text fontSize="$2xs" color={colors.primary_text} fontWeight="$semibold">
+                {Utils.formatDateTimeForMS(condition.timestamp)}
+              </Text>
+            </HStack>
+
+            <HStack space="xs" alignItems="center">
+              <Clock size={12} color={colors.secondary_text} strokeWidth={2} />
+              <Text fontSize="$2xs" color={colors.secondary_text}>
+                Thời điểm kích hoạt sự kiện bảo hiểm:
+              </Text>
+              <Text fontSize="$2xs" color={colors.primary_text} fontWeight="$semibold">
+                {Utils.formatDateTimeForMS(claim.evidence_summary.triggered_at)}
+              </Text>
+            </HStack>
+          </VStack>
         </VStack>
       </Box>
     );
@@ -812,94 +815,6 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
         ) : null}
 
         {/* ========== ĐIỀU KIỆN CHI TRẢ TỰ ĐỘNG (từ base policy) ========== */}
-        {triggers && triggers.length > 0 && (
-          <VStack space="md">
-            <HStack space="sm" alignItems="center">
-              <Box
-                bg={colors.primary}
-                borderRadius="$md"
-                p="$2"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <AlertCircle
-                  size={20}
-                  color={colors.primary_white_text}
-                  strokeWidth={2.5}
-                />
-              </Box>
-              <Text
-                fontSize="$lg"
-                fontWeight="$bold"
-                color={colors.primary_text}
-              >
-                Điều kiện chi trả tự động
-              </Text>
-            </HStack>
-
-            <VStack space="sm">
-              {triggers.map((trigger: any, idx: number) => (
-                <Box
-                  key={trigger.id || idx}
-                  bg={colors.card_surface}
-                  borderRadius="$lg"
-                  p="$3"
-                  mb="$2"
-                  borderWidth={1}
-                  borderColor={colors.frame_border}
-                >
-                  <VStack space="sm">
-                    <Text
-                      fontSize="$md"
-                      fontWeight="$semibold"
-                      color={colors.primary_text}
-                    >
-                      {trigger.name || `Trigger ${idx + 1}`}
-                    </Text>
-
-                    {(trigger.conditions || []).map(
-                      (cond: any, cidx: number) => {
-                        const param =
-                          cond.parameter ||
-                          cond.parameter_name ||
-                          cond.name ||
-                          "-";
-                        const op =
-                          cond.comparator ||
-                          cond.operator ||
-                          cond.comparison ||
-                          cond.logical_operator ||
-                          "";
-                        const val =
-                          cond.threshold || cond.value || cond.target || "";
-                        const unit = cond.unit || "";
-                        return (
-                          <HStack
-                            key={cidx}
-                            justifyContent="space-between"
-                            alignItems="center"
-                          >
-                            <Text fontSize="$sm" color={colors.secondary_text}>
-                              {param}
-                              {unit ? ` (${unit})` : ""}
-                            </Text>
-                            <Text
-                              fontSize="$sm"
-                              color={colors.primary_text}
-                              fontWeight="$semibold"
-                            >
-                              {op} {val}
-                            </Text>
-                          </HStack>
-                        );
-                      }
-                    )}
-                  </VStack>
-                </Box>
-              ))}
-            </VStack>
-          </VStack>
-        )}
 
         {/* NÔNG TRẠI */}
         {farmLoading ? (
@@ -1042,13 +957,13 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
         >
           <VStack space="md">
             <HStack alignItems="center" space="sm" justifyContent="center">
-              <DollarSign size={16} color={colors.primary} strokeWidth={2} />
+              <Banknote size={16} color={colors.primary} strokeWidth={2} />
               <Text
                 fontSize="$lg"
                 fontWeight="$bold"
                 color={colors.primary_text}
               >
-                Chi tiết bồi thường
+                Chi tiết chi trả
               </Text>
             </HStack>
 
@@ -1063,7 +978,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
             >
               <VStack alignItems="center" space="xs">
                 <Text fontSize="$xs" color={colors.secondary_text}>
-                  Số tiền bồi thường
+                  Số tiền chi trả
                 </Text>
                 <Text
                   fontSize="$3xl"
@@ -1078,7 +993,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
             <VStack space="sm">
               <HStack justifyContent="space-between" alignItems="center">
                 <Text fontSize="$sm" color={colors.secondary_text}>
-                  Mức bồi thường cố định
+                  Mức chi trả cố định
                 </Text>
                 <Text
                   fontSize="$sm"
@@ -1091,7 +1006,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
               <HStack justifyContent="space-between" alignItems="center">
                 <Text fontSize="$sm" color={colors.secondary_text}>
-                  Tỷ lệ bồi thường theo ngưỡng
+                  Tỷ lệ chi trả theo ngưỡng
                 </Text>
                 <Text
                   fontSize="$sm"
@@ -1442,11 +1357,18 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                           ? colors.error
                           : colors.primary_text
                     }
-                    textTransform="capitalize"
                   >
-                    {claim.partner_decision
-                      ? claim.partner_decision
-                      : "Chưa cập nhật"}
+                    {partnerDecisionNormalized === "approved" ||
+                    partnerDecisionNormalized === "accept"
+                      ? "Chấp nhận"
+                      : partnerDecisionNormalized === "rejected" ||
+                        partnerDecisionNormalized === "reject"
+                        ? "Từ chối"
+                        : partnerDecisionNormalized.includes("chấp")
+                        ? "Chấp nhận"
+                        : partnerDecisionNormalized.includes("từ")
+                        ? "Từ chối"
+                        : "Chưa cập nhật"}
                   </Text>
                 </VStack>
               </Box>
@@ -1511,7 +1433,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                   fontWeight="$bold"
                   color={colors.primary_text}
                 >
-                  Xác nhận nhận bồi thường
+                  Xác nhận nhận chi trả
                 </Text>
               </HStack>
 
@@ -1760,7 +1682,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                           fontWeight="$semibold"
                           color={colors.success}
                         >
-                          Đã bồi thường
+                          Đã chi trả
                         </Text>
                       </Box>
                     </HStack>
@@ -1801,33 +1723,6 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                       </VStack>
                     </HStack>
                   </Box>
-
-                  {/* Đánh giá sao */}
-                  <VStack space="sm">
-                    <Text
-                      fontSize="$sm"
-                      fontWeight="$semibold"
-                      color={colors.primary_text}
-                      textAlign="center"
-                    >
-                      Đánh giá trải nghiệm của bạn{" "}
-                      <Text color={colors.error}>*</Text>
-                    </Text>
-                    <StarRating />
-                    {rating > 0 && (
-                      <Text
-                        fontSize="$xs"
-                        color={colors.success}
-                        textAlign="center"
-                      >
-                        {rating === 1 && "Rất không hài lòng"}
-                        {rating === 2 && "Không hài lòng"}
-                        {rating === 3 && "Bình thường"}
-                        {rating === 4 && "Hài lòng"}
-                        {rating === 5 && "Rất hài lòng"}
-                      </Text>
-                    )}
-                  </VStack>
 
                   {/* Textarea phản hồi */}
                   <VStack space="xs">
@@ -1876,7 +1771,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                           color={colors.primary_white_text}
                           fontWeight="$bold"
                         >
-                          Xác nhận đã nhận tiền bồi thường
+                          Xác nhận đã nhận tiền chi trả
                         </ButtonText>
                       </HStack>
                     )}

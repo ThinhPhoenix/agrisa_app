@@ -13,7 +13,7 @@ export enum RegisteredPolicyStatus {
   PENDING_REVIEW = "pending_review", // Chờ xét duyệt/thẩm định
   PENDING_PAYMENT = "pending_payment", // Chờ thanh toán (đã duyệt)
   ACTIVE = "active", // Đang hoạt động
-  PAYOUT = "payout", // Đang chi trả bồi thường
+  PAYOUT = "payout", // Đã chi trả
   EXPIRED = "expired", // Hết hạn
   PENDING_CANCEL = "pending_cancel", // Chờ xử lý hủy
   CANCELLED = "cancelled", // Đã hủy

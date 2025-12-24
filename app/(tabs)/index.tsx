@@ -1,6 +1,7 @@
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useUserInfo } from "@/domains/auth/hooks/use-user-info";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
+import { useStats } from "@/domains/shared/hooks/use-stats";
 import { useBottomInsets } from "@/domains/shared/hooks/useBottomInsets";
 import {
     DancingScript_400Regular,
@@ -54,15 +55,20 @@ export default function HomeScreen() {
         filterData.current.providerId,
         filterData.current.cropType
     );
+    const { refetch: refetchStats } = useStats();
     const [refreshing, setRefreshing] = React.useState(false);
     const bottomPadding = useBottomInsets();
 
     // Handle pull to refresh
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
-        await refetch();
-        setRefreshing(false);
-    }, [refetch]);
+        try {
+            // Thực hiện cả 2 refetch song song để tối ưu thời gian
+            await Promise.all([refetch(), refetchStats()]);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [refetch, refetchStats]);
 
     const { fullName, email } = useUserInfo();
 

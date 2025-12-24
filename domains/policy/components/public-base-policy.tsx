@@ -819,7 +819,7 @@ const PolicyCard = ({
                                         textTransform="uppercase"
                                         letterSpacing={0.5}
                                     >
-                                        Phí bồi thường
+                                        Phí bảo hiểm
                                     </Text>
                                 </HStack>
                                 <Text

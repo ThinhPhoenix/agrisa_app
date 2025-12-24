@@ -7,7 +7,7 @@ export type PayoutStatus = "processing" | "completed" | "failed" | "cancelled";
 
 /**
  * Model cho một payout record
- * Thông tin về việc chi trả tiền bồi thường
+ * Thông tin về việc chi trả tiền chi trả
  */
 export type Payout = {
   id: string;
@@ -24,7 +24,7 @@ export type Payout = {
 };
 
 /**
- * Payload cho API xác nhận nhận tiền bồi thường
+ * Payload cho API xác nhận nhận tiền chi trả
  * Gửi lên server với payout_id
  */
 export type ConfirmPayoutPayload = {

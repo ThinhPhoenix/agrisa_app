@@ -275,7 +275,7 @@ const MeComponentUI: React.FC = () => {
       type: "input",
       placeholder: "VD: 28083101117776",
       required: false,
-      helperText: "Số tài khoản để nhận bồi thường bảo hiểm",
+      helperText: "Số tài khoản để nhận chi trả bảo hiểm",
     },
     {
       name: "account_name",

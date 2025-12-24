@@ -215,46 +215,47 @@ export const usePolicy = () => {
           apiMessage ===
           "Failed to register policy: farm already registered to this base policy"
         ) {
-          errorMessage = "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
+          errorMessage =
+            "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
         }
-          
-          if (
-            apiMessage
-              .toLowerCase()
-              .includes("enrollment date validation failed") ||
-            apiMessage.toLowerCase().includes("enrollment dates are required")
-          ) {
-            errorMessage =
-              "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác.";
-          } else if (
-            apiMessage.toLowerCase().includes("farm already registered")
-          ) {
-            errorTitle = "Trang trại đã được bảo hiểm";
-            errorMessage =
-              "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
-          } else if (
-            apiMessage.toLowerCase().includes("base policy is not active") ||
-            apiMessage.toLowerCase().includes("base policy is invalid")
-          ) {
-            errorTitle = "Gói bảo hiểm không khả dụng";
-            errorMessage =
-              "Gói bảo hiểm này hiện không còn hoạt động. Vui lòng chọn gói khác.";
-          } else if (
-            apiMessage.toLowerCase().includes("database") ||
-            apiMessage.toLowerCase().includes("transaction")
-          ) {
-            errorMessage =
-              "Không thể lưu thông tin đăng ký. Vui lòng thử lại sau.";
-          } else if (
-            apiMessage.toLowerCase().includes("document") ||
-            apiMessage.toLowerCase().includes("signed")
-          ) {
-            errorMessage =
-              "Không thể tạo hợp đồng bảo hiểm. Vui lòng thử lại sau.";
-          } else {
-            errorMessage =
-              "Không thể hoàn tất đăng ký bảo hiểm. Vui lòng kiểm tra lại thông tin và thử lại.";
-          }
+
+        if (
+          apiMessage
+            .toLowerCase()
+            .includes("enrollment date validation failed") ||
+          apiMessage.toLowerCase().includes("enrollment dates are required")
+        ) {
+          errorMessage =
+            "Đã hết hạn đăng ký cho sản phẩm bảo hiểm này. Vui lòng chọn sản phẩm khác.";
+        } else if (
+          apiMessage.toLowerCase().includes("farm already registered")
+        ) {
+          errorTitle = "Trang trại đã được bảo hiểm";
+          errorMessage =
+            "Trang trại này đã được đăng ký bảo hiểm cho gói này. Vui lòng chọn nông trại khác.";
+        } else if (
+          apiMessage.toLowerCase().includes("base policy is not active") ||
+          apiMessage.toLowerCase().includes("base policy is invalid")
+        ) {
+          errorTitle = "Gói bảo hiểm không khả dụng";
+          errorMessage =
+            "Gói bảo hiểm này hiện không còn hoạt động. Vui lòng chọn gói khác.";
+        } else if (
+          apiMessage.toLowerCase().includes("database") ||
+          apiMessage.toLowerCase().includes("transaction")
+        ) {
+          errorMessage =
+            "Không thể lưu thông tin đăng ký. Vui lòng thử lại sau.";
+        } else if (
+          apiMessage.toLowerCase().includes("document") ||
+          apiMessage.toLowerCase().includes("signed")
+        ) {
+          errorMessage =
+            "Không thể tạo hợp đồng bảo hiểm. Vui lòng thử lại sau.";
+        } else {
+          errorMessage =
+            "Không thể hoàn tất đăng ký bảo hiểm. Vui lòng kiểm tra lại thông tin và thử lại.";
+        }
       } else if (
         apiMessage.toLowerCase().includes("insufficient balance") ||
         apiMessage.toLowerCase().includes("payment required")
@@ -490,7 +491,7 @@ export const usePolicy = () => {
           ? "Tranh chấp đã được giải quyết và chấp nhận yêu cầu hủy hợp đồng."
           : "Tranh chấp đã được giải quyết và từ chối yêu cầu hủy hợp đồng.",
         subMessage: isApproved
-          ? "Hợp đồng sẽ được xử lý hủy và thanh toán bồi thường."
+          ? "Hợp đồng sẽ được xử lý hủy và thanh toán chi trả."
           : "Hợp đồng sẽ tiếp tục có hiệu lực như bình thường.",
         autoRedirectSeconds: 3,
         autoRedirectRoute: "/(tabs)",

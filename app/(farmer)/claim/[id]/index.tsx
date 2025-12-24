@@ -79,7 +79,7 @@ export default function ClaimDetailScreen() {
         mt="$2"
         lineHeight="$lg"
       >
-        Đã xảy ra lỗi khi tải thông tin yêu cầu bồi thường. Vui lòng thử lại sau.
+        Đã xảy ra lỗi khi tải thông tin yêu cầu chi trả. Vui lòng thử lại sau.
       </Text>
     </VStack>
   );
@@ -146,7 +146,7 @@ export default function ClaimDetailScreen() {
     <VStack flex={1} bg={colors.background}>
       {/* Header */}
       <AgrisaHeader
-        title="Chi tiết yêu cầu bồi thường"
+        title="Chi tiết yêu cầu chi trả"
         showBackButton={true}
         onBack={() => router.back()}
       />

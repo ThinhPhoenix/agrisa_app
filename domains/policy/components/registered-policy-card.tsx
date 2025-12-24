@@ -41,10 +41,10 @@ export const RegisteredPolicyCard: React.FC<RegisteredPolicyCardProps> = ({
         switch (policy.status) {
             case "payout":
                 return {
-                    label: "Đã chi trả",
-                    color: colors.info,
-                    bgColor: colors.infoSoft,
-                    icon: CheckCircle2,
+                  label: "Đã chi trả",
+                  color: colors.info,
+                  bgColor: colors.infoSoft,
+                  icon: CheckCircle2,
                 };
 
             case "pending_cancel":

@@ -2,6 +2,7 @@ import { FullscreenImageViewer } from "@/components/image-viewer";
 import FarmBoundaryMap from "@/components/map/FarmBoundaryMap";
 import { useAgrisaColors } from "@/domains/agrisa_theme/hooks/useAgrisaColor";
 import { useAuthStore } from "@/domains/auth/stores/auth.store";
+import { useClaim } from "@/domains/claim-event-monitor/hooks/use-claim";
 import { RiskAnalysisDisplay } from "@/domains/farm-data-monitor/components/RiskAnalysisDisplay";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
@@ -15,6 +16,7 @@ import {
   CheckboxIcon,
   CheckboxIndicator,
   CheckboxLabel,
+  Divider,
   HStack,
   Pressable,
   ScrollView,
@@ -136,7 +138,9 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
 
   const farm = farmData?.success ? farmData.data : null;
 
-  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
+  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(
+    new Set()
+  );
 
   const toggleTrigger = (triggerId: string) => {
     setExpandedTriggers((prev) => {
@@ -157,7 +161,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
     switch (policy.status) {
       case "payout":
         return {
-          label: "Đang chi trả bồi thường",
+          label: "Đã chi trả",
           color: colors.info,
           icon: CheckCircle2,
           bgColor: colors.infoSoft,
@@ -292,6 +296,25 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
   const statusDisplay = getPolicyStatusDisplay();
   const StatusIcon = statusDisplay.icon;
 
+  // Claims: lấy danh sách claims liên quan tới policy này và toàn bộ claims
+  const { getClaimsByRegisteredPolicy, getAllClaimData } = useClaim();
+  const { data: claimsByPolicyData, isLoading: claimsByPolicyLoading } =
+    getClaimsByRegisteredPolicy(policy.id);
+  const { data: allClaimsData, isLoading: allClaimsLoading } =
+    getAllClaimData();
+
+  const claimsByPolicy = claimsByPolicyData?.success
+    ? claimsByPolicyData.data?.claims || []
+    : [];
+  const allClaims = allClaimsData?.success
+    ? allClaimsData.data?.claims || []
+    : [];
+
+  // Tìm claim khớp giữa danh sách trả về theo registered policy và toàn bộ claims
+  const matchedClaim = claimsByPolicy.find((c: any) =>
+    allClaims.some((ac: any) => ac.claim_number === c.claim_number)
+  );
+
   // Kiểm tra xem có cần hiển thị payment section không
   // Chỉ hiển thị khi status = "pending_payment" VÀ underwriting_status = "approved"
   const showPaymentSection =
@@ -405,7 +428,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
 
     setShowDisputeModal(false);
   };
-  
 
   // Handler cho việc revoke cancel request
   const handleRevokeRequest = () => {
@@ -1108,6 +1130,67 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                 </VStack>
               </HStack>
             </VStack>
+
+            {/* Nếu trạng thái là PAYOUT - hiển thị nút xem yêu cầu chi trả nếu có claim khớp */}
+            {policy.status === "payout" && (
+              <Box mt="$2" width="100%">
+                <Divider />
+                <Text
+                  fontSize="$sm"
+                  color={colors.secondary_text}
+                  textAlign="center"
+                  my="$2"
+                >
+                  Đã có yêu cầu chi trả
+                </Text>
+
+                <Pressable
+                  onPress={() =>
+                    router.push(`/(farmer)/claim/${matchedClaim.id}`)
+                  }
+                >
+                  <Box
+                    borderRadius="$xl"
+                    p="$4"
+                    bg={colors.infoSoft}
+                    borderWidth={1}
+                    borderColor={colors.info}
+                  >
+                    <HStack
+                      space="sm"
+                      alignItems="center"
+                      justifyContent="center"
+                    >
+                      <View
+                        size={20}
+                        color={colors.primary_text}
+                        strokeWidth={2}
+                      />
+                      <Text
+                        fontSize="$md"
+                        fontWeight="$bold"
+                        color={colors.primary_text}
+                      >
+                        Xem chi tiết yêu cầu chi trả
+                      </Text>
+                    </HStack>
+                  </Box>
+                </Pressable>
+
+                {!claimsByPolicyLoading &&
+                  !allClaimsLoading &&
+                  !matchedClaim && (
+                    <Text
+                      mt="$2"
+                      fontSize="$xs"
+                      color={colors.muted_text}
+                      textAlign="center"
+                    >
+                      Không tìm thấy yêu cầu chi trả khớp
+                    </Text>
+                  )}
+              </Box>
+            )}
           </VStack>
         </Box>
 
@@ -1116,7 +1199,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
           basePolicyData.data?.triggers?.length > 0 && (
             <VStack space="md">
               <HStack space="sm" alignItems="center">
-                
                 <Text
                   fontSize="$lg"
                   fontWeight="$bold"
@@ -1127,16 +1209,18 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
               </HStack>
 
               <VStack space="sm">
-                {basePolicyData.data.triggers.map((trigger: any, idx: number) => (
-                  <TriggerCard
-                    key={trigger.id || idx}
-                    trigger={trigger}
-                    index={idx}
-                    isExpanded={expandedTriggers.has(trigger.id)}
-                    onToggle={() => toggleTrigger(trigger.id)}
-                    colors={colors}
-                  />
-                ))}
+                {basePolicyData.data.triggers.map(
+                  (trigger: any, idx: number) => (
+                    <TriggerCard
+                      key={trigger.id || idx}
+                      trigger={trigger}
+                      index={idx}
+                      isExpanded={expandedTriggers.has(trigger.id)}
+                      onToggle={() => toggleTrigger(trigger.id)}
+                      colors={colors}
+                    />
+                  )
+                )}
               </VStack>
             </VStack>
           )}
@@ -1561,7 +1645,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                     </Text>
                   </HStack>
 
-                  {/* Số tiền dự kiến bồi thường - Chỉ hiển thị khi không phải người tạo */}
+                  {/* Số tiền dự kiến chi trả - Chỉ hiển thị khi không phải người tạo */}
                   {!isRequestedByUser && cancelRequest.compensate_amount && (
                     <>
                       <Box height={1} bg={colors.frame_border} width="100%" />
@@ -1869,7 +1953,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                           </>
                         )}
 
-                      {/* Thông tin thanh toán bồi thường - Hiển thị khi đã được chấp nhận */}
+                      {/* Thông tin thanh toán chi trả - Hiển thị khi đã được chấp nhận */}
                       {cancelRequest.status === "approved" && (
                         <>
                           <Box

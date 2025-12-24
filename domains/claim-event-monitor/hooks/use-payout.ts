@@ -18,7 +18,7 @@ export const usePayout = () => {
   };
 
   /**
-   * Mutation để xác nhận đã nhận tiền bồi thường
+   * Mutation để xác nhận đã nhận tiền chi trả
    * Sử dụng payout_id thay vì claim_id
    */
   const useConfirmPayout = () => {

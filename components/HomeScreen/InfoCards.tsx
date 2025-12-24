@@ -26,7 +26,7 @@ export default function InfoCards() {
   const { getTotalByType } = usePayment();
   const [moneyVisible, setMoneyVisible] = useState(false);
 
-  // Lấy tổng số tiền bồi thường (payout)
+  // Lấy tổng số tiền chi trả (payout)
   const { data: payoutData, isLoading: isLoadingPayout } = getTotalByType(
     "policy_payout_payment"
   );
@@ -39,7 +39,7 @@ export default function InfoCards() {
       icon: Banknote,
       iconColor: colors.primary,
       iconBgColor: `${colors.primary}15`,
-      label: "Tiền bồi thường",
+      label: "Tiền chi trả",
       value: (
         <View className="flex-row items-center gap-2">
           {isLoadingPayout ? (

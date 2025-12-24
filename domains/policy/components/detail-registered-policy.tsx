@@ -45,10 +45,10 @@ import {
   XCircle,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import { TriggerCard, ConditionItem } from "./detail-base-policy";
 import { Image, Linking, RefreshControl } from "react-native";
 import { UnderwritingStatus } from "../enums/policy-status.enum";
 import { CancelRequestStatus, RegisteredPolicy } from "../models/policy.models";
+import { TriggerCard } from "./detail-base-policy";
 import { ResolveDisputeModal } from "./resolve-dispute-modal";
 import { ReviewCancelRequestModal } from "./review-cancel-request-modal";
 import { RevokeConfirmationModal } from "./revoke-confirmation-modal";

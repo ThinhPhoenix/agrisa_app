@@ -5,6 +5,7 @@ import { useDataSource } from "@/domains/farm-data-monitor/hooks/use-data-source
 import { getParameterLabel } from "@/domains/farm-data-monitor/utils/parameterUtils";
 import { useFarm } from "@/domains/farm/hooks/use-farm";
 import { useInsurancePartner } from "@/domains/insurance-partner/hooks/use-insurance-partner";
+import { TriggerCard } from "@/domains/policy/components/detail-base-policy";
 import { usePolicy } from "@/domains/policy/hooks/use-policy";
 import { Utils } from "@/libs/utils/utils";
 import {
@@ -49,7 +50,6 @@ import {
   ClaimEvidenceCondition,
 } from "../models/claim-event-data.models";
 import { ConfirmPayoutPayload } from "../models/payout.model";
-import { TriggerCard, ConditionItem } from "@/domains/policy/components/detail-base-policy";
 
 interface ClaimEventDetailProps {
   claim: ClaimEvent;
@@ -79,8 +79,10 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
     claim.id
   );
   const payout = payoutData?.success ? payoutData.data : null;
-  
-  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(new Set());
+
+  const [expandedTriggers, setExpandedTriggers] = useState<Set<string>>(
+    new Set()
+  );
 
   const toggleTrigger = (triggerId: string) => {
     setExpandedTriggers((prev) => {
@@ -1299,11 +1301,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
               </Text>
             </HStack>
 
-            
-
             <Box height={1} bg={colors.frame_border} width="100%" />
-
-           
 
             <VStack space="sm">
               {relatedTrigger && (

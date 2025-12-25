@@ -309,6 +309,7 @@ export interface UnderwritingDataResponse {
 export type CancelRequestType =
   | "contract_violation"
   | "policyholder_request"
+  | "transfer_contract"
   | "other";
 
 /**

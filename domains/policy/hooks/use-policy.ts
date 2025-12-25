@@ -314,7 +314,7 @@ export const usePolicy = () => {
       // Hiển thị Result Status Screen với success
       resultStatus.showSuccess({
         title: "Gửi yêu cầu thành công!",
-        message: "Yêu cầu hủy hợp đồng của bạn đã được gửi đi.",
+        message: "Yêu cầu của bạn đã được gửi đi.",
         subMessage:
           "Chúng tôi sẽ xem xét và phản hồi trong vòng 3-5 ngày làm việc.",
         autoRedirectSeconds: 5,
@@ -485,13 +485,13 @@ export const usePolicy = () => {
       // Hiển thị Result Status Screen với success
       resultStatus.showSuccess({
         title: isApproved
-          ? "Đã chấp nhận giải quyết tranh chấp"
-          : "Đã từ chối giải quyết tranh chấp",
+          ? "Đã chấp nhận huỷ hợp đồng"
+          : "Đã từ chối huỷ hợp đồng",
         message: isApproved
           ? "Tranh chấp đã được giải quyết và chấp nhận yêu cầu hủy hợp đồng."
           : "Tranh chấp đã được giải quyết và từ chối yêu cầu hủy hợp đồng.",
         subMessage: isApproved
-          ? "Hợp đồng sẽ được xử lý hủy và thanh toán chi trả."
+          ? "Hợp đồng sẽ được xử lý huỷ và thanh toán chi trả."
           : "Hợp đồng sẽ tiếp tục có hiệu lực như bình thường.",
         autoRedirectSeconds: 3,
         autoRedirectRoute: "/(tabs)",

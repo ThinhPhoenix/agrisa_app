@@ -56,20 +56,27 @@ export const ResolveDisputeModal: React.FC<ResolveDisputeModalProps> = ({
       <ModalBackdrop />
       <ModalContent bg={colors.card_surface} maxWidth="$full" mx="$4">
         {/* Header */}
-        <ModalHeader 
-          borderBottomWidth={1} 
+        <ModalHeader
+          borderBottomWidth={1}
           borderColor={colors.frame_border}
           pb="$3"
         >
           <VStack space="xs" width="100%">
             <HStack space="sm" alignItems="center">
-              <AlertTriangle size={20} color={colors.warning} strokeWidth={2.5} />
-              <Text fontSize="$md" fontWeight="$bold" color={colors.primary_text} flex={1}>
-                Giải quyết tranh chấp
+              <AlertTriangle
+                size={20}
+                color={colors.warning}
+                strokeWidth={2.5}
+              />
+              <Text
+                fontSize="$md"
+                fontWeight="$bold"
+                color={colors.primary_text}
+                flex={1}
+              >
+                Chi tiết giải quyết
               </Text>
             </HStack>
-            
-            
           </VStack>
         </ModalHeader>
 
@@ -79,23 +86,34 @@ export const ResolveDisputeModal: React.FC<ResolveDisputeModalProps> = ({
             {/* Textarea */}
             <VStack space="xs">
               <HStack space="xs" alignItems="center">
-                <Text fontSize="$sm" fontWeight="$semibold" color={colors.primary_text}>
+                <Text
+                  fontSize="$sm"
+                  fontWeight="$semibold"
+                  color={colors.primary_text}
+                >
                   Ghi chú giải quyết
                 </Text>
-                <Text fontSize="$xs" color={colors.error}>*</Text>
+                <Text fontSize="$xs" color={colors.error}>
+                  *
+                </Text>
               </HStack>
               <Textarea
                 size="md"
                 borderRadius="$lg"
                 borderWidth={1}
-                borderColor={reviewNotes.trim() ? (isApproving ? colors.success : colors.error) : colors.frame_border}
+                borderColor={
+                  reviewNotes.trim()
+                    ? isApproving
+                      ? colors.success
+                      : colors.error
+                    : colors.frame_border
+                }
                 bg={colors.background}
                 minHeight={120}
               >
                 <TextareaInput
-                  placeholder={isApproving 
-                    ? "Nhập lý do chấp nhận giải quyết tranh chấp..." 
-                    : "Nhập lý do từ chối tranh chấp..."
+                  placeholder={
+                    isApproving ? "Nhập lý do chấp nhận" : "Nhập lý do từ chối"
                   }
                   value={reviewNotes}
                   onChangeText={setReviewNotes}
@@ -104,17 +122,13 @@ export const ResolveDisputeModal: React.FC<ResolveDisputeModalProps> = ({
                   multiline
                 />
               </Textarea>
-              
-              <Text fontSize="$2xs" color={colors.secondary_text}>
-                Ghi chú này sẽ được ghi lại trong hệ thống và có thể được các bên liên quan xem.
-              </Text>
             </VStack>
           </VStack>
         </ModalBody>
 
         {/* Footer */}
-        <ModalFooter 
-          borderTopWidth={1} 
+        <ModalFooter
+          borderTopWidth={1}
           borderColor={colors.frame_border}
           pt="$3"
           pb="$4"
@@ -129,7 +143,11 @@ export const ResolveDisputeModal: React.FC<ResolveDisputeModalProps> = ({
               isDisabled={isLoading}
               bg={colors.background}
             >
-              <Text color={colors.secondary_text} fontWeight="$semibold" fontSize="$sm">
+              <Text
+                color={colors.secondary_text}
+                fontWeight="$semibold"
+                fontSize="$sm"
+              >
                 Hủy bỏ
               </Text>
             </Button>
@@ -144,19 +162,35 @@ export const ResolveDisputeModal: React.FC<ResolveDisputeModalProps> = ({
               {isLoading ? (
                 <HStack space="xs" alignItems="center">
                   <Spinner size="small" color={colors.primary_white_text} />
-                  <Text color={colors.primary_white_text} fontWeight="$bold" fontSize="$sm">
+                  <Text
+                    color={colors.primary_white_text}
+                    fontWeight="$bold"
+                    fontSize="$sm"
+                  >
                     Đang xử lý...
                   </Text>
                 </HStack>
               ) : (
                 <HStack space="xs" alignItems="center">
                   {isApproving ? (
-                    <CheckCircle2 size={16} color={colors.primary_white_text} strokeWidth={2.5} />
+                    <CheckCircle2
+                      size={16}
+                      color={colors.primary_white_text}
+                      strokeWidth={2.5}
+                    />
                   ) : (
-                    <XCircle size={16} color={colors.primary_white_text} strokeWidth={2.5} />
+                    <XCircle
+                      size={16}
+                      color={colors.primary_white_text}
+                      strokeWidth={2.5}
+                    />
                   )}
-                  <Text color={colors.primary_white_text} fontWeight="$bold" fontSize="$sm">
-                    {isApproving ? "Chấp nhận giải quyết" : "Từ chối giải quyết"}
+                  <Text
+                    color={colors.primary_white_text}
+                    fontWeight="$bold"
+                    fontSize="$sm"
+                  >
+                    {isApproving ? "Chấp nhận huỷ hợp đồng" : "Từ chối huỷ hợp đồng"}
                   </Text>
                 </HStack>
               )}

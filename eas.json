@@ -10,7 +10,8 @@
             "env": {
                 "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
                 "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY",
+                "EXPO_PUBLIC_VN2000_API_URL": "$EXPO_PUBLIC_VN2000_API_URL"
             }
         },
         "preview": {
@@ -18,7 +19,8 @@
             "env": {
                 "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
                 "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY",
+                "EXPO_PUBLIC_VN2000_API_URL": "$EXPO_PUBLIC_VN2000_API_URL"
             }
         },
         "production": {
@@ -26,7 +28,8 @@
             "env": {
                 "EXPO_PUBLIC_API_URL": "$EXPO_PUBLIC_API_URL",
                 "EXPO_PUBLIC_GEMINI_KEY": "$EXPO_PUBLIC_GEMINI_KEY",
-                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY"
+                "EXPO_PUBLIC_OPENMAPVN_KEY": "$EXPO_PUBLIC_OPENMAPVN_KEY",
+                "EXPO_PUBLIC_VN2000_API_URL": "$EXPO_PUBLIC_VN2000_API_URL"
             }
         }
     },

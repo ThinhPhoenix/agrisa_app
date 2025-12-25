@@ -37,10 +37,14 @@ export const usePolicy = () => {
     });
   };
 
-  const useGetTransferablePolicies = () => {
+  const useGetTransferablePolicies = (registered_policy_id: string) => {
     return useQuery({
-      queryKey: [QueryKey.POLICY.GET_TRANSFERABLE_POLICIES],
-      queryFn: () => policyServices.get.get_transferable_policies(),
+      queryKey: [
+        QueryKey.POLICY.GET_TRANSFERABLE_POLICIES,
+        registered_policy_id,
+      ],
+      queryFn: () =>
+        policyServices.get.get_transferable_policies(registered_policy_id),
     });
   };
   const getCancelRequests = useGetCancelRequests;
@@ -404,11 +408,11 @@ export const usePolicy = () => {
       // Hiển thị Result Status Screen với success
       resultStatus.showSuccess({
         title: isApproved
-          ? "Đã chấp nhận yêu cầu hủy"
-          : "Đã từ chối yêu cầu hủy",
+          ? "Đã chấp nhận yêu cầu"
+          : "Đã từ chối yêu cầu",
         message: isApproved
-          ? "Yêu cầu hủy hợp đồng đã được chấp nhận thành công."
-          : "Yêu cầu hủy hợp đồng đã bị từ chối.",
+          ? "Yêu cầu đối với hợp đồng đã được chấp nhận thành công."
+          : "Yêu cầu đối với hợp đồng đã bị từ chối.",
         subMessage: isApproved
           ? "Hợp đồng sẽ được xử lý hủy trong thời gian sớm nhất."
           : "Nông dân sẽ được thông báo về quyết định này.",
@@ -418,6 +422,7 @@ export const usePolicy = () => {
         lockNavigation: false,
       });
     },
+
     onError: (error: any) => {
       console.error("❌ Error reviewing cancel request:", error);
 

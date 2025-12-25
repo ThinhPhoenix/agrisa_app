@@ -125,7 +125,7 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
 
   // Lấy thông tin transferable (yêu cầu chuyển nhượng) nếu có
   const { data: transferableData, isLoading: transferableLoading } =
-    useGetTransferablePolicies();
+    useGetTransferablePolicies(policy.id);
 
   // Map các transferable items về cùng mô hình CancelRequest (loại = transfer_contract)
   const transferAsCancelRequests: CancelRequest[] = useMemo(() => {
@@ -136,53 +136,47 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
         ? payload
         : (payload.claims ?? payload.policies ?? payload.items ?? []);
 
-      return list
-        .filter(
-          (t: any) =>
-            t.registered_policy_id === policy.id ||
-            t.registeredPolicyId === policy.id ||
-            t.registeredPolicyID === policy.id
-        )
-        .map((t: any) => {
-          const registered_policy_id =
-            t.registered_policy_id ||
-            t.registeredPolicyId ||
-            t.registeredPolicyID ||
-            policy.id;
-          const id =
-            t.id ||
-            t.transfer_id ||
-            t.request_id ||
-            `${registered_policy_id}_transfer`;
-          return {
-            id,
-            registered_policy_id,
-            cancel_request_type: "transfer_contract" as CancelRequestType,
-            reason: t.reason || t.transfer_reason || t.note || "",
-            evidence: {
-              description: t.evidence?.description || t.description || "",
-              images: t.evidence?.images || t.images || [],
-            },
-            status: (t.status as CancelRequestStatus) || "pending_review",
-            requested_by: t.requested_by || t.requestor || t.requestedBy || "",
-            requested_at:
-              t.requested_at || t.created_at || new Date().toISOString(),
-            compensate_amount: t.compensate_amount || t.amount || 0,
-            paid: t.paid || false,
-            paid_at: t.paid_at || null,
-            during_notice_period: t.during_notice_period || false,
-            reviewed_by: t.reviewed_by || null,
-            reviewed_at: t.reviewed_at || null,
-            review_notes: t.review_notes || null,
-            created_at: t.created_at || new Date().toISOString(),
-            updated_at: t.updated_at || new Date().toISOString(),
-          } as CancelRequest;
-        });
+      // Không cần filter theo registered_policy_id nữa vì API đã trả về theo params id
+      return list.map((t: any) => {
+        const registered_policy_id =
+          t.registered_policy_id ||
+          t.registeredPolicyId ||
+          t.registeredPolicyID ||
+          policy.id;
+        const id =
+          t.id ||
+          t.transfer_id ||
+          t.request_id ||
+          `${registered_policy_id}_transfer`;
+        return {
+          id,
+          registered_policy_id,
+          cancel_request_type: "transfer_contract" as CancelRequestType,
+          reason: t.reason || t.transfer_reason || t.note || "",
+          evidence: {
+            description: t.evidence?.description || t.description || "",
+            images: t.evidence?.images || t.images || [],
+          },
+          status: (t.status as CancelRequestStatus) || "pending_review",
+          requested_by: t.requested_by || t.requestor || t.requestedBy || "",
+          requested_at:
+            t.requested_at || t.created_at || new Date().toISOString(),
+          compensate_amount: t.compensate_amount || t.amount || 0,
+          paid: t.paid || false,
+          paid_at: t.paid_at || null,
+          during_notice_period: t.during_notice_period || false,
+          reviewed_by: t.reviewed_by || null,
+          reviewed_at: t.reviewed_at || null,
+          review_notes: t.review_notes || null,
+          created_at: t.created_at || new Date().toISOString(),
+          updated_at: t.updated_at || new Date().toISOString(),
+        } as CancelRequest;
+      });
     } catch (e) {
       console.warn("Error parsing transferable policies:", e);
       return [];
     }
-  }, [transferableData, policy.id]);
+  }, [transferableData]);
 
   // Lấy thông tin người tạo yêu cầu chuyển nhượng của item đầu tiên (nếu cần hiển thị)
   const transferRequestedById = transferAsCancelRequests.length
@@ -1780,35 +1774,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                           </Text>
                         </HStack>
 
-                        {tr.compensate_amount ? (
-                          <>
-                            <Box
-                              height={1}
-                              bg={colors.frame_border}
-                              width="100%"
-                            />
-                            <HStack
-                              justifyContent="space-between"
-                              alignItems="center"
-                            >
-                              <Text
-                                fontSize="$sm"
-                                color={colors.secondary_text}
-                                fontWeight="$medium"
-                              >
-                                Số tiền dự kiến hoàn trả
-                              </Text>
-                              <Text
-                                fontSize="$md"
-                                fontWeight="$bold"
-                                color={colors.error}
-                              >
-                                {Utils.formatCurrency(tr.compensate_amount)}
-                              </Text>
-                            </HStack>
-                          </>
-                        ) : null}
-
                         <Box height={1} bg={colors.frame_border} width="100%" />
 
                         <VStack space="xs">
@@ -1823,148 +1788,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                             {tr.reason}
                           </Text>
                         </VStack>
-
-                        {tr.evidence && (
-                          <>
-                            <Box
-                              height={1}
-                              bg={colors.frame_border}
-                              width="100%"
-                            />
-                            <VStack space="md">
-                              <Text
-                                fontSize="$sm"
-                                color={colors.secondary_text}
-                                fontWeight="$medium"
-                              >
-                                Bằng chứng
-                              </Text>
-                              <Text
-                                fontSize="$sm"
-                                color={colors.primary_text}
-                                lineHeight="$md"
-                              >
-                                {tr.evidence.description}
-                              </Text>
-
-                              {tr.evidence.images &&
-                                tr.evidence.images.length > 0 && (
-                                  <VStack space="md">
-                                    <HStack space="xs" alignItems="center">
-                                      <ImageIcon
-                                        size={16}
-                                        color={colors.primary}
-                                        strokeWidth={2}
-                                      />
-                                      <Text
-                                        fontSize="$sm"
-                                        fontWeight="$semibold"
-                                        color={colors.primary_text}
-                                      >
-                                        {tr.evidence.images.length} ảnh bằng
-                                        chứng
-                                      </Text>
-                                    </HStack>
-
-                                    <VStack space="md">
-                                      {tr.evidence.images.map((img, index) => (
-                                        <Box
-                                          key={index}
-                                          bg={colors.background}
-                                          borderRadius="$lg"
-                                          overflow="hidden"
-                                          borderWidth={1}
-                                          borderColor={colors.frame_border}
-                                        >
-                                          <VStack space="xs">
-                                            {img.comment && (
-                                              <Box
-                                                bg={colors.card_surface}
-                                                p="$3"
-                                              >
-                                                <Text
-                                                  fontSize="$xs"
-                                                  color={colors.secondary_text}
-                                                  fontWeight="$medium"
-                                                >
-                                                  {img.comment}
-                                                </Text>
-                                              </Box>
-                                            )}
-                                            <Pressable
-                                              onPress={() => {
-                                                const urls =
-                                                  tr.evidence.images.map(
-                                                    (i) => i.url
-                                                  );
-                                                setImageUrls(urls);
-                                                setSelectedImageIndex(index);
-                                              }}
-                                            >
-                                              <Box position="relative">
-                                                <Image
-                                                  source={{ uri: img.url }}
-                                                  style={{
-                                                    width: "100%",
-                                                    height: 250,
-                                                  }}
-                                                  resizeMode="cover"
-                                                  alt={
-                                                    img.comment ||
-                                                    `Evidence ${index + 1}`
-                                                  }
-                                                />
-                                                <Box
-                                                  position="absolute"
-                                                  top="$2"
-                                                  right="$2"
-                                                  bg={colors.card_surface}
-                                                  p="$1.5"
-                                                  borderRadius="$md"
-                                                  opacity={0.9}
-                                                >
-                                                  <HStack
-                                                    space="xs"
-                                                    alignItems="center"
-                                                  >
-                                                    <ImageIcon
-                                                      size={12}
-                                                      color={colors.primary}
-                                                      strokeWidth={2}
-                                                    />
-                                                    <Text
-                                                      fontSize="$2xs"
-                                                      color={colors.primary}
-                                                      fontWeight="$semibold"
-                                                    >
-                                                      Nhấn để xem
-                                                    </Text>
-                                                  </HStack>
-                                                </Box>
-                                              </Box>
-                                            </Pressable>
-                                            <Box
-                                              bg={colors.card_surface}
-                                              px="$3"
-                                              py="$2"
-                                            >
-                                              <Text
-                                                fontSize="$2xs"
-                                                color={colors.muted_text}
-                                              >
-                                                Ảnh {index + 1}/
-                                                {tr.evidence.images.length}
-                                              </Text>
-                                            </Box>
-                                          </VStack>
-                                        </Box>
-                                      ))}
-                                    </VStack>
-                                  </VStack>
-                                )}
-                            </VStack>
-                          </>
-                        )}
 
                         <Box height={1} bg={colors.frame_border} width="100%" />
 
@@ -2079,104 +1902,6 @@ export const DetailRegisteredPolicy: React.FC<DetailRegisteredPolicyProps> = ({
                                       {tr.review_notes}
                                     </Text>
                                   </Box>
-                                </VStack>
-                              </>
-                            )}
-
-                            {tr.status === "approved" && (
-                              <>
-                                <Box
-                                  height={1}
-                                  bg={colors.frame_border}
-                                  width="100%"
-                                />
-                                <VStack space="sm">
-                                  <HStack
-                                    justifyContent="space-between"
-                                    alignItems="center"
-                                  >
-                                    <Text
-                                      fontSize="$sm"
-                                      color={colors.secondary_text}
-                                    >
-                                      Số tiền hoàn trả
-                                    </Text>
-                                    <Text
-                                      fontSize="$md"
-                                      fontWeight="$bold"
-                                      color={colors.success}
-                                    >
-                                      {Utils.formatCurrency(
-                                        tr.compensate_amount
-                                      )}
-                                    </Text>
-                                  </HStack>
-                                  <HStack
-                                    justifyContent="space-between"
-                                    alignItems="center"
-                                  >
-                                    <Text
-                                      fontSize="$sm"
-                                      color={colors.secondary_text}
-                                    >
-                                      Trạng thái thanh toán
-                                    </Text>
-                                    <HStack space="xs" alignItems="center">
-                                      {tr.paid ? (
-                                        <>
-                                          <CheckCircle2
-                                            size={14}
-                                            color={colors.success}
-                                            strokeWidth={2}
-                                          />
-                                          <Text
-                                            fontSize="$sm"
-                                            fontWeight="$semibold"
-                                            color={colors.success}
-                                          >
-                                            Đã thanh toán
-                                          </Text>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Clock
-                                            size={14}
-                                            color={colors.warning}
-                                            strokeWidth={2}
-                                          />
-                                          <Text
-                                            fontSize="$sm"
-                                            fontWeight="$semibold"
-                                            color={colors.warning}
-                                          >
-                                            Chờ thanh toán
-                                          </Text>
-                                        </>
-                                      )}
-                                    </HStack>
-                                  </HStack>
-                                  {tr.paid && tr.paid_at && (
-                                    <HStack
-                                      justifyContent="space-between"
-                                      alignItems="center"
-                                    >
-                                      <Text
-                                        fontSize="$sm"
-                                        color={colors.secondary_text}
-                                      >
-                                        Ngày thanh toán
-                                      </Text>
-                                      <Text
-                                        fontSize="$sm"
-                                        fontWeight="$semibold"
-                                        color={colors.primary_text}
-                                      >
-                                        {Utils.formatStringVietnameseDateTime(
-                                          tr.paid_at
-                                        )}
-                                      </Text>
-                                    </HStack>
-                                  )}
                                 </VStack>
                               </>
                             )}

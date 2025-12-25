@@ -87,11 +87,11 @@ export const policyServices = {
         `/policy/protected/api/v2/cancel_request/read-own/me`
       );
     },
-    get_transferable_policies: async (): Promise<
+    get_transferable_policies: async (registered_policy_id: string): Promise<
       ApiResponse<RegisteredPoliciesResponse>
       > => {
       return useAxios.get(
-        `/policy/protected/api/v2/cancel_request/read-own/transfer`
+        `/policy/protected/api/v2/cancel_request/read-own/transfer?policy_id=${registered_policy_id}`
       );
     },
   },

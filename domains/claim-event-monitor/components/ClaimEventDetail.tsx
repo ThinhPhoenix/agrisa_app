@@ -121,15 +121,36 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
     : null;
   const triggers = basePolicyData?.success ? basePolicyData.data?.triggers : [];
 
-  // Tìm trigger condition liên quan
+  // Tìm trigger liên quan theo trigger id
   const relatedTrigger = triggers?.find(
     (t: any) => t.id === claim.base_policy_trigger_id
   );
 
-  // Lấy condition đầu tiên từ trigger để lấy data_source_id và unit
-  const relatedCondition = relatedTrigger?.conditions?.[0];
+  // So khớp condition giữa claim và base policy trigger:
+  // Duyệt mảng condition trong claim.evidence_summary.conditions
+  // và tìm điều kiện tương ứng trong relatedTrigger.conditions theo id.
+  const relatedCondition = (() => {
+    if (
+      !relatedTrigger?.conditions ||
+      !Array.isArray(relatedTrigger.conditions)
+    )
+      return undefined;
+    const claimConds = claim.evidence_summary?.conditions || [];
+    if (Array.isArray(claimConds) && claimConds.length > 0) {
+      const claimIds = new Set(
+        claimConds.map((c: any) => c.condition_id ?? c.id).filter(Boolean)
+      );
+      const found = relatedTrigger.conditions.find((bc: any) =>
+        claimIds.has(bc.id ?? bc.condition_id)
+      );
+      if (found) return found;
+    }
 
-  // Lấy thông tin data source để có unit
+    // Fallback: nếu không tìm thấy match, trả về condition đầu tiên (như trước)
+    return relatedTrigger.conditions[0];
+  })();
+
+  // Lấy thông tin data source tương ứng với condition đã tìm được
   const { data: dataSourceData } = getDataSourceByID(
     relatedCondition?.data_source_id || ""
   );
@@ -149,14 +170,36 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
       "gci",
       "msavi",
     ];
-    if (!unit || unit === "index") return "";
-    if (paramName && indexParams.includes(paramName.toLowerCase())) return "";
-    return ` ${unit}`;
+
+    const unitLower = (unit || "").toLowerCase();
+    const paramLower = (paramName || "").toLowerCase();
+
+    // Nếu parameter là rainfall mà unit không được cung cấp, hiển thị mm
+    if (!unit && paramLower === "rainfall") return " mm";
+
+    // Các chỉ số (index) không hiển thị unit
+    if (unitLower === "index") return "";
+    if (paramName && indexParams.includes(paramLower)) return "";
+
+    // Hiển thị đúng ký hiệu cho mm và phần trăm
+    if (unitLower === "mm") return " mm";
+    if (
+      unitLower === "%" ||
+      unitLower === "percent" ||
+      unitLower === "percent%"
+    )
+      return " %";
+
+    return unit ? ` ${unit}` : "";
   };
 
   // Lấy thông tin insurance partner
   const { data: partnerData, isLoading: partnerLoading } =
     getInsurancePartnerDetail(registeredPolicy?.insurance_provider_id || "");
+
+  // Lấy thông tin người xét duyệt (convert id -> partner info nếu là partner)
+  const { data: reviewerPartnerData, isLoading: reviewerPartnerLoading } =
+    getInsurancePartnerDetail(claim.reviewed_by || "");
 
   const getClaimStatusDisplay = (status: string) => {
     switch (status) {
@@ -207,9 +250,9 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
   const statusDisplay = getClaimStatusDisplay(claim.status);
   const StatusIcon = statusDisplay.icon;
-  const partnerDecisionNormalized = (
-    (claim.partner_decision || "") as string
-  ).toString().toLowerCase();
+  const partnerDecisionNormalized = ((claim.partner_decision || "") as string)
+    .toString()
+    .toLowerCase();
 
   const formatAmount = (amount: number): string => {
     return (
@@ -410,11 +453,19 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
           <VStack space="xs">
             <HStack space="xs" alignItems="center">
-              <Calendar size={12} color={colors.secondary_text} strokeWidth={2} />
+              <Calendar
+                size={12}
+                color={colors.secondary_text}
+                strokeWidth={2}
+              />
               <Text fontSize="$2xs" color={colors.secondary_text}>
                 Thời điểm đo:
               </Text>
-              <Text fontSize="$2xs" color={colors.primary_text} fontWeight="$semibold">
+              <Text
+                fontSize="$2xs"
+                color={colors.primary_text}
+                fontWeight="$semibold"
+              >
                 {Utils.formatDateTimeForMS(condition.timestamp)}
               </Text>
             </HStack>
@@ -424,7 +475,11 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
               <Text fontSize="$2xs" color={colors.secondary_text}>
                 Thời điểm kích hoạt sự kiện bảo hiểm:
               </Text>
-              <Text fontSize="$2xs" color={colors.primary_text} fontWeight="$semibold">
+              <Text
+                fontSize="$2xs"
+                color={colors.primary_text}
+                fontWeight="$semibold"
+              >
                 {Utils.formatDateTimeForMS(claim.evidence_summary.triggered_at)}
               </Text>
             </HStack>
@@ -1004,7 +1059,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
 
               <HStack justifyContent="space-between" alignItems="center">
                 <Text fontSize="$sm" color={colors.secondary_text}>
-                  Tỷ lệ chi trả theo ngưỡng
+                  Giá trị chi trả theo ngưỡng
                 </Text>
                 <Text
                   fontSize="$sm"
@@ -1360,13 +1415,13 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     partnerDecisionNormalized === "accept"
                       ? "Chấp nhận"
                       : partnerDecisionNormalized === "rejected" ||
-                        partnerDecisionNormalized === "reject"
+                          partnerDecisionNormalized === "reject"
                         ? "Từ chối"
                         : partnerDecisionNormalized.includes("chấp")
-                        ? "Chấp nhận"
-                        : partnerDecisionNormalized.includes("từ")
-                        ? "Từ chối"
-                        : "Chưa cập nhật"}
+                          ? "Chấp nhận"
+                          : partnerDecisionNormalized.includes("từ")
+                            ? "Từ chối"
+                            : "Chưa cập nhật"}
                   </Text>
                 </VStack>
               </Box>
@@ -1405,7 +1460,11 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     fontWeight="$semibold"
                     color={colors.primary_text}
                   >
-                    {claim.reviewed_by ? claim.reviewed_by : "Chưa cập nhật"}
+                    {reviewerPartnerData?.success && reviewerPartnerData.data?.partner_display_name
+                      ? reviewerPartnerData.data.partner_display_name
+                      : claim.reviewed_by
+                      ? claim.reviewed_by
+                      : "Chưa cập nhật"}
                   </Text>
                 </HStack>
               </HStack>

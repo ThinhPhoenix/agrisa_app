@@ -1460,11 +1460,12 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     fontWeight="$semibold"
                     color={colors.primary_text}
                   >
-                    {reviewerPartnerData?.success && reviewerPartnerData.data?.partner_display_name
+                    {reviewerPartnerData?.success &&
+                    reviewerPartnerData.data?.partner_display_name
                       ? reviewerPartnerData.data.partner_display_name
                       : claim.reviewed_by
-                      ? claim.reviewed_by
-                      : "Chưa cập nhật"}
+                        ? claim.reviewed_by
+                        : "Chưa cập nhật"}
                   </Text>
                 </HStack>
               </HStack>

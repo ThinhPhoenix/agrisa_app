@@ -102,6 +102,8 @@ export enum PaymentStatusCode {
  */
 export enum PaymentType {
     POLICY_REGISTRATION = "policy_registration_payment",
+    POLICY_COMPENSATION_PAYMENT = "policy_compensation_payment",
+    POLICY_PAYOUT_PAYMENT = "policy_payout_payment",
     CONTRACT = "hopdong",
 }
 

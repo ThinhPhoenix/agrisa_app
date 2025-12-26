@@ -275,7 +275,7 @@ export const ClaimEventCard: React.FC<ClaimEventCardProps> = ({ claim }) => {
                   fontWeight="$semibold"
                   color={colors.primary_text}
                 >
-                  {Utils.formatStringVietnameseDateTime(claim.updated_at)}
+                  {Utils.formatStringVietnameseDateTimeGMT7(claim.updated_at)}
                 </Text>
               </VStack>
             </HStack>

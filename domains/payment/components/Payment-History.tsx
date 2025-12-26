@@ -48,7 +48,11 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
     const { data: payoutData, refetch: refetchPayout } = getTotalByType(
         "policy_payout_payment"
     );
-    const totalCompensation = payoutData?.success ? payoutData.data : 0;
+    const { data: compeData, refetch: refetchCompe } = getTotalByType(
+      "policy_compensation_payment"
+    );
+    
+    const totalCompensation = payoutData?.success ? payoutData.data + compeData?.data : 0;
 
     const payments =
         data?.success && data.data

@@ -285,14 +285,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
       return;
     }
 
-    if (rating === 0) {
-      Alert.alert(
-        "Thiếu đánh giá",
-        "Vui lòng chọn số sao đánh giá trước khi xác nhận.",
-        [{ text: "Đã hiểu" }]
-      );
-      return;
-    }
+    
 
     Alert.alert(
       "Xác nhận nhận tiền",
@@ -305,9 +298,9 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
           onPress: () => {
             // Payload theo format mới với PascalCase
             const payload: ConfirmPayoutPayload = {
-              FarmerConfirmed: true,
-              FarmerRating: rating,
-              FarmerFeedback: feedback.trim() || undefined,
+              farmer_confirmed: true,
+              farmer_rating: 1,
+              farmer_feedback: feedback.trim() || undefined,
             };
 
             // Sử dụng payout.id thay vì claim.id
@@ -1178,7 +1171,7 @@ export const ClaimEventDetail: React.FC<ClaimEventDetailProps> = ({
                     fontWeight="$semibold"
                     color={colors.primary_text}
                   >
-                    {Utils.formatStringVietnameseDateTime(claim.updated_at)}
+                    {Utils.formatStringVietnameseDateTimeGMT7(claim.updated_at)}
                   </Text>
                 </VStack>
               </HStack>

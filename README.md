@@ -1,5 +1,7 @@
 # Agrisa - Nền tảng Bảo hiểm Nông nghiệp Thông minh
 
+# 🌟 Agrisa - 26/12/2025 - Bảo vệ thành công luận án tốt nghiệp - Mobile Team - Thịnh và Nhân 🌟
+
 ## 📱 Giới thiệu
 **Agrisa** - FPT Capstone Project - là nền tảng kết nối giữa doanh nghiệp bảo hiểm và nông dân các bảo hiểm nông nghiệp dựa trên dữ liệu chỉ số vệ tinh để đánh giá mức độ thiệt hại cây trồng một cách chính xác, minh bạch và nhanh chóng.
 
